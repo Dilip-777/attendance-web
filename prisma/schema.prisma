@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id    String      @id @default(cuid())
+  email String  @unique
+  name  String
+  mobileNumber  String?
+  password String
+  role    Role   @default(None)
+  accounts      Account[]
+    sessions      Session[]
+}
+
+model TimeKeeper {
+  id   String   @id @default(cuid())
+    employeeid String
+    designation String
+    attendancedate String
+    machineInTime String
+    machineOutTime String?
+    machineshift String
+    attendance String
+    overtime String
+    eleave String
+    manualintime String?
+    manualouttime String?
+    manualshift String?
+    manualovertime String?
+    mleave String?
+    department String?
+    gender String?
+    comment  Comment[]
+    UploadDocument Upload[]
+}
+
+model Comment {
+  id   String   @id @default(cuid())
+  comment   String
+  userId    String
+  userName  String
+  role      Role
+  timekeeperId  String
+  timekeeper         TimeKeeper     @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
+}
+
+model Upload {
+  id   String   @id @default(cuid())
+  document   String
+  userId    String
+  userName  String
+  role      Role
+  timekeeperId  String
+  timekeeper         TimeKeeper     @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  None
+  TimeKeeper
+  HR
+  PlantCommercial
+  HoCommercialAuditor
+  Corporate
+  Admin
+}
