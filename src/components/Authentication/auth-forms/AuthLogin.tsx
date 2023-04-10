@@ -7,7 +7,7 @@ import {
   Box,
   Button,
   Checkbox,
-  Divider,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -27,62 +27,30 @@ import { Formik } from "formik";
 
 // project imports
 import useScriptRef from "../../hooks/useScriptRef";
-import AnimateButton from "@/ui-component/extended/AnimateButton";
 
 // assets
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { signIn, useSession } from "next-auth/react";
-import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/router";
-import axios from "axios";
 
 // ============================|| FIREBASE - LOGIN ||============================ //
 
 const FirebaseLogin = ({ ...others }) => {
   const theme = useTheme();
-  const scriptedRef = useScriptRef();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down("md"));
-  const customization = useSelector((state: any) => state.customization);
+  const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(true);
   const router = useRouter();
   const { data: session, status } = useSession();
-
-  const googleHandler = async () => {
-    console.error("Login");
-  };
 
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleMouseDownPassword = (
-    event: MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
-    event.preventDefault();
-  };
-
   return (
     <>
       <Grid container direction="column" justifyContent="center" spacing={2}>
-        <Grid item xs={12}>
-          <AnimateButton>
-            <Button
-              disableElevation
-              fullWidth
-              onClick={googleHandler}
-              size="large"
-              variant="outlined"
-              sx={{
-                color: "grey.700",
-                backgroundColor: theme.palette.grey[50],
-                borderColor: theme.palette.grey[100],
-              }}
-            ></Button>
-          </AnimateButton>
-        </Grid>
-
         <Grid
           item
           xs={12}
@@ -111,8 +79,10 @@ const FirebaseLogin = ({ ...others }) => {
             .required("Email is required"),
           password: Yup.string().max(255).required("Password is required"),
         })}
-        onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
-          signIn("credentials", {
+        onSubmit={async (values, { setErrors, setSubmitting }) => {
+          setSubmitting(true);
+          setLoading(true);
+          await signIn("credentials", {
             email: values.email,
             password: values.password,
             callbackUrl: "/admin",
@@ -124,31 +94,17 @@ const FirebaseLogin = ({ ...others }) => {
               } else {
                 setErrors({ submit: res.error });
               }
+              setSubmitting(false);
             } else {
               if (session?.user?.role === "admin") {
                 router.push("/admin");
               } else {
-                router.push("/admin");
+                router.push("/");
               }
             }
           });
 
-          // await axios
-          //   .post("/api/login", {
-          //     email: values.email,
-          //     password: values.password,
-          //   })
-          //   .then((res) => {
-          //     sessionStorage.setItem("user", JSON.stringify(res.data));
-          //     router.push("/dashboard");
-          //   })
-          //   .catch((err) => {
-          //     if (err.response.data.message.includes("Email")) {
-          //       setErrors({ email: err.response.data.message });
-          //     } else {
-          //       setErrors({ submit: err.response.data.message });
-          //     }
-          //   });
+          // setLoading(false);
         }}
       >
         {({
@@ -261,19 +217,23 @@ const FirebaseLogin = ({ ...others }) => {
             )}
 
             <Box sx={{ mt: 2 }}>
-              <AnimateButton>
-                <Button
-                  disableElevation
-                  disabled={isSubmitting}
-                  fullWidth
-                  size="large"
-                  type="submit"
-                  variant="contained"
-                  color="secondary"
-                >
-                  Sign in
-                </Button>
-              </AnimateButton>
+              <Button
+                disableElevation
+                disabled={isSubmitting || loading}
+                fullWidth
+                size="large"
+                type="submit"
+                variant="contained"
+                color="secondary"
+              >
+                Sign in{" "}
+                {loading && (
+                  <CircularProgress
+                    size={15}
+                    sx={{ ml: 1, color: "#364152" }}
+                  />
+                )}
+              </Button>
             </Box>
           </form>
         )}

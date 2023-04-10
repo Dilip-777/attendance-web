@@ -40,7 +40,7 @@ interface Props extends SelectProps {
   label: string;
   placeHolder: string;
   disabled?: boolean;
-  options: string[];
+  options: { value: string | boolean; label: string }[];
   sx?: Object;
 }
 
@@ -83,8 +83,10 @@ const FormSelect: React.FC<Props> = ({
           />
         }
       >
-        {options.map((option) => (
-          <MenuItem value={option}>{option}</MenuItem>
+        {options.map((option, index) => (
+          <MenuItem key={index} value={option.value as any}>
+            {option.label}
+          </MenuItem>
         ))}
       </Select>
       {isError && (

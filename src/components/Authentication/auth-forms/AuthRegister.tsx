@@ -6,17 +6,14 @@ import { useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
-  Checkbox,
-  Divider,
+  CircularProgress,
   FormControl,
-  FormControlLabel,
   FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
-  TextField,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -27,8 +24,6 @@ import { Formik } from "formik";
 
 // project imports
 import useScriptRef from "../../hooks/useScriptRef";
-import Google from "assets/images/icons/social-google.svg";
-import AnimateButton from "@/ui-component/extended/AnimateButton";
 
 // assets
 import Visibility from "@mui/icons-material/Visibility";
@@ -62,22 +57,6 @@ const FirebaseRegister = ({ ...others }) => {
 
   return (
     <>
-      <Grid container direction="column" justifyContent="center" spacing={2}>
-        <Grid
-          item
-          xs={12}
-          container
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1">
-              Sign up with Email address
-            </Typography>
-          </Box>
-        </Grid>
-      </Grid>
-
       <Formik
         initialValues={{
           email: "",
@@ -115,14 +94,10 @@ const FirebaseRegister = ({ ...others }) => {
               email: values.email,
               password: values.password,
               name: values.firstName + " " + values.lastName,
-              mobileNumber: values.mobileNumber,
+              mobileNumber: values.mobileNumber.toString(),
             })
             .then((res) => {
-              signIn("credentials", {
-                email: values.email,
-                password: values.password,
-              });
-              router.push("/dashboard");
+              router.push("/admin");
             })
             .catch((err) => {
               if (err.response.data.message.includes("Email")) {
@@ -346,19 +321,23 @@ const FirebaseRegister = ({ ...others }) => {
             )}
 
             <Box sx={{ mt: 2 }}>
-              <AnimateButton>
-                <Button
-                  disableElevation
-                  disabled={isSubmitting}
-                  fullWidth
-                  size="large"
-                  type="submit"
-                  variant="contained"
-                  color="secondary"
-                >
-                  Sign up
-                </Button>
-              </AnimateButton>
+              <Button
+                disableElevation
+                disabled={isSubmitting}
+                fullWidth
+                size="large"
+                type="submit"
+                variant="contained"
+                color="secondary"
+              >
+                Sign up
+                {isSubmitting && (
+                  <CircularProgress
+                    size={15}
+                    sx={{ ml: 1, color: "#364152" }}
+                  />
+                )}
+              </Button>
             </Box>
           </form>
         )}

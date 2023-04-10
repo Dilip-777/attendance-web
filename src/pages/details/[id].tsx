@@ -77,7 +77,6 @@ export default function Edit({ role }: { role: Role | undefined }) {
   const [timekeeper, setTimeKepeer] = useState<TimeKeeper>();
 
   const { data: session } = useSession();
-  console.log(session, role);
 
   const fetchTimeKeeper = async () => {
     setLoading(true);
@@ -97,14 +96,12 @@ export default function Edit({ role }: { role: Role | undefined }) {
     fetchTimeKeeper();
   }, [id]);
 
-  console.log(loading, timekeeper, id);
-
   const initialValues = {
-    contractorId: "21soidfj",
-    contractorName: "John Doe",
+    contractorId: timekeeper?.contractorid || "",
+    contractorName: timekeeper?.contractorname || "John Doe",
     employeeid: timekeeper?.employeeid || "",
-    designation: timekeeper?.designation || "Manager",
-    // attendance: 3,
+    designation: timekeeper?.designation || "",
+
     machineInTime: timekeeper?.machineInTime || "10:00",
     machineOutTime: timekeeper?.machineOutTime || "18:00",
     machineshift: timekeeper?.machineshift || "Day",
@@ -116,7 +113,7 @@ export default function Edit({ role }: { role: Role | undefined }) {
     manualshift: timekeeper?.manualshift || "",
     manualovertime: timekeeper?.manualovertime || "",
     mleave: timekeeper?.mleave || "",
-    department: timekeeper?.department || "Production",
+    department: timekeeper?.department || "",
     gender: timekeeper?.gender || "",
     comment: "",
     uploadDocument: undefined,
@@ -167,6 +164,7 @@ export default function Edit({ role }: { role: Role | undefined }) {
               contractorName,
               ...others
             } = values;
+            setLoading(true);
             await axios
               .put("/api/timekeeper", {
                 id: id,
@@ -183,6 +181,7 @@ export default function Edit({ role }: { role: Role | undefined }) {
               .catch((err) => {
                 console.log(err);
               });
+            setLoading(false);
           }}
         >
           {({ handleSubmit }) => (
@@ -210,14 +209,6 @@ export default function Edit({ role }: { role: Role | undefined }) {
                     name="employeeid"
                     label="Employee ID"
                     placeHolder="Employee ID"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="designation"
-                    label="Designation"
-                    placeHolder="Designation"
                     disabled={true}
                   />
                 </Grid>
@@ -259,6 +250,14 @@ export default function Edit({ role }: { role: Role | undefined }) {
                     label="Leave"
                     placeHolder="Leave"
                     disabled={true}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <FormInput
+                    name="designation"
+                    label="Designation"
+                    placeHolder="Designation"
+                    disabled={false}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -310,11 +309,24 @@ export default function Edit({ role }: { role: Role | undefined }) {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
+                  {/* <FormInput
                     name="department"
                     label="Department"
                     placeHolder="Department"
                     disabled={false}
+                  /> */}
+                  <FormSelect
+                    name="department"
+                    label="Department"
+                    placeHolder="Department"
+                    disabled={false}
+                    options={[
+                      { value: "8HR", label: "8HR" },
+                      { value: "10HR", label: "10HR" },
+                      { value: "CCM", label: "CCM" },
+                      { value: "LRF", label: "LRF" },
+                      { value: "Colony", label: "Colony" },
+                    ]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -323,7 +335,11 @@ export default function Edit({ role }: { role: Role | undefined }) {
                     label="Gender"
                     placeHolder="Gender"
                     disabled={false}
-                    options={["Male", "Female", "Other"]}
+                    options={[
+                      { value: "Male", label: "Male" },
+                      { value: "Female", label: "Female" },
+                      { value: "Other", label: "Other" },
+                    ]}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -347,6 +363,12 @@ export default function Edit({ role }: { role: Role | undefined }) {
                 variant="contained"
                 sx={{ float: "right", mr: 10 }}
               >
+                {loading && (
+                  <CircularProgress
+                    size={15}
+                    sx={{ ml: 1, color: "#364152" }}
+                  />
+                )}
                 Submit
               </Button>
             </form>

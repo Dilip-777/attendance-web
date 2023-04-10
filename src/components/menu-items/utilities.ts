@@ -1,65 +1,164 @@
+
 // assets
-import { TextDecrease } from '@mui/icons-material';
+import { Key } from '@mui/icons-material';
 
 // constant
 const icons = {
-    TextDecrease
+    Key
 };
 
-// ==============================|| UTILITIES MENU ITEMS ||============================== //
+// ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
 
-const utilities = {
-    id: 'utilities',
-    title: 'Utilities',
+const corporator = {
+    id: 'pages',
+    title: 'Pages',
+    caption: 'Pages Caption',
     type: 'group',
     children: [
         {
-            id: 'util-typography',
-            title: 'Typography',
-            type: 'item',
-            url: '/utils/util-typography',
-            icon: icons.TextDecrease,
-            breadcrumbs: false
-        },
-        {
-            id: 'util-color',
-            title: 'Color',
-            type: 'item',
-            url: '/utils/util-color',
-            icon: icons.TextDecrease,
-            breadcrumbs: false
-        },
-        {
-            id: 'util-shadow',
-            title: 'Shadow',
-            type: 'item',
-            url: '/utils/util-shadow',
-            icon: icons.TextDecrease,
-            breadcrumbs: false
-        },
-        {
-            id: 'icons',
-            title: 'Icons',
+            id: 'contractors',
+            title: 'Contractors',
             type: 'collapse',
-            icon: icons.TextDecrease,
+            icon: icons.Key,
+
             children: [
                 {
-                    id: 'tabler-icons',
-                    title: 'Tabler Icons',
+                    id: '/contractors',
+                    title: 'Contractors List',
                     type: 'item',
-                    url: '/icons/tabler-icons',
-                    breadcrumbs: false
+                    url: '/contractors',
+                    target: true
                 },
                 {
-                    id: 'material-icons',
-                    title: 'Material Icons',
+                    id: '/contractors/[id]',
+                    title: 'Add Contractor',
                     type: 'item',
-                    url: '/icons/material-icons',
-                    breadcrumbs: false
+                    url: '/contractors/add',
+                    target: true
                 }
             ]
-        }
+        },
+        {
+            id: 'employees',
+            title: 'Employees',
+            type: 'collapse',
+            icon: icons.Key,
+
+            children: [
+               {
+                    id: '/employees',
+                    title: 'Employees List',
+                    type: 'item',
+                    url: '/employees',
+                    target: true
+                },
+                {
+                    id: '/employees/[id]',
+                    title: 'Add Employee',
+                    type: 'item',
+                    url: '/employees/add',
+                    target: true
+                },
+            ]
+        },
+        {
+            id: 'workorder',
+            title: 'Work Order',
+            type: 'collapse',
+            icon: icons.Key,
+
+            children: [
+                {
+                    id: '/workorder',
+                    title: 'Work Order List',
+                    type: 'item',
+                    url: '/workorder',
+                    target: true
+                },
+                {
+                    id: '/wordorder/[id]',
+                    title: 'Add Work Order',
+                    type: 'item',
+                    url: '/workorder/add',
+                    target: true
+                }
+            ]
+        },
+         {
+            id: '/payouttracker',
+            title: 'Payout Tracker',
+            type: 'item',
+            url: '/payouttracker',
+            icon: icons.Key,
+            breadcrumbs: false
+        },
     ]
 };
 
-export default utilities;
+export default corporator;
+
+// // assets
+// import { TextDecrease } from '@mui/icons-material';
+
+// // constant
+// const icons = {
+//     TextDecrease
+// };
+
+// // ==============================|| UTILITIES MENU ITEMS ||============================== //
+
+// const utilities = {
+//     id: 'utilities',
+//     title: 'Utilities',
+//     type: 'group',
+//     children: [
+//         {
+//             id: 'util-typography',
+//             title: 'Typography',
+//             type: 'item',
+//             url: '/utils/util-typography',
+//             icon: icons.TextDecrease,
+//             breadcrumbs: false
+//         },
+//         {
+//             id: 'util-color',
+//             title: 'Color',
+//             type: 'item',
+//             url: '/utils/util-color',
+//             icon: icons.TextDecrease,
+//             breadcrumbs: false
+//         },
+//         {
+//             id: 'util-shadow',
+//             title: 'Shadow',
+//             type: 'item',
+//             url: '/utils/util-shadow',
+//             icon: icons.TextDecrease,
+//             breadcrumbs: false
+//         },
+//         {
+//             id: 'icons',
+//             title: 'Icons',
+//             type: 'collapse',
+//             icon: icons.TextDecrease,
+//             children: [
+//                 {
+//                     id: 'tabler-icons',
+//                     title: 'Tabler Icons',
+//                     type: 'item',
+//                     url: '/icons/tabler-icons',
+//                     breadcrumbs: false
+//                 },
+//                 {
+//                     id: 'material-icons',
+//                     title: 'Material Icons',
+//                     type: 'item',
+//                     url: '/icons/material-icons',
+//                     breadcrumbs: false
+//                 }
+//             ]
+//         }
+//     ]
+// };
+
+// export default utilities;

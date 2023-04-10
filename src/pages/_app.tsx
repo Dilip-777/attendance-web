@@ -1,6 +1,4 @@
 import MainLayout from "@/layout/MainLayout";
-import NotificationList from "@/layout/MainLayout/Header/NotificationSection/NotificationList";
-import MinimalLayout from "@/layout/MinimalLayout";
 import { store } from "@/store";
 import theme from "@/themes";
 import {
@@ -23,15 +21,7 @@ const MyApp = ({ Component, pageProps }: any) => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { data: session, status } = useSession();
-  console.log(session, status);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      if (!(router.pathname === "/login" || router.pathname === "/register")) {
-        router.replace("/login");
-      }
-    }
-  }, [status, router]);
   Router.events.on("routeChangeStart", () => {
     setLoading(true);
     NProgress.start();

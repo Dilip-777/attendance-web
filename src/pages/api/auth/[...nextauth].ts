@@ -1,23 +1,26 @@
-import NextAuth, { type NextAuthOptions } from 'next-auth';
+import NextAuth, { type NextAuthOptions, Session } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '@/lib/prisma'
 // import { env } from '../../../env/server.mjs';
 import bcrypt from 'bcryptjs';
-// import { AuthError } from 'src/pages/signin';
+
 
 export const authOptions: NextAuthOptions = {
   callbacks: {
     session({ session, token }) {
       if (token.id && session.user) {
         session.user.id = token.id as string;
+        session.user.role = token.role as string;
       }
       return session;
     },
     jwt({ token, user }) {
+      
       if (user) {
         token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
@@ -46,7 +49,7 @@ export const authOptions: NextAuthOptions = {
             password,
             user?.password
           );
-         
+          
 
           if (isPasswordMatched) {
             return { ...user, password: undefined };

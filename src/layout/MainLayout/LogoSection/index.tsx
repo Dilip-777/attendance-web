@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 // material-ui
@@ -17,7 +16,6 @@ const LogoSection = () => {
       disableRipple
       onClick={() => dispatch({ type: MENU_OPEN, id: defaultId })}
     >
-      {/* <Logo /> */}
       <Typography variant="h3" color="#5e35b1">
         Logo
       </Typography>

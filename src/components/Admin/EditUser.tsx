@@ -138,13 +138,16 @@ export default function EditUser({
                   label="Role"
                   placeHolder="Select the Role"
                   options={[
-                    "Admin",
-                    "None",
-                    "TimeKeeper",
-                    "HR",
-                    "PlantCommercial",
-                    "HoCommercialAuditor",
-                    "Corporate",
+                    { value: "None", label: "None" },
+                    { value: "Admin", label: "Admin" },
+                    { value: "TimeKeeper", label: "TimeKeeper" },
+                    { value: "HR", label: "HR" },
+                    { value: "PlantCommercial", label: "PlantCommercial" },
+                    {
+                      value: "HoCommercialAuditor",
+                      label: "HoCommercialAuditor",
+                    },
+                    { value: "Corporate", label: "Corporate" },
                   ]}
                 />
                 <Button

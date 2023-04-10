@@ -18,14 +18,8 @@ import {
 // third-party
 import PopupState, { bindPopper, bindToggle } from "material-ui-popup-state";
 
-// project imports
-import Transitions from "@/ui-component/extended/Transitions";
-
-// assets
-import { IconAdjustmentsHorizontal, IconSearch, IconX } from "@tabler/icons";
 import { shouldForwardProp } from "@mui/system";
 import { Search, Tune } from "@mui/icons-material";
-// import { PopupState } from 'material-ui-popup-state/hooks';
 
 // styles
 const PopperStyle = styled(Popper, { shouldForwardProp })(({ theme }) => ({
@@ -173,12 +167,6 @@ const SearchSection = () => {
               <PopperStyle {...bindPopper(popupState)} transition>
                 {({ TransitionProps }) => (
                   <>
-                    {/* <Transitions
-                      type="zoom"
-                      {...TransitionProps}
-                      
-                      sx={{ transformOrigin: "center left" }}
-                    > */}
                     <Card
                       sx={{
                         background: "#fff",
@@ -204,7 +192,6 @@ const SearchSection = () => {
                         </Grid>
                       </Box>
                     </Card>
-                    {/* </Transitions> */}
                   </>
                 )}
               </PopperStyle>

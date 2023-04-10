@@ -5,9 +5,10 @@ import { Divider, Grid, Stack, Typography, useMediaQuery } from "@mui/material";
 // project imports
 import AuthWrapper1 from "../components/Authentication/AuthWrapper1";
 import AuthCardWrapper from "../components/Authentication/AuthCardWrapper";
-import Logo from "@/ui-component/Logo";
 import AuthRegister from "../components/Authentication/auth-forms/AuthRegister";
 import { useRouter } from "next/router";
+import { GetServerSidePropsContext } from "next";
+import { getSession } from "next-auth/react";
 
 // assets
 
@@ -59,14 +60,14 @@ const Register = () => {
                             gutterBottom
                             variant={matchDownSM ? "h3" : "h2"}
                           >
-                            Sign up
+                            Create User
                           </Typography>
                           <Typography
                             variant="caption"
                             fontSize="16px"
                             textAlign={matchDownSM ? "center" : "inherit"}
                           >
-                            Enter your credentials to continue
+                            Enter the credentials to continue
                           </Typography>
                         </Stack>
                       </Grid>
@@ -77,24 +78,6 @@ const Register = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <Divider />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Grid
-                      item
-                      container
-                      direction="column"
-                      alignItems="center"
-                      xs={12}
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => router.push("/login")}
-                    >
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ textDecoration: "none" }}
-                      >
-                        Already have an account?
-                      </Typography>
-                    </Grid>
                   </Grid>
                 </Grid>
               </AuthCardWrapper>
@@ -108,3 +91,26 @@ const Register = () => {
 };
 
 export default Register;
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context);
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+  if (session?.user?.role !== "Admin") {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {},
+  };
+}

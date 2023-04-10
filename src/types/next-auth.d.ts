@@ -1,3 +1,4 @@
+import { DefaultUser } from "next-auth";
 import { type DefaultSession } from "next-auth";
 
 declare module "next-auth" {
@@ -10,4 +11,8 @@ declare module "next-auth" {
       role: string;
     } & DefaultSession["user"];
   }
+
+  interface User extends DefaultUser {
+        role: string;
+    }
 }

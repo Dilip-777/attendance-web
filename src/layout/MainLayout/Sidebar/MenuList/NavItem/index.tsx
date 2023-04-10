@@ -35,7 +35,6 @@ const NavItem = ({ item, level }: { item: any; level: any }) => {
   if (level > 0) {
     isSelelected = router.pathname === item.id;
   }
-  console.log("isSelelected", isSelelected, router.pathname, item.id);
 
   if (item.url === "/") {
     isSelelected = router.pathname === item.url;

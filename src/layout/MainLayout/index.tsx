@@ -13,22 +13,18 @@ import {
 } from "@mui/material";
 
 // project imports
-import Breadcrumbs from "@/ui-component/extended/Breadcrumbs";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import navigation from "../../components/menu-items";
 import { drawerWidth } from "@/store/constant";
 import { SET_MENU } from "@/store/actions";
 
 // assets
-import { IconChevronRight } from "@tabler/icons";
 import React from "react";
 
 // styles
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })(
   ({ theme, open }: { theme: Theme; open: boolean }) => ({
     ...theme.typography.mainContent,
-    // ...theme.typography.
     ...(!open && {
       borderBottomLeftRadius: 0,
       borderBottomRightRadius: 0,
@@ -108,17 +104,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         </Toolbar>
       </AppBar>
 
-      {/* drawer */}
       <Sidebar
         drawerOpen={!matchDownMd ? leftDrawerOpened : !leftDrawerOpened}
         drawerToggle={handleLeftDrawerToggle}
       />
 
-      {/* main content */}
       <Main theme={theme} open={leftDrawerOpened}>
-        {/* breadcrumb */}
-        {/* <Breadcrumbs navigation={navigation} icon title rightAlign /> */}
-        {/* <Outlet /> */}
         {children}
       </Main>
     </Box>

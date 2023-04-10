@@ -34,7 +34,6 @@ const handler : NextApiHandler = async (req, res) => {
     await fs.mkdir(path.join(process.cwd() + "/public", "/uploadedFiles"))
    }
    const options =  await readFile(req, true) 
-   console.log(options);
    
    res.status(200).json({ success: "true", file: options.files.myFile})
 }

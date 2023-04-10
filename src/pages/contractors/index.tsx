@@ -21,9 +21,51 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import { Edit, Search } from "@mui/icons-material";
-import { InputAdornment, OutlinedInput, styled } from "@mui/material";
+import {
+  Edit,
+  Launch,
+  PanoramaFishEye,
+  Search,
+  Visibility,
+} from "@mui/icons-material";
+import {
+  Backdrop,
+  Button,
+  Fade,
+  FormControl,
+  FormLabel,
+  InputAdornment,
+  MenuItem,
+  Modal,
+  OutlinedInput,
+  Select,
+  Stack,
+  styled,
+} from "@mui/material";
 import { useRouter } from "next/router";
+import { Contractor } from "@prisma/client";
+import { GetServerSideProps } from "next";
+import { getSession, useSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
+
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
+};
+
+const options = [
+  { link: "/pc8hr", label: "8HR" },
+  { link: "/pc12hr", label: "12HR" },
+  { link: "plccm", label: "CCM" },
+  { link: "pclrf", label: "LRF" },
+  { link: "colony", label: "Colony" },
+];
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -35,372 +77,6 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
     borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
   },
 }));
-
-interface Data {
-  calories: number;
-  carbs: number;
-  fat: number;
-  name: string;
-  protein: number;
-}
-
-interface Data1 {
-  contractorid: string;
-  contractorname: string;
-  employeeid: string;
-  machineintime: string;
-  machineouttime: string;
-  machineshift: string;
-  attendance: number;
-  manchineovertime: number;
-  machineleave: number;
-  manualintime: string;
-  manualouttime: string;
-  manualshift: string;
-  manualovertime: number;
-  manualleave: number;
-  deployeeofdepartment: string;
-  gender: string;
-  comment: string;
-  uploaddocument: string;
-}
-
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number
-): Data {
-  return {
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
-  };
-}
-
-function createData1(
-  contractorid: string,
-  contractorname: string,
-  employeeid: string,
-  machineintime: string,
-  machineouttime: string,
-  machineshift: string,
-  attendance: number,
-  manchineovertime: number,
-  machineleave: number,
-  manualintime: string,
-  manualouttime: string,
-  manualshift: string,
-  manualovertime: number,
-  manualleave: number,
-  deployeeofdepartment: string,
-  gender: string,
-  comment: string,
-  uploaddocument: string
-): Data1 {
-  return {
-    contractorid,
-    contractorname,
-    employeeid,
-    machineintime,
-    machineouttime,
-    machineshift,
-    attendance,
-    manchineovertime,
-    machineleave,
-    manualintime,
-    manualouttime,
-    manualshift,
-    manualovertime,
-    manualleave,
-    deployeeofdepartment,
-    gender,
-    comment,
-    uploaddocument,
-  };
-}
-
-const rows1 = [
-  createData1(
-    "1",
-    "Name1",
-    "1",
-    "1",
-    "1",
-    "1",
-    1,
-    1,
-    1,
-    "1",
-    "1",
-    "1",
-    1,
-    1,
-    "1",
-    "1",
-    "1",
-    "1"
-  ),
-  createData1(
-    "2",
-    "Name2",
-    "2",
-    "2",
-    "2",
-    "2",
-    2,
-    2,
-    2,
-    "2",
-    "2",
-    "2",
-    2,
-    2,
-    "2",
-    "2",
-    "2",
-    "2"
-  ),
-  createData1(
-    "3",
-    "Name3",
-    "3",
-    "3",
-    "3",
-    "3",
-    3,
-    3,
-    3,
-    "3",
-    "3",
-    "3",
-    3,
-    3,
-    "3",
-    "3",
-    "3",
-    "3"
-  ),
-  createData1(
-    "4",
-    "Name4",
-    "4",
-    "4",
-    "4",
-    "4",
-    4,
-    4,
-    4,
-    "4",
-    "4",
-    "4",
-    4,
-    4,
-    "4",
-    "4",
-    "4",
-    "4"
-  ),
-  createData1(
-    "5",
-    "Name5",
-    "5",
-    "5",
-    "5",
-    "5",
-    5,
-    5,
-    5,
-    "5",
-    "5",
-    "5",
-    5,
-    5,
-    "5",
-    "5",
-    "5",
-    "5"
-  ),
-  createData1(
-    "6",
-    "Name6",
-    "6",
-    "6",
-    "6",
-    "6",
-    6,
-    6,
-    6,
-    "6",
-    "6",
-    "6",
-    6,
-    6,
-    "6",
-    "6",
-    "6",
-    "6"
-  ),
-  createData1(
-    "7",
-    "Name7",
-    "7",
-    "7",
-    "7",
-    "7",
-    7,
-    7,
-    7,
-    "7",
-    "7",
-    "7",
-    7,
-    7,
-    "7",
-    "7",
-    "7",
-    "7"
-  ),
-  createData1(
-    "8",
-    "Name8",
-    "8",
-    "8",
-    "8",
-    "8",
-    8,
-    8,
-    8,
-    "8",
-    "8",
-    "8",
-    8,
-    8,
-    "8",
-    "8",
-    "8",
-    "8"
-  ),
-  createData1(
-    "9",
-    "Name9",
-    "9",
-    "9",
-    "9",
-    "9",
-    9,
-    9,
-    9,
-    "9",
-    "9",
-    "9",
-    9,
-    9,
-    "9",
-    "9",
-    "9",
-    "9"
-  ),
-  createData1(
-    "10",
-    "Name10",
-    "10",
-    "10",
-    "10",
-    "10",
-    10,
-    10,
-    10,
-    "10",
-    "10",
-    "10",
-    10,
-    10,
-    "10",
-    "10",
-    "10",
-    "10"
-  ),
-  createData1(
-    "11",
-    "Name11",
-    "11",
-    "11",
-    "11",
-    "11",
-    11,
-    11,
-    11,
-    "11",
-    "11",
-    "11",
-    11,
-    11,
-    "11",
-    "11",
-    "11",
-    "11"
-  ),
-  createData1(
-    "12",
-    "Name12",
-    "12",
-    "12",
-    "12",
-    "12",
-    12,
-    12,
-    12,
-    "12",
-    "12",
-    "12",
-    12,
-    12,
-    "12",
-    "12",
-    "12",
-    "12"
-  ),
-  createData1(
-    "13",
-    "Name13",
-    "13",
-    "13",
-    "13",
-    "13",
-    13,
-    13,
-    13,
-    "13",
-    "13",
-    "13",
-    13,
-    13,
-    "13",
-    "13",
-    "13",
-    "13"
-  ),
-];
-
-const rows = [
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Donut", 452, 25.0, 51, 4.9),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-  createData("Honeycomb", 408, 3.2, 87, 6.5),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Jelly Bean", 375, 0.0, 94, 0.0),
-  createData("KitKat", 518, 26.0, 65, 7.0),
-  createData("Lollipop", 392, 0.2, 98, 0.0),
-  createData("Marshmallow", 318, 0, 81, 2.0),
-  createData("Nougat", 360, 19.0, 9, 37.0),
-  createData("Oreo", 437, 18.0, 63, 4.0),
-];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -430,22 +106,15 @@ function stableSort<T>(
   array: readonly T[],
   comparator: (a: T, b: T) => number
 ) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
+  const stabilizedThis = array?.map((el, index) => [el, index] as [T, number]);
+  stabilizedThis?.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) {
       return order;
     }
     return a[1] - b[1];
   });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
+  return stabilizedThis?.map((el) => el[0]);
 }
 
 const createHeadCells = (
@@ -465,34 +134,31 @@ const createHeadCells = (
 const headCells1 = [
   createHeadCells("contractorid", "Contractor ID", true, true),
   createHeadCells("contractorname", "Contractor Name", false, false),
-  createHeadCells("employeeid", "Employee ID", true, false),
-  createHeadCells("machineintime", "Machine In Time", false, false),
-  createHeadCells("machineouttime", "Machine Out Time", false, false),
-  createHeadCells("machineshift", "Machine Shift", false, false),
-  createHeadCells("attendance", "Attendance", true, false),
-  createHeadCells("machineovertime", "Machine Over Time", true, false),
-  createHeadCells("machineleave", "Machine Leave", true, false),
-  createHeadCells("manualintime", "Manual In Time", false, false),
-  createHeadCells("manualouttime", "Manual Out Time", false, false),
-  createHeadCells("manualshift", "Manual Shift", false, false),
-  createHeadCells("manualovertime", "Manual Over Time", true, false),
-  createHeadCells("manualleave", "Manual Leave", true, false),
+  createHeadCells("serviceDetail", "Service Detail", true, false),
+  createHeadCells("supplierDetail", "Supplier Detail", true, false),
+  createHeadCells("telephone", "telephone Number", true, false),
+  createHeadCells("emailid", "Email", true, false),
+  createHeadCells("mobileNumber", "Mobile Number", true, false),
+  createHeadCells("officeaddress", "Office Address", false, false),
+  createHeadCells("website", "Website", false, false),
+  createHeadCells("organisationType", "Organisation Type", false, false),
+  createHeadCells("isCertified", "Is Certified", false, false),
+  createHeadCells("uniquenumber", "Unique Number", false, false),
+  createHeadCells("registrationNumber", "Registration Number", true, false),
   createHeadCells(
-    "deployeeofdepartment",
-    "Deployee Of Department",
+    "firstregistrationNumber",
+    "First Registration Number",
     false,
     false
   ),
-  createHeadCells("gender", "Gender", false, false),
-  createHeadCells("comment", "Comment", false, false),
-  createHeadCells("uploaddocument", "Upload Document", false, false),
+  createHeadCells("deliveryProcedure", "Delivery Procedure", false, false),
 ];
 
 interface EnhancedTableProps {
   numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
-    property: keyof Data1
+    property: keyof Contractor
   ) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
@@ -510,9 +176,10 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     onRequestSort,
   } = props;
   const createSortHandler =
-    (property: keyof Data1) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof Contractor) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
+  const { data: session } = useSession();
 
   return (
     <TableHead>
@@ -538,7 +205,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             <TableSortLabel
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id as keyof Data1)}
+              onClick={createSortHandler(headCell.id as keyof Contractor)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
@@ -549,6 +216,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             </TableSortLabel>
           </TableCell>
         ))}
+        {session?.user?.role !== "HR" && (
+          <TableCell align="center">View Attendance</TableCell>
+        )}
+        {(session?.user?.role === "HoCommercialAuditor" ||
+          session?.user?.role === "Corporate") && (
+          <TableCell align="center">Ho Commercial Form</TableCell>
+        )}
       </TableRow>
     </TableHead>
   );
@@ -588,8 +262,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Typography>
       ) : (
         <StyledSearch
-          // value={filterName}
-          // onChange={onFilterName}
           placeholder="Search Contractor..."
           startAdornment={
             <InputAdornment position="start">
@@ -615,18 +287,31 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function TimeKeeper() {
+export default function TimeKeeper({
+  contractors,
+}: {
+  contractors: Contractor[];
+}) {
   const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof Data1>("contractorid");
+  const [orderBy, setOrderBy] = React.useState<keyof Contractor>("id");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const router = useRouter();
+  const { data: session } = useSession();
+  const [contractorId, setContractorId] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
+
+  const handleClose = () => {
+    setOpen(false);
+    setContractorId("");
+  };
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof Data1
+    property: keyof Contractor
   ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -635,7 +320,7 @@ export default function TimeKeeper() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows1.map((n) => n.contractorname);
+      const newSelected = contractors?.map((n) => n.contractorname);
       setSelected(newSelected);
       return;
     }
@@ -683,9 +368,9 @@ export default function TimeKeeper() {
   const isSelected = (contractorname: string) =>
     selected.indexOf(contractorname) !== -1;
 
-  // Avoid a layout jump when reaching the last page with empty rows.
+  // Avoid a layout jump when reaching the last page with empty contractors?.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - contractors?.length) : 0;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -709,26 +394,23 @@ export default function TimeKeeper() {
             size="medium"
           >
             <EnhancedTableHead
-              numSelected={selected.length}
+              numSelected={selected?.length}
               order={order}
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={contractors?.length}
             />
             <TableBody>
-              {stableSort(rows1, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.contractorname);
+              {stableSort(contractors as any, getComparator(order, orderBy))
+                ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                ?.map((row, index) => {
+                  const isItemSelected = isSelected(row.contractorname as any);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
-                      onClick={(event) =>
-                        handleClick(event, row.contractorname)
-                      }
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -736,7 +418,12 @@ export default function TimeKeeper() {
                       selected={isItemSelected}
                       sx={{ cursor: "pointer" }}
                     >
-                      <TableCell padding="checkbox">
+                      <TableCell
+                        onClick={(event) =>
+                          handleClick(event, row.contractorname as any)
+                        }
+                        padding="checkbox"
+                      >
                         <Checkbox
                           color="primary"
                           checked={isItemSelected}
@@ -748,32 +435,62 @@ export default function TimeKeeper() {
                       <TableCell id={labelId} scope="row" padding="none">
                         {row.contractorname}
                       </TableCell>
-                      <TableCell>{row.contractorid}</TableCell>
-                      <TableCell align="center">{row.employeeid}</TableCell>
-                      <TableCell align="center">{row.machineintime}</TableCell>
-                      <TableCell align="center">{row.machineouttime}</TableCell>
-                      <TableCell align="center">{row.machineshift}</TableCell>
-                      <TableCell align="center">{row.attendance}</TableCell>
+                      <TableCell>{row.id}</TableCell>
+                      <TableCell align="center">{row.servicedetail}</TableCell>
+                      <TableCell align="center">{row.supplierdetail}</TableCell>
                       <TableCell align="center">
-                        {row.manchineovertime}
+                        {row.telephonenumber}
                       </TableCell>
-                      <TableCell align="center">{row.machineleave}</TableCell>
-                      <TableCell align="center">{row.manualintime}</TableCell>
-                      <TableCell align="center">{row.manualouttime}</TableCell>
-                      <TableCell align="center">{row.manualshift}</TableCell>
-                      <TableCell align="center">{row.manualovertime}</TableCell>
-                      <TableCell align="center">{row.manualleave}</TableCell>
+                      <TableCell align="center">{row.emailid}</TableCell>
+                      <TableCell align="center">{row.mobilenumber}</TableCell>
+                      <TableCell align="center">{row.officeaddress}</TableCell>
+                      <TableCell align="center">{row.website}</TableCell>
                       <TableCell align="center">
-                        {row.deployeeofdepartment}
+                        {row.organisationtype}
                       </TableCell>
-                      <TableCell align="center">{row.gender}</TableCell>
-                      <TableCell align="center">{row.comment}</TableCell>
-                      <TableCell align="center">{row.uploaddocument}</TableCell>
+                      <TableCell align="center">
+                        {row.isocertified ? "Yes" : "No"}
+                      </TableCell>
+                      <TableCell align="center">{row.uniquenumber}</TableCell>
+                      <TableCell align="center">
+                        {row.registration_number}
+                      </TableCell>
+                      <TableCell align="center">
+                        {row.first_registration_number}
+                      </TableCell>
+                      <TableCell align="center">
+                        {row.delivery_procedure}
+                      </TableCell>
+                      {session?.user?.role !== "HR" && (
+                        <TableCell
+                          onClick={() => {
+                            setContractorId(row.id as string);
+                            setOpen(true);
+                          }}
+                          align="center"
+                        >
+                          <IconButton sx={{ m: 0 }}>
+                            <Visibility fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      )}
+                      {(session?.user?.role === "HoCommercialAuditor" ||
+                        session?.user?.role === "Corporate") && (
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={() => {
+                              router.push(`/hoauditor/${row.id}`);
+                            }}
+                            sx={{ m: 0 }}
+                          >
+                            <Launch fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      )}
+
                       <TableCell size="small" align="center">
                         <IconButton
-                          onClick={() =>
-                            router.push(`/details/${row.employeeid}`)
-                          }
+                          onClick={() => router.push(`/contractors/${row.id}`)}
                           sx={{ m: 0 }}
                         >
                           <Edit fontSize="small" />
@@ -797,16 +514,88 @@ export default function TimeKeeper() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={contractors?.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        open={open}
+        onClose={handleClose}
+        closeAfterTransition
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            timeout: 500,
+          },
+        }}
+      >
+        <Fade in={open}>
+          <Box sx={style}>
+            <Stack spacing={3}>
+              <FormControl>
+                <FormLabel>Select the Designation</FormLabel>
+                <Select
+                  placeholder="Select the designation"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                >
+                  {options?.map((option) => (
+                    <MenuItem value={option.link}>{option.label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button
+                variant="contained"
+                disabled={Boolean(!value)}
+                onClick={() => router.push(`/${value}/${contractorId}`)}
+              >
+                View Attendance
+              </Button>
+            </Stack>
+          </Box>
+        </Fade>
+      </Modal>
     </Box>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession({ req: context.req });
+
+  const contractors = await prisma.contractor.findMany();
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+  const user = await prisma.user.findUnique({
+    where: {
+      email: session?.user?.email as string,
+    },
+  });
+
+  if (user?.role === "Admin") {
+    return {
+      redirect: {
+        destination: "/admin",
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      contractors,
+    },
+  };
+};
 
 // <Head>
 //   <title>Attendance</title>

@@ -9,6 +9,8 @@ import AuthWrapper1 from "../components/Authentication/AuthWrapper1";
 import AuthCardWrapper from "../components/Authentication/AuthCardWrapper";
 import AuthLogin from "../components/Authentication/auth-forms/AuthLogin";
 import { useRouter } from "next/router";
+import { GetServerSidePropsContext } from "next";
+import { getSession } from "next-auth/react";
 
 // assets
 
@@ -109,3 +111,18 @@ const Login = () => {
 };
 
 export default Login;
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context);
+  if (session) {
+    return {
+      redirect: {
+        destination: session.user?.role === "Admin" ? "/admin" : "/",
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {},
+  };
+}

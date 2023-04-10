@@ -35,11 +35,18 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { Comment, TimeKeeper, Upload } from "@prisma/client";
+import {
+  Comment,
+  Contractor,
+  Employee,
+  TimeKeeper,
+  Upload,
+} from "@prisma/client";
 import axios from "axios";
 import { getSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
+import { FormSelect } from "./pc8hr/[id]";
 
 const style = {
   position: "absolute",
@@ -114,9 +121,7 @@ const createHeadCells = (
 };
 
 const headCells1 = [
-  createHeadCells("contractorid", "Contractor ID", true, true),
-  createHeadCells("contractorname", "Contractor Name", false, false),
-  createHeadCells("employeeid", "Employee ID", true, false),
+  createHeadCells("employeeid", "Employee ID", false, false),
   createHeadCells("machineintime", "Machine In Time", false, false),
   createHeadCells("machineouttime", "Machine Out Time", false, false),
   createHeadCells("machineshift", "Machine Shift", false, false),
@@ -207,10 +212,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
+  contractorid: string;
+  setContractorid: React.Dispatch<React.SetStateAction<string>>;
+  contractors: { value: string; label: string }[];
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
+  const { numSelected, contractorid, setContractorid, contractors } = props;
 
   return (
     <Toolbar
@@ -238,16 +246,16 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           {numSelected} selected
         </Typography>
       ) : (
-        <StyledSearch
-          // value={filterName}
-          // onChange={onFilterName}
-          placeholder="Search Contractor..."
-          startAdornment={
-            <InputAdornment position="start">
-              <Search />
-            </InputAdornment>
-          }
-        />
+        <Box sx={{ minWidth: 190 }}>
+          <FormSelect
+            options={[
+              { value: "all", label: "All Contractors" },
+              ...contractors,
+            ]}
+            value={contractorid}
+            setValue={setContractorid}
+          />
+        </Box>
       )}
       {numSelected > 0 ? (
         <Tooltip title="Delete">
@@ -266,7 +274,13 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function TimeKeeperTable() {
+export default function TimeKeeperTable({
+  contractors,
+  employees,
+}: {
+  contractors: Contractor[];
+  employees: Employee[];
+}) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof TimeKeeper>("employeeid");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
@@ -280,6 +294,7 @@ export default function TimeKeeperTable() {
   const [open1, setOpen1] = React.useState(false);
   const [selected1, setSelected1] = React.useState<Comment[] | Upload[]>();
   const matches = useMediaQuery("(min-width:600px)");
+  const [contractorid, setContractorid] = React.useState("all");
 
   const handleClose = () => {
     setOpen(false);
@@ -305,10 +320,15 @@ export default function TimeKeeperTable() {
 
   const fetchTimeKeeper = async () => {
     setLoading(true);
+    const employeesid = employees
+      .filter((e) => contractorid === "all" || e.contractorId === contractorid)
+      .map((e) => e.id);
+
     await axios
-      .get("http://localhost:3000/api/timekeeper/gettimekeepers")
+      .get("/api/timekeeper/gettimekeepers")
       .then((res) => {
-        setTimeKepeer(res.data);
+        const timekeepers = res.data;
+        setTimeKepeer(timekeepers);
         setLoading(false);
       })
       .catch((err) => {
@@ -319,9 +339,7 @@ export default function TimeKeeperTable() {
 
   React.useEffect(() => {
     fetchTimeKeeper();
-  }, []);
-
-  console.log(timekeeper);
+  }, [contractorid]);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -400,7 +418,15 @@ export default function TimeKeeperTable() {
         </Box>
       ) : (
         <Paper sx={{ width: "100%", mb: 2 }}>
-          <EnhancedTableToolbar numSelected={selected.length} />
+          <EnhancedTableToolbar
+            numSelected={selected.length}
+            contractorid={contractorid}
+            setContractorid={setContractorid}
+            contractors={contractors.map((c) => ({
+              value: c.id,
+              label: c.contractorname,
+            }))}
+          />
 
           <TableContainer
             sx={{
@@ -457,10 +483,7 @@ export default function TimeKeeperTable() {
                             }}
                           />
                         </TableCell>
-                        <TableCell id={labelId} scope="row" padding="none">
-                          -
-                        </TableCell>
-                        <TableCell>-</TableCell>
+
                         <TableCell align="center">{row.employeeid}</TableCell>
                         <TableCell align="center">
                           {row.machineInTime}
@@ -524,13 +547,14 @@ export default function TimeKeeperTable() {
                       </TableRow>
                     );
                   })}
-                {emptyRows > 0 && (
+                {stableSort(timekeeper as any, getComparator(order, orderBy))
+                  .length === 0 && (
                   <TableRow
                     style={{
-                      height: (dense ? 33 : 53) * emptyRows,
+                      height: 50,
                     }}
                   >
-                    <TableCell colSpan={6} />
+                    <TableCell colSpan={6}>No Data Found</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -602,7 +626,6 @@ export default function TimeKeeperTable() {
                   {open ? "No Documents" : "No Comments"}
                 </Typography>
               )}
-              {/* <EditUser selectedUser={selectedUser} handleClose={handleClose} /> */}
             </Stack>
           </Box>
         </Slide>
@@ -699,8 +722,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+  const contractors = await prisma.contractor.findMany();
+  const employees = await prisma.employee.findMany();
   return {
-    props: {},
+    props: {
+      contractors,
+      employees,
+    },
   };
 };
 

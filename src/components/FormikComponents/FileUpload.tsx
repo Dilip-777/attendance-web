@@ -74,20 +74,12 @@ const FileUpload: React.FC<Props> = ({
       const formData = new FormData();
       formData.append("myFile", file1);
       const { data } = await axios.post("/api/upload", formData);
-      console.log(data.file.newFilename);
       setFieldValue(name, data.file);
-      // setFile(data.file.newFilename);
     } catch (error) {
       console.log(error);
     }
     setLoading(false);
   };
-
-  // useEffect(() => {
-  //   if (file) {
-  //     setFieldValue(name, file);
-  //   }
-  // }, [file]);
 
   return (
     <Box sx={{ position: "relative", m: 2 }}>

@@ -7,8 +7,6 @@ import { useTheme } from "@mui/material/styles";
 import {
   Avatar,
   Box,
-  Card,
-  CardContent,
   Chip,
   ClickAwayListener,
   Divider,
@@ -21,25 +19,17 @@ import {
   OutlinedInput,
   Paper,
   Popover,
-  Popper,
   Stack,
-  Switch,
   Typography,
 } from "@mui/material";
 
-// third-party
-import PerfectScrollbar from "react-perfect-scrollbar";
-
 // project imports
 import MainCard from "@/ui-component/cards/MainCard";
-import Transitions from "@/ui-component/extended/Transitions";
-import UpgradePlanCard from "./UpgradePlanCard";
 import { Logout, Search, Settings, VerifiedUser } from "@mui/icons-material";
 
 // assets
-import { IconLogout, IconSearch, IconSettings, IconUser } from "@tabler/icons";
 import { useRouter } from "next/router";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -47,19 +37,16 @@ const ProfileSection = () => {
   const theme = useTheme();
   const customization = useSelector((state: any) => state.customization);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [sdm, setSdm] = useState(true);
   const [value, setValue] = useState("");
-  const [notification, setNotification] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
   /**
    * anchorRef is used on different componets and specifying one type leads to other components throwing an error
    * */
   const anchorRef = useRef<HTMLInputElement>(null);
-  const handleLogout = async () => {
-    console.log("Logout");
-  };
 
   const handleClose = (event: globalThis.MouseEvent | TouchEvent) => {
     if (anchorRef.current && anchorRef.current.contains(event.target as Node)) {
@@ -152,24 +139,6 @@ const ProfileSection = () => {
         onClick={handleToggle}
         color="primary"
       />
-      {/* <Popper
-        placement="bottom-end"
-        open={open}
-        anchorEl={anchorRef.current}
-        role={undefined}
-        transition
-        disablePortal
-        popperOptions={{
-          modifiers: [
-            {
-              name: "offset",
-              options: {
-                offset: [0, 14],
-              },
-            },
-          ],
-        }}
-      > */}
       <Popover
         open={open}
         anchorEl={anchorRef.current}
@@ -196,10 +165,12 @@ const ProfileSection = () => {
                       variant="h4"
                       sx={{ fontWeight: 400 }}
                     >
-                      Johne Doe
+                      {session?.user?.name}
                     </Typography>
                   </Stack>
-                  <Typography variant="subtitle2">Project Admin</Typography>
+                  <Typography variant="subtitle2">
+                    {session?.user?.role}
+                  </Typography>
                 </Stack>
                 <OutlinedInput
                   sx={{ width: "100%", pr: 1, pl: 2, my: 2 }}
@@ -209,11 +180,6 @@ const ProfileSection = () => {
                   placeholder="Search profile options"
                   startAdornment={
                     <InputAdornment position="start">
-                      {/* <IconSearch
-                            stroke={1.5}
-                            size="1rem"
-                            color={theme.palette.grey[500]}
-                          /> */}
                       <Search sx={{ fontSize: "1.3rem", stroke: 1.5 }} />
                     </InputAdornment>
                   }
@@ -248,15 +214,10 @@ const ProfileSection = () => {
                     }}
                     selected={selectedIndex === 0}
                     onClick={(event) =>
-                      handleListItemClick(
-                        event,
-                        0,
-                        "/user/account-profile/profile1"
-                      )
+                      handleListItemClick(event, 0, "/profile")
                     }
                   >
                     <ListItemIcon>
-                      {/* <IconSettings stroke={1.5} size="1.3rem" /> */}
                       <Settings sx={{ fontSize: "1.3rem", stroke: 1.5 }} />
                     </ListItemIcon>
                     <ListItemText
@@ -281,7 +242,6 @@ const ProfileSection = () => {
                     }
                   >
                     <ListItemIcon>
-                      {/* <IconUser stroke={1.5} size="1.3rem" /> */}
                       <VerifiedUser sx={{ fontSize: "1.3rem" }} />
                     </ListItemIcon>
                     <ListItemText

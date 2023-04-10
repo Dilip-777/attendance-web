@@ -24,6 +24,7 @@ import { visuallyHidden } from "@mui/utils";
 import { Edit, NavigateBefore, Search } from "@mui/icons-material";
 import {
   Backdrop,
+  Button,
   Divider,
   InputAdornment,
   Modal,
@@ -192,6 +193,7 @@ interface EnhancedTableToolbarProps {
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const { numSelected, filter, setFilter } = props;
+  const router = useRouter();
 
   return (
     <Toolbar
@@ -237,11 +239,17 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "rgb(103, 58, 183)",
+            ":hover": { backgroundColor: "rgb(103, 58, 183)" },
+          }}
+          onClick={() => router.push("/register")}
+        >
+          {" "}
+          + Add User
+        </Button>
       )}
     </Toolbar>
   );
@@ -264,7 +272,6 @@ export default function TimeKeeper({
   const [filter, setFilter] = React.useState("");
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const router = useRouter();
-  console.log(session, "session");
   const matches = useMediaQuery("(min-width:600px)");
 
   const handleClose = () => {

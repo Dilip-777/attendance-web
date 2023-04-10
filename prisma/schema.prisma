@@ -48,7 +48,10 @@ model User {
 
 model TimeKeeper {
   id   String   @id @default(cuid())
+  contractorid  String?
+  contractorname  String?
     employeeid String
+    employeename   String?
     designation String
     attendancedate String
     machineInTime String
@@ -68,6 +71,144 @@ model TimeKeeper {
     UploadDocument Upload[]
 }
 
+model Contractor {
+  id   String   @id @default(cuid())
+  contractorname      String
+  servicedetail      String
+  supplierdetail      String
+  officeaddress      String
+  contactperson      String
+  designation      String
+  telephonenumber      String
+  mobilenumber      String
+  emailid      String    
+  website      String
+  businessdetaildocument      String
+  uploadutilitybill      String
+  organisationtype      String
+  dateofincorporation      String
+  associationwithcompetitor   Boolean @default(false)
+  memorandam_of_associate      String
+  listofdirector      String
+  profileofkeyperson      String
+  competitorname      String
+  isocertified Boolean
+  turnoverlastyear      String
+  turnover2yearback      String
+  uploadbranchdetail      String
+  uploadreturndetail      String
+  uniquenumber      String
+  registration_number      String
+  first_registration_number      String
+  latest_mnth_gst1_filed      String
+  latest_mnth_gst2b_filed      String
+  comply_regulatory   Boolean   @default(false)
+  upload_registration_cert      String
+  upload_licence1      String
+  upload_licence2      String
+  code_of_proprietor      String
+  list_major_product      String
+  qualty_control_procedure      String
+  valueadd_product      String
+  five_strength_points      String
+  weakness      String
+  selection_training_method      String
+  delivery_procedure      String
+  clientele      String
+  reference_organistaion_1      String
+  reference_contact_person_1      String
+  reference_designation_1      String
+  reference_contact_1      String
+  period_of_service_1      String
+  reference_organistaion_2      String
+  reference_contact_person_2      String
+  reference_designation_2      String
+  reference_contact_2      String
+  period_of_service_2      String
+  reference_organistaion_3      String
+  reference_contact_person_3      String
+  reference_designation_3      String
+  reference_contact_3      String
+  period_of_service_3      String
+  upload_list_ofclientele      String
+  upload_certificate_services      String
+  upload_doc1      String
+  upload_doc2      String
+  employee        Employee[]
+}
+
+model Employee {
+  id   String   @id @default(cuid())
+    contractorname  String
+    employeename String
+    designation String 
+    department String
+    gender String
+    phone String
+    emailid String
+    basicsalary_in_duration String
+    basicsalary Int
+	allowed_wrking_hr_per_day Int
+    servicecharge Int
+    gst Int
+    tds Int
+    contractorId String
+    contractor         Contractor     @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+}
+
+model HOAuditor {
+  id  String     @id @default(cuid())
+  contractorId    String
+  contractorname  String
+  workDescription  String
+  invoiceNo      String
+  date          String
+  monthOfInvoice   String
+  fromDate         String
+  toDate           String
+  basicbillamount   Int
+  firstbillormonthly  String
+  serviceCharges    Int
+  totalbillAmount   Int
+  gst               Int
+  netbillAmount     Int
+  bankDetails      String
+  onetimeInvoice   Boolean
+  verifiedComplainces  Boolean
+  workOrderAvailable   Boolean
+  licensesInPlace      Boolean
+  previousMonthPayReceived  Boolean
+  previousPayVerified     Boolean
+  detailsSentToAuditAndHo  Boolean
+  gstChallanAttached      Boolean
+  deductions    String?
+  variationsInManpower   String?
+  manchineOrRegisterMode   String
+  uploadDoc1     String?
+  uploadDoc2     String?
+  uploadDoc3     String?
+  uploadDoc4     String?
+  uploadDoc5     String?
+  uploadDoc6     String?
+}
+
+model Workorder {
+  id     String     @id @default(cuid())
+  contractorId   String
+  contractorName String
+  nature         String
+  startDate      String
+  endDate        String
+  location       String
+  workDescription String
+  repeatOrOneTime  String
+  alert1Month     Boolean
+  alert15days     Boolean
+  amendmentDocument  String
+  addendumDocument   String
+  uploadDocument  String
+}
+
 model Comment {
   id   String   @id @default(cuid())
   comment   String
@@ -83,6 +224,7 @@ model Upload {
   document   String
   userId    String
   userName  String
+  docType   String?
   role      Role
   timekeeperId  String
   timekeeper         TimeKeeper     @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)

@@ -24,6 +24,10 @@ import { visuallyHidden } from "@mui/utils";
 import { Edit, Search } from "@mui/icons-material";
 import { InputAdornment, OutlinedInput, styled } from "@mui/material";
 import { useRouter } from "next/router";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
+import { Employee } from "@prisma/client";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -114,7 +118,7 @@ function createData1(
   };
 }
 
-const rows1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) =>
+const employees = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) =>
   createData1(
     "1",
     "Dilip",
@@ -174,11 +178,13 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number
+function stableSort<Employee>(
+  array: readonly Employee[],
+  comparator: (a: Employee, b: Employee) => number
 ) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
+  const stabilizedThis = array.map(
+    (el, index) => [el, index] as [Employee, number]
+  );
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) {
@@ -212,8 +218,8 @@ const createHeadCells = (
 
 const headCells1 = [
   createHeadCells("contractorname", "Contractor Name", false, false),
-  createHeadCells("contractorid", "Contractor ID", true, true),
-  createHeadCells("employeeid", "Employee ID", true, false),
+  createHeadCells("contractorid", "Contractor ID", false, true),
+  createHeadCells("employeeid", "Employee ID", false, false),
   createHeadCells("employeename", "Employee Name", false, false),
   createHeadCells("designation", "Designation", false, false),
   createHeadCells("department", "Department", false, false),
@@ -281,7 +287,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         {headCells1.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
+            align={"center"}
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -306,10 +312,12 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
+  filtername: string;
+  setFilterName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
+  const { numSelected, filtername, setFilterName } = props;
 
   return (
     <Toolbar
@@ -338,9 +346,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Typography>
       ) : (
         <StyledSearch
-          // value={filterName}
-          // onChange={onFilterName}
-          placeholder="Search Contractor..."
+          value={filtername}
+          onChange={(e) => setFilterName(e.target.value)}
+          placeholder="Search Employee..."
           startAdornment={
             <InputAdornment position="start">
               <Search />
@@ -365,14 +373,16 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function TimeKeeper() {
+export default function Employees({ employees }: { employees: Employee[] }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof Data1>("contractorid");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [filterName, setFilterName] = React.useState("");
   const router = useRouter();
+  console.log(employees);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -385,7 +395,7 @@ export default function TimeKeeper() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows1.map((n) => n.contractorname);
+      const newSelected = employees.map((n) => n.contractorname);
       setSelected(newSelected);
       return;
     }
@@ -440,7 +450,11 @@ export default function TimeKeeper() {
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar
+          numSelected={selected.length}
+          filtername={filterName}
+          setFilterName={setFilterName}
+        />
         <TableContainer
           sx={{
             scrollBehavior: "smooth",
@@ -467,22 +481,29 @@ export default function TimeKeeper() {
               rowCount={rows.length}
             />
             <TableBody>
-              {stableSort(rows1, getComparator(order, orderBy))
+              {employees
+                .filter((employee) =>
+                  employee.employeename
+                    .toLowerCase()
+                    .includes(filterName.toLowerCase())
+                )
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.contractorname);
+                  const isItemSelected = isSelected(
+                    row.contractorname as string
+                  );
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
                       onClick={(event) =>
-                        handleClick(event, row.contractorname)
+                        handleClick(event, row.contractorname as string)
                       }
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.contractorname}
+                      key={row.id}
                       selected={isItemSelected}
                       sx={{ cursor: "pointer" }}
                     >
@@ -503,8 +524,8 @@ export default function TimeKeeper() {
                       >
                         {row.contractorname}
                       </TableCell>
-                      <TableCell align="center">{row.contractorid}</TableCell>
-                      <TableCell align="center">{row.employeeid}</TableCell>
+                      <TableCell align="center">{row.contractorId}</TableCell>
+                      <TableCell align="center">{row.id}</TableCell>
                       <TableCell align="center">{row.employeename}</TableCell>
                       <TableCell align="center">{row.designation}</TableCell>
                       <TableCell align="center">{row.department}</TableCell>
@@ -513,20 +534,18 @@ export default function TimeKeeper() {
 
                       <TableCell align="center">{row.emailid}</TableCell>
                       <TableCell align="center">
-                        {row.basicsalaryinduration}
+                        {row.basicsalary_in_duration}
                       </TableCell>
                       <TableCell align="center">{row.basicsalary}</TableCell>
                       <TableCell align="center">
-                        {row.allowedWorkinghoursperday}
+                        {row.allowed_wrking_hr_per_day}
                       </TableCell>
                       <TableCell align="center">{row.servicecharge}</TableCell>
                       <TableCell align="center">{row.gst}</TableCell>
                       <TableCell align="center">{row.tds}</TableCell>
                       <TableCell size="small" align="center">
                         <IconButton
-                          onClick={() =>
-                            router.push(`/employees/${row.employeeid}`)
-                          }
+                          onClick={() => router.push(`/employees/${row.id}`)}
                           sx={{ m: 0 }}
                         >
                           <Edit fontSize="small" />
@@ -560,3 +579,36 @@ export default function TimeKeeper() {
     </Box>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession({ req: context.req });
+
+  const employees = await prisma.employee.findMany();
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+  const user = await prisma.user.findUnique({
+    where: {
+      email: session?.user?.email as string,
+    },
+  });
+
+  if (user?.role === "Admin") {
+    return {
+      redirect: {
+        destination: "/admin",
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      employees,
+    },
+  };
+};
