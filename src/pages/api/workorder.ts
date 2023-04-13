@@ -18,9 +18,9 @@ export default async function workorder (req: NextApiRequest, res: NextApiRespon
             contractorId: contractor?.id,
             contractorName: contractor?.contractorname,
             ...rest,
-            amendmentDocument: rest.amendmentDocument.newFilename,
-            addendumDocument: rest.addendumDocument.newFilename,
-            uploadDocument: rest.uploadDocument.newFilename,
+            amendmentDocument: rest.amendmentDocument?.newFilename || null,
+            addendumDocument: rest.addendumDocument?.newFilename || null,
+            uploadDocument: rest.uploadDocument?.newFilename || null,
         }
         const workorder = await prisma.workorder.create({
             data: body

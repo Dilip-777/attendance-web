@@ -22,12 +22,19 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import { Edit, Search } from "@mui/icons-material";
-import { Grid, InputAdornment, OutlinedInput, styled } from "@mui/material";
+import {
+  Button,
+  Grid,
+  InputAdornment,
+  OutlinedInput,
+  Stack,
+  styled,
+} from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Employee, TimeKeeper, Workorder } from "@prisma/client";
+import { Employee, TimeKeeper, Workorder, payoutTracker } from "@prisma/client";
 import getTotalAmountAndRows from "@/utils/get8hr";
 import getCCM from "@/utils/getccm";
 import getLRF from "@/utils/getlrf";
@@ -35,6 +42,7 @@ import getColony from "@/utils/getColony";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import axios from "axios";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -125,41 +133,26 @@ function createData1(
   };
 }
 
-const workorder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) =>
-  createData1(
-    "1",
-    "Dilip",
-    `${10 + i}`,
-    `Employee${i}`,
-    "designation",
-    "department",
-    "MALE",
-    978898799 + i,
-    `email${i}@gmail.com`,
-    "30",
-    "10000",
-    10 + i,
-    10 + i,
-    "allowedWorkinghoursperday",
-    "servicecharge"
-  )
+const payouttracker = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
+  (i) =>
+    createData1(
+      "1",
+      "Dilip",
+      `${10 + i}`,
+      `Employee${i}`,
+      "designation",
+      "department",
+      "MALE",
+      978898799 + i,
+      `email${i}@gmail.com`,
+      "30",
+      "10000",
+      10 + i,
+      10 + i,
+      "allowedWorkinghoursperday",
+      "servicecharge"
+    )
 );
-
-const rows = [
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Donut", 452, 25.0, 51, 4.9),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-  createData("Honeycomb", 408, 3.2, 87, 6.5),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Jelly Bean", 375, 0.0, 94, 0.0),
-  createData("KitKat", 518, 26.0, 65, 7.0),
-  createData("Lollipop", 392, 0.2, 98, 0.0),
-  createData("Marshmallow", 318, 0, 81, 2.0),
-  createData("Nougat", 360, 19.0, 9, 37.0),
-  createData("Oreo", 437, 18.0, 63, 4.0),
-];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -363,13 +356,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 
 export default function Employees({
-  timekeeper,
-  workorder,
-  employees,
+  payouttracker,
 }: {
-  timekeeper: TimeKeeper[];
-  workorder: Workorder[];
-  employees: Employee[];
+  payouttracker: payoutTracker[];
 }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof Data1>("contractorid");
@@ -390,44 +379,23 @@ export default function Employees({
     setOrderBy(property);
   };
 
-  const getTotalAmount = (contractorId: string) => {
-    const filterd = employees
-      .filter((employee) => employee.contractorId === contractorId)
-      .map((employee) => employee.id);
-    const filterdTimeKeeper = timekeeper.filter((timekeeper) =>
-      filterd.includes(timekeeper.employeeid)
-    );
-    const total8hr = getTotalAmountAndRows(
-      filterdTimeKeeper.filter((filter) => filter.department === "8HR"),
-      (value?.month() || 0) + 1,
-      value?.year() || 2022
-    ).total1;
-    const total20HR = getTotalAmountAndRows(
-      filterdTimeKeeper.filter((filter) => filter.department === "20HR"),
-      (value?.month() || 0) + 1,
-      value?.year() || 2022
-    ).total1;
-    const totalccm = getCCM(
-      filterdTimeKeeper.filter((filter) => filter.department === "CCM"),
-      (value?.month() || 0) + 1,
-      value?.year() || 2022
-    ).total1;
-    const totallrf = getLRF(
-      filterdTimeKeeper.filter((filter) => filter.department === "LRF"),
-      (value?.month() || 0) + 1,
-      value?.year() || 2022
-    ).total1;
-    const totalcolony = getColony(
-      filterdTimeKeeper.filter((filter) => filter.department === "Colony"),
-      (value?.month() || 0) + 1,
-      value?.year() || 2022
-    ).total1;
-    return total8hr + total20HR + totalccm + totallrf + totalcolony;
+  const handleUpload = async (doc: any) => {
+    await axios.put("/api/payouttracker", {
+      id: doc.id,
+      uploadreceipt: doc.data.file.newFilename,
+    });
+    // console.log(doc, doc.file.newFilename);
   };
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = workorder.map((n) => n.contractorName);
+      const newSelected = payouttracker
+        .filter((employee) =>
+          employee.contractorName
+            .toLowerCase()
+            .includes(filterName.toLowerCase())
+        )
+        .map((n) => n.contractorName);
       setSelected(newSelected);
       return;
     }
@@ -475,9 +443,19 @@ export default function Employees({
   const isSelected = (contractorName: string) =>
     selected.indexOf(contractorName) !== -1;
 
-  // Avoid a layout jump when reaching the last page with empty rows.
+  // Avoid a layout jump when reaching the last page with empty payouttracker.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0
+      ? Math.max(
+          0,
+          (1 + page) * rowsPerPage -
+            payouttracker.filter((employee) =>
+              employee.contractorName
+                .toLowerCase()
+                .includes(filterName.toLowerCase())
+            ).length
+        )
+      : 0;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -524,10 +502,16 @@ export default function Employees({
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={
+                payouttracker.filter((employee) =>
+                  employee.contractorName
+                    .toLowerCase()
+                    .includes(filterName.toLowerCase())
+                ).length
+              }
             />
             <TableBody>
-              {workorder
+              {payouttracker
                 .filter((employee) =>
                   employee.contractorName
                     .toLowerCase()
@@ -571,22 +555,21 @@ export default function Employees({
                         {row.contractorName}
                       </TableCell>
                       <TableCell align="center">{row.id}</TableCell>
-                      <TableCell align="center">
-                        {getTotalAmount(row.contractorId)}
-                      </TableCell>
+                      <TableCell align="center">{row.amount}</TableCell>
                       <TableCell align="center">9</TableCell>
                       <TableCell align="center">9</TableCell>
                       <TableCell align="center">
-                        {getTotalAmount(row.contractorId) * 0.9}
+                        {row.finalpayableamount}
                       </TableCell>
-                      <TableCell align="center">-</TableCell>
-                      <TableCell size="small" align="center">
-                        <IconButton
-                          onClick={() => router.push(`/workorder/${row.id}`)}
-                          sx={{ m: 0 }}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
+                      <TableCell align="center">
+                        {row.uploadreceipt ? (
+                          "View Receipt"
+                        ) : (
+                          <UploadButtons
+                            id={row.id}
+                            handleUpload={handleUpload}
+                          />
+                        )}
                       </TableCell>
                     </TableRow>
                   );
@@ -606,13 +589,57 @@ export default function Employees({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={
+            payouttracker.filter((employee) =>
+              employee.contractorName
+                .toLowerCase()
+                .includes(filterName.toLowerCase())
+            ).length
+          }
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+    </Box>
+  );
+}
+
+function UploadButtons({
+  handleUpload,
+  id,
+}: {
+  handleUpload: (doc: any) => void;
+  id: string;
+}) {
+  const [value, setValue] = React.useState<any>();
+  const [url, setUrl] = React.useState<string>("");
+  const router = useRouter();
+  const handleChange = async (e: any) => {
+    const file1 = e.target.files[0];
+    try {
+      const formData = new FormData();
+      formData.append("myFile", file1);
+      setValue(file1);
+      const { data } = await axios.post("/api/upload", formData);
+      setUrl(`/uploadedFiles/${data.file.newFilename}`);
+      handleUpload({ id, data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <Box onClick={() => value && router.push(url)}>
+      {value ? (
+        "View Receipt"
+      ) : (
+        <Button fullWidth component="label">
+          Upload
+          <input onChange={handleChange} hidden type="file" />
+        </Button>
+      )}
     </Box>
   );
 }
@@ -651,15 +678,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const workorder = await prisma.workorder.findMany({});
-
-  const employees = await prisma.employee.findMany();
+  const payouttracker = await prisma.payoutTracker.findMany();
 
   return {
     props: {
-      timekeeper,
-      workorder,
-      employees,
+      payouttracker,
     },
   };
 };

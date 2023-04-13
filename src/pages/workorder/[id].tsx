@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Divider,
   FormControl,
   FormLabel,
@@ -26,7 +27,7 @@ import axios from "axios";
 import FormDate from "@/components/FormikComponents/FormDate";
 import FileUpload from "@/components/FormikComponents/FileUpload";
 
-const fileType = Yup.object().required("Required");
+const fileType = Yup.object().required("Required").optional();
 
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().required("Required"),
@@ -51,6 +52,7 @@ export default function AddWordOrder({
   employee: Employee;
 }) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const initialValues = {
     contractorId: "",
@@ -94,16 +96,18 @@ export default function AddWordOrder({
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
-            axios
+          onSubmit={async (values) => {
+            setLoading(true);
+            await axios
               .post("/api/workorder", values)
               .then((res) => {
                 console.log(res);
-                router.push("/workOrder");
+                router.push("/workorder");
               })
               .catch((err) => {
                 console.log(err);
               });
+            setLoading(false);
           }}
         >
           {({ handleSubmit, values, errors }) => {
@@ -231,8 +235,15 @@ export default function AddWordOrder({
                   type="submit"
                   variant="contained"
                   sx={{ float: "right", mr: 10 }}
+                  disabled={loading}
                 >
                   Submit
+                  {loading && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: "#364152" }}
+                    />
+                  )}
                 </Button>
               </form>
             );

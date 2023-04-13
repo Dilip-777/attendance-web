@@ -300,9 +300,9 @@ const getCount = (
     const rows: Data[] = [];
 
     for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
-      const date = `${i.toString().padStart(2, "0")}-${month
+      const date = `${i.toString().padStart(2, "0")}/${month
         .toString()
-        .padStart(2, "0")}-${year}`;
+        .padStart(2, "0")}/${year}`;
       rows.push(getData(date));
     }
 

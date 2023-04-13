@@ -1,10 +1,10 @@
 
 // assets
-import { Key } from '@mui/icons-material';
+import {  Construction,  AssignmentInd, Person, Assignment, Storefront, Description, MonetizationOn } from '@mui/icons-material';
 
 // constant
 const icons = {
-    Key
+     Construction, AssignmentInd, Person, Assignment, Storefront,Description, MonetizationOn
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -19,7 +19,7 @@ const corporator = {
             id: 'contractors',
             title: 'Contractors',
             type: 'collapse',
-            icon: icons.Key,
+            icon: icons.AssignmentInd,
 
             children: [
                 {
@@ -42,7 +42,7 @@ const corporator = {
             id: 'employees',
             title: 'Employees',
             type: 'collapse',
-            icon: icons.Key,
+            icon: icons.Person,
 
             children: [
                {
@@ -65,7 +65,7 @@ const corporator = {
             id: 'workorder',
             title: 'Work Order',
             type: 'collapse',
-            icon: icons.Key,
+            icon: icons.Assignment,
 
             children: [
                 {
@@ -85,11 +85,27 @@ const corporator = {
             ]
         },
          {
+            id: '/hoauditor',
+            title: 'HO Commercial',
+            type: 'item',
+            url: '/hoauditor',
+            icon: icons.Storefront,
+            breadcrumbs: false
+        },
+         {
+            id: '/finalsheet',
+            title: 'Final Sheet',
+            type: 'item',
+            url: '/finalsheet',
+            icon: icons.Description,
+            breadcrumbs: false
+        },
+         {
             id: '/payouttracker',
             title: 'Payout Tracker',
             type: 'item',
             url: '/payouttracker',
-            icon: icons.Key,
+            icon: icons.MonetizationOn,
             breadcrumbs: false
         },
     ]

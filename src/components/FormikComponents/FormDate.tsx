@@ -12,9 +12,9 @@ import {
   TextField,
 } from "@mui/material";
 import { useField, useFormikContext } from "formik";
-import { DatePicker, DatePickerProps } from "@mui/x-date-pickers";
+import { DatePicker, type DatePickerProps } from "@mui/x-date-pickers";
 
-interface Props {
+interface Props extends DatePickerProps<any> {
   name: string;
   label: string;
   placeHolder: string;
@@ -61,6 +61,7 @@ const FormDate: React.FC<Props> = ({
 
             setFieldValue(name, formattedDate);
           }}
+          {...props}
         />
       </LocalizationProvider>
       {isError && (

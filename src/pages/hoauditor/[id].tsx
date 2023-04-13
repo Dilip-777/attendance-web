@@ -135,15 +135,14 @@ export default function HoAuditorForm({
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
-            console.log(values);
-            axios
+          onSubmit={async (values) => {
+            await axios
               .post("/api/hoauditor", {
                 ...values,
                 contractorId: contractor?.id,
               })
               .then((res) => {
-                console.log(res);
+                router.push("/hoauditor");
               })
               .catch((err) => {
                 console.log(err);
@@ -193,11 +192,14 @@ export default function HoAuditorForm({
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
-                      <FormInput
+                      <FormDate
                         name="monthOfInvoice"
                         label="Month Of Invoice*"
                         placeHolder="Month Of Invoice"
                         disabled={false}
+                        // views={["month", "year"]}
+                        views={["year", "month"]}
+                        format="MM/YYYY"
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>

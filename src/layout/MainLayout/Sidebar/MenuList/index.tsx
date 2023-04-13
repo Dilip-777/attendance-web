@@ -9,6 +9,7 @@ import {
   timekeeperItems,
   hritems,
   corporatorItems,
+  hoitems,
 } from "@/components/menu-items";
 import { use, useEffect, useState } from "react";
 import { User } from "@prisma/client";
@@ -38,7 +39,7 @@ const MenuList = () => {
       session?.user?.role === "PlantCommercial" ||
       session?.user?.role === "HoCommercialAuditor"
     ) {
-      items = hritems.items;
+      items = hoitems.items;
     } else if (session?.user?.role === "Corporate") {
       items = corporatorItems.items;
     } else {

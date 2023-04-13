@@ -308,16 +308,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const employees = await prisma.employee.findMany({
+  const contractor = await prisma.contractor.findUnique({
     where: {
-      contractorId: id as string,
+      id: id as string,
     },
   });
   const timekeeper = await prisma.timeKeeper.findMany({
     where: {
-      employeeid: {
-        in: employees.map((employee) => employee.id),
-      },
+      contractorname: contractor?.contractorname,
       attendance: "1",
       department: "Colony",
       NOT: {

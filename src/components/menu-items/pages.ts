@@ -1,9 +1,9 @@
 // assets
-import { Key } from '@mui/icons-material';
+import {  AssignmentInd, Person } from '@mui/icons-material';
 
 // constant
 const icons = {
-    Key
+      AssignmentInd, Person
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -18,7 +18,7 @@ const pages = {
             id: 'contractors',
             title: 'Contractors',
             type: 'collapse',
-            icon: icons.Key,
+            icon: icons.AssignmentInd,
 
             children: [
                 {
@@ -41,7 +41,7 @@ const pages = {
             id: 'employees',
             title: 'Employees',
             type: 'collapse',
-            icon: icons.Key,
+            icon: icons.Person,
 
             children: [
                {

@@ -122,10 +122,12 @@ const createHeadCells = (
 
 const headCells1 = [
   createHeadCells("employeeid", "Employee ID", false, false),
+  createHeadCells("employeename", "Employee Name", false, false),
   createHeadCells("machineintime", "Machine In Time", false, false),
   createHeadCells("machineouttime", "Machine Out Time", false, false),
   createHeadCells("machineshift", "Machine Shift", false, false),
   createHeadCells("attendance", "Attendance", true, false),
+  createHeadCells("attendancedance", "Attendance Date", true, false),
   createHeadCells("machineovertime", "Machine Over Time", true, false),
   createHeadCells("machineleave", "Machine Leave", true, false),
   createHeadCells("manualintime", "Manual In Time", false, false),
@@ -139,6 +141,7 @@ const headCells1 = [
     false,
     false
   ),
+  createHeadCells("designation", "Designation", false, false),
   createHeadCells("gender", "Gender", false, false),
   createHeadCells("comment", "Comment", false, false),
   createHeadCells("uploaddocument", "Upload Document", false, false),
@@ -212,13 +215,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
-  contractorid: string;
-  setContractorid: React.Dispatch<React.SetStateAction<string>>;
+  contractorName: string;
+  setContractorName: React.Dispatch<React.SetStateAction<string>>;
   contractors: { value: string; label: string }[];
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, contractorid, setContractorid, contractors } = props;
+  const { numSelected, contractorName, setContractorName, contractors } = props;
 
   return (
     <Toolbar
@@ -252,8 +255,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               { value: "all", label: "All Contractors" },
               ...contractors,
             ]}
-            value={contractorid}
-            setValue={setContractorid}
+            value={contractorName}
+            setValue={setContractorName}
           />
         </Box>
       )}
@@ -294,7 +297,7 @@ export default function TimeKeeperTable({
   const [open1, setOpen1] = React.useState(false);
   const [selected1, setSelected1] = React.useState<Comment[] | Upload[]>();
   const matches = useMediaQuery("(min-width:600px)");
-  const [contractorid, setContractorid] = React.useState("all");
+  const [contractorName, setContractorName] = React.useState("all");
 
   const handleClose = () => {
     setOpen(false);
@@ -321,7 +324,9 @@ export default function TimeKeeperTable({
   const fetchTimeKeeper = async () => {
     setLoading(true);
     const employeesid = employees
-      .filter((e) => contractorid === "all" || e.contractorId === contractorid)
+      .filter(
+        (e) => contractorName === "all" || e.contractorId === contractorName
+      )
       .map((e) => e.id);
 
     await axios
@@ -339,7 +344,7 @@ export default function TimeKeeperTable({
 
   React.useEffect(() => {
     fetchTimeKeeper();
-  }, [contractorid]);
+  }, [contractorName]);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -352,7 +357,11 @@ export default function TimeKeeperTable({
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = timekeeper.map((n) => n.employeeid);
+      const newSelected = timekeeper
+        .filter(
+          (t) => t.contractorname === contractorName || contractorName === "all"
+        )
+        .map((n) => n.employeeid);
       setSelected(newSelected);
       return;
     }
@@ -402,7 +411,16 @@ export default function TimeKeeperTable({
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - timekeeper.length) : 0;
+    page > 0
+      ? Math.max(
+          0,
+          (1 + page) * rowsPerPage -
+            timekeeper.filter(
+              (t) =>
+                t.contractorname === contractorName || contractorName === "all"
+            ).length
+        )
+      : 0;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -420,10 +438,10 @@ export default function TimeKeeperTable({
         <Paper sx={{ width: "100%", mb: 2 }}>
           <EnhancedTableToolbar
             numSelected={selected.length}
-            contractorid={contractorid}
-            setContractorid={setContractorid}
+            contractorName={contractorName}
+            setContractorName={setContractorName}
             contractors={contractors.map((c) => ({
-              value: c.id,
+              value: c.contractorname,
               label: c.contractorname,
             }))}
           />
@@ -451,11 +469,24 @@ export default function TimeKeeperTable({
                 orderBy={orderBy}
                 onSelectAllClick={handleSelectAllClick}
                 onRequestSort={handleRequestSort}
-                rowCount={timekeeper.length}
+                rowCount={
+                  timekeeper.filter(
+                    (t) =>
+                      t.contractorname === contractorName ||
+                      contractorName === "all"
+                  ).length
+                }
               />
 
               <TableBody>
-                {stableSort(timekeeper as any, getComparator(order, orderBy))
+                {stableSort(
+                  timekeeper.filter(
+                    (t) =>
+                      t.contractorname === contractorName ||
+                      contractorName === "all"
+                  ) as any,
+                  getComparator(order, orderBy)
+                )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const isItemSelected = isSelected(row.employeeid as string);
@@ -485,6 +516,7 @@ export default function TimeKeeperTable({
                         </TableCell>
 
                         <TableCell align="center">{row.employeeid}</TableCell>
+                        <TableCell align="center">{row.employeename}</TableCell>
                         <TableCell align="center">
                           {row.machineInTime}
                         </TableCell>
@@ -496,6 +528,9 @@ export default function TimeKeeperTable({
                         </TableCell>
                         <TableCell align="center">
                           {row.attendance || "-"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row.attendancedate || "-"}
                         </TableCell>
                         <TableCell align="center">
                           {row.overtime || "-"}
@@ -520,6 +555,9 @@ export default function TimeKeeperTable({
                         </TableCell>
                         <TableCell align="center">
                           {row.department || "-"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row.designation || "-"}
                         </TableCell>
                         <TableCell align="center">
                           {row.gender || "-"}
@@ -547,8 +585,14 @@ export default function TimeKeeperTable({
                       </TableRow>
                     );
                   })}
-                {stableSort(timekeeper as any, getComparator(order, orderBy))
-                  .length === 0 && (
+                {stableSort(
+                  timekeeper.filter(
+                    (t) =>
+                      t.contractorname === contractorName ||
+                      contractorName === "all"
+                  ) as any,
+                  getComparator(order, orderBy)
+                ).length === 0 && (
                   <TableRow
                     style={{
                       height: 50,
@@ -563,7 +607,13 @@ export default function TimeKeeperTable({
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={timekeeper.length}
+            count={
+              timekeeper.filter(
+                (t) =>
+                  t.contractorname === contractorName ||
+                  contractorName === "all"
+              ).length
+            }
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

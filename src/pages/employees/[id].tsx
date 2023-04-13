@@ -105,7 +105,7 @@ const validationSchema = Yup.object().shape({
   department: Yup.string().required("Required"),
   gender: Yup.string().required("Required"),
   phone: numberType,
-  emailid: Yup.string().required("Required"),
+  emailid: Yup.string().required("Required").optional(),
   basicsalary_in_duration: Yup.string().required("Required"),
   basicsalary: numberType,
   allowed_wrking_hr_per_day: numberType,

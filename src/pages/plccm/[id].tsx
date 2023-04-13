@@ -290,6 +290,8 @@ export default function PlantCommercialCCM({
   timekeeper: TimeKeeper[];
   result: any;
 }) {
+  console.log("result", result, timekeeper);
+
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [month, setMonth] = React.useState<number>(new Date().getMonth() + 1);
@@ -304,18 +306,20 @@ export default function PlantCommercialCCM({
 
   const getData = (date: string): Data => {
     const filtered = timekeeper.filter((item) => item.attendancedate === date);
-    const ele = getCount(filtered, "8MW");
-    const lco = getCount(filtered, "8MW");
-    const tman = getCount(filtered, "20MW");
-    const filter = getCount(filtered, "20WM");
-    const po = getCount(filtered, "DM Plant");
-    const bco = getCount(filtered, "QC");
-    const srfilter = getCount(filtered, "STORE");
-    const incharge = getCount(filtered, "K-7 & 1-6PROC");
-    const mo = getCount(filtered, "K-7 & 1-6PROC");
-    const shiftinch = getCount(filtered, "RHMS");
-    const gc = getCount(filtered, "PS");
-    const tmesson = getCount(filtered, "HK & Garden");
+    console.log("filtered", filtered);
+
+    const ele = getCount(filtered, "ELE");
+    const lco = getCount(filtered, "LCO");
+    const tman = getCount(filtered, "TMAN");
+    const filter = getCount(filtered, "FILTER");
+    const po = getCount(filtered, "PO");
+    const bco = getCount(filtered, "BCO");
+    const srfilter = getCount(filtered, "SRFILTER");
+    const incharge = getCount(filtered, "INCHARGE");
+    const mo = getCount(filtered, "MO");
+    const shiftinch = getCount(filtered, "SHIFTINCH");
+    const gc = getCount(filtered, "GC");
+    const tmesson = getCount(filtered, "TMESSON");
     const svr = getCount(filtered, "SVR");
     const sbo = getCount(filtered, "SBO");
     const lmes = getCount(filtered, "LMES");
@@ -609,9 +613,9 @@ export default function PlantCommercialCCM({
     const rows: Data[] = [];
 
     for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
-      const date = `${i.toString().padStart(2, "0")}-${month
+      const date = `${i.toString().padStart(2, "0")}/${month
         .toString()
-        .padStart(2, "0")}-${year}`;
+        .padStart(2, "0")}/${year}`;
       rows.push(getData(date));
     }
 
@@ -883,16 +887,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     result[designation] = count;
   });
 
-  const employees = await prisma.employee.findMany({
+  const contractor = await prisma.contractor.findUnique({
     where: {
-      contractorId: id as string,
+      id: id as string,
     },
   });
   const timekeeper = await prisma.timeKeeper.findMany({
     where: {
-      employeeid: {
-        in: employees.map((employee) => employee.id),
-      },
+      contractorname: contractor?.contractorname,
       attendance: "1",
       department: "CCM",
       NOT: {

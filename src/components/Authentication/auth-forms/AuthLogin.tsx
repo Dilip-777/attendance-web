@@ -104,7 +104,8 @@ const FirebaseLogin = ({ ...others }) => {
             }
           });
 
-          // setLoading(false);
+          setLoading(false);
+          setSubmitting(false);
         }}
       >
         {({
