@@ -361,7 +361,7 @@ export default function TimeKeeperTable({
         .filter(
           (t) => t.contractorname === contractorName || contractorName === "all"
         )
-        .map((n) => n.employeeid);
+        .map((n) => n.employeeid.toString());
       setSelected(newSelected);
       return;
     }
