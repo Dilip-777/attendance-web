@@ -68,7 +68,9 @@ const FormSelect: React.FC<Props> = ({
   const { onChange, ...fieldWithoutOnChange } = field;
   return (
     <FormControl error={isError} disabled={disabled} sx={{ my: 2 }}>
-      <FormLabel sx={{ color: "rgb(54, 65, 82)" }}>{label}</FormLabel>
+      <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
+        {label}
+      </FormLabel>
       <Select
         labelId="demo-customized-select-label"
         id="demo-customized-select"

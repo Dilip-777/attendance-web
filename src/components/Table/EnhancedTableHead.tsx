@@ -33,7 +33,12 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
           />
         </TableCell>
         {headCells.map((headCell) => (
-          <TableCell key={headCell.id} align={"center"} padding={"normal"}>
+          <TableCell
+            key={headCell.id}
+            align={"center"}
+            padding={"normal"}
+            sx={{ fontWeight: "700" }}
+          >
             {headCell.label}
           </TableCell>
         ))}

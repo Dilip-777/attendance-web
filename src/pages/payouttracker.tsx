@@ -272,6 +272,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             align={"center"}
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
+            sx={{ fontWeight: "700" }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -527,9 +528,6 @@ export default function Employees({
                   return (
                     <TableRow
                       hover
-                      onClick={(event) =>
-                        handleClick(event, row.contractorName as string)
-                      }
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -539,6 +537,9 @@ export default function Employees({
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
+                          onClick={(event) =>
+                            handleClick(event, row.contractorName as string)
+                          }
                           color="primary"
                           checked={isItemSelected}
                           inputProps={{
@@ -563,7 +564,15 @@ export default function Employees({
                       </TableCell>
                       <TableCell align="center">
                         {row.uploadreceipt ? (
-                          "View Receipt"
+                          <Typography
+                            onClick={() => {
+                              router.push(
+                                `/uploadedFiles/${row.uploadreceipt}`
+                              );
+                            }}
+                          >
+                            View Receipt
+                          </Typography>
                         ) : (
                           <UploadButtons
                             id={row.id}

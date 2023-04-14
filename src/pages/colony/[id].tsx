@@ -258,12 +258,12 @@ export default function PlantCommercial({
             <TableRow>
               <TableCell colSpan={1}></TableCell>
               <TableCell colSpan={1}>SGST 9%</TableCell>
-              <TableCell align="center">{total * 0.9}</TableCell>
+              <TableCell align="center">{total * 1.09}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={1}></TableCell>
               <TableCell colSpan={1}>CGST 9%</TableCell>
-              <TableCell align="center">{total * 0.9}</TableCell>
+              <TableCell align="center">{total * 1.09}</TableCell>
             </TableRow>
           </TableBody>
         </Table>

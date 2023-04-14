@@ -815,12 +815,12 @@ export default function PlantCommercialCCM({
             <TableRow>
               <TableCell colSpan={16}></TableCell>
               <TableCell colSpan={3}>SGST 9%</TableCell>
-              <TableCell align="center">{total * 0.9}</TableCell>
+              <TableCell align="center">{total * 1.09}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={16}></TableCell>
               <TableCell colSpan={3}>CGST 9%</TableCell>
-              <TableCell align="center">{total * 0.9}</TableCell>
+              <TableCell align="center">{total * 1.09}</TableCell>
             </TableRow>
           </TableBody>
         </Table>

@@ -128,7 +128,7 @@ export default function HoAuditorForm({
       >
         <Box sx={{ height: "3rem", display: "flex", alignItems: "center" }}>
           <Typography variant="h4" ml={5} my="auto">
-            Add Contractor
+            HO Commercial Form
           </Typography>
         </Box>
         <Divider />

@@ -33,12 +33,12 @@ const MenuList = () => {
       session?.user?.role === "None"
     ) {
       items = timekeeperItems.items;
-    } else if (session?.user?.role === "HR") {
-      items = hritems.items;
     } else if (
       session?.user?.role === "PlantCommercial" ||
-      session?.user?.role === "HoCommercialAuditor"
+      session?.user?.role === "HR"
     ) {
+      items = hritems.items;
+    } else if (session?.user?.role === "HoCommercialAuditor") {
       items = hoitems.items;
     } else if (session?.user?.role === "Corporate") {
       items = corporatorItems.items;

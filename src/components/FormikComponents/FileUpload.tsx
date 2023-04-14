@@ -83,7 +83,10 @@ const FileUpload: React.FC<Props> = ({
 
   return (
     <Box sx={{ position: "relative", m: 2 }}>
-      <FormLabel error={isError} sx={{ color: "rgb(54, 65, 82)" }}>
+      <FormLabel
+        error={isError}
+        sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}
+      >
         {label}
       </FormLabel>
       {field.value && (

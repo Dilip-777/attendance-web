@@ -265,6 +265,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             align={"center"}
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
+            sx={{ fontWeight: "700" }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -379,7 +380,7 @@ export default function Employees({
       month: `${(value?.month() || 0) + 1}/${value?.year()}}`,
       gst: 9,
       tds: 9,
-      finalpayableamount: Math.floor(row.amount * 0.81),
+      finalpayableamount: Math.floor(row.amount * 1.18),
     };
     const tracker = await axios.post("api/payouttracker", body);
     router.push("/payouttracker");

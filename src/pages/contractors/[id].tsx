@@ -15,6 +15,10 @@ import { Formik } from "formik";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import FileUpload from "@/components/FormikComponents/FileUpload";
 import axios from "axios";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
+import { Contractor } from "@prisma/client";
 // import { Contractor } from "@prisma/client"
 
 const fileType = Yup.object().required("Required").optional();
@@ -33,15 +37,15 @@ const validationSchema = Yup.object().shape({
   supplierdetail: Yup.string().required("Required"),
   businessdetaildocument: fileType,
   uploadutilitybill: fileType,
-  officeaddress: stringtype,
+  officeaddress: Yup.string().required("Required"),
   contactperson: Yup.string().required("Required"),
-  designation: stringtype,
+  designation: Yup.string().required("Required"),
   telephonenumber: numberType.nullable(),
   mobilenumber: numberType,
   emailid: stringtype,
   website: stringtype,
   // Organsiation Details
-  organisationtype: Yup.string().required("Required"),
+  organisationtype: stringtype,
   dateofincorporation: stringtype,
   associationwithcompetitor: stringtype,
   memorandam_of_associate: fileType,
@@ -94,70 +98,74 @@ const validationSchema = Yup.object().shape({
   upload_doc2: fileType,
 });
 
-export default function Edit() {
+export default function EditContractor({
+  contractor,
+}: {
+  contractor: Contractor;
+}) {
   const router = useRouter();
   // const [contractor, setContractor] = useState<Contractor || null>()
   const [value, setValue] = useState("");
   const { id } = router.query;
 
   const initialValues = {
-    contractorname: "",
-    servicedetail: "",
-    supplierdetail: "",
+    contractorname: contractor?.contractorname || "",
+    servicedetail: contractor?.servicedetail || "",
+    supplierdetail: contractor?.supplierdetail || "",
     businessdetaildocument: undefined,
     uploadutilitybill: undefined,
-    officeaddress: "",
-    contactperson: "",
-    designation: "",
-    telephonenumber: null,
-    mobilenumber: 0,
-    emailid: "",
-    website: "",
-    organisationtype: "",
-    dateofincorporation: "",
-    associationwithcompetitor: "",
+    officeaddress: contractor?.officeaddress || "",
+    contactperson: contractor?.contactperson || "",
+    designation: contractor?.designation || "",
+    telephonenumber: contractor?.telephonenumber || null,
+    mobilenumber: contractor?.mobilenumber || 0,
+    emailid: contractor?.emailid || "",
+    website: contractor?.website || "",
+    organisationtype: contractor?.organisationtype || "",
+    dateofincorporation: contractor?.dateofincorporation || "",
+    associationwithcompetitor: contractor?.associationwithcompetitor || "",
     memorandam_of_associate: undefined,
     listofdirector: undefined,
     profileofkeyperson: undefined,
-    competitorname: "",
-    isocertified: "",
-    turnoverlastyear: "",
-    turnover2yearback: "",
+    competitorname: contractor?.competitorname || "",
+    isocertified: contractor?.isocertified || "",
+    turnoverlastyear: contractor?.turnoverlastyear || "",
+    turnover2yearback: contractor?.turnover2yearback || "",
     uploadbranchdetail: undefined,
     uploadreturndetail: undefined,
-    uniquenumber: null,
-    registration_number: null,
-    first_registration_number: null,
-    latest_mnth_gst1_filed: "",
-    latest_mnth_gst2b_filed: "",
-    comply_regulatory: "",
+    uniquenumber: contractor?.uniquenumber || null,
+    registration_number: contractor?.registration_number || null,
+    first_registration_number: contractor?.first_registration_number || null,
+    latest_mnth_gst1_filed: contractor?.latest_mnth_gst1_filed || "",
+    latest_mnth_gst2b_filed: contractor?.latest_mnth_gst2b_filed || "",
+    comply_regulatory: contractor?.comply_regulatory || "",
     upload_registration_cert: undefined,
     upload_licence1: undefined,
     upload_licence2: undefined,
-    code_of_proprietor: "",
-    list_major_product: "",
-    qualty_control_procedure: "",
-    valueadd_product: "",
-    five_strength_points: "",
-    weakness: "",
-    selection_training_method: "",
-    delivery_procedure: "",
-    clientele: "",
-    reference_organistaion_1: "",
-    reference_contact_person_1: "",
-    reference_designation_1: "",
-    reference_contact_1: "",
-    period_of_service_1: "",
-    reference_organistaion_2: "",
-    reference_contact_person_2: "",
-    reference_designation_2: "",
-    reference_contact_2: "",
-    period_of_service_2: "",
-    reference_organistaion_3: "",
-    reference_contact_person_3: "",
-    reference_designation_3: "",
-    reference_contact_3: "",
-    period_of_service_3: "",
+    code_of_proprietor: contractor?.code_of_proprietor || "",
+    list_major_product: contractor?.list_major_product || "",
+    qualty_control_procedure: contractor?.qualty_control_procedure || "",
+    valueadd_product: contractor?.valueadd_product || "",
+    five_strength_points: contractor?.five_strength_points || "",
+    weakness: contractor?.weakness || "",
+    selection_training_method: contractor?.selection_training_method || "",
+    delivery_procedure: contractor?.delivery_procedure || "",
+    clientele: contractor?.clientele || "",
+    reference_organistaion_1: contractor?.reference_organistaion_1 || "",
+    reference_contact_person_1: contractor?.reference_contact_person_1 || "",
+    reference_designation_1: contractor?.reference_designation_1 || "",
+    reference_contact_1: contractor?.reference_contact_1 || "",
+    period_of_service_1: contractor?.period_of_service_1 || "",
+    reference_organistaion_2: contractor?.reference_organistaion_2 || "",
+    reference_contact_person_2: contractor?.reference_contact_person_2 || "",
+    reference_designation_2: contractor?.reference_designation_2 || "",
+    reference_contact_2: contractor?.reference_contact_2 || "",
+    period_of_service_2: contractor?.period_of_service_2 || "",
+    reference_organistaion_3: contractor?.reference_organistaion_3 || "",
+    reference_contact_person_3: contractor?.reference_contact_person_3 || "",
+    reference_designation_3: contractor?.reference_designation_3 || "",
+    reference_contact_3: contractor?.reference_contact_3 || "",
+    period_of_service_3: contractor?.period_of_service_3 || "",
     upload_list_ofclientele: undefined,
     upload_certificate_services: undefined,
     upload_doc1: undefined,
@@ -203,6 +211,28 @@ export default function Edit() {
               first_registration_number,
               ...otherValues
             } = values;
+            if (contractor) {
+              axios
+                .put("/api/hr/contractors", {
+                  id: id,
+                  ...otherValues,
+                  associationwithcompetitor:
+                    associationwithcompetitor === "Yes" ? true : false,
+                  isocertified: isocertified === "Yes" ? true : false,
+                  comply_regulatory: comply_regulatory === "Yes" ? true : false,
+                  telephonenumber: String(telephonenumber),
+                  mobilenumber: String(mobilenumber),
+                  uniquenumber: String(uniquenumber),
+                  registration_number: String(registration_number),
+                  first_registration_number: String(first_registration_number),
+                })
+                .then((res) => {
+                  router.push("/contractors");
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }
             axios
               .post("/api/hr/contractors", {
                 ...otherValues,
@@ -285,7 +315,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="telephonenumber"
-                        label="Telephone Number*"
+                        label="Telephone Number"
                         placeHolder="Enter Telephone Number"
                         disabled={false}
                         type="number"
@@ -303,7 +333,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="emailid"
-                        label="Email*"
+                        label="Email"
                         placeHolder="Enter Email"
                         disabled={false}
                       />
@@ -311,7 +341,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="website"
-                        label="Website*"
+                        label="Website"
                         placeHolder="Enter Website"
                         disabled={false}
                       />
@@ -340,7 +370,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormSelect
                         name="organisationtype"
-                        label="Organisation Type*"
+                        label="Organisation Type"
                         placeHolder="Select a Organisation Type"
                         options={[
                           {
@@ -367,7 +397,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="dateofincorporation"
-                        label="Date of Incorporation*"
+                        label="Date of Incorporation"
                         placeHolder="Date of Incorporation"
                         disabled={false}
                       />
@@ -375,7 +405,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormSelect
                         name="associationwithcompetitor"
-                        label="Are you an associative member of any organisation?*"
+                        label="Are you an associative member of any organisation?"
                         placeHolder="Association with Competitor"
                         disabled={false}
                         options={[
@@ -405,7 +435,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="competitorname"
-                        label="Competitor Name*"
+                        label="Competitor Name"
                         placeHolder="Enter Competitor Name"
                         disabled={false}
                       />
@@ -425,7 +455,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="turnoverlastyear"
-                        label="What is Turnover of Last Year*"
+                        label="What is Turnover of Last Year"
                         placeHolder="Turnover Last Year"
                         disabled={false}
                       />
@@ -453,7 +483,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="uniquenumber"
-                        label="Unique Number*"
+                        label="Unique Number"
                         placeHolder="Enter Unique Number"
                         disabled={false}
                       />
@@ -461,7 +491,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="registration_number"
-                        label="Registration Number*"
+                        label="Registration Number"
                         placeHolder="Enter your Registration Number"
                         disabled={false}
                         type="number"
@@ -470,7 +500,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="first_registration_number"
-                        label="Fist Registration Number*"
+                        label="Fist Registration Number"
                         placeHolder="Enter your Fist Registration Number"
                         disabled={false}
                         type="number"
@@ -520,7 +550,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="code_of_proprietor"
-                        label="Code No of Proprietor*"
+                        label="Code No of Proprietor"
                         placeHolder="Code no of Proprietor"
                         disabled={false}
                       />
@@ -536,7 +566,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="list_major_product"
-                        label="List Major Products*"
+                        label="List Major Products"
                         placeHolder="Enter the List of Major Product"
                         disabled={false}
                       />
@@ -552,7 +582,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="valueadd_product"
-                        label="What value add product can you provide?*"
+                        label="What value add product can you provide?"
                         placeHolder="Enter your value add product"
                         disabled={false}
                       />
@@ -560,7 +590,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="five_strength_points"
-                        label="What are your five strength points?*"
+                        label="What are your five strength points?"
                         placeHolder="Enter your five strength points"
                         disabled={false}
                       />
@@ -568,7 +598,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="weakness"
-                        label="What are your five weakness points?*"
+                        label="What are your five weakness points?"
                         placeHolder="Enter your five weakness points"
                         disabled={false}
                       />
@@ -576,7 +606,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="selection_training_method"
-                        label="What is your selection and training method?*"
+                        label="What is your selection and training method?"
                         placeHolder="Enter your selection and training method"
                         disabled={false}
                       />
@@ -584,7 +614,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="delivery_procedure"
-                        label="What is your delivery procedure?*"
+                        label="What is your delivery procedure?"
                         placeHolder="Enter your delivery procedure"
                         disabled={false}
                       />
@@ -592,7 +622,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="clientele"
-                        label="What is your clientele?*"
+                        label="What is your clientele?"
                         placeHolder="Enter your clientele"
                         disabled={false}
                       />
@@ -611,7 +641,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_organistaion_1"
-                        label="Reference Organisation*"
+                        label="Reference Organisation"
                         placeHolder="Enter your Reference Organisation"
                         disabled={false}
                       />
@@ -619,7 +649,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_contact_person_1"
-                        label="Reference Contact Person*"
+                        label="Reference Contact Person"
                         placeHolder="Enter your Reference Contact Person"
                         disabled={false}
                       />
@@ -627,7 +657,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_designation_1"
-                        label="Reference Designation*"
+                        label="Reference Designation"
                         placeHolder="Enter your Reference Designation"
                         disabled={false}
                       />
@@ -635,7 +665,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_contact_1"
-                        label="Reference Contact*"
+                        label="Reference Contact"
                         placeHolder="Enter your Reference Contact"
                         disabled={false}
                       />
@@ -643,7 +673,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="period_of_service_1"
-                        label="Period of Service*"
+                        label="Period of Service"
                         placeHolder="Enter your Period of Service"
                         disabled={false}
                       />
@@ -657,7 +687,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_organistaion_2"
-                        label="Reference Organisation*"
+                        label="Reference Organisation"
                         placeHolder="Enter your Reference Organisation"
                         disabled={false}
                       />
@@ -665,7 +695,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_contact_person_2"
-                        label="Reference Contact Person*"
+                        label="Reference Contact Person"
                         placeHolder="Enter your Reference Contact Person"
                         disabled={false}
                       />
@@ -673,7 +703,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_designation_2"
-                        label="Reference Designation*"
+                        label="Reference Designation"
                         placeHolder="Enter your Reference Designation"
                         disabled={false}
                       />
@@ -681,7 +711,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_contact_2"
-                        label="Reference Contact*"
+                        label="Reference Contact"
                         placeHolder="Enter your Reference Contact"
                         disabled={false}
                       />
@@ -689,7 +719,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="period_of_service_2"
-                        label="Period of Service*"
+                        label="Period of Service"
                         placeHolder="Enter your Period of Service"
                         disabled={false}
                       />
@@ -703,7 +733,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_organistaion_3"
-                        label="Reference Organisation*"
+                        label="Reference Organisation"
                         placeHolder="Enter your Reference Organisation"
                         disabled={false}
                       />
@@ -711,7 +741,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_contact_person_3"
-                        label="Reference Contact Person*"
+                        label="Reference Contact Person"
                         placeHolder="Enter your Reference Contact Person"
                         disabled={false}
                       />
@@ -719,7 +749,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_designation_3"
-                        label="Reference Designation*"
+                        label="Reference Designation"
                         placeHolder="Enter your Reference Designation"
                         disabled={false}
                       />
@@ -727,7 +757,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="reference_contact_3"
-                        label="Reference Contact*"
+                        label="Reference Contact"
                         placeHolder="Enter your Reference Contact"
                         disabled={false}
                       />
@@ -735,7 +765,7 @@ export default function Edit() {
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="period_of_service_3"
-                        label="Period of Service*"
+                        label="Period of Service"
                         placeHolder="Enter your Period of Service"
                         disabled={false}
                       />
@@ -775,3 +805,42 @@ export default function Edit() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession({ req: context.req });
+  const { id } = context.query;
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+  const user = await prisma.user.findUnique({
+    where: {
+      id: session?.user?.id as string,
+    },
+  });
+
+  const contractor = await prisma.contractor.findUnique({
+    where: {
+      id: id as string,
+    },
+  });
+
+  if (user?.role === "Admin") {
+    return {
+      redirect: {
+        destination: "/admin",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      contractor,
+    },
+  };
+};

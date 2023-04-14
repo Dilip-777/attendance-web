@@ -38,7 +38,9 @@ const FormDate: React.FC<Props> = ({
 
   return (
     <FormControl error={isError} disabled={disabled} sx={{ my: 2 }}>
-      <FormLabel sx={{ color: "rgb(54, 65, 82)" }}>{label}</FormLabel>
+      <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
+        {label}
+      </FormLabel>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           {...other}
