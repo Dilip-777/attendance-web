@@ -1,22 +1,14 @@
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  FormLabel,
-  Grid,
-  OutlinedInput,
-  Paper,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
 import { useRouter } from "next/router";
-import { shouldForwardProp } from "@mui/system";
-import { useEffect, useState } from "react";
+// import {  useState } from "react";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
-import { Formik, useFormik, useFormikContext } from "formik";
+import { Formik } from "formik";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
@@ -24,77 +16,56 @@ import prisma from "@/lib/prisma";
 import { Contractor, Employee } from "@prisma/client";
 import axios from "axios";
 
-const DesignationSelect = ({ department }: { department: string }) => {
-  const { values } = useFormikContext();
-  const [options, setOptions] = useState([
-    { value: "ELEC", label: "ELEC", department: "CCM LRF" },
-    { value: "LCO", label: "LCO", department: "CCM" },
-    { value: "TMAN", label: "TMAN", department: "CCM" },
-    { value: "FITTER", label: "FITTER", department: "CCM LRF" },
-    { value: "PO", label: "PO", department: "CCM" },
-    { value: "BCO", label: "BCO", department: "CCM" },
-    { value: "SRFILTER", label: "SRFILTER", department: "CCM LRF" },
-    { value: "INCHARGE", label: "INCHARGE", department: "CCM" },
-    { value: "MO", label: "MO", department: "CCM" },
-    { value: "SHIFTINCH", label: "SHIFTINCH", department: "CCM" },
-    { value: "GC", label: "GC", department: "CCM" },
-    { value: "SBO", label: "SBO", department: "CCM" },
-    { value: "LMAN", label: "LMAN", department: "CCM" },
-    { value: "FORMAN", label: "FORMAN", department: "CCM" },
-    { value: "TMESSON", label: "TMESSON", department: "CCM" },
-    { value: "LMES", label: "LMES", department: "CCM LRF" },
-    { value: "JRELE", label: "JRELE", department: "CCM" },
-    { value: "HELPER", label: "HELPER", department: "CCM LRF" },
-    { value: "8MW", label: "8MW", department: "8HR 12HR" },
-    { value: "12WM", label: "12WM", department: "8HR 12HR" },
-    { value: "DM Plant", label: "DM Plant", department: "8HR 12HR" },
-    { value: "QC", label: "QC", department: "8HR 12HR" },
-    { value: "STORE", label: "STORE", department: "8HR 12HR" },
-    { value: "K-7 & 1-6PROC", label: "K-7 & 1-6PROC", department: "8HR 12HR" },
-    { value: "RMHS", label: "RMHS", department: "8HR 12HR" },
-    { value: "PS", label: "PS", department: "8HR 12HR" },
-    { value: "HK & Garden", label: "HK & Garden", department: "8HR 12HR" },
-    { value: "SVR", label: "SVR", department: "8HR 12HR CCM LRF" },
-    { value: "Colony", label: "Colony", department: "colony" },
-  ]);
-  const optionchange = () => {
-    if (department === "CCM") {
-      setOptions((options) =>
-        options.filter((option) => option.department.includes(department))
-      );
-    }
-  };
+// const DesignationSelect = ({ department }: { department: string }) => {
+//   const { values } = useFormikContext();
+//   const [options, setOptions] = useState([
+//     { value: "ELEC", label: "ELEC", department: "CCM LRF" },
+//     { value: "LCO", label: "LCO", department: "CCM" },
+//     { value: "TMAN", label: "TMAN", department: "CCM" },
+//     { value: "FITTER", label: "FITTER", department: "CCM LRF" },
+//     { value: "PO", label: "PO", department: "CCM" },
+//     { value: "BCO", label: "BCO", department: "CCM" },
+//     { value: "SRFILTER", label: "SRFILTER", department: "CCM LRF" },
+//     { value: "INCHARGE", label: "INCHARGE", department: "CCM" },
+//     { value: "MO", label: "MO", department: "CCM" },
+//     { value: "SHIFTINCH", label: "SHIFTINCH", department: "CCM" },
+//     { value: "GC", label: "GC", department: "CCM" },
+//     { value: "SBO", label: "SBO", department: "CCM" },
+//     { value: "LMAN", label: "LMAN", department: "CCM" },
+//     { value: "FORMAN", label: "FORMAN", department: "CCM" },
+//     { value: "TMESSON", label: "TMESSON", department: "CCM" },
+//     { value: "LMES", label: "LMES", department: "CCM LRF" },
+//     { value: "JRELE", label: "JRELE", department: "CCM" },
+//     { value: "HELPER", label: "HELPER", department: "CCM LRF" },
+//     { value: "8MW", label: "8MW", department: "8HR 12HR" },
+//     { value: "12WM", label: "12WM", department: "8HR 12HR" },
+//     { value: "DM Plant", label: "DM Plant", department: "8HR 12HR" },
+//     { value: "QC", label: "QC", department: "8HR 12HR" },
+//     { value: "STORE", label: "STORE", department: "8HR 12HR" },
+//     { value: "K-7 & 1-6PROC", label: "K-7 & 1-6PROC", department: "8HR 12HR" },
+//     { value: "RMHS", label: "RMHS", department: "8HR 12HR" },
+//     { value: "PS", label: "PS", department: "8HR 12HR" },
+//     { value: "HK & Garden", label: "HK & Garden", department: "8HR 12HR" },
+//     { value: "SVR", label: "SVR", department: "8HR 12HR CCM LRF" },
+//     { value: "Colony", label: "Colony", department: "colony" },
+//   ]);
+//   const optionchange = () => {
+//     if (department === "CCM") {
+//       setOptions((options) =>
+//         options.filter((option) => option.department.includes(department))
+//       );
+//     }
+//   };
 
-  return (
-    <FormSelect
-      name="designation"
-      label="Designation"
-      options={options}
-      placeHolder="Select the"
-    />
-  );
-};
-
-const OutlineInputStyle = styled(OutlinedInput, { shouldForwardProp })(
-  ({ theme }) => ({
-    width: 350,
-    // marginLeft: 16,
-    paddingLeft: 16,
-    paddingRight: 16,
-    "& input": {
-      background: "transparent !important",
-      paddingLeft: "4px !important",
-    },
-    [theme.breakpoints.down("lg")]: {
-      width: 250,
-    },
-    [theme.breakpoints.down("md")]: {
-      width: "100%",
-      marginLeft: 4,
-      background: "#fff",
-    },
-  })
-);
+//   return (
+//     <FormSelect
+//       name="designation"
+//       label="Designation"
+//       options={options}
+//       placeHolder="Select the"
+//     />
+//   );
+// };
 
 const numberType = Yup.number().required("Required");
 
@@ -109,9 +80,9 @@ const validationSchema = Yup.object().shape({
   basicsalary_in_duration: Yup.string().required("Required"),
   basicsalary: numberType,
   allowed_wrking_hr_per_day: numberType,
-  servicecharge: numberType,
-  gst: numberType,
-  tds: numberType,
+  servicecharge: numberType.optional(),
+  gst: numberType.optional(),
+  tds: numberType.optional(),
 });
 
 export default function Edit({
@@ -123,7 +94,6 @@ export default function Edit({
 }) {
   const router = useRouter();
 
-  const [value, setValue] = useState("");
   const { id } = router.query;
   console.log(contractors);
   const options = [
@@ -314,11 +284,15 @@ export default function Edit({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormInput
+                    <FormSelect
                       name="basicsalary_in_duration"
                       label="Basic Salary in Duration*"
                       placeHolder="Basic Salary in Duration"
                       disabled={false}
+                      options={[
+                        { value: "Hourly", label: "Hourly" },
+                        { value: "Monthly", label: "Monthly" },
+                      ]}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>

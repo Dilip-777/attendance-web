@@ -10,14 +10,15 @@ import TableRow from "@mui/material/TableRow";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { TimeKeeper } from "@prisma/client";
+import { Contractor, TimeKeeper, Workorder } from "@prisma/client";
 import {
   Box,
   FormControl,
-  FormLabel,
   Grid,
   MenuItem,
   Select,
+  Stack,
+  Typography,
 } from "@mui/material";
 import getTotalAmountAndRows from "@/utils/get8hr";
 interface Column {
@@ -192,7 +193,7 @@ export const FormSelect = ({
   options: { value: number | string; label: string }[];
 }) => {
   return (
-    <FormControl fullWidth variant="outlined" size="small">
+    <FormControl fullWidth variant="outlined">
       <Select
         value={value}
         onChange={(e) => setValue(e.target.value as number)}
@@ -211,8 +212,12 @@ export const FormSelect = ({
 
 export default function PlantCommercial({
   timekeeper,
+  workorder,
+  contractor,
 }: {
   timekeeper: TimeKeeper[];
+  workorder: Workorder[];
+  contractor: Contractor;
 }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -283,7 +288,14 @@ export default function PlantCommercial({
 
   return (
     <Paper sx={{ width: "100%" }}>
-      <Box sx={{ height: "5rem", display: "flex", p: 3 }}>
+      <Box
+        sx={{
+          height: "5rem",
+          display: "flex",
+          p: 3,
+          justifyContent: "flex-start",
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
             <FormSelect value={month} setValue={setMonth} options={months} />
@@ -292,6 +304,14 @@ export default function PlantCommercial({
             <FormSelect value={year} setValue={setYear} options={years} />
           </Grid>
         </Grid>
+        <Stack direction="row" spacing={2}>
+          <Typography variant="h4" sx={{ mt: 1, width: "20rem" }}>
+            Contractor Name : <span>{contractor.contractorname}</span>
+          </Typography>
+          {/* <Typography variant="h6" sx={{ mt: 1 }}>
+            Work Order : { workorder[]}
+          </Typography> */}
+        </Stack>
       </Box>
       <TableContainer
         sx={{
@@ -448,6 +468,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: id as string,
     },
   });
+  const workorders = await prisma.workorder.findMany({
+    where: {
+      contractorId: id as string,
+    },
+  });
   const timekeeper = await prisma.timeKeeper.findMany({
     where: {
       contractorname: contractor?.contractorname,
@@ -461,6 +486,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       timekeeper,
+      workorders,
+      contractor,
     },
   };
 };

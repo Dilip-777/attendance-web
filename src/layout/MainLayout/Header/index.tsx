@@ -1,18 +1,13 @@
 import PropTypes from "prop-types";
-
-// material-ui
 import { useTheme } from "@mui/material/styles";
-import { Avatar, Box, ButtonBase, Menu } from "@mui/material";
-
-// project imports
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import ButtonBase from "@mui/material/ButtonBase";
 import LogoSection from "../LogoSection";
 import SearchSection from "./SearchSection";
 import ProfileSection from "./ProfileSection";
 import NotificationSection from "./NotificationSection";
-
-// assets
-import { IconMenu2 } from "@tabler/icons";
-import { MenuBook } from "@mui/icons-material";
+import MenuBook from "@mui/icons-material/MenuBook";
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 

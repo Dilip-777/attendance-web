@@ -1,31 +1,27 @@
 import { useState, useRef, useEffect, MouseEvent } from "react";
-
 import { useSelector } from "react-redux";
-
-// material-ui
 import { useTheme } from "@mui/material/styles";
-import {
-  Avatar,
-  Box,
-  Chip,
-  ClickAwayListener,
-  Divider,
-  Grid,
-  InputAdornment,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  OutlinedInput,
-  Paper,
-  Popover,
-  Stack,
-  Typography,
-} from "@mui/material";
-
-// project imports
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import Divider from "@mui/material/Divider";
+import Grid from "@mui/material/Grid";
+import InputAdornment from "@mui/material/InputAdornment";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Paper from "@mui/material/Paper";
+import Popover from "@mui/material/Popover";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Logout from "@mui/icons-material/Logout";
+import Search from "@mui/icons-material/Search";
+import Settings from "@mui/icons-material/Settings";
+import VerifiedUser from "@mui/icons-material/VerifiedUser";
 import MainCard from "@/ui-component/cards/MainCard";
-import { Logout, Search, Settings, VerifiedUser } from "@mui/icons-material";
 
 // assets
 import { useRouter } from "next/router";

@@ -15,7 +15,7 @@ import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Edit, NavigateBefore, Search } from "@mui/icons-material";
+import { Add, Edit, NavigateBefore, Search } from "@mui/icons-material";
 import Backdrop from "@mui/material/Backdrop";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
@@ -24,16 +24,17 @@ import Modal from "@mui/material/Modal";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
 import Stack from "@mui/material/Stack";
-import { styled } from "@mui/material/";
+import { Chip, FormControl, TextField, styled } from "@mui/material/";
 import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import prisma from "@/lib/prisma";
-import { User } from "@prisma/client";
+import { Department, User } from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
+import axios from "axios";
 
 const style = {
   position: "absolute",
@@ -108,11 +109,9 @@ const createHeadCells = (
 };
 
 const headCells = [
-  createHeadCells("userId", "User ID", false, false),
-  createHeadCells("fullName", "Full Name", false, false),
-  createHeadCells("email", "Email", false, false),
-  createHeadCells("mobileNumber", "Mobile Number", false, false),
-  createHeadCells("role", "Role", false, false),
+  createHeadCells("id", "Id", false, false),
+  createHeadCells("department", "Department", false, false),
+  createHeadCells("designation", "Designations", false, false),
 ];
 
 interface EnhancedTableProps {
@@ -124,68 +123,15 @@ interface EnhancedTableProps {
   rowCount: number;
 }
 
-// function EnhancedTableHead(props: EnhancedTableProps) {
-//   const {
-//     onSelectAllClick,
-//     order,
-//     orderBy,
-//     numSelected,
-//     rowCount,
-//     onRequestSort,
-//   } = props;
-//   const createSortHandler =
-//     (property: string) => (event: React.MouseEvent<unknown>) => {
-//       onRequestSort(event, property);
-//     };
-
-//   return (
-//     <TableHead>
-//       <TableRow>
-//         <TableCell padding="checkbox">
-//           <Checkbox
-//             color="primary"
-//             indeterminate={numSelected > 0 && numSelected < rowCount}
-//             checked={rowCount > 0 && numSelected === rowCount}
-//             onChange={onSelectAllClick}
-//             inputProps={{
-//               "aria-label": "select all desserts",
-//             }}
-//           />
-//         </TableCell>
-//         {headCells .map((headCell) => (
-//           <TableCell
-//             key={headCell.id}
-//             align={headCell.numeric ? "right" : "left"}
-//             padding={headCell.disablePadding ? "none" : "normal"}
-//             sortDirection={orderBy === headCell.id ? order : false}
-//           >
-//             <TableSortLabel
-//               active={orderBy === headCell.id}
-//               direction={orderBy === headCell.id ? order : "asc"}
-//               onClick={createSortHandler(headCell.id as string)}
-//             >
-//               {headCell.label}
-//               {orderBy === headCell.id ? (
-//                 <Box component="span" sx={visuallyHidden}>
-//                   {order === "desc" ? "sorted descending" : "sorted ascending"}
-//                 </Box>
-//               ) : null}
-//             </TableSortLabel>
-//           </TableCell>
-//         ))}
-//       </TableRow>
-//     </TableHead>
-//   );
-// }
-
 interface EnhancedTableToolbarProps {
   numSelected: number;
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   filter: string;
+  handleOpen: () => void;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, filter, setFilter } = props;
+  const { numSelected, filter, setFilter, handleOpen } = props;
   const router = useRouter();
 
   return (
@@ -217,7 +163,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         <StyledSearch
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Search User..."
+          placeholder="Search department..."
           startAdornment={
             <InputAdornment position="start">
               <Search />
@@ -238,23 +184,17 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             backgroundColor: "rgb(103, 58, 183)",
             ":hover": { backgroundColor: "rgb(103, 58, 183)" },
           }}
-          onClick={() => router.push("/register")}
+          onClick={handleOpen}
         >
           {" "}
-          + Add User
+          + Add Department
         </Button>
       )}
     </Toolbar>
   );
 }
 
-export default function TimeKeeper({
-  session,
-  users,
-}: {
-  session: Session;
-  users: User[];
-}) {
+export default function TimeKeeper({ session }: { session: Session }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<string>("name");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
@@ -262,14 +202,61 @@ export default function TimeKeeper({
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
+  const [open1, setOpen1] = React.useState(false);
   const [filter, setFilter] = React.useState("");
-  const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
+  const [selectedDepartment, setSelectedDepartment] =
+    React.useState<Department | null>(null);
+  const [designations, setDesignations] = React.useState<string[]>(
+    selectedDepartment?.designations || []
+  );
+  const [designation, setDesignation] = React.useState("");
+  const [department, setDepartment] = React.useState(
+    selectedDepartment?.department || ""
+  );
   const router = useRouter();
+  const [departments, setDepartments] = React.useState<Department[]>([]);
   const matches = useMediaQuery("(min-width:600px)");
 
   const handleClose = () => {
     setOpen(false);
-    setSelectedUser(null);
+    setOpen1(false);
+    setDepartment("");
+
+    setSelectedDepartment(null);
+  };
+
+  const handleAddDepartment = async () => {
+    const res = await axios
+      .post("api/admin/department", {
+        department,
+      })
+      .then((res) => {
+        handleClose();
+        fetchDepartments();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const handelAddDesignations = async () => {
+    console.log("designations", designations);
+    console.log("department", selectedDepartment?.id);
+    console.log("department", selectedDepartment?.department);
+    console.log("department", selectedDepartment?.designations);
+
+    const res = await axios
+      .put("api/admin/department", {
+        id: selectedDepartment?.id,
+        designations: designations,
+      })
+      .then((res) => {
+        handleClose();
+        fetchDepartments();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const handleRequestSort = (
@@ -283,7 +270,7 @@ export default function TimeKeeper({
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = users.map((n) => n.id);
+      const newSelected = departments.map((n) => n.id);
       setSelected(newSelected);
       return;
     }
@@ -321,15 +308,28 @@ export default function TimeKeeper({
     setPage(0);
   };
 
+  const fetchDepartments = async () => {
+    const res = await fetch("/api/admin/department");
+    const data = await res.json();
+    setDepartments(data);
+  };
+
+  console.log(departments);
+
+  React.useEffect(() => {
+    fetchDepartments();
+  }, []);
+
   const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDense(event.target.checked);
   };
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
-  // Avoid a layout jump when reaching the last page with empty users.
+  console.log(designations);
+
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - departments.length) : 0;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -338,6 +338,11 @@ export default function TimeKeeper({
           numSelected={selected.length}
           filter={filter}
           setFilter={setFilter}
+          handleOpen={() => {
+            setOpen(true);
+            setSelectedDepartment(null);
+            setDepartment("");
+          }}
         />
         <TableContainer
           sx={{
@@ -359,16 +364,16 @@ export default function TimeKeeper({
             <EnhancedTableHead
               numSelected={selected.length}
               onSelectAllClick={handleSelectAllClick}
-              rowCount={users.length}
+              rowCount={departments.length}
               headCells={headCells}
             />
             <TableBody>
-              {users
+              {departments
                 .filter((user) =>
-                  user.name.toLowerCase().includes(filter.toLowerCase())
+                  user.department.toLowerCase().includes(filter.toLowerCase())
                 )
                 ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row: any, index: number) => {
+                .map((row, index: number) => {
                   const isItemSelected = isSelected(row.id as string);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -397,18 +402,35 @@ export default function TimeKeeper({
                       <TableCell id={labelId} scope="row" padding="none">
                         {row?.id}
                       </TableCell>
-                      <TableCell>{row.name}</TableCell>
-                      <TableCell>{row?.email}</TableCell>
-                      <TableCell>{row.mobileNumber}</TableCell>
-                      <TableCell>{row.role}</TableCell>
+                      <TableCell>{row.department}</TableCell>
+                      <TableCell>
+                        <Box display="flex">
+                          {row.designations.length === 0 && (
+                            <Box display="flex" alignItems="center">
+                              <Typography>No Designations</Typography>
+                            </Box>
+                          )}
+                          {row.designations.map((designation) => (
+                            <Chip sx={{ mx: 1 }} label={designation} />
+                          ))}
+                          <IconButton
+                            sx={{ color: "rgb(103, 58, 183)" }}
+                            onClick={() => {
+                              setSelectedDepartment(row);
+                              setDesignations(row.designations);
+                              setOpen1(true);
+                            }}
+                          >
+                            <Add fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
 
                       <TableCell size="small" align="center">
                         <IconButton
-                          //   onClick={() =>
-                          //     router.push(`/details/${row.employeeid}`)
-                          //   }
                           onClick={() => {
-                            setSelectedUser(row);
+                            setSelectedDepartment(row);
+
                             setOpen(true);
                           }}
                           sx={{ m: 0 }}
@@ -434,7 +456,7 @@ export default function TimeKeeper({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={users.length}
+          count={departments.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -444,7 +466,7 @@ export default function TimeKeeper({
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
-        open={open}
+        open={open || open1}
         onClose={handleClose}
         closeAfterTransition
         BackdropComponent={Backdrop}
@@ -456,7 +478,7 @@ export default function TimeKeeper({
         <Slide
           direction={matches ? "left" : "up"}
           timeout={500}
-          in={open}
+          in={open || open1}
           mountOnEnter
           unmountOnExit
         >
@@ -482,10 +504,76 @@ export default function TimeKeeper({
                 >
                   <NavigateBefore fontSize="large" />
                 </IconButton>
-                Edit Details
+                Add{" "}
+                {open
+                  ? "Depatrment"
+                  : `Designation for ${selectedDepartment?.department}`}
               </Typography>
               <Divider />
-              <EditUser selectedUser={selectedUser} handleClose={handleClose} />
+              {open1 && (
+                <Box display="flex" alignItems="center" flexWrap="wrap" mt={2}>
+                  {designations.map((designation) => (
+                    <Chip
+                      label={designation}
+                      sx={{ m: 1 }}
+                      onDelete={() => {
+                        setDesignations(
+                          designations.filter((des) => des !== designation)
+                        );
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+              {open1 && (
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <Stack width="100%" direction="row" spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="Designation"
+                      variant="outlined"
+                      value={designation}
+                      onChange={(e) => setDesignation(e.target.value)}
+                    />
+                    <Button
+                      variant="contained"
+                      // fullWidth
+                      onClick={() => {
+                        setDesignations([...designations, designation]);
+                        setDesignation("");
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </Stack>
+                  <Button
+                    variant="contained"
+                    onClick={handelAddDesignations}
+                    sx={{ mt: 5 }}
+                  >
+                    Submit
+                  </Button>
+                </FormControl>
+              )}
+              {open && (
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <Stack width="100%" spacing={2}>
+                    <TextField
+                      label="Department"
+                      variant="outlined"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                    />
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={handleAddDepartment}
+                    >
+                      Submit
+                    </Button>
+                  </Stack>
+                </FormControl>
+              )}
             </Stack>
           </Box>
         </Slide>
@@ -497,7 +585,7 @@ export default function TimeKeeper({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  const users = await prisma.user.findMany();
+  const departments = await prisma.user.findMany();
   const user = await prisma.user.findUnique({
     where: {
       id: session?.user?.id,
@@ -515,7 +603,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       props: {
         session: JSON.stringify(session),
-        users: users,
+        departments: departments,
       },
     };
   }

@@ -1,5 +1,6 @@
-// assets
-import {    AssignmentInd, Person, Storefront } from '@mui/icons-material';
+import AssignmentInd from '@mui/icons-material/AssignmentInd';
+import Person from '@mui/icons-material/Person';
+import Storefront from '@mui/icons-material/Storefront';
 
 // constant
 const icons = {

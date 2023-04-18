@@ -16,14 +16,37 @@ export default async function handler(
   }
   else {
     const {comment, uploadDocument,id, userId, userName, role, ...body} = req.body;
-    const timekeeper = await prisma.timeKeeper.update({
-      where: {
-        id: id,
-      },
-      data: {
-        ...body,
-      }
+    
+  //   const timekeeper = await prisma.timeKeeper.update({
+  //     where: {
+  //       id: id,
+  //     },
+  //     data: {
+  //       ...body,
+  //     }
+  // })
+ const timekeeper = await prisma.timeKeeper.update({
+    where: {
+      id: id
+    },
+    data: {
+      status: "Pending"
+    }
   })
+
+  const savedTimekeeper = await prisma.saveTimekeeper.create({
+    data: {
+      id: id,
+      contractorid: timekeeper.contractorid,
+      contractorname: timekeeper.contractorname,
+      employeeid: timekeeper.employeeid,
+      employeename: timekeeper.employeename,
+      ...body
+    }
+  })
+
+  
+  
    const iscommented = await prisma.comment.findMany({
     where : {
       timekeeperId: id,
@@ -43,31 +66,34 @@ export default async function handler(
         userId: userId,
         userName: userName,
         role: role,
-        timekeeperId: timekeeper.id
+        timekeeperId: id
       }
     })
-    const isDocumentUploaded = await prisma.upload.findMany({
-      where : {
-        timekeeperId: id,
-        userId: userId
-      }
+    if(uploadDocument) {
+
+      const isDocumentUploaded = await prisma.upload.findMany({
+        where : {
+          timekeeperId: id,
+          userId: userId
+        }
       })
-    isDocumentUploaded.length > 0 ? await prisma.upload.update({
-      where: {
-        id: isDocumentUploaded[0].id
-      },
-      data: {
-        document: uploadDocument.newFilename
-      }
-    }) :  await prisma.upload.create({
+      isDocumentUploaded.length > 0 ? await prisma.upload.update({
+        where: {
+          id: isDocumentUploaded[0].id
+        },
+        data: {
+          document: uploadDocument.newFilename
+        }
+      }) :  await prisma.upload.create({
       data: {
         document: uploadDocument.newFilename,
         userId: userId,
         userName: userName,
         role: role,
-        timekeeperId: timekeeper.id
+        timekeeperId: id
       }
     })
+  }
     res.status(200).json({ success: true})
   }
 }

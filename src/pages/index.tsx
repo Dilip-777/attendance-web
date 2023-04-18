@@ -6,34 +6,29 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
+import Modal from "@mui/material/Modal";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Slide from "@mui/material/Slide";
+import Stack from "@mui/material/Stack";
+import { Button, styled } from "@mui/material/";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { visuallyHidden } from "@mui/utils";
-import { Edit, NavigateBefore, Search } from "@mui/icons-material";
-import {
-  Backdrop,
-  CircularProgress,
-  Divider,
-  InputAdornment,
-  Modal,
-  OutlinedInput,
-  Slide,
-  Stack,
-  styled,
-  useMediaQuery,
-} from "@mui/material";
+import Edit from "@mui/icons-material/Edit";
+import NavigateBefore from "@mui/icons-material/NavigateBefore";
+
 import { useRouter } from "next/router";
 import {
   Comment,
@@ -43,10 +38,15 @@ import {
   Upload,
 } from "@prisma/client";
 import axios from "axios";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import { FormSelect } from "./pc8hr/[id]";
+import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { Add, Close, Done } from "@mui/icons-material";
 
 const style = {
   position: "absolute",
@@ -110,17 +110,17 @@ const createHeadCells = (
   id: string,
   label: string,
   numeric: boolean,
-  disablePadding: boolean
+  included: boolean
 ) => {
   return {
     id: id,
     label: label,
     numeric: numeric,
-    disablePadding: disablePadding,
+    included: included,
   };
 };
 
-const headCells1 = [
+const headCells = [
   createHeadCells("employeeid", "Employee ID", false, false),
   createHeadCells("employeename", "Employee Name", false, false),
   createHeadCells("machineintime", "Machine In Time", false, false),
@@ -147,82 +147,28 @@ const headCells1 = [
   createHeadCells("uploaddocument", "Upload Document", false, false),
 ];
 
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof TimeKeeper
-  ) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props;
-  const createSortHandler =
-    (property: keyof TimeKeeper) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all desserts",
-            }}
-          />
-        </TableCell>
-        {headCells1.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
-            padding={headCell.disablePadding ? "none" : "normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ fontWeight: "700" }}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id as keyof TimeKeeper)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
 interface EnhancedTableToolbarProps {
   numSelected: number;
   contractorName: string;
+  value: Dayjs;
+  setValue: React.Dispatch<React.SetStateAction<Dayjs>>;
   setContractorName: React.Dispatch<React.SetStateAction<string>>;
   contractors: { value: string; label: string }[];
+  handleApprove: () => void;
+  showApprove: boolean;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, contractorName, setContractorName, contractors } = props;
+  const {
+    numSelected,
+    contractorName,
+    setContractorName,
+    contractors,
+    value,
+    setValue,
+    handleApprove,
+    showApprove,
+  } = props;
 
   return (
     <Toolbar
@@ -250,16 +196,27 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 190 }}>
-          <FormSelect
-            options={[
-              { value: "all", label: "All Contractors" },
-              ...contractors,
-            ]}
-            value={contractorName}
-            setValue={setContractorName}
-          />
-        </Box>
+        <Stack spacing={2} direction="row" alignItems="center">
+          <Box sx={{ minWidth: 240 }}>
+            <FormSelect
+              options={[
+                { value: "all", label: "All Contractors" },
+                ...contractors,
+              ]}
+              value={contractorName}
+              setValue={setContractorName}
+            />
+          </Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              views={["month", "year"]}
+              value={value}
+              onChange={(newValue) => {
+                if (newValue) setValue(newValue);
+              }}
+            />
+          </LocalizationProvider>
+        </Stack>
       )}
       {numSelected > 0 ? (
         <Tooltip title="Delete">
@@ -268,11 +225,16 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
+        // <Tooltip title="Filter list">
+        //   <IconButton>
+        //     <FilterListIcon />
+        //   </IconButton>
+        // </Tooltip>
+        value.month() < dayjs().month() &&
+        showApprove &&
+        contractorName !== "all" && (
+          <Button onClick={handleApprove}>Approve</Button>
+        )
       )}
     </Toolbar>
   );
@@ -299,7 +261,16 @@ export default function TimeKeeperTable({
   const [selected1, setSelected1] = React.useState<Comment[] | Upload[]>();
   const matches = useMediaQuery("(min-width:600px)");
   const [contractorName, setContractorName] = React.useState("all");
+  const [value, setValue] = React.useState<Dayjs>(dayjs());
+  const { data: session } = useSession();
 
+  const headcell1 = createHeadCells("status", "Status", false, true);
+  const headcell2 = createHeadCells("action", "Action", false, true);
+
+  const extraHeadCells =
+    session?.user?.role === "HR"
+      ? [...headCells, headcell1, headcell2]
+      : [...headCells];
   const handleClose = () => {
     setOpen(false);
     setOpen1(false);
@@ -322,6 +293,34 @@ export default function TimeKeeperTable({
     setOpen(true);
   };
 
+  const handleApprove = async (id: string) => {
+    setLoading(true);
+    await axios
+      .put(`/api/timekeeper/${id}`)
+      .then((res) => {
+        fetchTimeKeeper();
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  };
+
+  const handleReject = async (id: string) => {
+    setLoading(true);
+    await axios
+      .delete(`/api/timekeeper/${id}`)
+      .then((res) => {
+        fetchTimeKeeper();
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  };
+
   const fetchTimeKeeper = async () => {
     setLoading(true);
     const employeesid = employees
@@ -331,7 +330,7 @@ export default function TimeKeeperTable({
       .map((e) => e.id);
 
     await axios
-      .get("/api/timekeeper/gettimekeepers")
+      .get(`/api/timekeeper/gettimekeepers?month=${value?.format("MM/YYYY")}`)
       .then((res) => {
         const timekeepers = res.data;
         setTimeKepeer(timekeepers);
@@ -345,7 +344,7 @@ export default function TimeKeeperTable({
 
   React.useEffect(() => {
     fetchTimeKeeper();
-  }, [contractorName]);
+  }, [value]);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -423,6 +422,8 @@ export default function TimeKeeperTable({
         )
       : 0;
 
+  console.log(value?.month());
+
   return (
     <Box sx={{ width: "100%" }}>
       {loading ? (
@@ -445,6 +446,18 @@ export default function TimeKeeperTable({
               value: c.contractorname,
               label: c.contractorname,
             }))}
+            value={value}
+            setValue={setValue}
+            showApprove={
+              timekeeper.filter((t) => t.approvedByTimekeeper).length === 0
+            }
+            handleApprove={async () => {
+              await axios.put(`/api/timekeeper/approve`, {
+                month: value.format("MM/YYYY"),
+                contractorname: contractorName,
+              });
+              fetchTimeKeeper();
+            }}
           />
 
           <TableContainer
@@ -466,10 +479,7 @@ export default function TimeKeeperTable({
             >
               <EnhancedTableHead
                 numSelected={selected.length}
-                order={order}
-                orderBy={orderBy}
                 onSelectAllClick={handleSelectAllClick}
-                onRequestSort={handleRequestSort}
                 rowCount={
                   timekeeper.filter(
                     (t) =>
@@ -477,6 +487,7 @@ export default function TimeKeeperTable({
                       contractorName === "all"
                   ).length
                 }
+                headCells={extraHeadCells}
               />
 
               <TableBody>
@@ -499,7 +510,7 @@ export default function TimeKeeperTable({
                         role="checkbox"
                         aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row.employeeid}
+                        key={row.id}
                         selected={isItemSelected}
                         sx={{ cursor: "pointer" }}
                       >
@@ -516,66 +527,89 @@ export default function TimeKeeperTable({
                           />
                         </TableCell>
 
-                        <TableCell align="center">{row.employeeid}</TableCell>
-                        <TableCell align="center">{row.employeename}</TableCell>
-                        <TableCell align="center">
-                          {row.machineInTime}
-                        </TableCell>
-                        <TableCell align="center">
-                          {row.machineOutTime}
-                        </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">{row.employeeid}</TableCell>
+                        <TableCell align="left">{row.employeename}</TableCell>
+                        <TableCell align="left">{row.machineInTime}</TableCell>
+                        <TableCell align="left">{row.machineOutTime}</TableCell>
+                        <TableCell align="left">
                           {row.machineshift || "-"}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           {row.attendance || "-"}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           {row.attendancedate || "-"}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           {row.overtime || "-"}
                         </TableCell>
-                        <TableCell align="center">
-                          {row.eleave || "-"}
-                        </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">{row.eleave || "-"}</TableCell>
+                        <TableCell align="left">
                           {row.manualintime || "-"}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           {row.manualouttime || "-"}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           {row.manualshift || "-"}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           {row.manualovertime || "-"}
                         </TableCell>
-                        <TableCell align="center">
-                          {row.mleave || "-"}
-                        </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">{row.mleave || "-"}</TableCell>
+                        <TableCell align="left">
                           {row.department || "-"}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           {row.designation || "-"}
                         </TableCell>
-                        <TableCell align="center">
-                          {row.gender || "-"}
-                        </TableCell>
+                        <TableCell align="left">{row.gender || "-"}</TableCell>
                         <TableCell
-                          align="center"
+                          align="left"
                           onClick={() => handleOpen1(row.id as string)}
                         >
                           View
                         </TableCell>
                         <TableCell
-                          align="center"
+                          align="left"
                           onClick={() => handleOpen(row.id as string)}
                         >
                           View
                         </TableCell>
-                        <TableCell size="small" align="center">
+                        {session?.user?.role === "HR" && (
+                          <>
+                            <TableCell align="left">
+                              {row.status || "Pending"}
+                            </TableCell>
+                            <TableCell align="left">
+                              {!row.status ? (
+                                <Box
+                                  display="flex"
+                                  alignItems="center"
+                                  sx={{ color: "#673AB7" }}
+                                >
+                                  <Button
+                                    onClick={() =>
+                                      handleApprove(row.id as string)
+                                    }
+                                  >
+                                    <Done sx={{ color: "#673AB7" }} />
+                                  </Button>
+                                  <Button
+                                    onClick={() =>
+                                      handleReject(row.id as string)
+                                    }
+                                  >
+                                    <Close sx={{ color: "#673AB7" }} />
+                                  </Button>
+                                </Box>
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
+                          </>
+                        )}
+                        <TableCell size="small" align="left">
                           <IconButton
                             onClick={() => router.push(`/details/${row.id}`)}
                             sx={{ m: 0 }}

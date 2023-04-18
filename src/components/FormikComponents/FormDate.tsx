@@ -32,7 +32,7 @@ const FormDate: React.FC<Props> = ({
 }) => {
   const { values, setFieldValue } = useFormikContext<any>();
   const [field, meta] = useField(name);
-  const [value, setValue] = React.useState<any>();
+  const [value, setValue] = React.useState<any>(dayjs(field.value) || null);
   const { onChange, ...other } = field;
   const isError = Boolean(meta.touched && meta.error);
 
@@ -44,24 +44,14 @@ const FormDate: React.FC<Props> = ({
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           {...other}
+          disabled={disabled}
           value={value}
-          format="DD-MM-YYYY"
+          format="DD/MM/YYYY"
           //   disableFuture
           sx={{ width: "100%", minWidth: 300 }}
           onChange={(newValue) => {
-            console.log(newValue);
-
-            const date = newValue?.$d;
-            const formattedDate = date
-              ?.toLocaleDateString("en-US", {
-                month: "2-digit",
-                day: "2-digit",
-                year: "numeric",
-              })
-              .replace(/\//g, "-");
             setValue(newValue);
-
-            setFieldValue(name, formattedDate);
+            setFieldValue(name, newValue.format("DD/MM/YYYY"));
           }}
           {...props}
         />

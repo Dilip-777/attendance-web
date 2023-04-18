@@ -1,17 +1,15 @@
 import Head from "next/head";
 import * as React from "react";
-import {
-  Backdrop,
-  Button,
-  Fade,
-  FormControl,
-  FormLabel,
-  MenuItem,
-  Modal,
-  Select,
-  Stack,
-  Box,
-} from "@mui/material";
+import Backdrop from "@mui/material/Backdrop";
+import Button from "@mui/material/Button";
+import Fade from "@mui/material/Fade";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Modal from "@mui/material/Modal";
+import Select from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 import { useRouter } from "next/router";
 import { Contractor } from "@prisma/client";
 import { GetServerSideProps } from "next";
@@ -105,12 +103,17 @@ export default function Contractors({
     true
   );
 
-  const extraHeadCells =
-    session?.user?.role !== "HR"
-      ? session?.user?.role === "HoCommercialAuditor"
-        ? [headcell1, headcell2]
-        : [headcell1]
-      : [];
+  const headcell3 = createHeadCells("report", "KYC Report", false, true);
+
+  const getHeadCells = () => {
+    if (session?.user?.role === "HR") return [];
+    else if (session?.user?.role === "PlantCommercial") return [headcell1];
+    else if (session?.user?.role === "HoCommercialAuditor")
+      return [headcell1, headcell2];
+    else return [headcell1, headcell3];
+  };
+
+  const extraHeadCells = getHeadCells();
 
   return (
     <Box sx={{ width: "100%" }}>

@@ -7,6 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
@@ -98,8 +99,10 @@ export const FormSelect = ({
 
 export default function PlantCommercial({
   timekeeper,
+  name,
 }: {
   timekeeper: TimeKeeper[];
+  name: string;
 }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -183,6 +186,9 @@ export default function PlantCommercial({
             <FormSelect value={year} setValue={setYear} options={years} />
           </Grid>
         </Grid>
+        <Typography variant="h4" sx={{ width: "15rem" }}>
+          Contractor : {name}
+        </Typography>
       </Box>
       <TableContainer
         sx={{
@@ -326,6 +332,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       timekeeper,
+      name: contractor?.contractorname,
     },
   };
 };

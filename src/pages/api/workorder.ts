@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
+import shortid from 'shortid'
 
 
 export default async function workorder (req: NextApiRequest, res: NextApiResponse) {
@@ -15,6 +16,7 @@ export default async function workorder (req: NextApiRequest, res: NextApiRespon
             res.status(404).json({message: "Contractor not found"})
         }
         const body = {
+            id: shortid.generate(),
             contractorId: contractor?.id,
             contractorName: contractor?.contractorname,
             ...rest,

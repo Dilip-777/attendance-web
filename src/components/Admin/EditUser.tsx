@@ -21,36 +21,6 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { User } from "@prisma/client";
 import axios from "axios";
 
-const OutlineInputStyle = styled(OutlinedInput, { shouldForwardProp })(
-  ({ theme }) => ({
-    width: 350,
-    // marginLeft: 16,
-    paddingLeft: 16,
-    paddingRight: 16,
-    "& input": {
-      background: "transparent !important",
-      paddingLeft: "4px !important",
-    },
-    [theme.breakpoints.down("lg")]: {
-      width: 250,
-    },
-    [theme.breakpoints.down("md")]: {
-      width: "100%",
-      marginLeft: 4,
-      background: "#fff",
-    },
-  })
-);
-
-const numberType = Yup.number()
-  .transform((value, originalValue) => {
-    if (isNaN(parseInt(originalValue))) {
-      return undefined;
-    }
-    return value;
-  })
-  .required("Required");
-
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
   email: Yup.string().email("Invalid Email").required("Required"),

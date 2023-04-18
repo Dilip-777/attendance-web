@@ -46,11 +46,11 @@ model User {
     sessions      Session[]
 }
 
-model TimeKeeper {
-  id   String   @id @default(cuid())
-  contractorid  Int?
+model SaveTimekeeper {
+   id   String   @id
+  contractorid  String?
   contractorname  String?
-    employeeid Int
+    employeeid String
     employeename   String?
     designation String
     attendancedate String
@@ -67,14 +67,46 @@ model TimeKeeper {
     mleave String?
     department String?
     gender String?
+}
+
+model TimeKeeper {
+  id   String   @id @default(cuid())
+  contractorid  String?
+  contractorname  String?
+    employeeid String
+    employeename   String?
+    designation String
+    attendancedate String
+    machineInTime String
+    machineOutTime String?
+    machineshift String
+    attendance String
+    overtime String
+    eleave String
+    manualintime String?
+    manualouttime String?
+    manualshift String?
+    manualovertime String?
+    mleave String?
+    department String?
+    gender String?
+    status   Status  @default(NoChanges)
     comment  Comment[]
+    approvedByTimekeeper Boolean @default(false)
     UploadDocument Upload[]
+}
+
+enum Status {
+  Approved
+  Pending
+  Rejected
+  NoChanges
 }
 
 model Contractor {
   id   String   @id @default(cuid())
   contractorname      String
-  contractorId       Int?
+  contractorId       String?
   servicedetail      String
   supplierdetail      String
   officeaddress      String?
@@ -141,7 +173,7 @@ model Contractor {
 model Employee {
   id   String   @id @default(cuid())
     contractorname  String
-    employeeId      Int?
+    employeeId      String?
     employeename String
     designation String 
     department String
@@ -151,9 +183,9 @@ model Employee {
     basicsalary_in_duration String
     basicsalary Int
 	allowed_wrking_hr_per_day Int
-    servicecharge Int
-    gst Int
-    tds Int
+    servicecharge Int?
+    gst Int?
+    tds Int?
     contractorId String
     contractor         Contractor     @relation(fields: [contractorId], references: [id], onDelete: Cascade)
 }
@@ -203,6 +235,9 @@ model payoutTracker {
   gst            Int
   tds            Int
   finalpayableamount Int
+  deduction   Int  @default(0)
+  actualpaidoutmoney  Int @default(0)
+  balance    Int  @default(0)
   uploadreceipt  String?
 }
 
@@ -221,6 +256,12 @@ model Workorder {
   amendmentDocument  String?
   addendumDocument   String?
   uploadDocument  String?
+}
+
+model Department {
+  id    String   @id @default(cuid())
+  department  String
+  designations   String[]
 }
 
 model Comment {

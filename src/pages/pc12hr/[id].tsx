@@ -11,7 +11,14 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { TimeKeeper } from "@prisma/client";
-import { Box, FormControl, Grid, MenuItem, Select } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  Grid,
+  MenuItem,
+  Select,
+  Typography,
+} from "@mui/material";
 interface Column {
   id:
     | "date"
@@ -201,8 +208,10 @@ const FormSelect = ({
 
 export default function PlantCommercial({
   timekeeper,
+  name,
 }: {
   timekeeper: TimeKeeper[];
+  name: string;
 }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -603,6 +612,9 @@ export default function PlantCommercial({
             <FormSelect value={year} setValue={setYear} options={years} />
           </Grid>
         </Grid>
+        <Typography variant="h4" sx={{ width: "15rem" }}>
+          Contractor : {name}
+        </Typography>
       </Box>
       <TableContainer
         sx={{
@@ -772,6 +784,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       timekeeper,
+      name: contractor?.contractorname,
     },
   };
 };

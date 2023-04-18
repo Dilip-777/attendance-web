@@ -3,8 +3,7 @@ import { useRef } from "react";
 // material-ui
 import { useTheme } from "@mui/material/styles";
 import { Avatar, Box, ButtonBase } from "@mui/material";
-
-import { NotificationsActive } from "@mui/icons-material";
+import NotificationsActive from "@mui/icons-material/NotificationsActive";
 
 // ==============================|| NOTIFICATION ||============================== //
 

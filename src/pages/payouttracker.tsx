@@ -6,43 +6,43 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
+import Button from "@mui/material/Button";
+import InputAdornment from "@mui/material/InputAdornment";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import { Backdrop, Divider, Modal, Slide, Stack, styled } from "@mui/material/";
+
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { visuallyHidden } from "@mui/utils";
-import { Edit, Search } from "@mui/icons-material";
-import {
-  Button,
-  Grid,
-  InputAdornment,
-  OutlinedInput,
-  Stack,
-  styled,
-} from "@mui/material";
+import Search from "@mui/icons-material/Search";
+
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Employee, TimeKeeper, Workorder, payoutTracker } from "@prisma/client";
-import getTotalAmountAndRows from "@/utils/get8hr";
-import getCCM from "@/utils/getccm";
-import getLRF from "@/utils/getlrf";
-import getColony from "@/utils/getColony";
+import { payoutTracker } from "@prisma/client";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
+import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
+import { Edit, NavigateBefore } from "@mui/icons-material";
+import EditPayout from "@/components/EditPayout";
+
+const style = {
+  position: "absolute",
+  overflowY: "auto",
+  borderRadius: "15px",
+  bgcolor: "background.paper",
+  boxShadow: 24,
+};
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -55,243 +55,32 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   },
 }));
 
-interface Data {
-  calories: number;
-  carbs: number;
-  fat: number;
-  name: string;
-  protein: number;
-}
-
-interface Data1 {
-  contractorid: string;
-  contractorName: string;
-  employeeid: string;
-  employeename: string;
-  designation: string;
-  department: string;
-  gender: string;
-  phone: number;
-  emailid: string;
-  basicsalaryinduration: string;
-  basicsalary: string;
-  gst: number;
-  tds: number;
-  allowedWorkinghoursperday: string;
-  servicecharge: string;
-}
-
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number
-): Data {
-  return {
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
-  };
-}
-
-function createData1(
-  contractorid: string,
-  contractorName: string,
-  employeeid: string,
-  employeename: string,
-  designation: string,
-  department: string,
-  gender: string,
-  phone: number,
-  emailid: string,
-  basicsalaryinduration: string,
-  basicsalary: string,
-  gst: number,
-  tds: number,
-  allowedWorkinghoursperday: string,
-  servicecharge: string
-): Data1 {
-  return {
-    contractorid,
-    contractorName,
-    employeeid,
-    employeename,
-    designation,
-    department,
-    gender,
-    phone,
-    emailid,
-    basicsalaryinduration,
-    basicsalary,
-    gst,
-    tds,
-    allowedWorkinghoursperday,
-    servicecharge,
-  };
-}
-
-const payouttracker = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
-  (i) =>
-    createData1(
-      "1",
-      "Dilip",
-      `${10 + i}`,
-      `Employee${i}`,
-      "designation",
-      "department",
-      "MALE",
-      978898799 + i,
-      `email${i}@gmail.com`,
-      "30",
-      "10000",
-      10 + i,
-      10 + i,
-      "allowedWorkinghoursperday",
-      "servicecharge"
-    )
-);
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = "asc" | "desc";
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<Employee>(
-  array: readonly Employee[],
-  comparator: (a: Employee, b: Employee) => number
-) {
-  const stabilizedThis = array.map(
-    (el, index) => [el, index] as [Employee, number]
-  );
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
-}
-
 const createHeadCells = (
   id: string,
   label: string,
   numeric: boolean,
-  disablePadding: boolean
+  included: boolean
 ) => {
   return {
     id: id,
     label: label,
     numeric: numeric,
-    disablePadding: disablePadding,
+    included: included,
   };
 };
 
-const headCells1 = [
+const headCells = [
   createHeadCells("contractorName", "Contractor Name", false, false),
   createHeadCells("workorderid", "Work Order", false, true),
   createHeadCells("amount", "Amount", false, false),
   createHeadCells("gst", "GST", false, false),
   createHeadCells("tds", "TDS", false, false),
   createHeadCells("finalpayableamount", "Final Payble Amount", false, false),
+  createHeadCells("deduction", "Deduction", false, false),
+  createHeadCells("actualpaidoutmoney", "Paid Out Money", false, false),
+  createHeadCells("balance", "Balance", false, false),
   createHeadCells("uploadreceipt", "Upload Receipt", false, false),
 ];
-
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data1
-  ) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props;
-  const createSortHandler =
-    (property: keyof Data1) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all desserts",
-            }}
-          />
-        </TableCell>
-        {headCells1.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={"center"}
-            padding={headCell.disablePadding ? "none" : "normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ fontWeight: "700" }}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id as keyof Data1)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
@@ -361,23 +150,21 @@ export default function Employees({
 }: {
   payouttracker: payoutTracker[];
 }) {
-  const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof Data1>("contractorid");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterName, setFilterName] = React.useState("");
   const [value, setValue] = React.useState<Dayjs | null>(dayjs());
+  const [open, setOpen] = React.useState(false);
+  const [selectedrow, setSelectedRow] = React.useState<
+    payoutTracker | undefined
+  >();
   const router = useRouter();
 
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data1
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedRow(undefined);
   };
 
   const handleUpload = async (doc: any) => {
@@ -385,7 +172,6 @@ export default function Employees({
       id: doc.id,
       uploadreceipt: doc.data.file.newFilename,
     });
-    // console.log(doc, doc.file.newFilename);
   };
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -464,15 +250,12 @@ export default function Employees({
         <Box sx={{ height: "5rem", display: "flex", p: 3 }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
-              //   label={'"month" and "year"'}
               views={["month", "year"]}
               value={value}
               onChange={(newValue) => {
                 setValue(newValue);
               }}
-              //   defaultValue={new Date()}
             />
-            {/* </DemoContainer> */}
           </LocalizationProvider>
         </Box>
         {/* <EnhancedTableToolbar
@@ -499,10 +282,7 @@ export default function Employees({
           >
             <EnhancedTableHead
               numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
               rowCount={
                 payouttracker.filter((employee) =>
                   employee.contractorName
@@ -510,6 +290,7 @@ export default function Employees({
                     .includes(filterName.toLowerCase())
                 ).length
               }
+              headCells={headCells}
             />
             <TableBody>
               {payouttracker
@@ -562,6 +343,11 @@ export default function Employees({
                       <TableCell align="center">
                         {row.finalpayableamount}
                       </TableCell>
+                      <TableCell align="center">{row.deduction}</TableCell>
+                      <TableCell align="center">
+                        {row.actualpaidoutmoney}
+                      </TableCell>
+                      <TableCell align="center">{row.balance}</TableCell>
                       <TableCell align="center">
                         {row.uploadreceipt ? (
                           <Typography
@@ -579,6 +365,17 @@ export default function Employees({
                             handleUpload={handleUpload}
                           />
                         )}
+                      </TableCell>
+                      <TableCell size="small" align="center">
+                        <IconButton
+                          onClick={() => {
+                            setOpen(true);
+                            setSelectedRow(row);
+                          }}
+                          sx={{ m: 0 }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   );
@@ -611,6 +408,57 @@ export default function Employees({
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <EditPayout open={open} row={selectedrow} handleClose={handleClose} />
+      {/* <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setSelectedRow(undefined);
+        }}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+        sx={{ display: "flex", justifyContent: " flex-end" }}
+      >
+        <Slide
+          timeout={500}
+          in={open}
+          mountOnEnter
+          unmountOnExit
+        >
+          <Box
+            p={{ xs: 0, sm: 2 }}
+            width={{ xs: "100%", sm: 400, md: 500 }}
+            height={{ xs: "70%", sm: "100%" }}
+            top={{ xs: "30%", sm: "0" }}
+            sx={style}
+          >
+            <Stack sx={{ overflowY: "auto" }} p={3}>
+              <Typography sx={{ fontSize: "1.2rem", fontWeight: "700" }}>
+                <IconButton
+                  onClick={handleClose}
+                  sx={{
+                    // zIndex: 2,
+                    padding: "5px",
+
+                    marginRight: "1rem",
+                    background: "white",
+                    ":hover": { background: "white" },
+                  }}
+                >
+                  <NavigateBefore fontSize="large" />
+                </IconButton>
+                Edit Details
+              </Typography>
+              <Divider />
+            </Stack>
+          </Box>
+        </Slide>
+      </Modal> */}
     </Box>
   );
 }

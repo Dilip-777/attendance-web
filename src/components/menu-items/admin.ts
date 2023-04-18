@@ -1,14 +1,13 @@
-// assets
-import { Dashboard } from "@mui/icons-material"
 
-// constant
+import Dashboard from "@mui/icons-material/Dashboard";
+
+
 const icons = { Dashboard };
 
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const admin = {
     id: '/admin',
-    title: 'Users',
+    title: 'Dashboard',
     type: 'group',
     children: [
         {
@@ -18,7 +17,15 @@ const admin = {
             url: '/admin',
             icon: icons.Dashboard,
             breadcrumbs: false
-        }
+        },
+        {
+            id: '/department',
+            title: 'Departments',
+            type: 'item',
+            url: '/department',
+            icon: icons.Dashboard,
+            breadcrumbs: false
+        },
     ]
 };
 

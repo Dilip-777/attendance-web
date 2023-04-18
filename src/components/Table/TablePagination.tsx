@@ -1,22 +1,22 @@
-import employees from "@/pages/employees";
-import { Edit, Launch, Visibility } from "@mui/icons-material";
-import {
-  Box,
-  Checkbox,
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TablePagination,
-  TableRow,
-} from "@mui/material";
+import Edit from "@mui/icons-material/Edit";
+import Launch from "@mui/icons-material/Launch";
+import Visibility from "@mui/icons-material/Visibility";
+import Box from "@mui/material/Box";
+import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
 import _ from "lodash";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import EnhancedTableHead from "./EnhancedTableHead";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
+import Download from "@mui/icons-material/Download";
 import { useSession } from "next-auth/react";
 
 interface HeadCells {
@@ -182,6 +182,7 @@ const CustomTable = (props: Props) => {
                               </IconButton>
                             </TableCell>
                           )}
+
                           {session?.user?.role === "HoCommercialAuditor" && (
                             <TableCell align="center">
                               <IconButton
@@ -191,6 +192,33 @@ const CustomTable = (props: Props) => {
                                 sx={{ m: 0 }}
                               >
                                 <Launch fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          )}
+                          {session?.user?.role === "Corporate" && (
+                            <TableCell align="center">
+                              <IconButton
+                                onClick={() => {
+                                  const jsonDataString = JSON.stringify(
+                                    row,
+                                    null,
+                                    2
+                                  );
+                                  const dataURI = `data:text/plain;charset=utf-8,${encodeURIComponent(
+                                    jsonDataString
+                                  )}`;
+
+                                  const downloadLink =
+                                    document.createElement("a");
+                                  downloadLink.href = dataURI;
+                                  downloadLink.download = `${row.contractorname}.txt`;
+                                  document.body.appendChild(downloadLink);
+                                  downloadLink.click();
+                                  document.body.removeChild(downloadLink);
+                                }}
+                                sx={{ m: 0 }}
+                              >
+                                <Download />
                               </IconButton>
                             </TableCell>
                           )}

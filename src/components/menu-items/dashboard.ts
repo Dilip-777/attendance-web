@@ -1,5 +1,5 @@
 // assets
-import { Dashboard } from "@mui/icons-material"
+import Dashboard from "@mui/icons-material/Dashboard";
 
 // constant
 const icons = { Dashboard };

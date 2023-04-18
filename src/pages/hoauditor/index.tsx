@@ -6,29 +6,29 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
+import InputAdornment from "@mui/material/InputAdornment";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import { styled } from "@mui/material/";
+
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { visuallyHidden } from "@mui/utils";
-import { Edit, Search } from "@mui/icons-material";
-import { InputAdornment, OutlinedInput, styled } from "@mui/material";
+import Search from "@mui/icons-material/Search";
+
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { HOAuditor } from "@prisma/client";
 import dayjs from "dayjs";
+import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -134,17 +134,17 @@ const createHeadCells = (
   id: string,
   label: string,
   numeric: boolean,
-  disablePadding: boolean
+  included: boolean
 ) => {
   return {
     id: id,
     label: label,
     numeric: numeric,
-    disablePadding: disablePadding,
+    included: included,
   };
 };
 
-const headCells1 = [
+const headCells = [
   createHeadCells("contractorname", "Contractor Name", false, false),
   createHeadCells("workdescription", "Work Description", false, true),
   createHeadCells("startdate", "Start Date", false, false),
@@ -203,60 +203,60 @@ interface EnhancedTableProps {
   rowCount: number;
 }
 
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props;
-  const createSortHandler =
-    (property: keyof Data1) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
+// function EnhancedTableHead(props: EnhancedTableProps) {
+//   const {
+//     onSelectAllClick,
+//     order,
+//     orderBy,
+//     numSelected,
+//     rowCount,
+//     onRequestSort,
+//   } = props;
+//   const createSortHandler =
+//     (property: keyof Data1) => (event: React.MouseEvent<unknown>) => {
+//       onRequestSort(event, property);
+//     };
 
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all desserts",
-            }}
-          />
-        </TableCell>
-        {headCells1.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={"center"}
-            padding={headCell.disablePadding ? "none" : "normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ fontWeight: "700" }}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id as keyof Data1)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
+//   return (
+//     <TableHead>
+//       <TableRow>
+//         <TableCell padding="checkbox">
+//           <Checkbox
+//             color="primary"
+//             indeterminate={numSelected > 0 && numSelected < rowCount}
+//             checked={rowCount > 0 && numSelected === rowCount}
+//             onChange={onSelectAllClick}
+//             inputProps={{
+//               "aria-label": "select all desserts",
+//             }}
+//           />
+//         </TableCell>
+//         {headCells1.map((headCell) => (
+//           <TableCell
+//             key={headCell.id}
+//             align={"center"}
+//             padding={headCell.disablePadding ? "none" : "normal"}
+//             sortDirection={orderBy === headCell.id ? order : false}
+//             sx={{ fontWeight: "700" }}
+//           >
+//             <TableSortLabel
+//               active={orderBy === headCell.id}
+//               direction={orderBy === headCell.id ? order : "asc"}
+//               onClick={createSortHandler(headCell.id as keyof Data1)}
+//             >
+//               {headCell.label}
+//               {orderBy === headCell.id ? (
+//                 <Box component="span" sx={visuallyHidden}>
+//                   {order === "desc" ? "sorted descending" : "sorted ascending"}
+//                 </Box>
+//               ) : null}
+//             </TableSortLabel>
+//           </TableCell>
+//         ))}
+//       </TableRow>
+//     </TableHead>
+//   );
+// }
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
@@ -428,11 +428,9 @@ export default function Employees({
           >
             <EnhancedTableHead
               numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
               rowCount={hocommercial.length}
+              headCells={headCells}
             />
             <TableBody>
               {hocommercial

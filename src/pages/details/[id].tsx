@@ -25,6 +25,8 @@ import FileUpload from "@/components/FormikComponents/FileUpload";
 import { getSession, useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
+import FormDate from "@/components/FormikComponents/FormDate";
+import dayjs, { Dayjs } from "dayjs";
 
 const OutlineInputStyle = styled(OutlinedInput, { shouldForwardProp })(
   ({ theme }) => ({
@@ -53,6 +55,7 @@ const validationSchema = Yup.object().shape({
   employeeid: Yup.string().required("Required"),
   designation: Yup.string().required("Required"),
   attendance: Yup.number().required("Required"),
+  attendancedate: Yup.string().required("Required"),
   machineInTime: Yup.string().required("Required"),
   machineOutTime: Yup.string().required("Required"),
   machineshift: Yup.string().required("Required"),
@@ -66,10 +69,10 @@ const validationSchema = Yup.object().shape({
   department: Yup.string().required("Required"),
   gender: Yup.string().required("Required"),
   comment: Yup.string().required("Required"),
-  uploadDocument: Yup.object().required("Required"),
+  uploadDocument: Yup.object().optional(),
 });
 
-export default function Edit({ role }: { role: Role | undefined }) {
+export default function EditTimkeeper({ role }: { role: Role | undefined }) {
   const router = useRouter();
   const [value, setValue] = useState("");
   const { id } = router.query;
@@ -96,6 +99,8 @@ export default function Edit({ role }: { role: Role | undefined }) {
     fetchTimeKeeper();
   }, [id]);
 
+  console.log(timekeeper);
+
   const initialValues = {
     contractorId: timekeeper?.contractorid || "",
     contractorName: timekeeper?.contractorname || "John Doe",
@@ -105,7 +110,8 @@ export default function Edit({ role }: { role: Role | undefined }) {
     machineInTime: timekeeper?.machineInTime || "10:00",
     machineOutTime: timekeeper?.machineOutTime || "18:00",
     machineshift: timekeeper?.machineshift || "Day",
-    attendance: timekeeper?.attendance || 5,
+    attendance: timekeeper?.attendance || 0,
+    attendancedate: timekeeper?.attendancedate || "",
     overtime: timekeeper?.overtime || 2,
     eleave: timekeeper?.eleave || 0,
     manualintime: timekeeper?.manualintime || "",
@@ -127,7 +133,7 @@ export default function Edit({ role }: { role: Role | undefined }) {
       width="100%"
       height="90vh"
     >
-      <CircularProgress />
+      <CircularProgress sx={{ color: "#364152" }} />
     </Box>
   ) : (
     <>
@@ -156,7 +162,7 @@ export default function Edit({ role }: { role: Role | undefined }) {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={async (values) => {
+          onSubmit={async (values, { setSubmitting }) => {
             const {
               comment,
               uploadDocument,
@@ -164,7 +170,7 @@ export default function Edit({ role }: { role: Role | undefined }) {
               contractorName,
               ...others
             } = values;
-            setLoading(true);
+            setSubmitting(true);
             await axios
               .put("/api/timekeeper", {
                 id: id,
@@ -181,198 +187,216 @@ export default function Edit({ role }: { role: Role | undefined }) {
               .catch((err) => {
                 console.log(err);
               });
-            setLoading(false);
+            setSubmitting(false);
           }}
         >
-          {({ handleSubmit }) => (
-            <form noValidate onSubmit={handleSubmit}>
-              <Grid ml={6} mt={2} container>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="contractorId"
-                    label="Contractor ID"
-                    placeHolder="Contractor ID"
-                    disabled={true}
-                  />
-                </Grid>
+          {({ handleSubmit, values, initialValues, isSubmitting }) => {
+            console.log(values, initialValues);
+            console.log(
+              values.attendancedate,
+              dayjs(values.attendancedate).format("DD/MM/YYYY"),
+              timekeeper?.attendancedate
+            );
 
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="contractorName"
-                    label="Contractor Name"
-                    placeHolder="Contractor Name"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="employeeid"
-                    label="Employee ID"
-                    placeHolder="Employee ID"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="machineInTime"
-                    label="Machine In Time"
-                    placeHolder="Machine In Time"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="machineOutTime"
-                    label="Machine Out Time"
-                    placeHolder="Machine Out Time"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="machineshift"
-                    label="Machine Shift"
-                    placeHolder="Machine Shift"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="overtime"
-                    label="Overtime"
-                    placeHolder="Overtime"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="eleave"
-                    label="Leave"
-                    placeHolder="Leave"
-                    disabled={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="designation"
-                    label="Designation"
-                    placeHolder="Designation"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="attendance"
-                    label="Attendance"
-                    placeHolder="Attendance"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="manualintime"
-                    label="Manual In Time"
-                    placeHolder="Manual In Time"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="manualouttime"
-                    label="Manual Out Time"
-                    placeHolder="Manual Out Time"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="manualshift"
-                    label="Manual Shift"
-                    placeHolder="Manual Shift"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="manualovertime"
-                    label="Manual Overtime"
-                    placeHolder="Manual Overtime"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="mleave"
-                    label="Manual Leave"
-                    placeHolder="Manual Leave"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  {/* <FormInput
+            return (
+              <form noValidate onSubmit={handleSubmit}>
+                <Grid ml={6} mt={2} container>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="contractorId"
+                      label="Contractor ID"
+                      placeHolder="Contractor ID"
+                      disabled={true}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="contractorName"
+                      label="Contractor Name"
+                      placeHolder="Contractor Name"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="employeeid"
+                      label="Employee ID"
+                      placeHolder="Employee ID"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="machineInTime"
+                      label="Machine In Time"
+                      placeHolder="Machine In Time"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="machineOutTime"
+                      label="Machine Out Time"
+                      placeHolder="Machine Out Time"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="machineshift"
+                      label="Machine Shift"
+                      placeHolder="Machine Shift"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="overtime"
+                      label="Overtime"
+                      placeHolder="Overtime"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="eleave"
+                      label="Leave"
+                      placeHolder="Leave"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormDate
+                      name="attendancedate"
+                      label="Attendance Date"
+                      placeHolder="Attendance Date"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="attendance"
+                      label="Attendance"
+                      placeHolder="Attendance"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="designation"
+                      label="Designation"
+                      placeHolder="Designation"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="manualintime"
+                      label="Manual In Time"
+                      placeHolder="Manual In Time"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="manualouttime"
+                      label="Manual Out Time"
+                      placeHolder="Manual Out Time"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="manualshift"
+                      label="Manual Shift"
+                      placeHolder="Manual Shift"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="manualovertime"
+                      label="Manual Overtime"
+                      placeHolder="Manual Overtime"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="mleave"
+                      label="Manual Leave"
+                      placeHolder="Manual Leave"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    {/* <FormInput
                     name="department"
                     label="Department"
                     placeHolder="Department"
                     disabled={false}
                   /> */}
-                  <FormSelect
-                    name="department"
-                    label="Department"
-                    placeHolder="Department"
-                    disabled={false}
-                    options={[
-                      { value: "8HR", label: "8HR" },
-                      { value: "10HR", label: "10HR" },
-                      { value: "CCM", label: "CCM" },
-                      { value: "LRF", label: "LRF" },
-                      { value: "Colony", label: "Colony" },
-                    ]}
-                  />
+                    <FormSelect
+                      name="department"
+                      label="Department"
+                      placeHolder="Department"
+                      disabled={false}
+                      options={[
+                        { value: "8HR", label: "8HR" },
+                        { value: "10HR", label: "10HR" },
+                        { value: "CCM", label: "CCM" },
+                        { value: "LRF", label: "LRF" },
+                        { value: "Colony", label: "Colony" },
+                      ]}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormSelect
+                      name="gender"
+                      label="Gender"
+                      placeHolder="Gender"
+                      disabled={false}
+                      options={[
+                        { value: "Male", label: "Male" },
+                        { value: "Female", label: "Female" },
+                        { value: "Other", label: "Other" },
+                      ]}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="comment"
+                      label="Comment"
+                      placeHolder="Enter the Comment"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FileUpload
+                      name="uploadDocument"
+                      label="Upload Document"
+                      placeholder="Upload Document"
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormSelect
-                    name="gender"
-                    label="Gender"
-                    placeHolder="Gender"
-                    disabled={false}
-                    options={[
-                      { value: "Male", label: "Male" },
-                      { value: "Female", label: "Female" },
-                      { value: "Other", label: "Other" },
-                    ]}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FormInput
-                    name="comment"
-                    label="Comment"
-                    placeHolder="Enter the Comment"
-                    disabled={false}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <FileUpload
-                    name="uploadDocument"
-                    label="Upload Document"
-                    placeholder="Upload Document"
-                  />
-                </Grid>
-              </Grid>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{ float: "right", mr: 10 }}
-              >
-                {loading && (
-                  <CircularProgress
-                    size={15}
-                    sx={{ ml: 1, color: "#364152" }}
-                  />
-                )}
-                Submit
-              </Button>
-            </form>
-          )}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ float: "right", mr: 10 }}
+                  disabled={isSubmitting}
+                >
+                  Submit
+                  {isSubmitting && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: "#364152" }}
+                    />
+                  )}
+                </Button>
+              </form>
+            );
+          }}
         </Formik>
       </Paper>
     </>
