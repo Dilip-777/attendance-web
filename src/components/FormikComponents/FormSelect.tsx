@@ -40,7 +40,7 @@ interface Props extends SelectProps {
   label: string;
   placeHolder: string;
   disabled?: boolean;
-  options: { value: string | boolean; label: string }[];
+  options: { value: string | number | boolean; label: string }[];
   sx?: Object;
 }
 

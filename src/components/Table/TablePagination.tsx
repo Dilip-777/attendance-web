@@ -35,6 +35,8 @@ interface Props {
   extraTableCells?: React.ReactNode;
   setContractorId?: React.Dispatch<React.SetStateAction<string>>;
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  type?: string;
+  handleClickReport?: () => void;
 }
 
 const CustomTable = (props: Props) => {
@@ -100,6 +102,8 @@ const CustomTable = (props: Props) => {
           numSelected={selected.length}
           filtername={props.filterName}
           setFilterName={props.setFilterName}
+          handleClickReport={props.handleClickReport}
+          type={props.type}
         />
         <TableContainer
           sx={{
@@ -158,7 +162,10 @@ const CustomTable = (props: Props) => {
                       {props.headcells
                         .filter((h) => !h.included)
                         .map((headCell) => (
-                          <TableCell align="center" sx={{ minWidth: "10rem" }}>
+                          <TableCell
+                            align={headCell.numeric ? "left" : "center"}
+                            sx={{ minWidth: "10rem" }}
+                          >
                             {_.get(row, headCell.id) === true && "Yes"}
                             {_.get(row, headCell.id) === false && "No"}
                             {typeof _.get(row, headCell.id) !== "boolean" &&
@@ -192,33 +199,6 @@ const CustomTable = (props: Props) => {
                                 sx={{ m: 0 }}
                               >
                                 <Launch fontSize="small" />
-                              </IconButton>
-                            </TableCell>
-                          )}
-                          {session?.user?.role === "Corporate" && (
-                            <TableCell align="center">
-                              <IconButton
-                                onClick={() => {
-                                  const jsonDataString = JSON.stringify(
-                                    row,
-                                    null,
-                                    2
-                                  );
-                                  const dataURI = `data:text/plain;charset=utf-8,${encodeURIComponent(
-                                    jsonDataString
-                                  )}`;
-
-                                  const downloadLink =
-                                    document.createElement("a");
-                                  downloadLink.href = dataURI;
-                                  downloadLink.download = `${row.contractorname}.txt`;
-                                  document.body.appendChild(downloadLink);
-                                  downloadLink.click();
-                                  document.body.removeChild(downloadLink);
-                                }}
-                                sx={{ m: 0 }}
-                              >
-                                <Download />
                               </IconButton>
                             </TableCell>
                           )}

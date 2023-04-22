@@ -34,17 +34,31 @@ const Sidebar = ({
         </Box>
       </Box>
 
-      <Box sx={{ display: { xs: "none", sm: "block" } }}>
-        <PerfectScrollbar
-          component="div"
-          style={{
-            height: !matchUpMd ? "calc(100vh - 56px)" : "calc(100vh - 88px)",
-            paddingLeft: "16px",
-            paddingRight: "16px",
+      <Box
+        sx={{
+          display: {
+            xs: "none",
+            sm: "block",
+          },
+          overflow: "auto",
+          scrollBehavior: "smooth",
+          "&::-webkit-scrollbar": {
+            width: 7,
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#bdbdbd",
+            borderRadius: 2,
+          },
+        }}
+      >
+        <Box
+          sx={{
+            px: 2,
+            mb: 10,
           }}
         >
           <MenuList />
-        </PerfectScrollbar>
+        </Box>
       </Box>
 
       <Box sx={{ display: { xs: "block", sm: "none" } }}>

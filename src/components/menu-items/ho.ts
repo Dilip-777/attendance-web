@@ -1,10 +1,12 @@
 import AssignmentInd from '@mui/icons-material/AssignmentInd';
 import Person from '@mui/icons-material/Person';
 import Storefront from '@mui/icons-material/Storefront';
+import Inventory from '@mui/icons-material/Inventory';
+import SupportIcon from '@mui/icons-material/Support';
 
 // constant
 const icons = {
-      AssignmentInd, Person, Storefront
+      AssignmentInd, Person, Storefront, Inventory, SupportIcon
 };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
@@ -57,6 +59,52 @@ const ho = {
                     title: 'Add Employee',
                     type: 'item',
                     url: '/employees/add',
+                    target: true
+                },
+            ]
+        },
+        {
+            id: 'store',
+            title: 'Stores',
+            type: 'collapse',
+            icon: icons.Inventory,
+
+            children: [
+               {
+                    id: '/store',
+                    title: 'Stores',
+                    type: 'item',
+                    url: '/store',
+                    target: true
+                },
+                {
+                    id: '/store/[id]',
+                    title: 'Add Store',
+                    type: 'item',
+                    url: '/store/add',
+                    target: true
+                },
+            ]
+        },
+        {
+            id: 'safety',
+            title: 'Safety',
+            type: 'collapse',
+            icon: icons.SupportIcon,
+
+            children: [
+               {
+                    id: '/safety',
+                    title: 'Safety',
+                    type: 'item',
+                    url: '/safety',
+                    target: true
+                },
+                {
+                    id: '/safety/[id]',
+                    title: 'Add Safety',
+                    type: 'item',
+                    url: '/safety/add',
                     target: true
                 },
             ]

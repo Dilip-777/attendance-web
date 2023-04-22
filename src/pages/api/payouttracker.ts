@@ -18,7 +18,6 @@ export default async function payouttracker(req: NextApiRequest, res: NextApiRes
                 res.status(200).json({message: "Already Exist"})
                 return
             }
-
          const payouttracker = await prisma.payoutTracker.create({
             data: data
          })

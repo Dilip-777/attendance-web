@@ -10,6 +10,9 @@ import {
   hritems,
   corporatorItems,
   hoitems,
+  plantCommercialItems,
+  storeitems,
+  safetyitems,
 } from "@/components/menu-items";
 import { use, useEffect, useState } from "react";
 import { User } from "@prisma/client";
@@ -26,25 +29,18 @@ const MenuList = () => {
 
   const getNavItems = () => {
     let items = [];
-    if (session?.user?.role === "Admin") {
-      items = adminItems.items;
-    } else if (
-      session?.user?.role === "TimeKeeper" ||
-      session?.user?.role === "None"
-    ) {
+    if (session?.user?.role === "Admin") items = adminItems.items;
+    else if (session?.user?.role === "TimeKeeper")
       items = timekeeperItems.items;
-    } else if (
-      session?.user?.role === "PlantCommercial" ||
-      session?.user?.role === "HR"
-    ) {
-      items = hritems.items;
-    } else if (session?.user?.role === "HoCommercialAuditor") {
+    else if (session?.user?.role === "HR") items = hritems.items;
+    else if (session?.user?.role === "PlantCommercial")
+      items = plantCommercialItems.items;
+    else if (session?.user?.role === "Stores") items = storeitems.items;
+    else if (session?.user?.role === "Safety") items = safetyitems.items;
+    else if (session?.user?.role === "HoCommercialAuditor")
       items = hoitems.items;
-    } else if (session?.user?.role === "Corporate") {
-      items = corporatorItems.items;
-    } else {
-      items = timekeeperItems.items;
-    }
+    else if (session?.user?.role === "Corporate") items = corporatorItems.items;
+    else items = timekeeperItems.items;
 
     const navItems1 = items?.map((item) => {
       switch (item.type) {

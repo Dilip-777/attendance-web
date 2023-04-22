@@ -15,7 +15,7 @@ import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Add, Edit, NavigateBefore, Search } from "@mui/icons-material";
+import { Add, Delete, Edit, NavigateBefore, Search } from "@mui/icons-material";
 import Backdrop from "@mui/material/Backdrop";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
@@ -24,7 +24,13 @@ import Modal from "@mui/material/Modal";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
 import Stack from "@mui/material/Stack";
-import { Chip, FormControl, TextField, styled } from "@mui/material/";
+import {
+  Chip,
+  CircularProgress,
+  FormControl,
+  TextField,
+  styled,
+} from "@mui/material/";
 import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
@@ -216,6 +222,7 @@ export default function TimeKeeper({ session }: { session: Session }) {
   const router = useRouter();
   const [departments, setDepartments] = React.useState<Department[]>([]);
   const matches = useMediaQuery("(min-width:600px)");
+  const [loading, setLoading] = React.useState(false);
 
   const handleClose = () => {
     setOpen(false);
@@ -226,6 +233,24 @@ export default function TimeKeeper({ session }: { session: Session }) {
   };
 
   const handleAddDepartment = async () => {
+    setLoading(true);
+    if (selectedDepartment) {
+      await axios
+        .post("api/admin/department", {
+          id: selectedDepartment?.id,
+          department,
+        })
+        .then((res) => {
+          handleClose();
+          fetchDepartments();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      setLoading(false);
+      return;
+    }
+
     const res = await axios
       .post("api/admin/department", {
         department,
@@ -237,6 +262,7 @@ export default function TimeKeeper({ session }: { session: Session }) {
       .catch((err) => {
         console.log(err);
       });
+    setLoading(false);
   };
 
   const handelAddDesignations = async () => {
@@ -430,12 +456,26 @@ export default function TimeKeeper({ session }: { session: Session }) {
                         <IconButton
                           onClick={() => {
                             setSelectedDepartment(row);
-
+                            setDepartment(row.department);
                             setOpen(true);
                           }}
                           sx={{ m: 0 }}
                         >
                           <Edit fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+
+                      <TableCell size="small" align="center">
+                        <IconButton
+                          onClick={async () => {
+                            await axios.delete("/api/admin/department", {
+                              data: { id: row.id },
+                            });
+                            fetchDepartments();
+                          }}
+                          sx={{ m: 0 }}
+                        >
+                          <Delete fontSize="small" />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -568,8 +608,15 @@ export default function TimeKeeper({ session }: { session: Session }) {
                       variant="contained"
                       fullWidth
                       onClick={handleAddDepartment}
+                      disabled={loading}
                     >
-                      Submit
+                      Submit'{" "}
+                      {loading && (
+                        <CircularProgress
+                          size={15}
+                          sx={{ ml: 1, color: "#364152" }}
+                        />
+                      )}
                     </Button>
                   </Stack>
                 </FormControl>

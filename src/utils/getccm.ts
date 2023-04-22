@@ -55,6 +55,8 @@ interface Data {
 }
 
 export default function getCCM(timekeeper: TimeKeeper[], month: number, year: number) {
+  console.log(timekeeper, month, year);
+  
      const getCount = (data: TimeKeeper[], designation: string) => {
     return data.filter((item) => item.designation === designation).length;
   };
@@ -206,62 +208,62 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
 
     data.forEach((item) => {
       if (item.designation === "ELE") {
-        totalOvertime.ele += Number(item.manualovertime);
+        totalOvertime.ele += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "LCO") {
-        totalOvertime.lco += Number(item.manualovertime);
+        totalOvertime.lco += Number(item.manualovertime || item.overtime);
       }
 
       if (item.designation === "TMAN") {
-        totalOvertime.tman += Number(item.manualovertime);
+        totalOvertime.tman += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "PO") {
-        totalOvertime.po += Number(item.manualovertime);
+        totalOvertime.po += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "BCO") {
-        totalOvertime.bco += Number(item.manualovertime);
+        totalOvertime.bco += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "SRFILTER") {
-        totalOvertime.srfilter += Number(item.manualovertime);
+        totalOvertime.srfilter += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "INCHARGE") {
-        totalOvertime.incharge += Number(item.manualovertime);
+        totalOvertime.incharge += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "MO") {
-        totalOvertime.mo += Number(item.manualovertime);
+        totalOvertime.mo += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "SHIFTINCH") {
-        totalOvertime.shiftinch += Number(item.manualovertime);
+        totalOvertime.shiftinch += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "GC") {
-        totalOvertime.gc += Number(item.manualovertime);
+        totalOvertime.gc += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "TMESSON") {
-        totalOvertime.tmesson += Number(item.manualovertime);
+        totalOvertime.tmesson += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "SVR") {
-        totalOvertime.svr += Number(item.manualovertime);
+        totalOvertime.svr += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "SBO") {
-        totalOvertime.sbo += Number(item.manualovertime);
+        totalOvertime.sbo += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "LMES") {
-        totalOvertime.lmes += Number(item.manualovertime);
+        totalOvertime.lmes += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "LMAN") {
-        totalOvertime.lman += Number(item.manualovertime);
+        totalOvertime.lman += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "FORMAN") {
-        totalOvertime.forman += Number(item.manualovertime);
+        totalOvertime.forman += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "JRELE") {
-        totalOvertime.jrele += Number(item.manualovertime);
+        totalOvertime.jrele += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "HELPER") {
-        totalOvertime.helper += Number(item.manualovertime);
+        totalOvertime.helper += Number(item.manualovertime || item.overtime);
       }
 
-      totalOvertime.total += Number(item.manualovertime);
+      totalOvertime.total += Number(item.manualovertime || item.overtime);
     });
     return totalOvertime;
   }
@@ -359,6 +361,119 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
     return netAmount;
   };
 
+  const getGST = (taxable:Data) => {
+    const gst: Data = {
+      date: "GST",
+      ele: taxable.ele * 0.18,
+      lco: taxable.lco * 0.18,
+      tman: taxable.tman * 0.18,
+      filter: taxable.filter * 0.18,
+      po: taxable.po * 0.18,
+      bco: taxable.bco * 0.18,
+      srfilter: taxable.srfilter * 0.18,
+      incharge: taxable.incharge * 0.18,
+      mo: taxable.mo * 0.18,
+      shiftinch: taxable.shiftinch * 0.18,
+      gc: taxable.gc * 0.18,
+      tmesson: taxable.tmesson * 0.18,
+      svr: taxable.svr * 0.18,
+      sbo: taxable.sbo * 0.18,
+      lmes: taxable.lmes * 0.18,
+      lman: taxable.lman * 0.18,
+      forman: taxable.forman * 0.18,
+      jrele: taxable.jrele * 0.18,
+      helper: taxable.helper * 0.18,
+      total: taxable.total * 0.18,
+    }
+    return gst
+  }
+
+
+  const getBillAmount = (taxable: Data, gst: Data) => {
+    const billAmount: Data = {
+      date: "Bill Amount",
+      ele: taxable.ele + gst.ele,
+      lco: taxable.lco + gst.lco,
+      tman: taxable.tman + gst.tman,
+      filter: taxable.filter + gst.filter,
+      po: taxable.po + gst.po,
+      bco: taxable.bco + gst.bco,
+      srfilter: taxable.srfilter + gst.srfilter,
+      incharge: taxable.incharge + gst.incharge,
+      mo: taxable.mo + gst.mo,
+      shiftinch: taxable.shiftinch + gst.shiftinch,
+      gc: taxable.gc + gst.gc,
+      tmesson: taxable.tmesson + gst.tmesson,
+      svr: taxable.svr + gst.svr,
+      sbo: taxable.sbo + gst.sbo,
+      lmes: taxable.lmes + gst.lmes,
+      lman: taxable.lman + gst.lman,
+      forman: taxable.forman + gst.forman,
+      jrele: taxable.jrele + gst.jrele,
+      helper: taxable.helper + gst.helper,
+      total: taxable.total + gst.total,
+    };
+    return billAmount;
+  }
+
+  const getTds = (taxable: Data) => {
+    const tds: Data = {
+      date: "TDS",
+      ele: taxable.ele * 0.01,
+      lco: taxable.lco * 0.01,
+      tman: taxable.tman * 0.01,
+      filter: taxable.filter * 0.01,
+      po: taxable.po * 0.01,
+      bco: taxable.bco * 0.01,
+      srfilter: taxable.srfilter * 0.01,
+      incharge: taxable.incharge * 0.01,
+      mo: taxable.mo * 0.01,
+      shiftinch: taxable.shiftinch * 0.01,
+      gc: taxable.gc * 0.01,
+      tmesson: taxable.tmesson * 0.01,
+      svr: taxable.svr * 0.01,
+      sbo: taxable.sbo * 0.01,
+      lmes: taxable.lmes * 0.01,
+      lman: taxable.lman * 0.01,
+      forman: taxable.forman * 0.01,
+      jrele: taxable.jrele * 0.01,
+      helper: taxable.helper * 0.01,
+      total: taxable.total * 0.01,
+    }
+    return tds
+  }
+
+  const getNetPayable = (billAmount: Data, tds: Data) => {
+    const netPayable: Data = {
+      date: "Net Payable",
+      ele: billAmount.ele + tds.ele,
+      lco: billAmount.lco + tds.lco,
+      tman: billAmount.tman + tds.tman,
+      filter: billAmount.filter + tds.filter,
+      po: billAmount.po + tds.po,
+      bco: billAmount.bco + tds.bco,
+      srfilter: billAmount.srfilter + tds.srfilter,
+      incharge: billAmount.incharge + tds.incharge,
+      mo: billAmount.mo + tds.mo,
+      shiftinch: billAmount.shiftinch + tds.shiftinch,
+      gc: billAmount.gc + tds.gc,
+      tmesson: billAmount.tmesson + tds.tmesson,
+      svr: billAmount.svr + tds.svr,
+      sbo: billAmount.sbo + tds.sbo,
+      lmes: billAmount.lmes + tds.lmes,
+      lman: billAmount.lman + tds.lman,
+      forman: billAmount.forman + tds.forman,
+      jrele: billAmount.jrele + tds.jrele,
+      helper: billAmount.helper + tds.helper,
+      total: billAmount.total + tds.total,
+    }
+    return netPayable
+  }
+
+  
+
+
+
  
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
@@ -371,8 +486,11 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
       rows.push(getData(date));
     }
 
+    const rows1: Data[] = [];
+
     const totalAttendance = getTotalAttendanceRecord(rows as Data[]);
     rows.push(totalAttendance);
+    rows1.push({...totalAttendance, date: "Total Man days"})
     const l = rows.length - 1;
     const rates = {
       date: "Rate",
@@ -398,8 +516,10 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
       total: 0,
     };
     rows.push(rates);
+    rows1.push(rates)
     const Amount = getAmount(totalAttendance, rates);
     rows.push(Amount);
+    rows1.push(Amount)
 
     const data = timekeeper.filter((entry) => {
       const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
@@ -409,15 +529,29 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
 
     const totalOvertime = getTotalOvertimeRecord(data);
     rows.push(totalOvertime);
+    rows1.push(totalOvertime)
 
     const totalOtAmount = getTotalOtAmount(totalOvertime, rates);
     rows.push(totalOtAmount);
+    rows1.push(totalOtAmount)
 
     const totalAmount = getTotalAmount(Amount, totalOtAmount);
     rows.push(totalAmount);
+    rows1.push({...totalAmount, date: "Taxable"})
 
+    const gst = getGST(totalAmount);
+   rows1.push(gst)
+
+   const billAmount = getBillAmount(totalAmount, gst);
+    rows1.push(billAmount)
+
+    const tds = getTds(totalAmount);
+    rows1.push(tds)
+
+    const netPayable = getNetPayable(billAmount, tds);
+    rows1.push(netPayable)
     
 
-    return {rows, totalAmount, totalOtAmount, Amount, rates, totalAttendance, total1 : totalAmount.total};
+    return {rows, totalAmount, totalOtAmount, Amount, rates, totalAttendance, total1 : totalAmount.total, rows1, totalnetPayable: netPayable.total};
 
 }

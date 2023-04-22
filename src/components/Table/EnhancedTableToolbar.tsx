@@ -7,13 +7,15 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { styled } from "@mui/material";
+import { Button, styled } from "@mui/material";
 import { alpha } from "@mui/material";
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
   filtername: string;
   setFilterName: React.Dispatch<React.SetStateAction<string>>;
+  type?: string;
+  handleClickReport?: () => void;
 }
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
@@ -28,7 +30,8 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
 }));
 
 export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, filtername, setFilterName } = props;
+  const { numSelected, filtername, setFilterName, handleClickReport, type } =
+    props;
 
   return (
     <Toolbar
@@ -73,6 +76,10 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             <Delete />
           </IconButton>
         </Tooltip>
+      ) : type === "contractor" ? (
+        <Button variant="contained" onClick={handleClickReport}>
+          Print
+        </Button>
       ) : (
         <Tooltip title="Filter list">
           <IconButton>

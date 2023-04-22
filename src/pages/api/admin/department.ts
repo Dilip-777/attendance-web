@@ -16,39 +16,39 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
       }
       break;
     case 'POST':
-      try {
-        const isExist = await prisma.department.findFirst({
+      // try {
+        const isExist = await prisma.department.findUnique({
           where: {
-            department: req.body.department,
+            id: req.body.id || "",
           }
         })
+        
         if (isExist) {
           await prisma.department.update({
             where: {
               id: isExist.id,
             },
             data: {
-              ...req.body,
+              department: req.body.department,
             }
           })
           res.status(200).json({ success: true });
           return;
         }
-        const department = await prisma.department.create({
+        const department1 = await prisma.department.create({
           data: {
             id: shortid.generate(),
-            ...req.body,
+            department: req.body.department,
           },
         });
-        res.status(201).json(department);
-      } catch (error) {
-        res.status(400).json({ success: false });
-      }
+        res.status(201).json(department1);
+      // } catch (error) {
+      //   res.status(400).json({ success: false });
+      // }
       break;
     case 'PUT':
       // try {
         const { id, designations } = req.body;
-        console.log(designations);
         
         const department =  await prisma.department.update({
           where: {
@@ -66,7 +66,21 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
       //   res.status(400).json({ success: false });
       // }
       break;
+      case 'DELETE':
+        try {
+          const { id } = req.body;
+          const department = await prisma.department.delete({
+            where: {
+              id: id,
+            },
+          });
+          res.status(200).json(department);
+        } catch (error) {
+          res.status(400).json({ success: false });
+        }
+        break;
     default:
       res.status(405).end(`Method ${method} Not Allowed`);
+      break;
   }
 }

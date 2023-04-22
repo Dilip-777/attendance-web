@@ -30,7 +30,7 @@ const FormDate: React.FC<Props> = ({
   sx,
   ...props
 }) => {
-  const { values, setFieldValue } = useFormikContext<any>();
+  const { setFieldValue } = useFormikContext<any>();
   const [field, meta] = useField(name);
   const [value, setValue] = React.useState<any>(dayjs(field.value) || null);
   const { onChange, ...other } = field;

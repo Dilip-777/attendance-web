@@ -583,8 +583,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       contractorname: contractor?.contractorname,
       attendance: "1",
       department: "LRF",
+      approvedByTimekeeper: true,
       NOT: {
-        manualovertime: null,
+        status: "Pending",
       },
     },
   });

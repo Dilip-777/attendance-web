@@ -26,7 +26,7 @@ interface Data {
   lmes: number;
   helper: number;
   total: number;
-}``
+}
 
 
 export default function getLRF(timekeeper: TimeKeeper[], month: number, year: number) {
@@ -54,6 +54,8 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
       total,
     };
   };
+
+
 
   function getTotalAttendanceRecord(rows: Data[]): Data {
     const totalAttendance = {
@@ -95,26 +97,26 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
 
     data.forEach((item) => {
       if (item.designation === "ELE") {
-        totalOvertime.ele += Number(item.manualovertime);
+        totalOvertime.ele += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "JRFILTER") {
-        totalOvertime.filter += Number(item.manualovertime);
+        totalOvertime.filter += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "SRFILTER") {
-        totalOvertime.srfilter += Number(item.manualovertime);
+        totalOvertime.srfilter += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "SVR") {
-        totalOvertime.svr += Number(item.manualovertime);
+        totalOvertime.svr += Number(item.manualovertime || item.overtime);
       }
 
       if (item.designation === "LMES") {
-        totalOvertime.lmes += Number(item.manualovertime);
+        totalOvertime.lmes += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "HELPER") {
-        totalOvertime.helper += Number(item.manualovertime);
+        totalOvertime.helper += Number(item.manualovertime || item.overtime);
       }
 
-      totalOvertime.total += Number(item.manualovertime);
+      totalOvertime.total += Number(item.manualovertime || item.overtime);
     });
     return totalOvertime;
   }
@@ -125,8 +127,8 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
       ele: totalAttendance.ele * rate.ele,
       filter: totalAttendance.filter * rate.filter,
       srfilter: totalAttendance.srfilter * rate.srfilter,
-      lmes: totalAttendance.lmes * rate.lmes,
       svr: totalAttendance.svr * rate.svr,
+      lmes: totalAttendance.lmes * rate.lmes,
       helper: totalAttendance.helper * rate.helper,
       total: 0,
     };
@@ -142,12 +144,12 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
   const getTotalOtAmount = (totalOvertime: Data, rate: Data) => {
     const totalAmount: Data = {
       date: "OT Amount",
-      ele: (totalOvertime.ele * rate.ele) / 8,
-      filter: (totalOvertime.filter * rate.filter) / 8,
-      srfilter: (totalOvertime.srfilter * rate.srfilter) / 8,
-      lmes: (totalOvertime.lmes * rate.lmes) / 8,
-      svr: (totalOvertime.svr * rate.svr) / 8,
-      helper: (totalOvertime.helper * rate.helper) / 8,
+      ele: Math.floor((totalOvertime.ele * rate.ele) / 8),
+      filter: Math.floor((totalOvertime.filter * rate.filter) / 8),
+      srfilter: Math.floor((totalOvertime.srfilter * rate.srfilter) / 8),
+      svr: Math.floor((totalOvertime.svr * rate.svr) / 8),
+      lmes: Math.floor((totalOvertime.lmes * rate.lmes) / 8),
+      helper: Math.floor((totalOvertime.helper * rate.helper) / 8),
       total: 0,
     };
     const total = Object.values(totalAmount)
@@ -173,6 +175,62 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
     return netAmount;
   };
 
+  const getGST = (totalAmount: Data) => {
+    const gstAmount: Data = {
+      date: "GST",
+      ele: Math.floor(totalAmount.ele * 0.18),
+      filter: Math.floor(totalAmount.filter * 0.18),
+      srfilter: Math.floor(totalAmount.srfilter * 0.18),
+      svr: Math.floor(totalAmount.svr * 0.18),
+      lmes: Math.floor(totalAmount.lmes * 0.18),
+      helper: Math.floor(totalAmount.helper * 0.18),
+      total: Math.floor(totalAmount.total * 0.18),
+    };
+    return gstAmount;
+  }
+
+  const getBillAmount = (totalAmount: Data, gstAmount: Data) => {
+    const billAmount: Data = {
+      date: "Bill Amount",
+      ele: totalAmount.ele + gstAmount.ele,
+      filter: totalAmount.filter + gstAmount.filter,
+      srfilter: totalAmount.srfilter + gstAmount.srfilter,
+      svr: totalAmount.svr + gstAmount.svr,
+      lmes: totalAmount.lmes + gstAmount.lmes,
+      helper: totalAmount.helper + gstAmount.helper,
+      total: totalAmount.total + gstAmount.total,
+    };
+    return billAmount;
+  }
+
+  const getTds = (totalAmount: Data) => {
+    const tdsAmount: Data = {
+      date: "TDS",
+      ele: Math.floor(totalAmount.ele * 0.01),
+      filter: Math.floor(totalAmount.filter * 0.01),
+      srfilter: Math.floor(totalAmount.srfilter * 0.01),
+      svr: Math.floor(totalAmount.svr * 0.01),
+      lmes: Math.floor(totalAmount.lmes * 0.01),
+      helper: Math.floor(totalAmount.helper * 0.01),
+      total: Math.floor(totalAmount.total * 0.01),
+    };
+    return tdsAmount;
+  }
+
+  const getNetPayable = (billAmount: Data, tdsAmount: Data) => {
+    const netPayable: Data = {
+      date: "Net Payable",
+      ele: billAmount.ele + tdsAmount.ele,
+      filter: billAmount.filter + tdsAmount.filter,
+      srfilter: billAmount.srfilter + tdsAmount.srfilter,
+      svr: billAmount.svr + tdsAmount.svr,
+      lmes: billAmount.lmes + tdsAmount.lmes,
+      helper: billAmount.helper + tdsAmount.helper,
+      total: billAmount.total + tdsAmount.total,
+    };
+    return netPayable;
+  }
+
 
 
 
@@ -187,8 +245,11 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
       rows.push(getData(date));
     }
 
+    const rows1: Data[] = [];
+
     const totalAttendance = getTotalAttendanceRecord(rows as Data[]);
     rows.push(totalAttendance);
+    rows1.push({...totalAttendance, date: "Total Man Days"})
     const l = rows.length - 1;
     const rates = {
       date: "Rate",
@@ -214,8 +275,10 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
       total: 0,
     };
     rows.push(rates);
+    rows1.push(rates)
     const Amount = getAmount(totalAttendance, rates);
     rows.push(Amount);
+    rows1.push(Amount)
 
     const data = timekeeper.filter((entry) => {
       const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
@@ -225,17 +288,27 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
 
     const totalOvertime = getTotalOvertimeRecord(data);
     rows.push(totalOvertime);
+    rows1.push(totalOvertime)
 
     const totalOtAmount = getTotalOtAmount(totalOvertime, rates);
     rows.push(totalOtAmount);
+    rows1.push(totalOtAmount)
 
     const totalAmount = getTotalAmount(Amount, totalOtAmount);
     rows.push(totalAmount);
+    rows1.push(totalAmount)
 
-    
+    const gstAmount = getGST(totalAmount);
+    rows1.push(gstAmount)
 
-    return { rows, totalAttendance, rates, totalOvertime, totalOtAmount, totalAmount, Amount, total1: totalAmount.total};
-  
+    const billAmount = getBillAmount(totalAmount, gstAmount);
+    rows1.push(billAmount)
 
-  
+    const tds = getTds(billAmount);
+    rows1.push(tds)
+
+    const netPayable = getNetPayable(billAmount, tds);
+    rows1.push(netPayable)
+
+    return { rows, totalAttendance, rates, totalOvertime, totalOtAmount, totalAmount, Amount, total1: totalAmount.total, rows1, totalnetPayable: netPayable.total};  
 }

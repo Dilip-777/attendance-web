@@ -1,14 +1,17 @@
 import dashboard from './dashboard';
-import pages from './pages';
-import utilities from './utilities';
+import hr from './hr';
+import utilities from './corporate';
 import admin from './admin';
-import corporator from './utilities';
+import corporator from './corporate';
 import ho from './ho';
+import plantCommercial from './plantcommercial';
+import  store from './store';
+import safety from './safety';
 
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-        items: [dashboard, pages, utilities]
+        items: [dashboard, hr, utilities]
 }
 
 const adminItems = {
@@ -19,16 +22,30 @@ const timekeeperItems = {
     items: [dashboard]
 }
 
-const hritems = {
-    items: [dashboard, pages]
+const plantCommercialItems = {
+    items: [dashboard, plantCommercial]
 }
+
+const hritems = {
+    items: [dashboard, hr]
+}
+
+
 
 const hoitems = {
     items: [dashboard, ho]
 }
 
 const corporatorItems = {
-     items: [dashboard, corporator ]
+     items: [dashboard, corporator]
 }
 
-export { menuItems, adminItems, timekeeperItems, hritems, hoitems, corporatorItems}
+const storeitems =  {
+    items : [store]
+}
+
+const safetyitems = {
+    items : [safety]
+}
+
+export { menuItems, adminItems, timekeeperItems, hritems, hoitems, corporatorItems, plantCommercialItems, storeitems, safetyitems}

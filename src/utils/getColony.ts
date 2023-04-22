@@ -60,13 +60,13 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
 
     data.forEach((item) => {
       if (item.gender === "MALE") {
-        totalOvertime.m += Number(item.manualovertime);
+        totalOvertime.m += Number(item.manualovertime || item.overtime);
       }
       if (item.gender === "FEMALE") {
-        totalOvertime.f += Number(item.manualovertime);
+        totalOvertime.f += Number(item.manualovertime || item.overtime);
       }
 
-      totalOvertime.total += Number(item.manualovertime);
+      totalOvertime.total += Number(item.manualovertime || item.overtime);
     });
     return totalOvertime;
   }
@@ -126,6 +126,56 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
     };
   };
 
+  const getTaxable = (totalAmount: Data, cpAmount: Data) => {
+    const taxable: Data = {
+      date: "Taxable",
+      m: totalAmount.m - cpAmount.m,
+      f: totalAmount.f - cpAmount.f,
+      total: totalAmount.total - cpAmount.total,
+    };
+    return taxable;
+  }
+
+  const getGst = (taxable: Data) => {
+    const gst: Data = {
+      date: "GST",
+      m: taxable.m * 0.18,
+      f: taxable.f * 0.18,
+      total: taxable.total * 0.18,
+    };
+    return gst;
+  }
+
+  const getBillAmount = (taxable: Data, gst: Data) => {
+    const billAmount: Data = {
+      date: "Bill Amount",
+      m: taxable.m + gst.m,
+      f: taxable.f + gst.f,
+      total: taxable.total + gst.total,
+    };
+    return billAmount;
+  }
+
+  const getTds = (taxable: Data) => {
+    const tds: Data = {
+      date: "TDS",
+      m: taxable.m * 0.1,
+      f: taxable.f * 0.1,
+      total: taxable.total * 0.1,
+    };
+    return tds;
+  }
+
+  const getNetPayable = (billAmount: Data, tds: Data) => {
+    const netPayable: Data = {
+      date: "Net Payable",
+      m: billAmount.m - tds.m,
+      f: billAmount.f - tds.f,
+      total: billAmount.total - tds.total,
+    };
+    return netPayable;
+  }
+
 //   async function getRows(month: number, year: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
@@ -138,8 +188,12 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
       rows.push(getData(date));
     }
 
+    const rows1: Data[] = [];
+
     const totalAttendance = getTotalAttendanceRecord(rows as Data[]);
     rows.push(totalAttendance);
+    rows1.push({...totalAttendance, date: "Total Man days"})
+    
     const rates = {
       date: "Rate",
       m: 365,
@@ -147,8 +201,10 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
       total: 0,
     };
     rows.push(rates);
+    rows1.push(rates)
     const Amount = getAmount(totalAttendance, rates);
     rows.push(Amount);
+    rows1.push(Amount)
 
    
   const data = timekeeper.filter((entry) => {
@@ -158,12 +214,15 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
     });
     const totalOvertime = getTotalOvertimeRecord(data);
     rows.push(totalOvertime);
+    rows1.push(totalOvertime)
 
     const totalOtAmount = getTotalOtAmount(totalOvertime, rates);
     rows.push(totalOtAmount);
+    rows1.push(totalOtAmount)
 
     const totalAmount = getTotalAmount(Amount, totalOtAmount);
     rows.push(totalAmount);
+    rows1.push(totalAmount)
 
     const cp = {
       date: "CP",
@@ -172,18 +231,26 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
       total: 0,
     };
     rows.push(cp);
+    rows1.push(cp)
 
     const cpAmount = getCPAmount(cp, totalAttendance);
     rows.push(cpAmount);
+    rows1.push(cpAmount)
 
-   
+    const taxable = getTaxable(totalAmount, cpAmount);
+    rows1.push(taxable)
 
-    
+    const gst = getGst(taxable);
+    rows1.push(gst)
 
-    
+    const billAmount = getBillAmount(taxable, gst);
+    rows1.push(billAmount)
 
+    const tds = getTds(taxable);
+    rows1.push(tds)
 
-    return {rows, totalAmount, cpAmount, totalOvertime, totalOtAmount, Amount, totalAttendance,total1: totalAmount.total + cpAmount.total};
+    const netPayable = getNetPayable(billAmount, tds);
+    rows1.push(netPayable)
 
-
+    return {rows, totalAmount, cpAmount, totalOvertime, totalOtAmount, Amount, totalAttendance,total1: totalAmount.total + cpAmount.total, rows1, totalnetPayable: netPayable.total};
 }

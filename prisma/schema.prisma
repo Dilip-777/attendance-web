@@ -94,6 +94,7 @@ model TimeKeeper {
     comment  Comment[]
     approvedByTimekeeper Boolean @default(false)
     UploadDocument Upload[]
+    @@unique([employeeid, attendancedate])
 }
 
 enum Status {
@@ -106,7 +107,7 @@ enum Status {
 model Contractor {
   id   String   @id @default(cuid())
   contractorname      String
-  contractorId       String?
+  contractorId       Int    @unique
   servicedetail      String
   supplierdetail      String
   officeaddress      String?
@@ -167,13 +168,15 @@ model Contractor {
   upload_certificate_services      String?
   upload_doc1      String?
   upload_doc2      String?
-  employee        Employee[]
+  employee        Employee[] 
+  safety         Safety[]
+  stores        Stores[]
 }
 
 model Employee {
   id   String   @id @default(cuid())
     contractorname  String
-    employeeId      String?
+    employeeId      String
     employeename String
     designation String 
     department String
@@ -285,6 +288,34 @@ model Upload {
   timekeeper         TimeKeeper     @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
 }
 
+model Stores {
+  id   String   @id @default(cuid())
+  month   String   
+  contractorid   Int
+  contractorName  String
+  division     String
+  chargeableItemIssued  String
+  quantity    Int
+  units  String
+  rate   Int
+  chargeableamount  Int
+  contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model Safety {
+  id   String   @id @default(cuid())
+  month   String   
+  contractorid   Int
+  contractorName  String
+  division     String
+  chargeableItemIssued  String
+  chargeablevoilation   String
+  netchargeableamount   Int
+  contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+
+
 enum Role {
   None
   TimeKeeper
@@ -293,4 +324,6 @@ enum Role {
   HoCommercialAuditor
   Corporate
   Admin
+  Stores
+  Safety
 }

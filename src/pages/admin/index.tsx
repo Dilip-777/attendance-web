@@ -31,7 +31,7 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import prisma from "@/lib/prisma";
-import { User } from "@prisma/client";
+import { Department, User } from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 
@@ -251,9 +251,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 export default function TimeKeeper({
   session,
   users,
+  departments,
 }: {
   session: Session;
   users: User[];
+  departments: Department[];
 }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<string>("name");
@@ -485,7 +487,11 @@ export default function TimeKeeper({
                 Edit Details
               </Typography>
               <Divider />
-              <EditUser selectedUser={selectedUser} handleClose={handleClose} />
+              <EditUser
+                departments={departments}
+                selectedUser={selectedUser}
+                handleClose={handleClose}
+              />
             </Stack>
           </Box>
         </Slide>
@@ -503,6 +509,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: session?.user?.id,
     },
   });
+  const departments = await prisma.department.findMany();
 
   if (user?.role !== "Admin") {
     return {
@@ -516,6 +523,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       props: {
         session: JSON.stringify(session),
         users: users,
+        departments: departments,
       },
     };
   }

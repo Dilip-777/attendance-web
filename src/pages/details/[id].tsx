@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
 import { Formik } from "formik";
-import { Role, TimeKeeper } from "@prisma/client";
+import { Department, Role, TimeKeeper } from "@prisma/client";
 import axios from "axios";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import FileUpload from "@/components/FormikComponents/FileUpload";
@@ -72,7 +72,13 @@ const validationSchema = Yup.object().shape({
   uploadDocument: Yup.object().optional(),
 });
 
-export default function EditTimkeeper({ role }: { role: Role | undefined }) {
+export default function EditTimkeeper({
+  role,
+  departments,
+}: {
+  role: Role | undefined;
+  departments: Department[];
+}) {
   const router = useRouter();
   const [value, setValue] = useState("");
   const { id } = router.query;
@@ -133,7 +139,7 @@ export default function EditTimkeeper({ role }: { role: Role | undefined }) {
       width="100%"
       height="90vh"
     >
-      <CircularProgress sx={{ color: "#364152" }} />
+      <CircularProgress sx={{ color: "#673ab7" }} />
     </Box>
   ) : (
     <>
@@ -342,13 +348,10 @@ export default function EditTimkeeper({ role }: { role: Role | undefined }) {
                       label="Department"
                       placeHolder="Department"
                       disabled={false}
-                      options={[
-                        { value: "8HR", label: "8HR" },
-                        { value: "10HR", label: "10HR" },
-                        { value: "CCM", label: "CCM" },
-                        { value: "LRF", label: "LRF" },
-                        { value: "Colony", label: "Colony" },
-                      ]}
+                      options={departments.map((d) => ({
+                        value: d.department,
+                        label: d.department,
+                      }))}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -405,6 +408,7 @@ export default function EditTimkeeper({ role }: { role: Role | undefined }) {
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const session = await getSession({ req });
+  const departments = await prisma.department.findMany();
 
   const user = await prisma.user.findUnique({
     where: {
@@ -414,6 +418,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   return {
     props: {
       role: user?.role,
+      departments,
     },
   };
 };

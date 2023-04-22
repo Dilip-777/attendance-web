@@ -47,6 +47,8 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { Add, Close, Done } from "@mui/icons-material";
+import { log } from "console";
+import ImportData from "@/components/import";
 
 const style = {
   position: "absolute",
@@ -55,17 +57,6 @@ const style = {
   bgcolor: "background.paper",
   boxShadow: 24,
 };
-
-const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
-  width: 300,
-  height: 40,
-  marginRight: 30,
-
-  "& fieldset": {
-    borderWidth: `1px !important`,
-    borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
-  },
-}));
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -230,11 +221,16 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         //     <FilterListIcon />
         //   </IconButton>
         // </Tooltip>
-        value.month() < dayjs().month() &&
-        showApprove &&
-        contractorName !== "all" && (
-          <Button onClick={handleApprove}>Approve</Button>
-        )
+        <Stack direction="row" spacing={2}>
+          <ImportData />
+          {value.month() < dayjs().month() &&
+            showApprove &&
+            contractorName !== "all" && (
+              <Button sx={{ mr: 3 }} onClick={handleApprove}>
+                Approve
+              </Button>
+            )}
+        </Stack>
       )}
     </Toolbar>
   );
@@ -242,10 +238,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
 export default function TimeKeeperTable({
   contractors,
-  employees,
 }: {
   contractors: Contractor[];
-  employees: Employee[];
 }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof TimeKeeper>("employeeid");
@@ -263,6 +257,10 @@ export default function TimeKeeperTable({
   const [contractorName, setContractorName] = React.useState("all");
   const [value, setValue] = React.useState<Dayjs>(dayjs());
   const { data: session } = useSession();
+  const [excelFile, setExcelFile] = React.useState<string | ArrayBuffer | null>(
+    null
+  );
+  const [excelFileError, setExcelFileError] = React.useState<string | null>("");
 
   const headcell1 = createHeadCells("status", "Status", false, true);
   const headcell2 = createHeadCells("action", "Action", false, true);
@@ -323,14 +321,13 @@ export default function TimeKeeperTable({
 
   const fetchTimeKeeper = async () => {
     setLoading(true);
-    const employeesid = employees
-      .filter(
-        (e) => contractorName === "all" || e.contractorId === contractorName
-      )
-      .map((e) => e.id);
 
     await axios
-      .get(`/api/timekeeper/gettimekeepers?month=${value?.format("MM/YYYY")}`)
+      .get(
+        `/api/timekeeper/gettimekeepers?month=${value?.format(
+          "MM/YYYY"
+        )}&role=${session?.user?.role}`
+      )
       .then((res) => {
         const timekeepers = res.data;
         setTimeKepeer(timekeepers);
@@ -345,15 +342,6 @@ export default function TimeKeeperTable({
   React.useEffect(() => {
     fetchTimeKeeper();
   }, [value]);
-
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: keyof TimeKeeper
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -402,27 +390,24 @@ export default function TimeKeeperTable({
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
   const isSelected = (contractorname: string) =>
     selected.indexOf(contractorname) !== -1;
+  console.log(timekeeper.find((t) => !t.approvedByTimekeeper));
+  console.log(timekeeper.find((t) => t.status === "Pending"));
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0
-      ? Math.max(
-          0,
-          (1 + page) * rowsPerPage -
-            timekeeper.filter(
-              (t) =>
-                t.contractorname === contractorName || contractorName === "all"
-            ).length
-        )
-      : 0;
+  const showApprove = () => {
+    const timekeeper1 = timekeeper.filter(
+      (t) => t.contractorname === contractorName || contractorName === "all"
+    );
+    if (session?.user?.role === "TimeKeeper") {
+      console.log("there");
+      if (timekeeper1.find((t) => !t.approvedByTimekeeper)) {
+        console.log("here");
 
-  console.log(value?.month());
+        return timekeeper1.find((t) => t.status === "Pending") ? false : true;
+      } else return false;
+    } else return false;
+  };
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -448,9 +433,7 @@ export default function TimeKeeperTable({
             }))}
             value={value}
             setValue={setValue}
-            showApprove={
-              timekeeper.filter((t) => t.approvedByTimekeeper).length === 0
-            }
+            showApprove={showApprove()}
             handleApprove={async () => {
               await axios.put(`/api/timekeeper/approve`, {
                 month: value.format("MM/YYYY"),
@@ -808,11 +791,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
   const contractors = await prisma.contractor.findMany();
-  const employees = await prisma.employee.findMany();
   return {
     props: {
       contractors,
-      employees,
     },
   };
 };

@@ -44,8 +44,6 @@ interface Data {
 
 const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number) => {
 
-
-
 const getCount = (
     data: TimeKeeper[],
     designation: string,
@@ -149,44 +147,47 @@ const getCount = (
       total: 0,
     };
 
+    console.log(data, "hgjhfjfghfhfg");
+    
+
     data.forEach((item) => {
       if (item.designation === "8MW") {
         item.gender === "Male"
-          ? (totalOvertime.m8 += Number(item.manualovertime))
-          : (totalOvertime.f8 += Number(item.manualovertime));
+          ? (totalOvertime.m8 += Number(item.manualovertime  || item.overtime))
+          : (totalOvertime.f8 += Number(item.manualovertime || item.overtime));
       }
       if (item.designation === "20MW") {
         item.gender === "Male"
-          ? (totalOvertime.m20 += Number(item.manualovertime))
-          : (totalOvertime.f20 += Number(item.manualovertime));
+          ? (totalOvertime.m20 += Number(item.manualovertime || item.overtime))
+          : (totalOvertime.f20 += Number(item.manualovertime || item.overtime));
       }
       if (item.designation === "DM Plant") {
-        totalOvertime.dm += Number(item.manualovertime);
+        totalOvertime.dm += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "QC") {
-        totalOvertime.qc += Number(item.manualovertime);
+        totalOvertime.qc += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "STORE") {
-        totalOvertime.store += Number(item.manualovertime);
+        totalOvertime.store += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "K-7 & 1-6PROC") {
         item.gender === "Male"
-          ? (totalOvertime.k7m += Number(item.manualovertime))
-          : (totalOvertime.k7f += Number(item.manualovertime));
+          ? (totalOvertime.k7m += Number(item.manualovertime || item.overtime))
+          : (totalOvertime.k7f += Number(item.manualovertime || item.overtime));
       }
       if (item.designation === "RHMS") {
-        totalOvertime.rmhs += Number(item.manualovertime);
+        totalOvertime.rmhs += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "PS") {
-        totalOvertime.ps += Number(item.manualovertime);
+        totalOvertime.ps += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "HK & Garden") {
-        totalOvertime.hk += Number(item.manualovertime);
+        totalOvertime.hk += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "SVR") {
-        totalOvertime.svr += Number(item.manualovertime);
+        totalOvertime.svr += Number(item.manualovertime || item.overtime);
       }
-      totalOvertime.total += Number(item.manualovertime);
+      totalOvertime.total += Number(item.manualovertime || item.overtime);
     });
     return totalOvertime;
   }
@@ -194,19 +195,19 @@ const getCount = (
   const getAmount = (totalAttendance: Data, rate: Data) => {
     const totalAmount: Data = {
       date: "Total Amount",
-      m8: totalAttendance.m8 * rate.m8,
-      f8: totalAttendance.f8 * rate.f8,
-      m20: totalAttendance.m20 * rate.m20,
-      f20: totalAttendance.f20 * rate.f20,
-      dm: totalAttendance.dm * rate.dm,
-      qc: totalAttendance.qc * rate.qc,
-      store: totalAttendance.store * rate.store,
-      k7m: totalAttendance.k7m * rate.k7m,
-      k7f: totalAttendance.k7f * rate.k7f,
-      rmhs: totalAttendance.rmhs * rate.rmhs,
-      ps: totalAttendance.ps * rate.ps,
-      hk: totalAttendance.hk * rate.hk,
-      svr: totalAttendance.svr * rate.svr,
+      m8: Math.floor(totalAttendance.m8 * rate.m8),
+      f8: Math.floor(totalAttendance.f8 * rate.f8),
+      m20: Math.floor(totalAttendance.m20 * rate.m20),
+      f20: Math.floor(totalAttendance.f20 * rate.f20),
+      dm: Math.floor(totalAttendance.dm * rate.dm),
+      qc: Math.floor(totalAttendance.qc * rate.qc),
+      store: Math.floor(totalAttendance.store * rate.store),
+      k7m: Math.floor(totalAttendance.k7m * rate.k7m),
+      k7f: Math.floor(totalAttendance.k7f * rate.k7f),
+      rmhs: Math.floor(totalAttendance.rmhs * rate.rmhs),
+      ps: Math.floor(totalAttendance.ps * rate.ps),
+      hk: Math.floor(totalAttendance.hk * rate.hk),
+      svr: Math.floor(totalAttendance.svr * rate.svr),
       total: 0,
     };
     const total = Object.values(totalAmount)
@@ -221,19 +222,19 @@ const getCount = (
   const getTotalOtAmount = (totalOvertime: Data, rate: Data) => {
     const totalAmount: Data = {
       date: "OT Amount",
-      m8: (totalOvertime.m8 * rate.m8) / 12,
-      f8: (totalOvertime.f8 * rate.f8) / 12,
-      m20: (totalOvertime.m20 * rate.m20) / 12,
-      f20: (totalOvertime.f20 * rate.f20) / 12,
-      dm: (totalOvertime.dm * rate.dm) / 12,
-      qc: (totalOvertime.qc * rate.qc) / 12,
-      store: (totalOvertime.store * rate.store) / 12,
-      k7m: (totalOvertime.k7m * rate.k7m) / 12,
-      k7f: (totalOvertime.k7f * rate.k7f) / 12,
-      rmhs: (totalOvertime.rmhs * rate.rmhs) / 12,
-      ps: (totalOvertime.ps * rate.ps) / 12,
-      hk: (totalOvertime.hk * rate.hk) / 12,
-      svr: (totalOvertime.svr * rate.svr) / 12,
+      m8: Math.floor((totalOvertime.m8 * rate.m8) / 12),
+      f8: Math.floor((totalOvertime.f8 * rate.f8) / 12),
+      m20: Math.floor((totalOvertime.m20 * rate.m20) / 12),
+      f20: Math.floor((totalOvertime.f20 * rate.f20) / 12),
+      dm: Math.floor((totalOvertime.dm * rate.dm) / 12),
+      qc: Math.floor((totalOvertime.qc * rate.qc) / 12),
+      store: Math.floor((totalOvertime.store * rate.store) / 12),
+      k7m: Math.floor((totalOvertime.k7m * rate.k7m) / 12),
+      k7f: Math.floor((totalOvertime.k7f * rate.k7f) / 12),
+      rmhs: Math.floor((totalOvertime.rmhs * rate.rmhs) / 12),
+      ps: Math.floor((totalOvertime.ps * rate.ps) / 12),
+      hk: Math.floor((totalOvertime.hk * rate.hk) / 12),
+      svr: Math.floor((totalOvertime.svr * rate.svr) / 12),
       total: 0,
     };
     const total = Object.values(totalAmount)
@@ -266,24 +267,28 @@ const getCount = (
     return netAmount;
   };
 
+
+
   const getCPAmount = (cp: Data, totalAttendance: Data) => {
     const cpAmount: Data = {
       date: "CP Amount",
-      m8: cp.m8 * totalAttendance.m8,
-      f8: cp.f8 * totalAttendance.f8,
-      m20: cp.m20 * totalAttendance.m20,
-      f20: cp.f20 * totalAttendance.f20,
-      dm: cp.dm * totalAttendance.dm,
-      qc: cp.qc * totalAttendance.qc,
-      store: cp.store * totalAttendance.store,
-      k7m: cp.k7m * totalAttendance.k7m,
-      k7f: cp.k7f * totalAttendance.k7f,
-      rmhs: cp.rmhs * totalAttendance.rmhs,
-      ps: cp.ps * totalAttendance.ps,
-      hk: cp.hk * totalAttendance.hk,
-      svr: cp.svr * totalAttendance.svr,
+      m8: Math.floor(cp.m8 * totalAttendance.m8),
+      f8: Math.floor(cp.f8 * totalAttendance.f8),
+      m20: Math.floor(cp.m20 * totalAttendance.m20),
+      f20: Math.floor(cp.f20 * totalAttendance.f20),
+      dm: Math.floor(cp.dm * totalAttendance.dm),
+      qc: Math.floor(cp.qc * totalAttendance.qc),
+      store: Math.floor(cp.store * totalAttendance.store),
+      k7m: Math.floor(cp.k7m * totalAttendance.k7m),
+      k7f: Math.floor(cp.k7f * totalAttendance.k7f),
+      rmhs: Math.floor(cp.rmhs * totalAttendance.rmhs),
+      ps: Math.floor(cp.ps * totalAttendance.ps),
+      hk: Math.floor(cp.hk * totalAttendance.hk),
+      svr: Math.floor(cp.svr * totalAttendance.svr),
       total: 0,
     };
+
+
     const total = Object.values(cpAmount)
       .filter((value) => typeof value === "number")
       .reduce((a, b) => Number(a) + Number(b), 0);
@@ -292,6 +297,115 @@ const getCount = (
       total,
     };
   };
+
+   const getTaxable = (totalAmount: Data, cpAmount: Data) => {
+       const taxable:  Data = {
+
+            date: "Taxable",
+            m8: totalAmount.m8 + cpAmount.m8,
+            f8: totalAmount.f8 + cpAmount.f8,
+            m20: totalAmount.m20 + cpAmount.m20,
+            f20: totalAmount.f20 + cpAmount.f20,
+            dm: totalAmount.dm + cpAmount.dm,
+            qc: totalAmount.qc + cpAmount.qc,
+            store: totalAmount.store + cpAmount.store,
+            k7m: totalAmount.k7m + cpAmount.k7m,
+            k7f: totalAmount.k7f + cpAmount.k7f,
+            rmhs: totalAmount.rmhs + cpAmount.rmhs,
+            ps: totalAmount.ps + cpAmount.ps,
+
+            hk: totalAmount.hk + cpAmount.hk, 
+            svr: totalAmount.svr + cpAmount.svr,
+            total: totalAmount.total + cpAmount.total,
+
+       }
+        return taxable;
+   }
+
+   const getGst = (taxable: Data) => {
+      const gst: Data = {
+        date: "GST",
+        m8: Math.floor(taxable.m8 * 0.18),
+        f8: Math.floor(taxable.f8 * 0.18),
+        m20: Math.floor(taxable.m20 * 0.18),
+        f20: Math.floor(taxable.f20 * 0.18),
+        dm: Math.floor(taxable.dm * 0.18),
+        qc: Math.floor(taxable.qc * 0.18),
+        store: Math.floor(taxable.store * 0.18),
+        k7m: Math.floor(taxable.k7m * 0.18),
+        k7f: Math.floor(taxable.k7f * 0.18),
+        rmhs: Math.floor(taxable.rmhs * 0.18),
+        ps: Math.floor(taxable.ps * 0.18),
+        hk: Math.floor(taxable.hk * 0.18),
+        svr: Math.floor(taxable.svr * 0.18),
+        total: Math.floor(taxable.total * 0.18),
+      }
+      return gst;
+   }
+
+   const getBillAmount  = (taxable: Data, gst: Data) => {
+      const billAmount: Data = {
+        date: "Bill Amount",
+        m8: taxable.m8 + gst.m8,
+        f8: taxable.f8 + gst.f8,
+        m20: taxable.m20 + gst.m20,
+        f20: taxable.f20 + gst.f20,
+        dm: taxable.dm + gst.dm,
+        qc: taxable.qc + gst.qc,
+        store: taxable.store + gst.store,
+        k7m: taxable.k7m + gst.k7m,
+        k7f: taxable.k7f + gst.k7f,
+        rmhs: taxable.rmhs + gst.rmhs,
+        ps: taxable.ps + gst.ps,
+        hk: taxable.hk + gst.hk,
+        svr: taxable.svr + gst.svr,
+        total: taxable.total + gst.total,
+      }
+      return billAmount;
+   }
+
+   const getTds = (taxable: Data) => {
+      const tds: Data = {
+        date: "TDS",
+        m8: Math.floor(taxable.m8 * 0.01),
+        f8: Math.floor(taxable.f8 * 0.01),
+        m20: Math.floor(taxable.m20 * 0.01),
+        f20: Math.floor(taxable.f20 * 0.01),
+        dm: Math.floor(taxable.dm * 0.01),
+        qc: Math.floor(taxable.qc * 0.01),
+        store: Math.floor(taxable.store * 0.01),
+        k7m: Math.floor(taxable.k7m * 0.01),
+        k7f: Math.floor(taxable.k7f * 0.01),
+        rmhs: Math.floor(taxable.rmhs * 0.01),
+        ps: Math.floor(taxable.ps * 0.01),
+        hk: Math.floor(taxable.hk * 0.01),
+        svr: Math.floor(taxable.svr * 0.01),
+        total: Math.floor(taxable.total * 0.01),
+      }
+      return tds;
+
+   }
+
+   const getNetPayable = (billAmount: Data, tds: Data) => {
+      const netPayable: Data = {
+        date: "Net Payable",
+        m8: billAmount.m8 + tds.m8,
+        f8: billAmount.f8 + tds.f8,
+        m20: billAmount.m20 + tds.m20,
+        f20: billAmount.f20 + tds.f20,
+        dm: billAmount.dm + tds.dm,
+        qc: billAmount.qc + tds.qc,
+        store: billAmount.store + tds.store,
+        k7m: billAmount.k7m + tds.k7m,
+        k7f: billAmount.k7f + tds.k7f,
+        rmhs: billAmount.rmhs + tds.rmhs,
+        ps: billAmount.ps + tds.ps,
+        hk: billAmount.hk + tds.hk,
+        svr: billAmount.svr + tds.svr,
+        total: billAmount.total + tds.total,
+      }
+      return netPayable;
+   }
 
 
     
@@ -306,8 +420,11 @@ const getCount = (
       rows.push(getData(date));
     }
 
+    const rows1: Data[] = [];
+
     const totalAttendance = getTotalAttendanceRecord(rows as Data[]);
     rows.push(totalAttendance);
+    rows1.push({ ...totalAttendance, date: "Total Man days"})
     const rates = {
       date: "Rate",
       m8: 325,
@@ -328,21 +445,22 @@ const getCount = (
     rows.push(rates);
     const Amount = getAmount(totalAttendance, rates);
     rows.push(Amount);
+    rows1.push(rates)
+    rows1.push(Amount)
 
-    const data = timekeeper.filter((entry) => {
-      const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
-      const entryYear = parseInt(entry.attendancedate.split("-")[2]);
-      return entryMonth === month && entryYear === year;
-    });
+    // const data = timekeeper.filter((item) => item.attendancedate === date);
 
-    const totalOvertime = getTotalOvertimeRecord(data);
+    const totalOvertime = getTotalOvertimeRecord(timekeeper);
     rows.push(totalOvertime);
+    rows1.push(totalOvertime)
 
     const totalOtAmount = getTotalOtAmount(totalOvertime, rates);
     rows.push(totalOtAmount);
+    rows1.push(totalOtAmount)
 
     const totalAmount = getTotalAmount(Amount, totalOtAmount);
     rows.push(totalAmount);
+    rows1.push(totalAmount)
 
     const cp = {
       date: "CP",
@@ -362,11 +480,33 @@ const getCount = (
       total: 0,
     };
     rows.push(cp);
+    rows1.push(cp)
 
     const cpAmount = getCPAmount(cp, totalAttendance);
     rows.push(cpAmount);
+    rows1.push(cpAmount)
 
-    return { rows, totalAmount, totalOtAmount, totalAttendance, Amount, total1: totalAmount.total + cpAmount.total};
+    const taxable = getTaxable(totalAmount, cpAmount);
+    rows1.push(taxable);
+   
+    const gst = getGst(taxable);
+    rows1.push(gst);
+     
+    const billAmount = getBillAmount(taxable, gst);
+    rows1.push(billAmount);
+
+    const tds = getTds(taxable);
+    rows1.push(tds);
+
+    const netPayable = getNetPayable(billAmount, tds);
+    rows1.push(netPayable);
+
+
+
+
+    
+
+    return { rows, totalAmount, totalOtAmount, totalAttendance, Amount, total1: totalAmount.total + cpAmount.total, rows1, totalnetPayable: netPayable.total};
 
 
 

@@ -13,59 +13,8 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, Employee } from "@prisma/client";
+import { Contractor, Department, Employee } from "@prisma/client";
 import axios from "axios";
-
-// const DesignationSelect = ({ department }: { department: string }) => {
-//   const { values } = useFormikContext();
-//   const [options, setOptions] = useState([
-//     { value: "ELEC", label: "ELEC", department: "CCM LRF" },
-//     { value: "LCO", label: "LCO", department: "CCM" },
-//     { value: "TMAN", label: "TMAN", department: "CCM" },
-//     { value: "FITTER", label: "FITTER", department: "CCM LRF" },
-//     { value: "PO", label: "PO", department: "CCM" },
-//     { value: "BCO", label: "BCO", department: "CCM" },
-//     { value: "SRFILTER", label: "SRFILTER", department: "CCM LRF" },
-//     { value: "INCHARGE", label: "INCHARGE", department: "CCM" },
-//     { value: "MO", label: "MO", department: "CCM" },
-//     { value: "SHIFTINCH", label: "SHIFTINCH", department: "CCM" },
-//     { value: "GC", label: "GC", department: "CCM" },
-//     { value: "SBO", label: "SBO", department: "CCM" },
-//     { value: "LMAN", label: "LMAN", department: "CCM" },
-//     { value: "FORMAN", label: "FORMAN", department: "CCM" },
-//     { value: "TMESSON", label: "TMESSON", department: "CCM" },
-//     { value: "LMES", label: "LMES", department: "CCM LRF" },
-//     { value: "JRELE", label: "JRELE", department: "CCM" },
-//     { value: "HELPER", label: "HELPER", department: "CCM LRF" },
-//     { value: "8MW", label: "8MW", department: "8HR 12HR" },
-//     { value: "12WM", label: "12WM", department: "8HR 12HR" },
-//     { value: "DM Plant", label: "DM Plant", department: "8HR 12HR" },
-//     { value: "QC", label: "QC", department: "8HR 12HR" },
-//     { value: "STORE", label: "STORE", department: "8HR 12HR" },
-//     { value: "K-7 & 1-6PROC", label: "K-7 & 1-6PROC", department: "8HR 12HR" },
-//     { value: "RMHS", label: "RMHS", department: "8HR 12HR" },
-//     { value: "PS", label: "PS", department: "8HR 12HR" },
-//     { value: "HK & Garden", label: "HK & Garden", department: "8HR 12HR" },
-//     { value: "SVR", label: "SVR", department: "8HR 12HR CCM LRF" },
-//     { value: "Colony", label: "Colony", department: "colony" },
-//   ]);
-//   const optionchange = () => {
-//     if (department === "CCM") {
-//       setOptions((options) =>
-//         options.filter((option) => option.department.includes(department))
-//       );
-//     }
-//   };
-
-//   return (
-//     <FormSelect
-//       name="designation"
-//       label="Designation"
-//       options={options}
-//       placeHolder="Select the"
-//     />
-//   );
-// };
 
 const numberType = Yup.number().required("Required");
 
@@ -88,45 +37,13 @@ const validationSchema = Yup.object().shape({
 export default function Edit({
   contractors,
   employee,
+  departments,
 }: {
   contractors: Contractor[];
   employee: Employee;
+  departments: Department[];
 }) {
   const router = useRouter();
-
-  const { id } = router.query;
-  console.log(contractors);
-  const options = [
-    { value: "ELEC", label: "ELEC", department: "CCM LRF" },
-    { value: "LCO", label: "LCO", department: "CCM" },
-    { value: "TMAN", label: "TMAN", department: "CCM" },
-    { value: "FITTER", label: "FITTER", department: "CCM LRF" },
-    { value: "PO", label: "PO", department: "CCM" },
-    { value: "BCO", label: "BCO", department: "CCM" },
-    { value: "SRFILTER", label: "SRFILTER", department: "CCM LRF" },
-    { value: "INCHARGE", label: "INCHARGE", department: "CCM" },
-    { value: "MO", label: "MO", department: "CCM" },
-    { value: "SHIFTINCH", label: "SHIFTINCH", department: "CCM" },
-    { value: "GC", label: "GC", department: "CCM" },
-    { value: "SBO", label: "SBO", department: "CCM" },
-    { value: "LMAN", label: "LMAN", department: "CCM" },
-    { value: "FORMAN", label: "FORMAN", department: "CCM" },
-    { value: "TMESSON", label: "TMESSON", department: "CCM" },
-    { value: "LMES", label: "LMES", department: "CCM LRF" },
-    { value: "JRELE", label: "JRELE", department: "CCM" },
-    { value: "HELPER", label: "HELPER", department: "CCM LRF" },
-    { value: "8MW", label: "8MW", department: "8HR 12HR" },
-    { value: "12WM", label: "12WM", department: "8HR 12HR" },
-    { value: "DM Plant", label: "DM Plant", department: "8HR 12HR" },
-    { value: "QC", label: "QC", department: "8HR 12HR" },
-    { value: "STORE", label: "STORE", department: "8HR 12HR" },
-    { value: "K-7 & 1-6PROC", label: "K-7 & 1-6PROC", department: "8HR 12HR" },
-    { value: "RMHS", label: "RMHS", department: "8HR 12HR" },
-    { value: "PS", label: "PS", department: "8HR 12HR" },
-    { value: "HK & Garden", label: "HK & Garden", department: "8HR 12HR" },
-    { value: "SVR", label: "SVR", department: "8HR 12HR CCM LRF" },
-    { value: "colony", label: "Colony", department: "colony" },
-  ];
 
   const initialValues = {
     contractorId: employee?.contractorId || "",
@@ -227,13 +144,10 @@ export default function Edit({
                       label="Department*"
                       placeHolder="Enter the Department"
                       disabled={false}
-                      options={[
-                        { value: "8HR", label: "8HR" },
-                        { value: "12HR", label: "12HR" },
-                        { value: "CCM", label: "CCM" },
-                        { value: "LRF", label: "LRF" },
-                        { value: "Colony", label: "Colony" },
-                      ]}
+                      options={departments.map((d) => ({
+                        value: d.department,
+                        label: d.department,
+                      }))}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -255,16 +169,13 @@ export default function Edit({
                       label="Designation*"
                       placeHolder="Enter the Designation"
                       disabled={false}
-                      options={options
-                        .filter((op) =>
-                          op.department.includes(values.department)
-                        )
-                        .map((option) => ({
-                          value: option.value,
-                          label: option.label,
-                        }))}
+                      options={
+                        departments
+                          .find((d) => d.department === values.department)
+                          ?.designations.map((d) => ({ value: d, label: d })) ||
+                        []
+                      }
                     />
-                    {/* <DesignationSelect department="qwe" /> */}
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
                     <FormInput
@@ -360,6 +271,7 @@ export default function Edit({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
   const { id } = context.query;
+  const departments = await prisma.department.findMany();
 
   const contractors = await prisma.contractor.findMany();
   if (!session) {
@@ -395,6 +307,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {
       contractors,
       employee,
+      departments,
     },
   };
 };

@@ -16,9 +16,10 @@ const LogoSection = () => {
       disableRipple
       onClick={() => dispatch({ type: MENU_OPEN, id: defaultId })}
     >
-      <Typography variant="h3" color="#5e35b1">
+      {/* <Typography variant="h3" color="#5e35b1">
         Logo
-      </Typography>
+      </Typography> */}
+      <img style={{ width: "6rem" }} src="/logo.jpg" alt="logo" />
     </ButtonBase>
   );
 };

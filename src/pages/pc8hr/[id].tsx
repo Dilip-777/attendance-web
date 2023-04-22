@@ -227,13 +227,9 @@ export default function PlantCommercial({
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
 
-  const handleGetRows = async () => {
+  const handleGetRows = () => {
     setLoading(true);
-    const { rows, total1 } = await getTotalAmountAndRows(
-      timekeeper,
-      month,
-      year
-    );
+    const { rows, total1 } = getTotalAmountAndRows(timekeeper, month, year);
     setRows(rows);
     setTotal(total1);
     setLoading(false);
@@ -478,8 +474,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       contractorname: contractor?.contractorname,
       attendance: "1",
       department: "8HR",
+      approvedByTimekeeper: true,
       NOT: {
-        manualovertime: null,
+        status: "Pending",
       },
     },
   });

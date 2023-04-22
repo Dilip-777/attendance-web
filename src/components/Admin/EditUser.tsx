@@ -18,7 +18,7 @@ import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import FormSelect from "@/components/FormikComponents/FormSelect";
-import { User } from "@prisma/client";
+import { Department, User } from "@prisma/client";
 import axios from "axios";
 
 const validationSchema = Yup.object().shape({
@@ -31,13 +31,13 @@ const validationSchema = Yup.object().shape({
 export default function EditUser({
   handleClose,
   selectedUser,
+  departments,
 }: {
   handleClose: () => void;
   selectedUser: User | null;
+  departments: Department[];
 }) {
   const router = useRouter();
-  const [value, setValue] = useState("");
-  const { id } = router.query;
 
   const initialValues = {
     name: selectedUser?.name || "",
@@ -112,6 +112,8 @@ export default function EditUser({
                     { value: "Admin", label: "Admin" },
                     { value: "TimeKeeper", label: "TimeKeeper" },
                     { value: "HR", label: "HR" },
+                    { value: "Stores", label: "Store" },
+                    { value: "Safety", label: "Safety" },
                     { value: "PlantCommercial", label: "PlantCommercial" },
                     {
                       value: "HoCommercialAuditor",
