@@ -1,24 +1,10 @@
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  FormLabel,
-  Grid,
-  OutlinedInput,
-  Paper,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material";
+import { Button, Paper, Stack } from "@mui/material";
 import { useRouter } from "next/router";
-import { shouldForwardProp } from "@mui/system";
-import { useState } from "react";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import FormSelect from "@/components/FormikComponents/FormSelect";
-import { Department, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import axios from "axios";
 
 const validationSchema = Yup.object().shape({
@@ -31,11 +17,9 @@ const validationSchema = Yup.object().shape({
 export default function EditUser({
   handleClose,
   selectedUser,
-  departments,
 }: {
   handleClose: () => void;
   selectedUser: User | null;
-  departments: Department[];
 }) {
   const router = useRouter();
 
