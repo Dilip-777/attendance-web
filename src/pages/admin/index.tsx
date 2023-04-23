@@ -248,15 +248,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function TimeKeeper({
-  session,
-  users,
-  departments,
-}: {
-  session: Session;
-  users: User[];
-  departments: Department[];
-}) {
+export default function TimeKeeper({ users }: { users: User[] }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<string>("name");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
@@ -487,11 +479,7 @@ export default function TimeKeeper({
                 Edit Details
               </Typography>
               <Divider />
-              <EditUser
-                departments={departments}
-                selectedUser={selectedUser}
-                handleClose={handleClose}
-              />
+              <EditUser selectedUser={selectedUser} handleClose={handleClose} />
             </Stack>
           </Box>
         </Slide>
@@ -509,7 +497,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: session?.user?.id,
     },
   });
-  const departments = await prisma.department.findMany();
 
   if (user?.role !== "Admin") {
     return {
@@ -521,9 +508,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   } else {
     return {
       props: {
-        session: JSON.stringify(session),
         users: users,
-        departments: departments,
       },
     };
   }
