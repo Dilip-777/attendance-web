@@ -64,52 +64,21 @@ const ho = {
             ]
         },
         {
-            id: 'store',
+            id: '/store',
             title: 'Stores',
-            type: 'collapse',
+            type: 'item',
+            url: '/store',
             icon: icons.Inventory,
-
-            children: [
-               {
-                    id: '/store',
-                    title: 'Stores',
-                    type: 'item',
-                    url: '/store',
-                    target: true
-                },
-                {
-                    id: '/store/[id]',
-                    title: 'Add Store',
-                    type: 'item',
-                    url: '/store/add',
-                    target: true
-                },
-            ]
+            breakcrumbs: false,
         },
         {
-            id: 'safety',
+            id: '/safety',
             title: 'Safety',
-            type: 'collapse',
+            type: 'item',
+            url: "/safety",
             icon: icons.SupportIcon,
-
-            children: [
-               {
-                    id: '/safety',
-                    title: 'Safety',
-                    type: 'item',
-                    url: '/safety',
-                    target: true
-                },
-                {
-                    id: '/safety/[id]',
-                    title: 'Add Safety',
-                    type: 'item',
-                    url: '/safety/add',
-                    target: true
-                },
-            ]
+             breadcrumbs: false
         },
-       
          {
             id: '/hoauditor',
             title: 'HO Commercial',

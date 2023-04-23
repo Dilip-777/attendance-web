@@ -160,14 +160,18 @@ export default function FinalSheetTable({
       >
         <Table aria-label="sticky table">
           <TableHead>
-            <TableRow>
-              <TableCell align="center" colSpan={1}>
+            <TableRow sx={{ bgcolor: "#eeeeee" }}>
+              <TableCell align="center" sx={{ fontWeight: "700" }} colSpan={1}>
                 Designation
               </TableCell>
               {(department === "8HR" ||
                 department === "12HR" ||
                 department === "Colony") && (
-                <TableCell align="center" colSpan={1}>
+                <TableCell
+                  align="center"
+                  sx={{ fontWeight: "700" }}
+                  colSpan={1}
+                >
                   Type
                 </TableCell>
               )}
@@ -175,7 +179,11 @@ export default function FinalSheetTable({
                 ? headers
                 : ccmheader
               ).map((header) => (
-                <TableCell align="center" colSpan={1}>
+                <TableCell
+                  align="center"
+                  sx={{ fontWeight: "700" }}
+                  colSpan={1}
+                >
                   {header}
                 </TableCell>
               ))}

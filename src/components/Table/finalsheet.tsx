@@ -107,6 +107,7 @@ export default function FinalSheetta({
     { main: "LMES", id: "lmes" },
     { main: "JRELE", id: "jrele" },
     { main: "HELPER", id: "helper" },
+    { main: "Total", id: "total" },
   ];
 
   const sidelrf = [
@@ -123,6 +124,7 @@ export default function FinalSheetta({
   const sidecolony = [
     { main: "Colony", sub: "Male", id: "m" },
     { main: "Colony", sub: "Female", id: "f" },
+    { main: "Total", sub: " ", id: "total" },
   ];
 
   switch (department) {

@@ -22,14 +22,21 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Contractor, Department, TimeKeeper, Workorder } from "@prisma/client";
+import {
+  Contractor,
+  Department,
+  Safety,
+  Stores,
+  TimeKeeper,
+  Workorder,
+} from "@prisma/client";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { generateDocument } from "@/components/PrintFinalSheet";
 import FinalSheetta from "@/components/Table/finalsheet";
+import { print } from "@/components/PrintFinalSheet";
 
 interface Column {
   id:
@@ -195,7 +202,22 @@ export default function FinalSheet({
   const [totalPayable, setTotalPayable] = useState<number>(0);
   const [department, setDepartment] = useState<string>("8HR");
   const [loading, setLoading] = useState<boolean>(false);
+  const [store, setStore] = useState<Stores | null>(null);
+  const [safety, setSafety] = useState<Safety | null>(null);
   const f = contractors.find((c) => c.contractorId === selectedContractor);
+
+  const fetchStoreAndSafety = async () => {
+    setLoading(true);
+    const res = await axios.get(
+      `/api/stores?contractorid=${selectedContractor}&month=${value}`
+    );
+    setStore(res.data);
+    const res1 = await axios.get(
+      `/api/safety?contractorid=${selectedContractor}&month=${value}`
+    );
+    setSafety(res1.data);
+    setLoading(false);
+  };
 
   const fetchTimekeepers = async () => {
     setLoading(true);
@@ -247,12 +269,24 @@ export default function FinalSheet({
 
   useEffect(() => {
     fetchTimekeepers();
+    fetchStoreAndSafety();
   }, [selectedContractor, value, department]);
 
   // console.log(timekeepers, rows, totalPayable, loading);
 
   const handlePrint = () => {
-    generateDocument(rows);
+    print(
+      rows,
+      totalPayable,
+      department,
+      f as Contractor,
+      workorders.find(
+        (w) => w.contractorId === f?.id && w.startDate.includes(value)
+      ) as Workorder,
+      value,
+      store,
+      safety
+    );
     // const c = contractors.find((c) => c.contractorId === selectedContractor);
     // const w = workorders.find(
     //   (w) => w.contractorId === f?.id && w.startDate.includes(value)
@@ -319,16 +353,16 @@ export default function FinalSheet({
           </Button>
         </Box>
         <Divider sx={{ my: 2 }} />
-        <Typography variant="h4" sx={{ mt: 2, mb: 4 }}>
+        <Typography variant="h4" sx={{ mb: 4, my: 2 }}>
           Contractor Details :
         </Typography>
         <Box display="flex" flexWrap={"wrap"}>
-          <Typography variant="h4" sx={{ mx: 6 }}>
+          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
             Contractor Id :{" "}
             <span style={{ fontWeight: "500" }}>{selectedContractor}</span>
           </Typography>
 
-          <Typography variant="h4" sx={{ mx: 6 }}>
+          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
             Contractor Name :{" "}
             <span style={{ fontWeight: "500" }}>
               {
@@ -337,7 +371,7 @@ export default function FinalSheet({
               }
             </span>
           </Typography>
-          <Typography variant="h4" sx={{ mx: 6 }}>
+          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
             Mobile Number :{" "}
             <span style={{ fontWeight: "500" }}>
               {
@@ -346,7 +380,7 @@ export default function FinalSheet({
               }
             </span>
           </Typography>
-          <Typography variant="h4" sx={{ mx: 6 }}>
+          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
             Office Address :{" "}
             <span style={{ fontWeight: "500" }}>
               {

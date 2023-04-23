@@ -6,6 +6,17 @@ export default async function Stores(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
+    const { contractorid, month } = req.query;
+    if(contractorid && month) {
+      const safety = await prisma.safety.findFirst({
+        where: {
+          contractorid: parseInt(contractorid as string),
+          month: month as string,
+        },
+      });
+      res.status(200).json(safety);
+      return;
+    }
     const safety = await prisma.safety.findMany();
     res.status(200).json(safety);
   }

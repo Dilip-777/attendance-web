@@ -1,22 +1,20 @@
 import TableHead from "@/components/PrintFinalSheet/tableHead";
-import { Note } from "@mui/icons-material";
 import {
   Document,
   HeadingLevel,
   Paragraph,
   Packer,
-  SectionProperties,
   Table,
   TableRow,
   TableCell,
   WidthType,
   TextRun,
-  TextDirection,
-  VerticalAlign,
   AlignmentType,
-  Spacing,
 } from "docx";
 import _ from "lodash";
+import DocTable from "./table";
+import { ContractorDetails, ServiceDetails } from "./contractordetails";
+import { Contractor, Safety, Stores, Workorder } from "@prisma/client";
 // import { saveAs } from "file-saver";
 
 interface Headcell {
@@ -66,53 +64,12 @@ const headcells = [
   createHeadcell("total", "Total", 1),
 ];
 
-export function generateDocument(rows: any) {
-
-  const table = new Table({
-    rows: [
-      new TableRow({
-        children: TableHead({ headcells: headers }),
-      }),
-      new TableRow({
-        children: [
-          ...headcells.map((headcell) => (
-            new TableCell({
-            children: [new Paragraph({
-            children: [new TextRun({ text: `${headcell.label}`, bold: true })],
-            alignment: AlignmentType.CENTER,
-          })],
-          })
-          )),
-        ],
-      }),
-      ...rows.map((row: any) => (
-
-          new TableRow({
-              children: [
-          ...headcells.map((headcell) => (
-            new TableCell({
-            children: [new Paragraph({
-            children: [new TextRun({ text: `${_.get(row, headcell.id)}` })],
-            alignment: AlignmentType.CENTER,
-          })],
-          })
-          )),
-        ],
-    })
-    ))
-    ],
-    width: {
-      size: 100,
-      type: WidthType.PERCENTAGE,
-    },
-    //   cellMargin: cellPadding,
-  });
+export function print(rows: any[], total: number,department: string, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null) {
 
   let doc = new Document({
     sections: [
       {
         children: [
-        //   new Paragraph({ text: "Hello YouTube", heading: HeadingLevel.TITLE }),
           new Paragraph({
             text: "Plant 1",
             heading: HeadingLevel.HEADING_2,
@@ -124,11 +81,37 @@ export function generateDocument(rows: any) {
             heading: HeadingLevel.HEADING_3,
             alignment: AlignmentType.CENTER,
             spacing: {
-                after: 100,
+                after: 300,
             }
             }),
+
+            new Paragraph({
+              text: "Contractor Details",
+              spacing: {
+                after: 300,
+                before: 300
+              }
+            }),
+            ContractorDetails({contractor}),
+            new Paragraph({
+              text: "Service Details",
+              spacing: {
+                after: 300,
+                before: 300
+              }
+            }),
+            ServiceDetails({workorder, date}),
+
+            new Paragraph({
+              text: `Department: ${department}`,
+              spacing: {
+                after: 300,
+                before: 300
+              }
+            }),
+
            
-          table,
+          DocTable({department: department, rows: rows, total: total, safetypenality: safety?.netchargeableamount || 0, deduction: store?.chargeableamount || 0}),
         ],
       },
     ],
