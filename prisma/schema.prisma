@@ -94,7 +94,6 @@ model TimeKeeper {
     comment  Comment[]
     approvedByTimekeeper Boolean @default(false)
     UploadDocument Upload[]
-    @@unique([employeeid, attendancedate])
 }
 
 enum Status {
