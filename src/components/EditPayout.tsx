@@ -104,7 +104,7 @@ export default function EditPayout({
                 overflow: "hidden auto",
                 scrollBehavior: "smooth",
                 "&::-webkit-scrollbar": {
-                  width: 7,
+                  width: 9,
                 },
                 "&::-webkit-scrollbar-thumb": {
                   backgroundColor: "#bdbdbd",

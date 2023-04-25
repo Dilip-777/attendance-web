@@ -37,7 +37,7 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import prisma from "@/lib/prisma";
-import { Department, User } from "@prisma/client";
+import { Department, Designations, User } from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
@@ -61,45 +61,6 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   },
 }));
 
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = "asc" | "desc";
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number
-) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
 const createHeadCells = (
   id: string,
   label: string,
@@ -119,15 +80,6 @@ const headCells = [
   createHeadCells("department", "Department", false, false),
   createHeadCells("designation", "Designations", false, false),
 ];
-
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-}
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
@@ -200,9 +152,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function TimeKeeper({ session }: { session: Session }) {
-  const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<string>("name");
+export default function TimeKeeper({
+  designations,
+}: {
+  designations: Designations[];
+}) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -212,10 +166,6 @@ export default function TimeKeeper({ session }: { session: Session }) {
   const [filter, setFilter] = React.useState("");
   const [selectedDepartment, setSelectedDepartment] =
     React.useState<Department | null>(null);
-  const [designations, setDesignations] = React.useState<string[]>(
-    selectedDepartment?.designations || []
-  );
-  const [designation, setDesignation] = React.useState("");
   const [department, setDepartment] = React.useState(
     selectedDepartment?.department || ""
   );
@@ -265,35 +215,6 @@ export default function TimeKeeper({ session }: { session: Session }) {
     setLoading(false);
   };
 
-  const handelAddDesignations = async () => {
-    console.log("designations", designations);
-    console.log("department", selectedDepartment?.id);
-    console.log("department", selectedDepartment?.department);
-    console.log("department", selectedDepartment?.designations);
-
-    const res = await axios
-      .put("api/admin/department", {
-        id: selectedDepartment?.id,
-        designations: designations,
-      })
-      .then((res) => {
-        handleClose();
-        fetchDepartments();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: string
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       const newSelected = departments.map((n) => n.id);
@@ -340,19 +261,11 @@ export default function TimeKeeper({ session }: { session: Session }) {
     setDepartments(data);
   };
 
-  console.log(departments);
-
   React.useEffect(() => {
     fetchDepartments();
   }, []);
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
-
-  console.log(designations);
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - departments.length) : 0;
@@ -374,7 +287,7 @@ export default function TimeKeeper({ session }: { session: Session }) {
           sx={{
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
-              height: 7,
+              height: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",
@@ -431,24 +344,21 @@ export default function TimeKeeper({ session }: { session: Session }) {
                       <TableCell>{row.department}</TableCell>
                       <TableCell>
                         <Box display="flex">
-                          {row.designations.length === 0 && (
+                          {designations?.filter(
+                            (d) => d.departmentname === row.department
+                          ).length === 0 && (
                             <Box display="flex" alignItems="center">
                               <Typography>No Designations</Typography>
                             </Box>
                           )}
-                          {row.designations.map((designation) => (
-                            <Chip sx={{ mx: 1 }} label={designation} />
-                          ))}
-                          <IconButton
-                            sx={{ color: "rgb(103, 58, 183)" }}
-                            onClick={() => {
-                              setSelectedDepartment(row);
-                              setDesignations(row.designations);
-                              setOpen1(true);
-                            }}
-                          >
-                            <Add fontSize="small" />
-                          </IconButton>
+                          {designations
+                            ?.filter((d) => d.departmentname === row.department)
+                            .map((designation) => (
+                              <Chip
+                                sx={{ mx: 1 }}
+                                label={designation.designation}
+                              />
+                            ))}
                         </Box>
                       </TableCell>
 
@@ -544,57 +454,10 @@ export default function TimeKeeper({ session }: { session: Session }) {
                 >
                   <NavigateBefore fontSize="large" />
                 </IconButton>
-                Add{" "}
-                {open
-                  ? "Depatrment"
-                  : `Designation for ${selectedDepartment?.department}`}
+                Add Department
               </Typography>
               <Divider />
-              {open1 && (
-                <Box display="flex" alignItems="center" flexWrap="wrap" mt={2}>
-                  {designations.map((designation) => (
-                    <Chip
-                      label={designation}
-                      sx={{ m: 1 }}
-                      onDelete={() => {
-                        setDesignations(
-                          designations.filter((des) => des !== designation)
-                        );
-                      }}
-                    />
-                  ))}
-                </Box>
-              )}
-              {open1 && (
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <Stack width="100%" direction="row" spacing={2}>
-                    <TextField
-                      fullWidth
-                      label="Designation"
-                      variant="outlined"
-                      value={designation}
-                      onChange={(e) => setDesignation(e.target.value)}
-                    />
-                    <Button
-                      variant="contained"
-                      // fullWidth
-                      onClick={() => {
-                        setDesignations([...designations, designation]);
-                        setDesignation("");
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </Stack>
-                  <Button
-                    variant="contained"
-                    onClick={handelAddDesignations}
-                    sx={{ mt: 5 }}
-                  >
-                    Submit
-                  </Button>
-                </FormControl>
-              )}
+
               {open && (
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <Stack width="100%" spacing={2}>
@@ -632,14 +495,9 @@ export default function TimeKeeper({ session }: { session: Session }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  const departments = await prisma.user.findMany();
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session?.user?.id,
-    },
-  });
+  const designations = await prisma.designations.findMany();
 
-  if (user?.role !== "Admin") {
+  if (session?.user?.role !== "Admin") {
     return {
       redirect: {
         destination: "/",
@@ -649,8 +507,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   } else {
     return {
       props: {
-        session: JSON.stringify(session),
-        departments: departments,
+        designations,
       },
     };
   }

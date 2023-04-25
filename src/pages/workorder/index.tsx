@@ -368,7 +368,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
           sx={{
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
-              height: 7,
+              height: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",

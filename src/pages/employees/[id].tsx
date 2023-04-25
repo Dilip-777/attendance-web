@@ -13,13 +13,15 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, Department, Employee } from "@prisma/client";
+import { Contractor, Department, Designations, Employee } from "@prisma/client";
 import axios from "axios";
+import { CircularProgress } from "@mui/material";
 
 const numberType = Yup.number().required("Required");
 
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().required("Required"),
+  employeeId: numberType,
   employeename: Yup.string().required("Required"),
   designation: Yup.string().required("Required"),
   department: Yup.string().required("Required"),
@@ -38,15 +40,18 @@ export default function Edit({
   contractors,
   employee,
   departments,
+  designations,
 }: {
   contractors: Contractor[];
   employee: Employee;
   departments: Department[];
+  designations: Designations[];
 }) {
   const router = useRouter();
 
   const initialValues = {
     contractorId: employee?.contractorId || "",
+    employeeId: employee?.employeeId || 0,
     employeename: employee?.employeename || "",
     designation: employee?.designation || "",
     department: employee?.department || "",
@@ -88,25 +93,29 @@ export default function Edit({
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
-            console.log(values);
-            const { phone, ...rest } = values;
-            console.log(String(phone), rest);
+          onSubmit={(values, { setErrors, setSubmitting }) => {
+            const { phone, employeeId, ...rest } = values;
+            setSubmitting(true);
             axios
               .post("/api/hr/employee", {
                 id: employee ? employee.id : undefined,
                 ...rest,
+                employeeId: employeeId.toString(),
                 phone: String(phone),
               })
               .then((res) => {
                 router.push("/employees");
               })
               .catch((err) => {
-                console.log(err);
+                if (err.response.data.message === "Employee already exists") {
+                  alert("Employee Id already exists");
+                  setErrors({ employeeId: "Employee Id already exists" });
+                }
               });
+            setSubmitting(false);
           }}
         >
-          {({ handleSubmit, values, errors }) => {
+          {({ handleSubmit, values, isSubmitting }) => {
             // if (!errors.designation) {
             //   const options1 = options.filter((option) =>
             //     option.department.includes(values.designation)
@@ -128,6 +137,15 @@ export default function Edit({
                           label: contractor.contractorname,
                         })) || []
                       }
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="employeeId"
+                      label="Employee Id*"
+                      placeHolder="Enter Employee Id"
+                      type="number"
+                      disabled={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -169,12 +187,12 @@ export default function Edit({
                       label="Designation*"
                       placeHolder="Enter the Designation"
                       disabled={false}
-                      options={
-                        departments
-                          .find((d) => d.department === values.department)
-                          ?.designations.map((d) => ({ value: d, label: d })) ||
-                        []
-                      }
+                      options={designations
+                        .filter((d) => d.departmentname === values.department)
+                        .map((d) => ({
+                          value: d.designation,
+                          label: d.designation,
+                        }))}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -256,8 +274,15 @@ export default function Edit({
                   type="submit"
                   variant="contained"
                   sx={{ float: "right", mr: 10 }}
+                  disabled={isSubmitting}
                 >
                   Submit
+                  {isSubmitting && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: "#364152" }}
+                    />
+                  )}
                 </Button>
               </form>
             );
@@ -303,11 +328,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
+  const designations = await prisma.designations.findMany();
+
   return {
     props: {
       contractors,
       employee,
       departments,
+      designations,
     },
   };
 };

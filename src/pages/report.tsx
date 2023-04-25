@@ -5,7 +5,12 @@ import SalaryReport from "@/components/Report/salaryreport";
 import WorkerReport from "@/components/Report/workerreport";
 import prisma from "@/lib/prisma";
 import { Paper, Typography, Divider, Tabs, Tab, Box } from "@mui/material";
-import { Contractor, Department, Workorder } from "@prisma/client";
+import {
+  Contractor,
+  Department,
+  Designations,
+  Workorder,
+} from "@prisma/client";
 import { GetServerSideProps } from "next";
 import { useState } from "react";
 
@@ -46,10 +51,12 @@ export default function Reports({
   contractors,
   workorders,
   departments,
+  designations,
 }: {
   contractors: Contractor[];
   workorders: Workorder[];
   departments: Department[];
+  designations: Designations[];
 }) {
   const [value, setValue] = useState(0);
 
@@ -90,7 +97,9 @@ export default function Reports({
           <ManPowerReport />
         </TabPanel>
         <TabPanel value={value} index={4}>
-          <DesignationReport />
+          <DesignationReport
+            designations={designations.map((d) => d.designation)}
+          />
         </TabPanel>
       </Box>
     </Paper>
@@ -101,8 +110,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const contractors = await prisma.contractor.findMany();
   const workorders = await prisma.workorder.findMany();
   const departments = await prisma.department.findMany();
+  const designations = await prisma.designations.findMany();
 
   return {
-    props: { contractors, workorders, departments },
+    props: { contractors, workorders, departments, designations },
   };
 };

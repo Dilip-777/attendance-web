@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
+import shortid from "shortid";
 
 
 export default async function contractors (req: NextApiRequest, res: NextApiResponse) {
@@ -11,9 +12,20 @@ export default async function contractors (req: NextApiRequest, res: NextApiResp
 
     if(req.method === "POST") {
          const data = req.body
+         const isExist = await prisma.contractor.findUnique({
+            where: {
+                contractorId: data.contractorId
+            }
+         })
+
+         if(isExist) {
+                res.status(409).json({message: "Contractor already exists", error: "contractorId"})
+                return;
+         }
             
             const contractor = await prisma.contractor.create({
                 data: {
+                    id: shortid.generate(),
                     ...data,
                     businessdetaildocument: data.businessdetaildocument?.newFilename || null,
                     uploadutilitybill: data.uploadutilitybill?.newFilename || null,

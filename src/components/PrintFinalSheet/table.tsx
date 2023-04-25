@@ -153,7 +153,6 @@ export default function DocTable({
     { main: "ELE", id: "ele" },
     { main: "FILTER", id: "filter" },
     { main: "SRFILTER", id: "srfilter" },
-    { main: "INCHARGE", id: "incharge" },
     { main: "SVR", id: "svr" },
     { main: "LMES", id: "lmes" },
     { main: "HELPER", id: "helper" },
@@ -169,22 +168,22 @@ export default function DocTable({
   const getHeader = () => {
     switch (department) {
       case "8HR":
+      case "12HR":
         return side8hr;
       case "CCM":
         return sideccm;
       case "LRF":
         return sidelrf;
-      case "COLONY":
+      case "Colony":
         return sidecolony;
       default:
         return side8hr;
     }
   };
 
-  const colspan =
-    department === "CCM" || department === "LRF" || department === "Colony"
-      ? 6
-      : 8;
+  const colspan = department === "CCM" || department === "LRF" ? 5 : 9;
+
+  const rowspan = 6;
 
   const table = new Table({
     rows: [
@@ -210,12 +209,12 @@ export default function DocTable({
                 ],
           })
       ),
-      tableRow("Net Amount Payable", 6, colspan, total),
-      tableRow("GST Hold", 6, colspan, 0),
-      tableRow("Safety Violation Penality", 6, colspan, safetypenality),
-      tableRow("Adjustment of Advance Amount", 6, colspan, 0),
-      tableRow("Any Other Deductions", 6, colspan, deduction),
-      tableRow("Final Payable", 6, colspan, total - safetypenality - deduction),
+      tableRow("Net Amount Payable", 5, colspan, total),
+      tableRow("GST Hold", 5, colspan, 0),
+      tableRow("Safety Violation Penality", 5, colspan, safetypenality),
+      tableRow("Adjustment of Advance Amount", 5, colspan, 0),
+      tableRow("Any Other Deductions", 5, colspan, deduction),
+      tableRow("Final Payable", 5, colspan, total - safetypenality - deduction),
     ],
     width: {
       size: 100,

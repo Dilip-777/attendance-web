@@ -39,7 +39,7 @@ export default function EditUser({
           overflow: "hidden auto",
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            width: 7,
+            width: 8,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#bdbdbd",

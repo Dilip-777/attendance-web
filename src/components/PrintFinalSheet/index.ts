@@ -14,7 +14,11 @@ import {
 import _ from "lodash";
 import DocTable from "./table";
 import { ContractorDetails, ServiceDetails } from "./contractordetails";
-import { Contractor, Safety, Stores, Workorder } from "@prisma/client";
+import { Contractor, Safety, Stores, Workorder, payoutTracker } from "@prisma/client";
+import { BankDetails, CostDetails } from "./otherDetails";
+import dayjs from "dayjs";
+import { AppRegistration } from "@mui/icons-material";
+import ApprovalInformation from "./approvalInfo";
 // import { saveAs } from "file-saver";
 
 interface Headcell {
@@ -30,6 +34,13 @@ const createHeadcell = (id: string, label: string, colspan?: number) => {
     colspan,
   };
 };
+
+const getPreviousMonth = (month: string) => {
+const date = dayjs(month, 'MM/YYYY');
+const prevMonth = date.subtract(1, 'month');
+const prevMonthString = prevMonth.format('MM/YYYY');
+return prevMonthString;
+}
 
 const headers = [
   createHeadcell("date", "Date", 1),
@@ -64,7 +75,13 @@ const headcells = [
   createHeadcell("total", "Total", 1),
 ];
 
-export function print(rows: any[], total: number,department: string, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null) {
+export function print(rows: any[], total: number,department: string, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number ) {
+
+  const previousMonth = getPreviousMonth(date)
+  const beforemonth = getPreviousMonth(previousMonth)
+
+  console.log("payoutracker", payouttracker);
+  
 
   let doc = new Document({
     sections: [
@@ -74,44 +91,80 @@ export function print(rows: any[], total: number,department: string, contractor:
             text: "Plant 1",
             heading: HeadingLevel.HEADING_2,
             alignment: AlignmentType.CENTER,
-            
+            spacing:{
+              before: 0
+            }
           }),
             new Paragraph({
             text: "Contractor's Payment Approval Sheet",
             heading: HeadingLevel.HEADING_3,
             alignment: AlignmentType.CENTER,
             spacing: {
-                after: 300,
+                after: 250,
             }
             }),
 
             new Paragraph({
-              text: "Contractor Details",
+            children: [new TextRun({ text: "Contractor Details", size: 15, bold: true })],
               spacing: {
-                after: 300,
-                before: 300
+                after: 100,
+                before: 250
               }
             }),
             ContractorDetails({contractor}),
             new Paragraph({
-              text: "Service Details",
+             children: [new TextRun({ text: "Service Details", size: 15, bold: true })],
               spacing: {
-                after: 300,
-                before: 300
+                after: 100,
+                before: 250
               }
             }),
             ServiceDetails({workorder, date}),
 
             new Paragraph({
-              text: `Department: ${department}`,
+              children: [new TextRun({ text: `Department - ${department}`, size: 15, bold: true })],
               spacing: {
-                after: 300,
-                before: 300
+                after: 100,
+                before: 250
               }
             }),
 
            
           DocTable({department: department, rows: rows, total: total, safetypenality: safety?.netchargeableamount || 0, deduction: store?.chargeableamount || 0}),
+
+            new Paragraph({
+            children: [new TextRun({ text: "CONTRACTOR MONTHLY COST CHARGED IN PROFIT & LOSS A/C FOR CURRENT FINANCIAL YEAR", size: 15, bold: true })],
+            alignment: AlignmentType.CENTER,
+            spacing: {
+                after: 100,
+                before: 300
+              },
+          }),
+
+            CostDetails({month: date, previousMonth: previousMonth, beforemonth: beforemonth, monthvalue: total , previousMonthValue: prevMonthAmount || 0, beforeMonthValue: prevprevMonthAmount || 0, previousyearvalue : prevYearAmount || 0 }),
+
+              new Paragraph({
+            children: [new TextRun({ text: "BANK ACCOUNT A/C INFORMATION",bold: true, size: 15 })],
+            alignment: AlignmentType.CENTER,
+            spacing: {
+                after: 100,
+                before: 300
+              },
+          }),
+
+          BankDetails({date: date, contractor, payouttracker}),
+
+              new Paragraph({
+            children: [new TextRun({ text: "APPROVAL'S INFORMATION",bold: true, size: 15 })],
+            alignment: AlignmentType.CENTER,
+            spacing: {
+                after: 100,
+                before: 300
+              },
+          }),
+
+          ApprovalInformation(),
+
         ],
       },
     ],
@@ -121,7 +174,7 @@ export function print(rows: any[], total: number,department: string, contractor:
     const url = URL.createObjectURL(new Blob([blob]));
     const link = document.createElement("a");
     link.href = url;
-    link.download = "my-document.docx";
+    link.download = "finalsheet.docx";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

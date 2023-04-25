@@ -13,6 +13,7 @@ import prisma from "@/lib/prisma";
 import { Contractor, TimeKeeper, Workorder } from "@prisma/client";
 import {
   Box,
+  Divider,
   FormControl,
   Grid,
   MenuItem,
@@ -21,6 +22,9 @@ import {
   Typography,
 } from "@mui/material";
 import getTotalAmountAndRows from "@/utils/get8hr";
+import MonthSelect from "@/ui-component/MonthSelect";
+import dayjs, { Dayjs } from "dayjs";
+import axios from "axios";
 interface Column {
   id:
     | "date"
@@ -211,56 +215,35 @@ export const FormSelect = ({
 };
 
 export default function PlantCommercial({
-  timekeeper,
-  workorder,
   contractor,
 }: {
-  timekeeper: TimeKeeper[];
-  workorder: Workorder[];
   contractor: Contractor;
 }) {
+  const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [month, setMonth] = React.useState<number>(new Date().getMonth() + 1);
-  const [year, setYear] = React.useState<number>(new Date().getFullYear());
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
 
-  const handleGetRows = () => {
+  const fetchTimekeepers = async () => {
     setLoading(true);
-    const { rows, total1 } = getTotalAmountAndRows(timekeeper, month, year);
+    const res = await axios.get(
+      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}&department=8HR`
+    );
+    const { rows, total1 } = getTotalAmountAndRows(
+      res.data,
+      dayjs(value, "MM/YYYY").month() + 1,
+      dayjs(value, "MM/YYYY").year()
+    );
     setRows(rows);
     setTotal(total1);
     setLoading(false);
   };
 
   React.useEffect(() => {
-    handleGetRows();
-  }, [month, year]);
-
-  const months = [
-    { value: 1, label: "January" },
-    { value: 2, label: "February" },
-    { value: 3, label: "March" },
-    { value: 4, label: "April" },
-    { value: 5, label: "May" },
-    { value: 6, label: "June" },
-    { value: 7, label: "July" },
-    { value: 8, label: "August" },
-    { value: 9, label: "September" },
-    { value: 10, label: "October" },
-    { value: 11, label: "November" },
-    { value: 12, label: "December" },
-  ];
-
-  const years = [
-    { value: 2019, label: "2019" },
-    { value: 2020, label: "2020" },
-    { value: 2021, label: "2021" },
-    { value: 2022, label: "2022" },
-    { value: 2023, label: "2023" },
-  ];
+    fetchTimekeepers();
+  }, [value]);
 
   const date = new Date();
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -282,6 +265,9 @@ export default function PlantCommercial({
     setPage(0);
   };
 
+  const onChange = (value: Dayjs | null) =>
+    setValue(value?.format("MM/YYYY") || "");
+
   return (
     <Paper sx={{ width: "100%" }}>
       <Box
@@ -290,16 +276,19 @@ export default function PlantCommercial({
           display: "flex",
           p: 3,
           justifyContent: "flex-start",
+          mb: 2,
         }}
       >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <FormSelect value={month} setValue={setMonth} options={months} />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormSelect value={year} setValue={setYear} options={years} />
+            <MonthSelect
+              label="Select Date"
+              value={dayjs(value, "MM/YYYY")}
+              onChange={onChange}
+            />
           </Grid>
         </Grid>
+
         <Stack direction="row" spacing={2}>
           <Typography variant="h4" sx={{ mt: 1, width: "20rem" }}>
             Contractor Name : <span>{contractor.contractorname}</span>
@@ -309,13 +298,14 @@ export default function PlantCommercial({
           </Typography> */}
         </Stack>
       </Box>
+
       <TableContainer
         sx={{
           maxHeight: 500,
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            width: 7,
-            height: 7,
+            width: 9,
+            height: 10,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#bdbdbd",
@@ -409,12 +399,12 @@ export default function PlantCommercial({
             <TableRow>
               <TableCell colSpan={10}></TableCell>
               <TableCell colSpan={3}>SGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell align="center">{Math.floor(total * 1.09)}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={10}></TableCell>
               <TableCell colSpan={3}>CGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell align="center">{Math.floor(total * 1.09)}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -469,20 +459,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       contractorId: id as string,
     },
   });
-  const timekeeper = await prisma.timeKeeper.findMany({
-    where: {
-      contractorname: contractor?.contractorname,
-      attendance: "1",
-      department: "8HR",
-      approvedByTimekeeper: true,
-      NOT: {
-        status: "Pending",
-      },
-    },
-  });
   return {
     props: {
-      timekeeper,
       workorders,
       contractor,
     },

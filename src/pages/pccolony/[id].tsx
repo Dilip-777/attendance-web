@@ -11,7 +11,7 @@ import Typography from "@mui/material/Typography";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { TimeKeeper } from "@prisma/client";
+import { Contractor, TimeKeeper } from "@prisma/client";
 import {
   Box,
   FormControl,
@@ -21,6 +21,9 @@ import {
   Select,
 } from "@mui/material";
 import getColony from "@/utils/getColony";
+import dayjs, { Dayjs } from "dayjs";
+import axios from "axios";
+import MonthSelect from "@/ui-component/MonthSelect";
 interface Column {
   id: "date" | "m" | "f" | "total";
   label: string;
@@ -98,12 +101,11 @@ export const FormSelect = ({
 };
 
 export default function PlantCommercial({
-  timekeeper,
-  name,
+  contractor,
 }: {
-  timekeeper: TimeKeeper[];
-  name: string;
+  contractor: Contractor;
 }) {
+  const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [month, setMonth] = React.useState<number>(new Date().getMonth() + 1);
@@ -112,16 +114,15 @@ export default function PlantCommercial({
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
 
-  const handleGetRows = async () => {
+  const fetchTimekeepers = async () => {
     setLoading(true);
+    const res = await axios.get(
+      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}&department=Colony`
+    );
     const { rows, total1 } = getColony(
-      timekeeper.filter((entry) => {
-        const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
-        const entryYear = parseInt(entry.attendancedate.split("-")[2]);
-        return entryMonth === month && entryYear === year;
-      }),
-      month,
-      year
+      res.data,
+      dayjs(value, "MM/YYYY").month() + 1,
+      dayjs(value, "MM/YYYY").year()
     );
     setRows(rows);
     setTotal(total1);
@@ -129,8 +130,8 @@ export default function PlantCommercial({
   };
 
   React.useEffect(() => {
-    handleGetRows();
-  }, [month, year]);
+    fetchTimekeepers();
+  }, [value]);
 
   const months = [
     { value: 1, label: "January" },
@@ -175,28 +176,40 @@ export default function PlantCommercial({
     setPage(0);
   };
 
+  const onChange = (value: Dayjs | null) =>
+    setValue(value?.format("MM/YYYY") || "");
+
   return (
     <Paper sx={{ width: "100%" }}>
-      <Box sx={{ height: "5rem", display: "flex", p: 3 }}>
+      <Box
+        sx={{
+          height: "5rem",
+          display: "flex",
+          p: 3,
+          justifyContent: "flex-start",
+          mb: 2,
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <FormSelect value={month} setValue={setMonth} options={months} />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormSelect value={year} setValue={setYear} options={years} />
+            <MonthSelect
+              label="Select Date"
+              value={dayjs(value, "MM/YYYY")}
+              onChange={onChange}
+            />
           </Grid>
         </Grid>
         <Typography variant="h4" sx={{ width: "15rem" }}>
-          Contractor : {name}
+          Contractor : {contractor.contractorname}
         </Typography>
       </Box>
       <TableContainer
         sx={{
-          maxHeight: 500,
+          maxHeight: 560,
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            width: 7,
-            height: 7,
+            width: 9,
+            height: 10,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#bdbdbd",
@@ -233,7 +246,7 @@ export default function PlantCommercial({
           <TableBody>
             {!loading ? (
               rows
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={row.f}>
@@ -274,7 +287,7 @@ export default function PlantCommercial({
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
+      {/* <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component="div"
         count={rows.length}
@@ -282,7 +295,7 @@ export default function PlantCommercial({
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      /> */}
     </Paper>
   );
 }
@@ -319,21 +332,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: id as string,
     },
   });
-  const timekeeper = await prisma.timeKeeper.findMany({
-    where: {
-      contractorname: contractor?.contractorname,
-      attendance: "1",
-      department: "Colony",
-      approvedByTimekeeper: true,
-      NOT: {
-        status: "Pending",
-      },
-    },
-  });
   return {
     props: {
-      timekeeper,
-      name: contractor?.contractorname,
+      contractor,
     },
   };
 };

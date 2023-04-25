@@ -46,7 +46,9 @@ export default function TableHead({ department }: { department: string }) {
     "Net Payable",
   ];
   const headcells =
-    department === "8HR" || department === "12HR" ? headers : ccmheader;
+    department === "8HR" || department === "12HR" || department === "Colony"
+      ? headers
+      : ccmheader;
   return headcells.map(
     (headcell) =>
       new TableCell({

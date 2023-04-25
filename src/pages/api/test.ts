@@ -9,6 +9,9 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
     }
     const data = req.body
 
+    console.log(data);
+    
+
     
     // console.log(data);
     

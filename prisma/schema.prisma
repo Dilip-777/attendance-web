@@ -116,6 +116,8 @@ model Contractor {
   mobilenumber      String
   emailid      String?    
   website      String?
+  bankaccountnumber   String?
+  ifscno      String?
   businessdetaildocument      String?
   uploadutilitybill      String?
   organisationtype      String
@@ -263,7 +265,20 @@ model Workorder {
 model Department {
   id    String   @id @default(cuid())
   department  String
-  designations   String[]
+  designations   Designations[]
+}
+
+model Designations {
+  id     String   @id @default(cuid())
+  designationid    String
+  departmentId    String 
+  departmentname    String
+  designation    String
+  basicsalary    Int
+  gender       String
+  allowed_wrking_hr_per_day   Int
+  servicecharge   Int?
+   department         Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
 
 model Comment {

@@ -9,8 +9,7 @@ const icons = {
 
 const safety = {
      id: 'pages',
-    title: 'Pages',
-    caption: 'Pages Caption',
+    title: 'Dashboard',
     type: 'group',
     children: [
         {

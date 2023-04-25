@@ -50,6 +50,20 @@ export default async function getTimeKeeper(
 
     if (role === "HR") {
       res.status(200).json([...savedTimekeeper, ...timekeepers]);
-    } else res.status(200).json(timekeepers);
+    }
+     else if(role === "TimeKeeper") {
+       res.status(200).json(timekeepers);
+     }
+    else {
+      const approved  = await prisma.timeKeeper.findMany({
+        where: {
+          approvedByTimekeeper: true,
+          attendancedate: {
+          contains: month as string,
+        },
+        }
+      })
+      res.status(200).json(approved)
+    }
   }
 }

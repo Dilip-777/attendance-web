@@ -62,7 +62,7 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         <StyledSearch
           value={filtername}
           onChange={(e) => setFilterName(e.target.value)}
-          placeholder="Search Employee..."
+          placeholder="Search ..."
           startAdornment={
             <InputAdornment position="start">
               <Search />

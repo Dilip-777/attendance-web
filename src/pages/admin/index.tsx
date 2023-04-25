@@ -337,7 +337,7 @@ export default function TimeKeeper({ users }: { users: User[] }) {
           sx={{
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
-              height: 7,
+              height: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",

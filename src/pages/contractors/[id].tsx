@@ -25,6 +25,7 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { Contractor } from "@prisma/client";
+import { CircularProgress } from "@mui/material";
 // import { Contractor } from "@prisma/client"
 
 const fileType = Yup.object().required("Required").optional();
@@ -39,6 +40,7 @@ const numberType = Yup.number()
 
 const validationSchema = Yup.object().shape({
   contractorname: Yup.string().required("Required"),
+  contractorId: Yup.number().required("Required"),
   servicedetail: Yup.string().required("Required"),
   supplierdetail: Yup.string().required("Required"),
   businessdetaildocument: fileType,
@@ -50,6 +52,8 @@ const validationSchema = Yup.object().shape({
   mobilenumber: numberType,
   emailid: stringtype,
   website: stringtype,
+  bankaccountnumber: stringtype.required("Required"),
+  ifscno: stringtype.required("Required"),
   // Organsiation Details
   organisationtype: stringtype,
   dateofincorporation: stringtype,
@@ -116,6 +120,7 @@ export default function EditContractor({
 
   const initialValues = {
     contractorname: contractor?.contractorname || "",
+    contractorId: contractor?.contractorId || null,
     servicedetail: contractor?.servicedetail || "",
     supplierdetail: contractor?.supplierdetail || "",
     businessdetaildocument: undefined,
@@ -127,6 +132,8 @@ export default function EditContractor({
     mobilenumber: contractor?.mobilenumber || 0,
     emailid: contractor?.emailid || "",
     website: contractor?.website || "",
+    bankaccountnumber: contractor?.bankaccountnumber || "",
+    ifscno: contractor?.ifscno || "",
     organisationtype: contractor?.organisationtype || "",
     dateofincorporation: contractor?.dateofincorporation || "",
     associationwithcompetitor: contractor?.associationwithcompetitor || "",
@@ -188,7 +195,7 @@ export default function EditContractor({
           overflow: "hidden auto",
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            width: 7,
+            width: 9,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#bdbdbd",
@@ -205,7 +212,7 @@ export default function EditContractor({
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
+          onSubmit={async (values, { setErrors, setSubmitting }) => {
             const {
               associationwithcompetitor,
               isocertified,
@@ -218,7 +225,8 @@ export default function EditContractor({
               ...otherValues
             } = values;
             if (contractor) {
-              axios
+              setSubmitting(true);
+              await axios
                 .put("/api/hr/contractors", {
                   id: id,
                   ...otherValues,
@@ -239,7 +247,7 @@ export default function EditContractor({
                   console.log(err);
                 });
             }
-            axios
+            await axios
               .post("/api/hr/contractors", {
                 ...otherValues,
                 associationwithcompetitor:
@@ -256,11 +264,14 @@ export default function EditContractor({
                 router.push("/contractors");
               })
               .catch((err) => {
-                console.log(err);
+                if (err?.response?.data?.error === "contractorId") {
+                  setErrors({ contractorId: "Contractor Id already exists" });
+                }
               });
+            setSubmitting(false);
           }}
         >
-          {({ handleSubmit, errors, values }) => {
+          {({ handleSubmit, errors, values, isSubmitting }) => {
             console.log(errors);
             console.log(values);
             return (
@@ -270,6 +281,15 @@ export default function EditContractor({
                     General
                   </Typography>
                   <Grid ml={{ xs: 0, sm: 2, md: 6 }} container>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <FormInput
+                        name="contractorId"
+                        label="Contractor Id*"
+                        placeHolder="Enter the Contractor Id"
+                        type="number"
+                        disabled={false}
+                      />
+                    </Grid>
                     <Grid item xs={12} sm={6} md={4}>
                       <FormInput
                         name="contractorname"
@@ -349,6 +369,22 @@ export default function EditContractor({
                         name="website"
                         label="Website"
                         placeHolder="Enter Website"
+                        disabled={false}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <FormInput
+                        name="bankaccountnumber"
+                        label="Bank Account Number*"
+                        placeHolder="Enter Bank Account Number"
+                        disabled={false}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <FormInput
+                        name="ifscno"
+                        label="IFSC Code*"
+                        placeHolder="Enter IFSC Code"
                         disabled={false}
                       />
                     </Grid>
@@ -800,8 +836,15 @@ export default function EditContractor({
                   type="submit"
                   variant="contained"
                   sx={{ float: "right", mr: 10 }}
+                  disabled={isSubmitting}
                 >
                   Submit
+                  {isSubmitting && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: "#364152" }}
+                    />
+                  )}
                 </Button>
               </form>
             );

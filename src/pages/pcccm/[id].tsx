@@ -11,8 +11,12 @@ import Typography from "@mui/material/Typography";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { TimeKeeper } from "@prisma/client";
+import { Contractor, TimeKeeper } from "@prisma/client";
 import { Box, FormControl, Grid, MenuItem, Select } from "@mui/material";
+import getCCM from "@/utils/getccm";
+import dayjs, { Dayjs } from "dayjs";
+import axios from "axios";
+import MonthSelect from "@/ui-component/MonthSelect";
 interface Column {
   id:
     | "date"
@@ -285,16 +289,13 @@ const FormSelect = ({
 };
 
 export default function PlantCommercialCCM({
-  timekeeper,
   result,
-  name,
+  contractor,
 }: {
-  timekeeper: TimeKeeper[];
   result: any;
-  name: string;
+  contractor: Contractor;
 }) {
-  console.log("result", result, timekeeper);
-
+  const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [month, setMonth] = React.useState<number>(new Date().getMonth() + 1);
@@ -303,385 +304,24 @@ export default function PlantCommercialCCM({
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
 
-  const getCount = (data: TimeKeeper[], designation: string) => {
-    return data.filter((item) => item.designation === designation).length;
-  };
-
-  const getData = (date: string): Data => {
-    const filtered = timekeeper.filter((item) => item.attendancedate === date);
-    console.log("filtered", filtered);
-
-    const ele = getCount(filtered, "ELE");
-    const lco = getCount(filtered, "LCO");
-    const tman = getCount(filtered, "TMAN");
-    const filter = getCount(filtered, "FILTER");
-    const po = getCount(filtered, "PO");
-    const bco = getCount(filtered, "BCO");
-    const srfilter = getCount(filtered, "SRFILTER");
-    const incharge = getCount(filtered, "INCHARGE");
-    const mo = getCount(filtered, "MO");
-    const shiftinch = getCount(filtered, "SHIFTINCH");
-    const gc = getCount(filtered, "GC");
-    const tmesson = getCount(filtered, "TMESSON");
-    const svr = getCount(filtered, "SVR");
-    const sbo = getCount(filtered, "SBO");
-    const lmes = getCount(filtered, "LMES");
-    const lman = getCount(filtered, "LMAN");
-    const forman = getCount(filtered, "FORMAN");
-    const jrele = getCount(filtered, "JR ELE");
-    const helper = getCount(filtered, "HELPER");
-    const total =
-      ele +
-      lco +
-      tman +
-      filter +
-      po +
-      bco +
-      srfilter +
-      incharge +
-      mo +
-      shiftinch +
-      gc +
-      tmesson +
-      svr +
-      sbo +
-      lmes +
-      lman +
-      forman +
-      jrele +
-      helper;
-    return {
-      date,
-      ele,
-      lco,
-      tman,
-      filter,
-      po,
-      bco,
-      srfilter,
-      incharge,
-      mo,
-      shiftinch,
-      gc,
-      tmesson,
-      svr,
-      sbo,
-      lmes,
-      lman,
-      forman,
-      jrele,
-      helper,
-      total,
-    };
-  };
-
-  function getTotalAttendanceRecord(rows: Data[]): Data {
-    const totalAttendance = {
-      date: "Total Attendance",
-      ele: 0,
-      lco: 0,
-      tman: 0,
-      filter: 0,
-      po: 0,
-      bco: 0,
-      srfilter: 0,
-      incharge: 0,
-      mo: 0,
-      shiftinch: 0,
-      gc: 0,
-      tmesson: 0,
-      svr: 0,
-
-      sbo: 0,
-      lmes: 0,
-      lman: 0,
-      forman: 0,
-      jrele: 0,
-      helper: 0,
-      total: 0,
-    };
-
-    rows.forEach((row) => {
-      totalAttendance.ele += row.ele;
-      totalAttendance.lco += row.lco;
-      totalAttendance.tman += row.tman;
-      totalAttendance.filter += row.filter;
-      totalAttendance.po += row.po;
-      totalAttendance.bco += row.bco;
-      totalAttendance.srfilter += row.srfilter;
-      totalAttendance.incharge += row.incharge;
-      totalAttendance.mo += row.mo;
-      totalAttendance.shiftinch += row.shiftinch;
-      totalAttendance.gc += row.gc;
-      totalAttendance.tmesson += row.tmesson;
-      totalAttendance.svr += row.svr;
-      totalAttendance.sbo += row.sbo;
-      totalAttendance.lmes += row.lmes;
-      totalAttendance.lman += row.lman;
-      totalAttendance.forman += row.forman;
-      totalAttendance.jrele += row.jrele;
-      totalAttendance.helper += row.helper;
-      totalAttendance.total += row.total;
-    });
-
-    return totalAttendance;
-  }
-
-  console.log(loading);
-
-  function getTotalOvertimeRecord(data: TimeKeeper[]): Data {
-    const totalOvertime: Data = {
-      date: "Total Overtime",
-      ele: 0,
-      lco: 0,
-      tman: 0,
-      filter: 0,
-      po: 0,
-      bco: 0,
-      srfilter: 0,
-      incharge: 0,
-      mo: 0,
-      shiftinch: 0,
-      gc: 0,
-      tmesson: 0,
-      svr: 0,
-      sbo: 0,
-      lmes: 0,
-      lman: 0,
-      forman: 0,
-      jrele: 0,
-      helper: 0,
-      total: 0,
-    };
-
-    data.forEach((item) => {
-      if (item.designation === "ELE") {
-        totalOvertime.ele += Number(item.manualovertime);
-      }
-      if (item.designation === "LCO") {
-        totalOvertime.lco += Number(item.manualovertime);
-      }
-
-      if (item.designation === "TMAN") {
-        totalOvertime.tman += Number(item.manualovertime);
-      }
-      if (item.designation === "PO") {
-        totalOvertime.po += Number(item.manualovertime);
-      }
-      if (item.designation === "BCO") {
-        totalOvertime.bco += Number(item.manualovertime);
-      }
-      if (item.designation === "SRFILTER") {
-        totalOvertime.srfilter += Number(item.manualovertime);
-      }
-      if (item.designation === "INCHARGE") {
-        totalOvertime.incharge += Number(item.manualovertime);
-      }
-      if (item.designation === "MO") {
-        totalOvertime.mo += Number(item.manualovertime);
-      }
-      if (item.designation === "SHIFTINCH") {
-        totalOvertime.shiftinch += Number(item.manualovertime);
-      }
-      if (item.designation === "GC") {
-        totalOvertime.gc += Number(item.manualovertime);
-      }
-      if (item.designation === "TMESSON") {
-        totalOvertime.tmesson += Number(item.manualovertime);
-      }
-      if (item.designation === "SVR") {
-        totalOvertime.svr += Number(item.manualovertime);
-      }
-      if (item.designation === "SBO") {
-        totalOvertime.sbo += Number(item.manualovertime);
-      }
-      if (item.designation === "LMES") {
-        totalOvertime.lmes += Number(item.manualovertime);
-      }
-      if (item.designation === "LMAN") {
-        totalOvertime.lman += Number(item.manualovertime);
-      }
-      if (item.designation === "FORMAN") {
-        totalOvertime.forman += Number(item.manualovertime);
-      }
-      if (item.designation === "JRELE") {
-        totalOvertime.jrele += Number(item.manualovertime);
-      }
-      if (item.designation === "HELPER") {
-        totalOvertime.helper += Number(item.manualovertime);
-      }
-
-      totalOvertime.total += Number(item.manualovertime);
-    });
-    return totalOvertime;
-  }
-
-  const getAmount = (totalAttendance: Data, rate: Data) => {
-    const totalAmount: Data = {
-      date: "Total Amount",
-      ele: totalAttendance.ele * rate.ele,
-      lco: totalAttendance.lco * rate.lco,
-      tman: totalAttendance.tman * rate.tman,
-      filter: totalAttendance.filter * rate.filter,
-      po: totalAttendance.po * rate.po,
-      bco: totalAttendance.bco * rate.bco,
-      srfilter: totalAttendance.srfilter * rate.srfilter,
-      incharge: totalAttendance.incharge * rate.incharge,
-      mo: totalAttendance.mo * rate.mo,
-      shiftinch: totalAttendance.shiftinch * rate.shiftinch,
-      gc: totalAttendance.gc * rate.gc,
-      tmesson: totalAttendance.tmesson * rate.tmesson,
-      svr: totalAttendance.svr * rate.svr,
-      sbo: totalAttendance.sbo * rate.sbo,
-      lmes: totalAttendance.lmes * rate.lmes,
-      lman: totalAttendance.lman * rate.lman,
-      forman: totalAttendance.forman * rate.forman,
-      jrele: totalAttendance.jrele * rate.jrele,
-      helper: totalAttendance.helper * rate.helper,
-      total: 0,
-    };
-    const total = Object.values(totalAmount)
-      .filter((value) => typeof value === "number")
-      .reduce((a, b) => Number(a) + Number(b), 0);
-    return {
-      ...totalAmount,
-      total,
-    };
-  };
-
-  const getTotalOtAmount = (totalOvertime: Data, rate: Data) => {
-    const totalAmount: Data = {
-      date: "OT Amount",
-      ele: (totalOvertime.ele * rate.ele) / 8,
-      lco: (totalOvertime.lco * rate.lco) / 8,
-      tman: (totalOvertime.tman * rate.tman) / 8,
-      filter: (totalOvertime.filter * rate.filter) / 8,
-      po: (totalOvertime.po * rate.po) / 8,
-      bco: (totalOvertime.bco * rate.bco) / 8,
-      srfilter: (totalOvertime.srfilter * rate.srfilter) / 8,
-      incharge: (totalOvertime.incharge * rate.incharge) / 8,
-      mo: (totalOvertime.mo * rate.mo) / 8,
-      shiftinch: (totalOvertime.shiftinch * rate.shiftinch) / 8,
-      gc: (totalOvertime.gc * rate.gc) / 8,
-      tmesson: (totalOvertime.tmesson * rate.tmesson) / 8,
-      svr: (totalOvertime.svr * rate.svr) / 8,
-      sbo: (totalOvertime.sbo * rate.sbo) / 8,
-      lmes: (totalOvertime.lmes * rate.lmes) / 8,
-      lman: (totalOvertime.lman * rate.lman) / 8,
-      forman: (totalOvertime.forman * rate.forman) / 8,
-      jrele: (totalOvertime.jrele * rate.jrele) / 8,
-      helper: (totalOvertime.helper * rate.helper) / 8,
-      total: 0,
-    };
-    const total = Object.values(totalAmount)
-      .filter((value) => typeof value === "number")
-      .reduce((a, b) => Number(a) + Number(b), 0);
-    return {
-      ...totalAmount,
-      total,
-    };
-  };
-
-  const getTotalAmount = (totalAmount: Data, totalOtAmount: Data) => {
-    const netAmount: Data = {
-      date: "Total Amount",
-      ele: totalAmount.ele + totalOtAmount.ele,
-      lco: totalAmount.lco + totalOtAmount.lco,
-      tman: totalAmount.tman + totalOtAmount.tman,
-      filter: totalAmount.filter + totalOtAmount.filter,
-      po: totalAmount.po + totalOtAmount.po,
-      bco: totalAmount.bco + totalOtAmount.bco,
-      srfilter: totalAmount.srfilter + totalOtAmount.srfilter,
-      incharge: totalAmount.incharge + totalOtAmount.incharge,
-      mo: totalAmount.mo + totalOtAmount.mo,
-      shiftinch: totalAmount.shiftinch + totalOtAmount.shiftinch,
-      gc: totalAmount.gc + totalOtAmount.gc,
-      tmesson: totalAmount.tmesson + totalOtAmount.tmesson,
-      svr: totalAmount.svr + totalOtAmount.svr,
-      sbo: totalAmount.sbo + totalOtAmount.sbo,
-      lmes: totalAmount.lmes + totalOtAmount.lmes,
-      lman: totalAmount.lman + totalOtAmount.lman,
-      forman: totalAmount.forman + totalOtAmount.forman,
-      jrele: totalAmount.jrele + totalOtAmount.jrele,
-      helper: totalAmount.helper + totalOtAmount.helper,
-      total: totalAmount.total + totalOtAmount.total,
-    };
-    return netAmount;
-  };
-
-  async function getRows(month: number, year: number) {
+  const fetchTimekeepers = async () => {
     setLoading(true);
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-    const rows: Data[] = [];
-
-    for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
-      const date = `${i.toString().padStart(2, "0")}/${month
-        .toString()
-        .padStart(2, "0")}/${year}`;
-      rows.push(getData(date));
-    }
-
-    const totalAttendance = getTotalAttendanceRecord(rows as Data[]);
-    rows.push(totalAttendance);
-    const l = rows.length - 1;
-    const rates = {
-      date: "Rate",
-      ele: 31500 / l,
-      lco: 20000 / l,
-      tman: 19000 / l,
-      filter: 21500 / l,
-      po: 16000 / l,
-      bco: 17000 / l,
-      srfilter: 26500 / l,
-      incharge: 26500 / l,
-      mo: 21400 / l,
-      shiftinch: 19500 / l,
-      gc: 17000 / l,
-      tmesson: 18000 / l,
-      svr: 18000 / l,
-      sbo: 18000 / l,
-      lmes: 18000 / l,
-      lman: 18000 / l,
-      forman: 18000 / l,
-      jrele: 18000 / l,
-      helper: 18000 / l,
-      total: 0,
-    };
-    rows.push(rates);
-    const Amount = getAmount(totalAttendance, rates);
-    rows.push(Amount);
-
-    const data = timekeeper.filter((entry) => {
-      const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
-      const entryYear = parseInt(entry.attendancedate.split("-")[2]);
-      return entryMonth === month && entryYear === year;
-    });
-
-    const totalOvertime = getTotalOvertimeRecord(data);
-    rows.push(totalOvertime);
-
-    const totalOtAmount = getTotalOtAmount(totalOvertime, rates);
-    rows.push(totalOtAmount);
-
-    const totalAmount = getTotalAmount(Amount, totalOtAmount);
-    rows.push(totalAmount);
-
-    setTotal(totalAmount.total);
-
-    return rows;
-  }
-
-  const handleGetRows = async () => {
-    setLoading(true);
-    const rows = await getRows(month, year);
+    const res = await axios.get(
+      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}&department=CCM`
+    );
+    const { rows, total1 } = getCCM(
+      res.data,
+      dayjs(value, "MM/YYYY").month() + 1,
+      dayjs(value, "MM/YYYY").year()
+    );
     setRows(rows);
+    setTotal(total1);
     setLoading(false);
   };
 
   React.useEffect(() => {
-    handleGetRows();
-  }, [month, year]);
+    fetchTimekeepers();
+  }, [value]);
 
   const count = {
     date: "",
@@ -741,19 +381,31 @@ export default function PlantCommercialCCM({
     setPage(0);
   };
 
+  const onChange = (value: Dayjs | null) =>
+    setValue(value?.format("MM/YYYY") || "");
+
   return (
     <Paper sx={{ width: "100%" }}>
-      <Box sx={{ height: "5rem", display: "flex", p: 3 }}>
+      <Box
+        sx={{
+          height: "5rem",
+          display: "flex",
+          p: 3,
+          justifyContent: "flex-start",
+          mb: 2,
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <FormSelect value={month} setValue={setMonth} options={months} />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormSelect value={year} setValue={setYear} options={years} />
+            <MonthSelect
+              label="Select Date"
+              value={dayjs(value, "MM/YYYY")}
+              onChange={onChange}
+            />
           </Grid>
         </Grid>
         <Typography variant="h4" sx={{ width: "15rem" }}>
-          Contractor : {name}
+          Contractor : {contractor.contractorname}
         </Typography>
       </Box>
       <TableContainer
@@ -761,8 +413,8 @@ export default function PlantCommercialCCM({
           // maxHeight: 500,
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            width: 7,
-            height: 7,
+            width: 9,
+            height: 10,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#bdbdbd",
@@ -821,12 +473,12 @@ export default function PlantCommercialCCM({
             <TableRow>
               <TableCell colSpan={16}></TableCell>
               <TableCell colSpan={3}>SGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell align="center">{Math.floor(total * 1.09)}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={16}></TableCell>
               <TableCell colSpan={3}>CGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell align="center">{Math.floor(total * 1.09)}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -898,23 +550,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: id as string,
     },
   });
-  const timekeeper = await prisma.timeKeeper.findMany({
-    where: {
-      contractorname: contractor?.contractorname,
-      attendance: "1",
-      department: "CCM",
-      approvedByTimekeeper: true,
-      NOT: {
-        status: "Pending",
-      },
-    },
-  });
 
   return {
     props: {
-      timekeeper,
       result,
-      name: contractor?.contractorname,
+      contractor,
     },
   };
 };

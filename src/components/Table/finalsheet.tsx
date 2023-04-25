@@ -7,6 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import FinalSheetTable from "./finalsheettable";
+import { Stores } from "@prisma/client";
 
 interface Column {
   id:
@@ -66,10 +67,14 @@ export default function FinalSheetta({
   rows,
   total,
   department,
+  storededuction,
+  safetydeduction,
 }: {
   rows: any[];
   total: number;
   department: string;
+  storededuction: number;
+  safetydeduction: number;
 }) {
   const side8hr = [
     { main: "8MW", sub: "M", id: "m8" },
@@ -114,7 +119,6 @@ export default function FinalSheetta({
     { main: "ELE", id: "ele" },
     { main: "FILTER", id: "filter" },
     { main: "SRFILTER", id: "srfilter" },
-    { main: "INCHARGE", id: "incharge" },
     { main: "SVR", id: "svr" },
     { main: "LMES", id: "lmes" },
     { main: "HELPER", id: "helper" },
@@ -135,6 +139,8 @@ export default function FinalSheetta({
           total={Math.floor(total || 0)}
           department={department}
           sides={sideccm}
+          storededuction={storededuction}
+          safetydeduction={safetydeduction}
         />
       );
       break;
@@ -145,16 +151,20 @@ export default function FinalSheetta({
           total={Math.floor(total || 0)}
           department={department}
           sides={sidelrf}
+          storededuction={storededuction}
+          safetydeduction={safetydeduction}
         />
       );
       break;
-    case "COLONY":
+    case "Colony":
       return (
         <FinalSheetTable
           rows={rows}
           total={Math.floor(total || 0)}
           department={department}
           sides={sidecolony}
+          storededuction={storededuction}
+          safetydeduction={safetydeduction}
         />
       );
       break;
@@ -166,126 +176,11 @@ export default function FinalSheetta({
           total={Math.floor(total || 0)}
           department={department}
           sides={side8hr}
+          storededuction={storededuction}
+          safetydeduction={safetydeduction}
         />
       );
     default:
       return <></>;
   }
-  // return (
-  //   <Paper sx={{ width: "100%" }}>
-  //     <TableContainer
-  //       sx={{
-  //         maxWidth: "100%",
-  //         scrollBehavior: "smooth",
-  //         "&::-webkit-scrollbar": {
-  //           width: 7,
-  //           height: 7,
-  //         },
-  //         "&::-webkit-scrollbar-thumb": {
-  //           backgroundColor: "#bdbdbd",
-  //           borderRadius: 2,
-  //         },
-  //       }}
-  //     >
-  //       <Table aria-label="sticky table">
-  //         <TableHead>
-  //           <TableRow>
-  //             {columns.map((column) => (
-  //               <TableCell
-  //                 key={column.id}
-  //                 align={column.align}
-  //                 style={{ top: 57, minWidth: column.minWidth }}
-  //               >
-  //                 {column.label}{" "}
-  //                 {/* {!(column.id === "date" || column.id === "total") && (
-  //                   <span>{`(${count[column.id]})`}</span>
-  //                 )} */}
-  //               </TableCell>
-  //             ))}
-  //           </TableRow>
-  //         </TableHead>
-  //         <TableBody>
-  //           {rows.map((row, index) => {
-  //             return (
-  //               <TableRow hover role="checkbox" tabIndex={-1} key={row.lco}>
-  //                 {columns.map((column) => {
-  //                   const value = row[column.id];
-  //                   return (
-  //                     <TableCell key={column.id} align={column.align}>
-  //                       {column.format && typeof value === "number"
-  //                         ? column.format(value).slice(0, 7)
-  //                         : value}
-  //                     </TableCell>
-  //                   );
-  //                 })}
-  //               </TableRow>
-  //             );
-  //           })}
-  //           <TableRow>
-  //             <TableCell rowSpan={department === "Colony" ? 0 : 10} />
-  //             <TableCell colSpan={colspan1}></TableCell>
-  //             <TableCell colSpan={colspan2}>Net Amount Payable</TableCell>
-  //             <TableCell align="center">{total}</TableCell>
-  //           </TableRow>
-  //           <TableRow>
-  //             <TableCell />
-  //             {department !== "Colony" && (
-  //               <TableCell colSpan={colspan1 - 1}></TableCell>
-  //             )}
-  //             <TableCell colSpan={colspan2}>GST Hold</TableCell>
-  //             <TableCell align="center">{total > 0 ? "300" : "0"}</TableCell>
-  //           </TableRow>
-  //           <TableRow>
-  //             <TableCell />
-  //             {department !== "Colony" && (
-  //               <TableCell colSpan={colspan1 - 1}></TableCell>
-  //             )}
-  //             <TableCell colSpan={colspan2}>
-  //               Safety Voilation's Penality
-  //             </TableCell>
-  //             <TableCell align="center">{total > 0 ? "40" : "0"}</TableCell>
-  //           </TableRow>
-  //           <TableRow>
-  //             <TableCell />
-  //             {department !== "Colony" && (
-  //               <TableCell colSpan={colspan1 - 1}></TableCell>
-  //             )}
-  //             <TableCell colSpan={colspan2}>
-  //               Consumables / Rechargeable Items
-  //             </TableCell>
-  //             <TableCell align="center">0</TableCell>
-  //           </TableRow>
-  //           <TableRow>
-  //             <TableCell />
-  //             {department !== "Colony" && (
-  //               <TableCell colSpan={colspan1 - 1}></TableCell>
-  //             )}
-  //             <TableCell colSpan={colspan2}>
-  //               Adjustment Of Advance Amount
-  //             </TableCell>
-  //             <TableCell align="center">0</TableCell>
-  //           </TableRow>
-  //           <TableRow>
-  //             <TableCell />
-  //             {department !== "Colony" && (
-  //               <TableCell colSpan={colspan1 - 1}></TableCell>
-  //             )}
-  //             <TableCell colSpan={colspan2}>Any Other Deductions</TableCell>
-  //             <TableCell align="center">{total > 0 ? "80" : "0"}</TableCell>
-  //           </TableRow>
-  //           <TableRow>
-  //             <TableCell />
-  //             {department !== "Colony" && (
-  //               <TableCell colSpan={colspan1 - 1}></TableCell>
-  //             )}
-  //             <TableCell colSpan={colspan2}>Final Payable</TableCell>
-  //             <TableCell align="center">
-  //               {total > 0 ? total - 150 - 40 - 80 : 0}
-  //             </TableCell>
-  //           </TableRow>
-  //         </TableBody>
-  //       </Table>
-  //     </TableContainer>
-  //   </Paper>
-  // );
 }

@@ -94,6 +94,7 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
       helper: 0,
       total: 0,
     };
+    
 
     data.forEach((item) => {
       if (item.designation === "ELE") {
@@ -220,13 +221,13 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
   const getNetPayable = (billAmount: Data, tdsAmount: Data) => {
     const netPayable: Data = {
       date: "Net Payable",
-      ele: billAmount.ele + tdsAmount.ele,
-      filter: billAmount.filter + tdsAmount.filter,
-      srfilter: billAmount.srfilter + tdsAmount.srfilter,
-      svr: billAmount.svr + tdsAmount.svr,
-      lmes: billAmount.lmes + tdsAmount.lmes,
-      helper: billAmount.helper + tdsAmount.helper,
-      total: billAmount.total + tdsAmount.total,
+      ele: Math.floor(billAmount.ele + tdsAmount.ele),
+      filter: Math.floor(billAmount.filter + tdsAmount.filter),
+      srfilter: Math.floor(billAmount.srfilter + tdsAmount.srfilter),
+      svr: Math.floor(billAmount.svr + tdsAmount.svr),
+      lmes: Math.floor(billAmount.lmes + tdsAmount.lmes),
+      helper: Math.floor(billAmount.helper + tdsAmount.helper),
+      total: Math.floor(billAmount.total + tdsAmount.total),
     };
     return netPayable;
   }
@@ -281,8 +282,8 @@ export default function getLRF(timekeeper: TimeKeeper[], month: number, year: nu
     rows1.push(Amount)
 
     const data = timekeeper.filter((entry) => {
-      const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
-      const entryYear = parseInt(entry.attendancedate.split("-")[2]);
+      const entryMonth = parseInt(entry.attendancedate.split("/")[1]);
+      const entryYear = parseInt(entry.attendancedate.split("/")[2]);
       return entryMonth === month && entryYear === year;
     });
 

@@ -13,8 +13,7 @@ const icons = {
 
 const plantCommercial = {
      id: 'pages',
-    title: 'Pages',
-    caption: 'Pages Caption',
+    title: 'Functional Roles',
     type: 'group',
     children: [
         {

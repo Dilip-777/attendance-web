@@ -17,7 +17,7 @@ export default async function workorder (req: NextApiRequest, res: NextApiRespon
         }
         const body = {
             id: shortid.generate(),
-            contractorId: contractor?.id,
+            contractorId: contractor?.contractorId.toString(),
             contractorName: contractor?.contractorname,
             ...rest,
             amendmentDocument: rest.amendmentDocument?.newFilename || null,

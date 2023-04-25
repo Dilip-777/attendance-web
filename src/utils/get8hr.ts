@@ -44,31 +44,36 @@ interface Data {
 
 const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number) => {
 
+  const otrate = timekeeper.length > 0 && timekeeper[0].department === "8HR" ? 8: 12
+
+  
+
 const getCount = (
     data: TimeKeeper[],
     designation: string,
-    gender: string
+    gender: string,
+    extra: string
   ) => {
     return data.filter(
-      (item) => item.designation === designation && item.gender === gender
+      (item) => item.designation === designation && (item.gender === gender || item.gender === extra )
     ).length;
   };
 
   const getData = (date: string): Data => {
     const filtered = timekeeper.filter((item) => item.attendancedate === date);
-    const m8 = getCount(filtered, "8MW", "Male");
-    const f8 = getCount(filtered, "8MW", "Female");
-    const m20 = getCount(filtered, "20MW", "Male");
-    const f20 = getCount(filtered, "20WM", "Female");
-    const dm = getCount(filtered, "DM Plant", "Male");
-    const qc = getCount(filtered, "QC", "Male");
-    const store = getCount(filtered, "STORE", "Male");
-    const k7m = getCount(filtered, "K-7 & 1-6PROC", "Male");
-    const k7f = getCount(filtered, "K-7 & 1-6PROC", "Female");
-    const rmhs = getCount(filtered, "RHMS", "Male");
-    const ps = getCount(filtered, "PS", "Female");
-    const hk = getCount(filtered, "HK & Garden", "Male");
-    const svr = getCount(filtered, "SVR", "Male");
+    const m8 = getCount(filtered, "8MW", "Male", "M");
+    const f8 = getCount(filtered, "8MW", "Female", "F");
+    const m20 = getCount(filtered, "20MW", "Male", "M");
+    const f20 = getCount(filtered, "20WM", "Female", "F");
+    const dm = getCount(filtered, "DM Plant", "Male", "M");
+    const qc = getCount(filtered, "QC", "Male", "M");
+    const store = getCount(filtered, "STORE", "Male", "M");
+    const k7m = getCount(filtered, "K-7 & 1-6PROC", "Male", "M");
+    const k7f = getCount(filtered, "K-7 & 1-6PROC", "Female", "F");
+    const rmhs = getCount(filtered, "RHMS", "Male", "M");
+    const ps = getCount(filtered, "PS", "Female", "F");
+    const hk = getCount(filtered, "HK & Garden", "Male", "M");
+    const svr = getCount(filtered, "SVR", "Male", "M");
     const total =
       m8 + f8 + m20 + f20 + dm + qc + store + k7m + k7f + rmhs + ps + hk + svr;
     return {
@@ -147,17 +152,16 @@ const getCount = (
       total: 0,
     };
 
-    console.log(data, "hgjhfjfghfhfg");
     
 
     data.forEach((item) => {
       if (item.designation === "8MW") {
-        item.gender === "Male"
+        item.gender === "Male"  || item.gender === "M"
           ? (totalOvertime.m8 += Number(item.manualovertime  || item.overtime))
           : (totalOvertime.f8 += Number(item.manualovertime || item.overtime));
       }
       if (item.designation === "20MW") {
-        item.gender === "Male"
+        item.gender === "Male"  || item.gender === "M"
           ? (totalOvertime.m20 += Number(item.manualovertime || item.overtime))
           : (totalOvertime.f20 += Number(item.manualovertime || item.overtime));
       }
@@ -171,7 +175,7 @@ const getCount = (
         totalOvertime.store += Number(item.manualovertime || item.overtime);
       }
       if (item.designation === "K-7 & 1-6PROC") {
-        item.gender === "Male"
+        item.gender === "Male"  || item.gender === "M"
           ? (totalOvertime.k7m += Number(item.manualovertime || item.overtime))
           : (totalOvertime.k7f += Number(item.manualovertime || item.overtime));
       }
@@ -222,19 +226,19 @@ const getCount = (
   const getTotalOtAmount = (totalOvertime: Data, rate: Data) => {
     const totalAmount: Data = {
       date: "OT Amount",
-      m8: Math.floor((totalOvertime.m8 * rate.m8) / 12),
-      f8: Math.floor((totalOvertime.f8 * rate.f8) / 12),
-      m20: Math.floor((totalOvertime.m20 * rate.m20) / 12),
-      f20: Math.floor((totalOvertime.f20 * rate.f20) / 12),
-      dm: Math.floor((totalOvertime.dm * rate.dm) / 12),
-      qc: Math.floor((totalOvertime.qc * rate.qc) / 12),
-      store: Math.floor((totalOvertime.store * rate.store) / 12),
-      k7m: Math.floor((totalOvertime.k7m * rate.k7m) / 12),
-      k7f: Math.floor((totalOvertime.k7f * rate.k7f) / 12),
-      rmhs: Math.floor((totalOvertime.rmhs * rate.rmhs) / 12),
-      ps: Math.floor((totalOvertime.ps * rate.ps) / 12),
-      hk: Math.floor((totalOvertime.hk * rate.hk) / 12),
-      svr: Math.floor((totalOvertime.svr * rate.svr) / 12),
+      m8: Math.floor((totalOvertime.m8 * rate.m8) / otrate),
+      f8: Math.floor((totalOvertime.f8 * rate.f8) / otrate),
+      m20: Math.floor((totalOvertime.m20 * rate.m20) / otrate),
+      f20: Math.floor((totalOvertime.f20 * rate.f20) / otrate),
+      dm: Math.floor((totalOvertime.dm * rate.dm) / otrate),
+      qc: Math.floor((totalOvertime.qc * rate.qc) / otrate),
+      store: Math.floor((totalOvertime.store * rate.store) / otrate),
+      k7m: Math.floor((totalOvertime.k7m * rate.k7m) / otrate),
+      k7f: Math.floor((totalOvertime.k7f * rate.k7f) / otrate),
+      rmhs: Math.floor((totalOvertime.rmhs * rate.rmhs) / otrate),
+      ps: Math.floor((totalOvertime.ps * rate.ps) / otrate),
+      hk: Math.floor((totalOvertime.hk * rate.hk) / otrate),
+      svr: Math.floor((totalOvertime.svr * rate.svr) / otrate),
       total: 0,
     };
     const total = Object.values(totalAmount)
@@ -412,6 +416,8 @@ const getCount = (
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
     const rows: Data[] = [];
+
+    
 
     for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
       const date = `${i.toString().padStart(2, "0")}/${month

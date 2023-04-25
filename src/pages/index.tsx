@@ -409,6 +409,8 @@ export default function TimeKeeperTable({
     } else return false;
   };
 
+  console.log(timekeeper);
+
   return (
     <Box sx={{ width: "100%" }}>
       {loading ? (
@@ -447,7 +449,7 @@ export default function TimeKeeperTable({
             sx={{
               scrollBehavior: "smooth",
               "&::-webkit-scrollbar": {
-                height: 7,
+                height: 10,
               },
               "&::-webkit-scrollbar-thumb": {
                 backgroundColor: "#bdbdbd",
@@ -623,7 +625,7 @@ export default function TimeKeeperTable({
             </Table>
           </TableContainer>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
             component="div"
             count={
               timekeeper.filter(
@@ -790,6 +792,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  if (user?.role === "Stores") {
+    return {
+      redirect: {
+        destination: "/store",
+        permanent: false,
+      },
+    };
+  }
+
+  if (user?.role === "Safety") {
+    return {
+      redirect: {
+        destination: "/safety",
+        permanent: false,
+      },
+    };
+  }
+
   const contractors = await prisma.contractor.findMany();
   return {
     props: {

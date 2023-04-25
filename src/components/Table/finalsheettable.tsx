@@ -5,33 +5,8 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import { Button } from "@mui/material";
 import _ from "lodash";
-interface Column {
-  id:
-    | "date"
-    | "m8"
-    | "f8"
-    | "m20"
-    | "f20"
-    | "dm"
-    | "qc"
-    | "store"
-    | "k7m"
-    | "k7f"
-    | "rmhs"
-    | "ps"
-    | "hk"
-    | "svr"
-    | "total";
-  label: string;
-  border?: boolean;
-  minWidth?: number;
-  align?: "right" | "center" | "left";
-  format?: (value: number) => string;
-}
 
 interface Data {
   date: string;
@@ -62,11 +37,15 @@ export default function FinalSheetTable({
   total,
   sides,
   department,
+  storededuction,
+  safetydeduction,
 }: {
   rows: Data[];
   total: number;
   sides: side[];
   department: string;
+  storededuction: number;
+  safetydeduction: number;
 }) {
   const downloadTxtFile = () => {
     // Convert JSON data to formatted string
@@ -127,7 +106,10 @@ export default function FinalSheetTable({
     "Net Payable",
   ];
 
-  const colspan = department === "8HR" || department === "12HR" ? 8 : 4;
+  const colspan =
+    department === "8HR" || department === "12HR" || department === "Colony"
+      ? 8
+      : 4;
 
   return (
     <Paper
@@ -135,8 +117,8 @@ export default function FinalSheetTable({
         width: "100%",
         scrollBehavior: "smooth",
         "&::-webkit-scrollbar": {
-          width: 7,
-          height: 7,
+          width: 9,
+          height: 10,
         },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "#bdbdbd",
@@ -149,8 +131,8 @@ export default function FinalSheetTable({
           maxWidth: "100%",
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            width: 7,
-            height: 7,
+            width: 9,
+            height: 10,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#bdbdbd",
@@ -175,7 +157,9 @@ export default function FinalSheetTable({
                   Type
                 </TableCell>
               )}
-              {(department === "8HR" || department === "12HR"
+              {(department === "8HR" ||
+              department === "12HR" ||
+              department === "Colony"
                 ? headers
                 : ccmheader
               ).map((header) => (
@@ -192,7 +176,9 @@ export default function FinalSheetTable({
           <TableBody>
             {sides.map((item) => (
               <TableRow hover role="checkbox" tabIndex={-1} key={item.id}>
-                <TableCell align="center">{item.main}</TableCell>
+                <TableCell align="center" sx={{ fontWeight: "600" }}>
+                  {item.main}
+                </TableCell>
                 {item.sub && <TableCell align="center">{item.sub}</TableCell>}
                 {rows.map((row, index) => (
                   <TableCell key={index} align="center">
@@ -204,25 +190,33 @@ export default function FinalSheetTable({
 
             <TableRow>
               <TableCell colSpan={colspan + 1}></TableCell>
-              <TableCell colSpan={5}>Net Amount Payable</TableCell>
+              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                Net Amount Payable
+              </TableCell>
               <TableCell align="center">{total}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
               <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5}>GST Hold</TableCell>
-              <TableCell align="center">{total > 0 ? "300" : "0"}</TableCell>
+              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                GST Hold
+              </TableCell>
+              <TableCell align="center">{0}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
               <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5}>Safety Voilation's Penality</TableCell>
-              <TableCell align="center">{total > 0 ? "40" : "0"}</TableCell>
+              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                Safety Voilation's Penality
+              </TableCell>
+              <TableCell align="center">
+                {total > 0 ? safetydeduction : "0"}
+              </TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
               <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5}>
+              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                 Consumables / Rechargeable Items
               </TableCell>
               <TableCell align="center">0</TableCell>
@@ -230,21 +224,29 @@ export default function FinalSheetTable({
             <TableRow>
               <TableCell />
               <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5}>Adjustment Of Advance Amount</TableCell>
+              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                Adjustment Of Advance Amount
+              </TableCell>
               <TableCell align="center">0</TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
               <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5}>Any Other Deductions</TableCell>
-              <TableCell align="center">{total > 0 ? "80" : "0"}</TableCell>
+              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                Any Other Deductions
+              </TableCell>
+              <TableCell align="center">
+                {total > 0 ? storededuction : "0"}
+              </TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
               <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5}>Final Payable</TableCell>
+              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                Final Payable
+              </TableCell>
               <TableCell align="center">
-                {total > 0 ? total - 150 - 40 - 80 : 0}
+                {total > 0 ? total - storededuction - safetydeduction : 0}
               </TableCell>
             </TableRow>
           </TableBody>

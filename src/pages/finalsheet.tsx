@@ -3,16 +3,8 @@ import FormSelect from "@/ui-component/FormSelect";
 import MonthSelect from "@/ui-component/MonthSelect";
 import getTotalAmountAndRows from "@/utils/get8hr";
 import getColony from "@/utils/getColony";
-import { render } from "redocx";
-import {
-  column8HR,
-  columnccm,
-  columncolony,
-  columnlrf,
-} from "@/utils/getColumns";
 import getCCM from "@/utils/getccm";
 import getLRF from "@/utils/getlrf";
-import { print8HR, printOther } from "@/utils/printfinalreport";
 import {
   Box,
   Button,
@@ -37,150 +29,7 @@ import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import FinalSheetta from "@/components/Table/finalsheet";
 import { print } from "@/components/PrintFinalSheet";
-
-interface Column {
-  id:
-    | "date"
-    | "m8"
-    | "f8"
-    | "m20"
-    | "f20"
-    | "dm"
-    | "qc"
-    | "store"
-    | "k7m"
-    | "k7f"
-    | "rmhs"
-    | "ps"
-    | "hk"
-    | "svr"
-    | "total";
-  label: string;
-  border?: boolean;
-  minWidth?: number;
-  align?: "right" | "center" | "left";
-  format?: (value: number) => string;
-}
-
-const columns: Column[] = [
-  {
-    id: "date",
-    label: "",
-    minWidth: 80,
-    border: true,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "m8",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "f8",
-    label: "F",
-    minWidth: 50,
-    border: true,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "m20",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "f20",
-    label: "F",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "dm",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "qc",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "store",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "k7m",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "k7f",
-    label: "F",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "rmhs",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "ps",
-    label: "F",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "hk",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "svr",
-    label: "M",
-    minWidth: 50,
-    align: "center",
-    border: true,
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "total",
-    label: "",
-    minWidth: 50,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-];
+import Details from "@/components/Table/details";
 
 export default function FinalSheet({
   contractors,
@@ -204,6 +53,7 @@ export default function FinalSheet({
   const [loading, setLoading] = useState<boolean>(false);
   const [store, setStore] = useState<Stores | null>(null);
   const [safety, setSafety] = useState<Safety | null>(null);
+  const [details, setDetails] = useState<any>(null);
   const f = contractors.find((c) => c.contractorId === selectedContractor);
 
   const fetchStoreAndSafety = async () => {
@@ -224,7 +74,6 @@ export default function FinalSheet({
     const res = await axios.get(
       `/api/gettimekeeper?contractor=${selectedContractor}&month=${value}&department=${department}`
     );
-    console.log(res.data, "data");
 
     if (department === "8HR" || department === "12HR") {
       const { rows1, totalnetPayable } = getTotalAmountAndRows(
@@ -267,14 +116,29 @@ export default function FinalSheet({
     setLoading(false);
   };
 
+  const fetchPayouts = async () => {
+    const res = await axios.get(
+      `/api/payouttracker?contractorid=${selectedContractor}&month=${value}`
+    );
+
+    setDetails(res.data);
+  };
+
+  const fetchAll = async () => {
+    setLoading(true);
+    await fetchTimekeepers();
+    await fetchStoreAndSafety();
+    await fetchPayouts();
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchTimekeepers();
-    fetchStoreAndSafety();
+    fetchAll();
   }, [selectedContractor, value, department]);
 
   // console.log(timekeepers, rows, totalPayable, loading);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     print(
       rows,
       totalPayable,
@@ -285,7 +149,11 @@ export default function FinalSheet({
       ) as Workorder,
       value,
       store,
-      safety
+      safety,
+      details.payoutracker,
+      details.prevMonthAmount,
+      details.prevprevMonthAmount,
+      details.prevYearAmount
     );
     // const c = contractors.find((c) => c.contractorId === selectedContractor);
     // const w = workorders.find(
@@ -298,12 +166,24 @@ export default function FinalSheet({
     // }
   };
 
-  console.log(rows);
-
   const onChange = (value: Dayjs | null) =>
     setValue(value?.format("MM/YYYY") || "");
 
-  return (
+  const w = workorders.find(
+    (c) => c.contractorId === f?.id && c.startDate.includes(value)
+  );
+
+  return loading ? (
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      width="100%"
+      height="90vh"
+    >
+      <CircularProgress sx={{ color: "#673ab7" }} />
+    </Box>
+  ) : (
     <Paper sx={{ p: 3 }}>
       <Box>
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -338,6 +218,7 @@ export default function FinalSheet({
               label="Department"
             />
           </Stack>
+
           <Button
             variant="contained"
             sx={{
@@ -356,89 +237,27 @@ export default function FinalSheet({
         <Typography variant="h4" sx={{ mb: 4, my: 2 }}>
           Contractor Details :
         </Typography>
-        <Box display="flex" flexWrap={"wrap"}>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Contractor Id :{" "}
-            <span style={{ fontWeight: "500" }}>{selectedContractor}</span>
-          </Typography>
-
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Contractor Name :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {
-                contractors.find((c) => c.contractorId === selectedContractor)
-                  ?.contractorname
-              }
-            </span>
-          </Typography>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Mobile Number :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {
-                contractors.find((c) => c.contractorId === selectedContractor)
-                  ?.mobilenumber
-              }
-            </span>
-          </Typography>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Office Address :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {
-                contractors.find((c) => c.contractorId === selectedContractor)
-                  ?.officeaddress
-              }
-            </span>
-          </Typography>
-        </Box>
+        <Details
+          rows={[
+            { label: "Contractor Id", value: selectedContractor.toString() },
+            { label: "Contractor Name", value: f?.contractorname as string },
+            { label: "Mobile Number", value: f?.mobilenumber as string },
+            { label: "Office Address", value: f?.officeaddress as string },
+          ]}
+        />
         <Divider sx={{ my: 2 }} />
         <Typography variant="h4" sx={{ mt: 2, mb: 4 }}>
           Service Details :
         </Typography>
-        <Box display="flex" flexWrap={"wrap"}>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Workorderid :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {workorders.find(
-                (c) => c.contractorId === f?.id && c.startDate.includes(value)
-              )?.id || "-"}
-            </span>
-          </Typography>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Nature of Work :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {workorders.find(
-                (c) => c.contractorId === f?.id && c.startDate.includes(value)
-              )?.nature || "-"}
-            </span>
-          </Typography>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Location :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {workorders.find(
-                (c) => c.contractorId === f?.id && c.startDate.includes(value)
-              )?.location || "-"}
-            </span>
-          </Typography>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Invoice Month : <span style={{ fontWeight: "500" }}>{value}</span>
-          </Typography>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            Start Date :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {workorders.find(
-                (c) => c.contractorId === f?.id && c.startDate.includes(value)
-              )?.startDate || "-"}
-            </span>
-          </Typography>
-          <Typography variant="h4" sx={{ mx: 6, my: 2 }}>
-            End Date :{" "}
-            <span style={{ fontWeight: "500" }}>
-              {workorders.find(
-                (c) => c.contractorId === f?.id && c.startDate.includes(value)
-              )?.endDate || "-"}
-            </span>
-          </Typography>
-        </Box>
+        <Details
+          rows={[
+            { label: "Work Order Id", value: w?.id as string },
+            { label: "Nature of Work", value: w?.nature as string },
+            { label: "Location", value: w?.location as string },
+            { label: "Start Date", value: w?.startDate as string },
+            { label: "End Date", value: w?.endDate as string },
+          ]}
+        />
       </Box>
       <Divider sx={{ my: 2 }} />
       {loading ? (
@@ -456,14 +275,70 @@ export default function FinalSheet({
           rows={rows}
           total={totalPayable}
           department={department}
+          storededuction={store?.chargeableamount || 0}
+          safetydeduction={safety?.netchargeableamount || 0}
         />
       )}
+      <Divider sx={{ my: 2 }} />
+      <Typography variant="h4" sx={{ mt: 2, mb: 4 }}>
+        Contractors Monthly Cost Charged in Profit & Loss for a Financial Year :
+      </Typography>
+      <Details
+        rows={[
+          {
+            label: "Cost of Previous Month",
+            value: (details?.prevMonthAmount || 0)?.toString(),
+          },
+          {
+            label: "Cost of the Month",
+            value: (details?.prevprevMonthAmount || 0)?.toString(),
+          },
+          { label: "Cost Upto This Month", value: totalPayable?.toString() },
+          {
+            label: "Cost Of the Previous Year",
+            value: (details?.prevYearAmount || 0)?.toString(),
+          },
+        ]}
+      />
+
+      <Divider sx={{ my: 2 }} />
+      <Typography variant="h4" sx={{ mt: 2, mb: 4 }}>
+        Bank Account Information :
+      </Typography>
+      <Details
+        rows={[
+          { label: "Beneficial Name", value: f?.contractorname as string },
+          { label: "Account Number", value: f?.bankaccountnumber as string },
+          { label: "IFSC Code", value: f?.ifscno as string },
+          {
+            label: "Payment Date",
+            value: details?.payoutracker?.month || ("-" as string),
+          },
+          {
+            label: "Payment Reference Number",
+            value: details?.payoutracker?.id || "-",
+          },
+          {
+            label: "Paid Amount",
+            value: details?.payoutracker?.actualpaidoutmoney || "-",
+          },
+        ]}
+      />
     </Paper>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
 
   const contractors = await prisma.contractor.findMany();
   const workorders = await prisma.workorder.findMany();

@@ -10,8 +10,7 @@ const icons = {
 
 const hr = {
     id: 'pages',
-    title: 'Pages',
-    caption: 'Pages Caption',
+    title: 'Functional Roles',
     type: 'group',
     children: [
         {

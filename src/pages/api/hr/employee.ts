@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
+import shortid from "shortid";
 
 
 
@@ -8,6 +9,15 @@ export default async function employee (req: NextApiRequest, res: NextApiRespons
    
     if(req.method === "POST") {
         const {id,contractorId, ...data} = req.body
+        const isExist = await prisma.employee.findFirst({
+            where: {
+                employeeId: data.employeeId.toString(),
+            }
+        })
+        if(isExist) {
+            res.status(409).json({message: "Employee already exists", error: "employeeId"})
+            return;
+        }
         if(id) {
             const employee = await prisma.employee.update({
                 where: {
@@ -27,6 +37,7 @@ export default async function employee (req: NextApiRequest, res: NextApiRespons
 
             const employee = await prisma.employee.create({
                 data: {
+                    id: shortid.generate(),
                     contractorname: contractor?.contractorname || "",
                     contractorId: contractorId,
                     ...data

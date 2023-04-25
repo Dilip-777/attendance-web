@@ -55,7 +55,6 @@ interface Data {
 }
 
 export default function getCCM(timekeeper: TimeKeeper[], month: number, year: number) {
-  console.log(timekeeper, month, year);
   
      const getCount = (data: TimeKeeper[], designation: string) => {
     return data.filter((item) => item.designation === designation).length;
@@ -364,26 +363,27 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
   const getGST = (taxable:Data) => {
     const gst: Data = {
       date: "GST",
-      ele: taxable.ele * 0.18,
-      lco: taxable.lco * 0.18,
-      tman: taxable.tman * 0.18,
-      filter: taxable.filter * 0.18,
-      po: taxable.po * 0.18,
-      bco: taxable.bco * 0.18,
-      srfilter: taxable.srfilter * 0.18,
-      incharge: taxable.incharge * 0.18,
-      mo: taxable.mo * 0.18,
-      shiftinch: taxable.shiftinch * 0.18,
-      gc: taxable.gc * 0.18,
-      tmesson: taxable.tmesson * 0.18,
-      svr: taxable.svr * 0.18,
-      sbo: taxable.sbo * 0.18,
-      lmes: taxable.lmes * 0.18,
-      lman: taxable.lman * 0.18,
-      forman: taxable.forman * 0.18,
-      jrele: taxable.jrele * 0.18,
-      helper: taxable.helper * 0.18,
-      total: taxable.total * 0.18,
+
+      ele: Math.floor(taxable.ele * 0.18),
+      lco: Math.floor(taxable.lco * 0.18),
+      tman: Math.floor(taxable.tman * 0.18),
+      filter: Math.floor(taxable.filter * 0.18),
+      po: Math.floor(taxable.po * 0.18),
+      bco: Math.floor(taxable.bco * 0.18),
+      srfilter: Math.floor(taxable.srfilter * 0.18),
+      incharge: Math.floor(taxable.incharge * 0.18),
+      mo: Math.floor(taxable.mo * 0.18),
+      shiftinch: Math.floor(taxable.shiftinch * 0.18),
+      gc: Math.floor(taxable.gc * 0.18),
+      tmesson: Math.floor(taxable.tmesson * 0.18),
+      svr: Math.floor(taxable.svr * 0.18),
+      sbo: Math.floor(taxable.sbo * 0.18),
+      lmes: Math.floor(taxable.lmes * 0.18),
+      lman: Math.floor(taxable.lman * 0.18),
+      forman: Math.floor(taxable.forman * 0.18),
+      jrele: Math.floor(taxable.jrele * 0.18),
+      helper: Math.floor(taxable.helper * 0.18),
+      total: Math.floor(taxable.total * 0.18),
     }
     return gst
   }
@@ -419,26 +419,26 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
   const getTds = (taxable: Data) => {
     const tds: Data = {
       date: "TDS",
-      ele: taxable.ele * 0.01,
-      lco: taxable.lco * 0.01,
-      tman: taxable.tman * 0.01,
-      filter: taxable.filter * 0.01,
-      po: taxable.po * 0.01,
-      bco: taxable.bco * 0.01,
-      srfilter: taxable.srfilter * 0.01,
-      incharge: taxable.incharge * 0.01,
-      mo: taxable.mo * 0.01,
-      shiftinch: taxable.shiftinch * 0.01,
-      gc: taxable.gc * 0.01,
-      tmesson: taxable.tmesson * 0.01,
-      svr: taxable.svr * 0.01,
-      sbo: taxable.sbo * 0.01,
-      lmes: taxable.lmes * 0.01,
-      lman: taxable.lman * 0.01,
-      forman: taxable.forman * 0.01,
-      jrele: taxable.jrele * 0.01,
-      helper: taxable.helper * 0.01,
-      total: taxable.total * 0.01,
+      ele: Math.floor(taxable.ele * 0.01),
+      lco: Math.floor(taxable.lco * 0.01),
+      tman: Math.floor(taxable.tman * 0.01),
+      filter: Math.floor(taxable.filter * 0.01),
+      po: Math.floor(taxable.po * 0.01),
+      bco: Math.floor(taxable.bco * 0.01),
+      srfilter: Math.floor(taxable.srfilter * 0.01),
+      incharge: Math.floor(taxable.incharge * 0.01),
+      mo: Math.floor(taxable.mo * 0.01),
+      shiftinch: Math.floor(taxable.shiftinch * 0.01),
+      gc: Math.floor(taxable.gc * 0.01),
+      tmesson: Math.floor(taxable.tmesson * 0.01),
+      svr: Math.floor(taxable.svr * 0.01),
+      sbo: Math.floor(taxable.sbo * 0.01),
+      lmes: Math.floor(taxable.lmes * 0.01),
+      lman: Math.floor(taxable.lman * 0.01),
+      forman: Math.floor(taxable.forman * 0.01),
+      jrele: Math.floor(taxable.jrele * 0.01),
+      helper: Math.floor(taxable.helper * 0.01),
+      total: Math.floor(taxable.total * 0.01),
     }
     return tds
   }
@@ -446,26 +446,26 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
   const getNetPayable = (billAmount: Data, tds: Data) => {
     const netPayable: Data = {
       date: "Net Payable",
-      ele: billAmount.ele + tds.ele,
-      lco: billAmount.lco + tds.lco,
-      tman: billAmount.tman + tds.tman,
-      filter: billAmount.filter + tds.filter,
-      po: billAmount.po + tds.po,
-      bco: billAmount.bco + tds.bco,
-      srfilter: billAmount.srfilter + tds.srfilter,
-      incharge: billAmount.incharge + tds.incharge,
-      mo: billAmount.mo + tds.mo,
-      shiftinch: billAmount.shiftinch + tds.shiftinch,
-      gc: billAmount.gc + tds.gc,
-      tmesson: billAmount.tmesson + tds.tmesson,
-      svr: billAmount.svr + tds.svr,
-      sbo: billAmount.sbo + tds.sbo,
-      lmes: billAmount.lmes + tds.lmes,
-      lman: billAmount.lman + tds.lman,
-      forman: billAmount.forman + tds.forman,
-      jrele: billAmount.jrele + tds.jrele,
-      helper: billAmount.helper + tds.helper,
-      total: billAmount.total + tds.total,
+      ele: Math.floor(billAmount.ele + tds.ele),
+      lco: Math.floor(billAmount.lco + tds.lco),
+      tman: Math.floor(billAmount.tman + tds.tman),
+      filter: Math.floor(billAmount.filter + tds.filter),
+      po: Math.floor(billAmount.po + tds.po),
+      bco: Math.floor(billAmount.bco + tds.bco),
+      srfilter: Math.floor(billAmount.srfilter + tds.srfilter),
+      incharge: Math.floor(billAmount.incharge + tds.incharge),
+      mo: Math.floor(billAmount.mo + tds.mo),
+      shiftinch: Math.floor(billAmount.shiftinch + tds.shiftinch),
+      gc: Math.floor(billAmount.gc + tds.gc),
+      tmesson: Math.floor(billAmount.tmesson + tds.tmesson),
+      svr: Math.floor(billAmount.svr + tds.svr),
+      sbo: Math.floor(billAmount.sbo + tds.sbo),
+      lmes: Math.floor(billAmount.lmes + tds.lmes),
+      lman: Math.floor(billAmount.lman + tds.lman),
+      forman: Math.floor(billAmount.forman + tds.forman),
+      jrele: Math.floor(billAmount.jrele + tds.jrele),
+      helper: Math.floor(billAmount.helper + tds.helper),
+      total: Math.floor(billAmount.total + tds.total),
     }
     return netPayable
   }
@@ -494,25 +494,25 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
     const l = rows.length - 1;
     const rates = {
       date: "Rate",
-      ele: 31500 / l,
-      lco: 20000 / l,
-      tman: 19000 / l,
-      filter: 21500 / l,
-      po: 16000 / l,
-      bco: 17000 / l,
-      srfilter: 26500 / l,
-      incharge: 26500 / l,
-      mo: 21400 / l,
-      shiftinch: 19500 / l,
-      gc: 17000 / l,
-      tmesson: 18000 / l,
-      svr: 18000 / l,
-      sbo: 18000 / l,
-      lmes: 18000 / l,
-      lman: 18000 / l,
-      forman: 18000 / l,
-      jrele: 18000 / l,
-      helper: 18000 / l,
+      ele: Math.floor(31500 / l),
+      lco: Math.floor(20000 / l),
+      tman: Math.floor(19000 / l),
+      filter: Math.floor(21500 / l),
+      po: Math.floor(16000 / l),
+      bco: Math.floor(17000 / l),
+      srfilter: Math.floor(26500 / l),
+      incharge: Math.floor(26500 / l),
+      mo: Math.floor(21400 / l),
+      shiftinch: Math.floor(19500 / l),
+      gc: Math.floor(17000 / l),
+      tmesson: Math.floor(18000 / l),
+      svr: Math.floor(18000 / l),
+      sbo: Math.floor(18000 / l),
+      lmes: Math.floor(18000 / l),
+      lman: Math.floor(18000 / l),
+      forman: Math.floor(18000 / l),
+      jrele: Math.floor(18000 / l),
+      helper: Math.floor(18000 / l),
       total: 0,
     };
     rows.push(rates);
@@ -522,8 +522,8 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
     rows1.push(Amount)
 
     const data = timekeeper.filter((entry) => {
-      const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
-      const entryYear = parseInt(entry.attendancedate.split("-")[2]);
+      const entryMonth = parseInt(entry.attendancedate.split("/")[1]);
+      const entryYear = parseInt(entry.attendancedate.split("/")[2]);
       return entryMonth === month && entryYear === year;
     });
 
@@ -544,12 +544,15 @@ export default function getCCM(timekeeper: TimeKeeper[], month: number, year: nu
 
    const billAmount = getBillAmount(totalAmount, gst);
     rows1.push(billAmount)
+    
 
     const tds = getTds(totalAmount);
     rows1.push(tds)
 
     const netPayable = getNetPayable(billAmount, tds);
     rows1.push(netPayable)
+
+    
     
 
     return {rows, totalAmount, totalOtAmount, Amount, rates, totalAttendance, total1 : totalAmount.total, rows1, totalnetPayable: netPayable.total};

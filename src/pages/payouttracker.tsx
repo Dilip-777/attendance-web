@@ -72,6 +72,7 @@ const createHeadCells = (
 const headCells = [
   createHeadCells("contractorName", "Contractor Name", false, false),
   createHeadCells("workorderid", "Work Order", false, true),
+  createHeadCells("month", "Month", false, true),
   createHeadCells("amount", "Amount", false, false),
   createHeadCells("gst", "GST", false, false),
   createHeadCells("tds", "TDS", false, false),
@@ -247,7 +248,14 @@ export default function Employees({
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <Box sx={{ height: "5rem", display: "flex", p: 3 }}>
+        <Box
+          sx={{
+            height: "5rem",
+            display: "flex",
+            p: 2,
+            justifyContent: "space-between",
+          }}
+        >
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               views={["month", "year"]}
@@ -257,6 +265,14 @@ export default function Employees({
               }}
             />
           </LocalizationProvider>
+          <Button
+            variant="contained"
+            size="small"
+            sx={{ m: 0.5 }}
+            onClick={() => router.push("/finalamount")}
+          >
+            Add Payout Tracker
+          </Button>
         </Box>
         {/* <EnhancedTableToolbar
           numSelected={selected.length}
@@ -267,7 +283,7 @@ export default function Employees({
           sx={{
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
-              height: 7,
+              height: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",
@@ -337,6 +353,7 @@ export default function Employees({
                         {row.contractorName}
                       </TableCell>
                       <TableCell align="center">{row.id}</TableCell>
+                      <TableCell align="center">{row.month}</TableCell>
                       <TableCell align="center">{row.amount}</TableCell>
                       <TableCell align="center">9</TableCell>
                       <TableCell align="center">9</TableCell>

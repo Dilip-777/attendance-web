@@ -11,8 +11,7 @@ const icons = {
 
 const corporator = {
     id: 'pages',
-    title: 'Pages',
-    caption: 'Pages Caption',
+    title: 'Functional Roles',
     type: 'group',
     children: [
         {

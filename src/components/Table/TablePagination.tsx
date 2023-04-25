@@ -109,7 +109,7 @@ const CustomTable = (props: Props) => {
           sx={{
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
-              height: 7,
+              height: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",

@@ -26,6 +26,14 @@ const admin = {
             icon: icons.Dashboard,
             breadcrumbs: false
         },
+        {
+            id: '/designations',
+            title: 'Designations',
+            type: 'item',
+            url: '/designations',
+            icon: icons.Dashboard,
+            breadcrumbs: false
+        },
     ]
 };
 

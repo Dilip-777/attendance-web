@@ -11,9 +11,12 @@ import Typography from "@mui/material/Typography";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { TimeKeeper } from "@prisma/client";
+import { Contractor, TimeKeeper } from "@prisma/client";
 import { Box, FormControl, Grid, MenuItem, Select } from "@mui/material";
 import getLRF from "@/utils/getlrf";
+import MonthSelect from "@/ui-component/MonthSelect";
+import dayjs, { Dayjs } from "dayjs";
+import axios from "axios";
 interface Column {
   id:
     | "date"
@@ -142,15 +145,13 @@ const FormSelect = ({
 };
 
 export default function PlantCommercialCCM({
-  timekeeper,
+  contractor,
   result,
-  name,
 }: {
-  timekeeper: TimeKeeper[];
+  contractor: Contractor;
   result: any;
-  name: string;
 }) {
-  console.log(timekeeper);
+  const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [month, setMonth] = React.useState<number>(new Date().getMonth() + 1);
@@ -159,222 +160,24 @@ export default function PlantCommercialCCM({
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
 
-  const getCount = (data: TimeKeeper[], designation: string) => {
-    return data.filter((item) => item.designation === designation).length;
-  };
-
-  const getData = (date: string): Data => {
-    const filtered = timekeeper.filter((item) => item.attendancedate === date);
-    const ele = getCount(filtered, "ELE");
-    const filter = getCount(filtered, "JRFILTER");
-    const srfilter = getCount(filtered, "SRFILTER");
-    const lmes = getCount(filtered, "LMES");
-    const svr = getCount(filtered, "SVR");
-    const helper = getCount(filtered, "HELPER");
-    const total = ele + filter + srfilter + lmes + svr + helper;
-    return {
-      date,
-      ele,
-      filter,
-      srfilter,
-      svr,
-      lmes,
-      helper,
-      total,
-    };
-  };
-
-  function getTotalAttendanceRecord(rows: Data[]): Data {
-    const totalAttendance = {
-      date: "Total Attendance",
-      ele: 0,
-      filter: 0,
-      srfilter: 0,
-      lmes: 0,
-      svr: 0,
-      helper: 0,
-      total: 0,
-    };
-
-    rows.forEach((row) => {
-      totalAttendance.ele += row.ele;
-      totalAttendance.filter += row.filter;
-      totalAttendance.srfilter += row.srfilter;
-      totalAttendance.svr += row.svr;
-      totalAttendance.lmes += row.lmes;
-      totalAttendance.helper += row.helper;
-      totalAttendance.total += row.total;
-    });
-
-    return totalAttendance;
-  }
-
-  function getTotalOvertimeRecord(data: TimeKeeper[]): Data {
-    const totalOvertime: Data = {
-      date: "Total Overtime",
-      ele: 0,
-      filter: 0,
-      srfilter: 0,
-      svr: 0,
-      lmes: 0,
-      helper: 0,
-      total: 0,
-    };
-
-    data.forEach((item) => {
-      if (item.designation === "ELE") {
-        totalOvertime.ele += Number(item.manualovertime);
-      }
-      if (item.designation === "JRFILTER") {
-        totalOvertime.filter += Number(item.manualovertime);
-      }
-      if (item.designation === "SRFILTER") {
-        totalOvertime.srfilter += Number(item.manualovertime);
-      }
-      if (item.designation === "SVR") {
-        totalOvertime.svr += Number(item.manualovertime);
-      }
-
-      if (item.designation === "LMES") {
-        totalOvertime.lmes += Number(item.manualovertime);
-      }
-      if (item.designation === "HELPER") {
-        totalOvertime.helper += Number(item.manualovertime);
-      }
-
-      totalOvertime.total += Number(item.manualovertime);
-    });
-    return totalOvertime;
-  }
-
-  const getAmount = (totalAttendance: Data, rate: Data) => {
-    const totalAmount: Data = {
-      date: "Total Amount",
-      ele: totalAttendance.ele * rate.ele,
-      filter: totalAttendance.filter * rate.filter,
-      srfilter: totalAttendance.srfilter * rate.srfilter,
-      lmes: totalAttendance.lmes * rate.lmes,
-      svr: totalAttendance.svr * rate.svr,
-      helper: totalAttendance.helper * rate.helper,
-      total: 0,
-    };
-    const total = Object.values(totalAmount)
-      .filter((value) => typeof value === "number")
-      .reduce((a, b) => Number(a) + Number(b), 0);
-    return {
-      ...totalAmount,
-      total,
-    };
-  };
-
-  const getTotalOtAmount = (totalOvertime: Data, rate: Data) => {
-    const totalAmount: Data = {
-      date: "OT Amount",
-      ele: (totalOvertime.ele * rate.ele) / 8,
-      filter: (totalOvertime.filter * rate.filter) / 8,
-      srfilter: (totalOvertime.srfilter * rate.srfilter) / 8,
-      lmes: (totalOvertime.lmes * rate.lmes) / 8,
-      svr: (totalOvertime.svr * rate.svr) / 8,
-      helper: (totalOvertime.helper * rate.helper) / 8,
-      total: 0,
-    };
-    const total = Object.values(totalAmount)
-      .filter((value) => typeof value === "number")
-      .reduce((a, b) => Number(a) + Number(b), 0);
-    return {
-      ...totalAmount,
-      total,
-    };
-  };
-
-  const getTotalAmount = (totalAmount: Data, totalOtAmount: Data) => {
-    const netAmount: Data = {
-      date: "Total Amount",
-      ele: totalAmount.ele + totalOtAmount.ele,
-      filter: totalAmount.filter + totalOtAmount.filter,
-      srfilter: totalAmount.srfilter + totalOtAmount.srfilter,
-      svr: totalAmount.svr + totalOtAmount.svr,
-      lmes: totalAmount.lmes + totalOtAmount.lmes,
-      helper: totalAmount.helper + totalOtAmount.helper,
-      total: totalAmount.total + totalOtAmount.total,
-    };
-    return netAmount;
-  };
-
-  async function getRows(month: number, year: number) {
+  const fetchTimekeepers = async () => {
     setLoading(true);
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-    const rows: Data[] = [];
-
-    for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
-      const date = `${i.toString().padStart(2, "0")}-${month
-        .toString()
-        .padStart(2, "0")}-${year}`;
-      rows.push(getData(date));
-    }
-
-    const totalAttendance = getTotalAttendanceRecord(rows as Data[]);
-    rows.push(totalAttendance);
-    const l = rows.length - 1;
-    const rates = {
-      date: "Rate",
-      ele: 31500 / l,
-      lco: 20000 / l,
-      tman: 19000 / l,
-      filter: 21500 / l,
-      po: 16000 / l,
-      bco: 17000 / l,
-      srfilter: 26500 / l,
-      incharge: 26500 / l,
-      mo: 21400 / l,
-      shiftinch: 19500 / l,
-      gc: 17000 / l,
-      tmesson: 18000 / l,
-      svr: 18000 / l,
-      sbo: 18000 / l,
-      lmes: 18000 / l,
-      lman: 18000 / l,
-      forman: 18000 / l,
-      jrele: 18000 / l,
-      helper: 18000 / l,
-      total: 0,
-    };
-    rows.push(rates);
-    const Amount = getAmount(totalAttendance, rates);
-    rows.push(Amount);
-
-    const data = timekeeper.filter((entry) => {
-      const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
-      const entryYear = parseInt(entry.attendancedate.split("-")[2]);
-      return entryMonth === month && entryYear === year;
-    });
-
-    const totalOvertime = getTotalOvertimeRecord(data);
-    rows.push(totalOvertime);
-
-    const totalOtAmount = getTotalOtAmount(totalOvertime, rates);
-    rows.push(totalOtAmount);
-
-    const totalAmount = getTotalAmount(Amount, totalOtAmount);
-    rows.push(totalAmount);
-
-    setTotal(totalAmount.total);
-
-    return rows;
-  }
-
-  const handleGetRows = async () => {
-    setLoading(true);
-    const { rows, total1 } = getLRF(timekeeper, month, year);
+    const res = await axios.get(
+      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}&department=LRF`
+    );
+    const { rows, total1 } = getLRF(
+      res.data,
+      dayjs(value, "MM/YYYY").month() + 1,
+      dayjs(value, "MM/YYYY").year()
+    );
     setRows(rows);
     setTotal(total1);
     setLoading(false);
   };
 
   React.useEffect(() => {
-    handleGetRows();
-  }, [month, year]);
+    fetchTimekeepers();
+  }, [value]);
 
   const count = {
     date: "",
@@ -387,29 +190,6 @@ export default function PlantCommercialCCM({
     total: 0,
   };
 
-  const months = [
-    { value: 1, label: "January" },
-    { value: 2, label: "February" },
-    { value: 3, label: "March" },
-    { value: 4, label: "April" },
-    { value: 5, label: "May" },
-    { value: 6, label: "June" },
-    { value: 7, label: "July" },
-    { value: 8, label: "August" },
-    { value: 9, label: "September" },
-    { value: 10, label: "October" },
-    { value: 11, label: "November" },
-    { value: 12, label: "December" },
-  ];
-
-  const years = [
-    { value: 2019, label: "2019" },
-    { value: 2020, label: "2020" },
-    { value: 2021, label: "2021" },
-    { value: 2022, label: "2022" },
-    { value: 2023, label: "2023" },
-  ];
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -421,19 +201,31 @@ export default function PlantCommercialCCM({
     setPage(0);
   };
 
+  const onChange = (value: Dayjs | null) =>
+    setValue(value?.format("MM/YYYY") || "");
+
   return (
     <Paper sx={{ width: "100%" }}>
-      <Box sx={{ height: "5rem", display: "flex", p: 3 }}>
+      <Box
+        sx={{
+          height: "5rem",
+          display: "flex",
+          p: 3,
+          justifyContent: "flex-start",
+          mb: 2,
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <FormSelect value={month} setValue={setMonth} options={months} />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormSelect value={year} setValue={setYear} options={years} />
+            <MonthSelect
+              label="Select Date"
+              value={dayjs(value, "MM/YYYY")}
+              onChange={onChange}
+            />
           </Grid>
         </Grid>
         <Typography variant="h4" sx={{ width: "15rem" }}>
-          Contractor : {name}
+          Contractor : {contractor.contractorname}
         </Typography>
       </Box>
       <TableContainer
@@ -441,8 +233,8 @@ export default function PlantCommercialCCM({
           // maxHeight: 500,
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            width: 7,
-            height: 7,
+            width: 9,
+            height: 10,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#bdbdbd",
@@ -592,8 +384,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
-      timekeeper,
-      name: contractor?.contractorname,
+      contractor,
       result,
     },
   };

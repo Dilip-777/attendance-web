@@ -1,12 +1,14 @@
-import { Button, Stack } from "@mui/material";
+import { Close } from "@mui/icons-material";
+import { Button, IconButton, Snackbar, Stack } from "@mui/material";
 import axios from "axios";
-import { useState } from "react";
+import React, { useState } from "react";
 import * as XLSX from "xlsx";
 
 function ImportData() {
   // on change states
   const [excelFile, setExcelFile] = useState<string | ArrayBuffer | null>(null);
   const [excelFileError, setExcelFileError] = useState<string | null>("");
+  const [open, setOpen] = useState(false);
 
   // submit
   const [excelData, setExcelData] = useState(null);
@@ -39,6 +41,34 @@ function ImportData() {
       // }
     }
   };
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const action = (
+    <React.Fragment>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleClose}
+      >
+        <Close fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
 
   const getDate = (excelDate: number) => {
     // const excelDate = 44986;
@@ -85,7 +115,10 @@ function ImportData() {
       };
     });
 
-    const res = await axios.post("/api/test", body);
+    const res = await axios.post("/api/test", body).then((res) => {
+      console.log(res);
+      handleClick();
+    });
   };
 
   // new Date(timeValue * 24 * 60 * 60 * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -118,6 +151,13 @@ function ImportData() {
           required
         />
       </Button>
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        message="Uploaded Successfully"
+        action={action}
+      />
     </Stack>
     // <div className="container">
     //   <div className="form">

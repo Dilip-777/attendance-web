@@ -17,14 +17,16 @@ interface Data {
 }
 
 export default function getColony(timekeeper: TimeKeeper[], month: number, year: number) {
-     const getCount = (data: TimeKeeper[], gender: string) => {
-    return data.filter((item) => item.gender === gender).length;
+     const getCount = (data: TimeKeeper[], gender: string, extra: string) => {
+    return data.filter((item) => (item.gender?.toLowerCase() === gender || item.gender === extra)).length;
   };
+
+  
 
   const getData = (date: string): Data => {
     const filtered = timekeeper.filter((item) => item.attendancedate === date);
-    const m = getCount(filtered, "MALE");
-    const f = getCount(filtered, "FEMALE");
+    const m = getCount(filtered, "male", "M");
+    const f = getCount(filtered, "female", "F");
     const total = m + f;
     return {
       date,
@@ -59,10 +61,10 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
     };
 
     data.forEach((item) => {
-      if (item.gender === "MALE") {
+      if (item.gender?.toLowerCase() === "male" || item.gender === "M") {
         totalOvertime.m += Number(item.manualovertime || item.overtime);
       }
-      if (item.gender === "FEMALE") {
+      if (item.gender?.toLowerCase() === "female", item.gender === "F") {
         totalOvertime.f += Number(item.manualovertime || item.overtime);
       }
 
@@ -169,9 +171,9 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
   const getNetPayable = (billAmount: Data, tds: Data) => {
     const netPayable: Data = {
       date: "Net Payable",
-      m: billAmount.m - tds.m,
-      f: billAmount.f - tds.f,
-      total: billAmount.total - tds.total,
+      m: Math.floor(billAmount.m - tds.m),
+      f: Math.floor(billAmount.f - tds.f),
+      total: Math.floor(billAmount.total - tds.total),
     };
     return netPayable;
   }
@@ -180,6 +182,7 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
     const rows: Data[] = [];
+    
 
     for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
       const date = `${i.toString().padStart(2, "0")}/${month
@@ -208,8 +211,8 @@ export default function getColony(timekeeper: TimeKeeper[], month: number, year:
 
    
   const data = timekeeper.filter((entry) => {
-      const entryMonth = parseInt(entry.attendancedate.split("-")[1]);
-      const entryYear = parseInt(entry.attendancedate.split("-")[2]);
+      const entryMonth = parseInt(entry.attendancedate.split("/")[1]);
+      const entryYear = parseInt(entry.attendancedate.split("/")[2]);
       return entryMonth === month && entryYear === year;
     });
     const totalOvertime = getTotalOvertimeRecord(data);
