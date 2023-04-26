@@ -54,14 +54,12 @@ const Sidebar = ({
             mb: 10,
           }}
         >
-          <MenuList />
+          {/* <MenuList /> */}
         </Box>
       </Box>
 
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
-        <Box sx={{ px: 2 }}>
-          <MenuList />{" "}
-        </Box>
+        <Box sx={{ px: 2 }}>{/* <MenuList />{" "} */}</Box>
       </Box>
     </>
   );
