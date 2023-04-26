@@ -780,13 +780,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session?.user?.email as string,
-    },
-  });
+  // const user = await prisma.user.findUnique({
+  //   where: {
+  //     email: session?.user?.email as string,
+  //   },
+  // });
 
-  if (user?.role === "Admin") {
+  if (session.user?.role === "Admin") {
     return {
       redirect: {
         destination: "/admin",
@@ -795,7 +795,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  if (user?.role === "Stores") {
+  if (session.user?.role === "Stores") {
     return {
       redirect: {
         destination: "/store",
@@ -804,7 +804,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  if (user?.role === "Safety") {
+  if (session.user?.role === "Safety") {
     return {
       redirect: {
         destination: "/safety",
@@ -813,11 +813,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const contractors = await prisma.contractor.findMany();
+  // const contractors = await prisma.contractor.findMany();
   return {
-    props: {
-      contractors,
-    },
+    props: {},
   };
 };
 
