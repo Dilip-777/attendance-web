@@ -39,9 +39,6 @@ const ProfileSection = () => {
   const [value, setValue] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
-  /**
-   * anchorRef is used on different componets and specifying one type leads to other components throwing an error
-   * */
   const anchorRef = useRef<HTMLInputElement>(null);
 
   const handleClose = (event: globalThis.MouseEvent | TouchEvent) => {
@@ -122,12 +119,7 @@ const ProfileSection = () => {
             color="inherit"
           />
         }
-        label={
-          //   <IconSettings
-          //     style={{ strokeWidth: 1.5, width: "1.5rem", height: "1.5rem" }}
-          //   />
-          <Settings sx={{ fontSize: "1.3rem", stroke: 1.5 }} />
-        }
+        label={<Settings sx={{ fontSize: "1.3rem", stroke: 1.5 }} />}
         variant="outlined"
         ref={anchorRef}
         aria-controls={open ? "menu-list-grow" : undefined}
@@ -152,7 +144,7 @@ const ProfileSection = () => {
               boxShadow
               shadow={theme.shadows[16]}
             >
-              <Box sx={{ p: 2 }}>
+              <Box sx={{ p: 2, pb: 0 }}>
                 <Stack>
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     <Typography variant="h4">Good Morning,</Typography>
@@ -187,7 +179,7 @@ const ProfileSection = () => {
                 <Divider />
               </Box>
 
-              <Box sx={{ p: 2 }}>
+              <Box sx={{ p: 2, pt: 0 }}>
                 <List
                   component="nav"
                   sx={{
@@ -251,16 +243,6 @@ const ProfileSection = () => {
                             <Typography variant="body2">
                               Social Profile
                             </Typography>
-                          </Grid>
-                          <Grid item>
-                            <Chip
-                              label="02"
-                              size="small"
-                              sx={{
-                                bgcolor: theme.palette.warning.dark,
-                                color: theme.palette.background.default,
-                              }}
-                            />
                           </Grid>
                         </Grid>
                       }

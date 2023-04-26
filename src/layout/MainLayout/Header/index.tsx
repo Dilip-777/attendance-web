@@ -8,6 +8,7 @@ import SearchSection from "./SearchSection";
 import ProfileSection from "./ProfileSection";
 import NotificationSection from "./NotificationSection";
 import MenuBook from "@mui/icons-material/MenuBook";
+import { IconButton } from "@mui/material";
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -36,7 +37,11 @@ const Header = ({
         >
           <LogoSection />
         </Box>
-        <ButtonBase sx={{ borderRadius: "12px", overflow: "hidden" }}>
+        {/* <ButtonBase sx={{ borderRadius: "12px" }}> */}
+        <IconButton
+          sx={{ borderRadius: "12px", p: 0 }}
+          onClick={handleLeftDrawerToggle}
+        >
           <Avatar
             variant="rounded"
             sx={{
@@ -45,18 +50,19 @@ const Header = ({
               transition: "all .2s ease-in-out",
               background: theme.palette.secondary.light,
               color: theme.palette.secondary.dark,
-              "&:hover": {
+              '&[aria-controls="menu-list-grow"],&:hover': {
                 background: theme.palette.secondary.dark,
                 color: theme.palette.secondary.light,
               },
             }}
+            // aria-haspopup="true"
             onClick={handleLeftDrawerToggle}
             color="inherit"
           >
-            {/* <IconMenu2 stroke={1.5} size="1.3rem" /> */}
-            <MenuBook sx={{ fontSize: "1.3rem" }} />
+            <MenuBook sx={{ fontSize: "1.3rem", stroke: 1.5 }} />
           </Avatar>
-        </ButtonBase>
+        </IconButton>
+        {/* </ButtonBase> */}
       </Box>
 
       {/* header search */}
