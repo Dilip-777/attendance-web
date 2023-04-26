@@ -1,5 +1,5 @@
 // material-ui
-import { CircularProgress, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 
 // project imports
 import NavGroup from "./NavGroup";
@@ -14,9 +14,7 @@ import {
   storeitems,
   safetyitems,
 } from "@/components/menu-items";
-import { use, useEffect, useState } from "react";
-import { User } from "@prisma/client";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 // ==============================|| SIDEBAR MENU LIST ||============================== //
