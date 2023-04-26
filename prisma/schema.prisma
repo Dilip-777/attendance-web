@@ -94,6 +94,7 @@ model TimeKeeper {
     comment  Comment[]
     approvedByTimekeeper Boolean @default(false)
     UploadDocument Upload[]
+     @@unique([attendancedate, employeeid])
 }
 
 enum Status {
@@ -172,6 +173,7 @@ model Contractor {
   employee        Employee[] 
   safety         Safety[]
   stores        Stores[]
+ 
 }
 
 model Employee {

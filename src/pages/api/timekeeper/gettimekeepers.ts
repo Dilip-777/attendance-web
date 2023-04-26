@@ -37,16 +37,6 @@ export default async function getTimeKeeper(
       },
     });
 
-    const t = await prisma.timeKeeper.deleteMany({
-      where: {
-        employeeid: {
-          in: ["4100009", "4100011", "4100012", "4100013", "4100014"]
-        },
-        attendancedate: {
-          contains: "03/2023",  
-        },
-      }
-    })
 
     if (role === "HR") {
       res.status(200).json([...savedTimekeeper, ...timekeepers]);

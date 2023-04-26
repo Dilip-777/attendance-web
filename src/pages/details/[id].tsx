@@ -197,13 +197,6 @@ export default function EditTimkeeper({
           }}
         >
           {({ handleSubmit, values, initialValues, isSubmitting }) => {
-            console.log(values, initialValues);
-            console.log(
-              values.attendancedate,
-              dayjs(values.attendancedate).format("DD/MM/YYYY"),
-              timekeeper?.attendancedate
-            );
-
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={6} mt={2} container>
