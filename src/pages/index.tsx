@@ -18,25 +18,18 @@ import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import Modal from "@mui/material/Modal";
-import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
 import Stack from "@mui/material/Stack";
-import { Button, styled } from "@mui/material/";
+import { Button } from "@mui/material/";
 import useMediaQuery from "@mui/material/useMediaQuery";
-
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import Edit from "@mui/icons-material/Edit";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
+import Close from "@mui/icons-material/Close";
+import Done from "@mui/icons-material/Done";
 
 import { useRouter } from "next/router";
-import {
-  Comment,
-  Contractor,
-  Employee,
-  TimeKeeper,
-  Upload,
-} from "@prisma/client";
+import { Comment, Contractor, TimeKeeper, Upload } from "@prisma/client";
 import axios from "axios";
 import { getSession, useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
@@ -46,8 +39,6 @@ import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
-import { Add, Close, Done } from "@mui/icons-material";
-import { log } from "console";
 import ImportData from "@/components/import";
 
 const style = {
@@ -770,54 +761,51 @@ const Comments = ({ comments }: { comments: Comment[] }) => {
   );
 };
 
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-//   const session = await getSession({ req: context.req });
-//   if (!session) {
-//     return {
-//       redirect: {
-//         destination: "/login",
-//         permanent: false,
-//       },
-//     };
-//   }
-//   // const user = await prisma.user.findUnique({
-//   //   where: {
-//   //     email: session?.user?.email as string,
-//   //   },
-//   // });
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession({ req: context.req });
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
 
-//   if (session.user?.role === "Admin") {
-//     return {
-//       redirect: {
-//         destination: "/admin",
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (session.user?.role === "Admin") {
+    return {
+      redirect: {
+        destination: "/admin",
+        permanent: false,
+      },
+    };
+  }
 
-//   if (session.user?.role === "Stores") {
-//     return {
-//       redirect: {
-//         destination: "/store",
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (session.user?.role === "Stores") {
+    return {
+      redirect: {
+        destination: "/store",
+        permanent: false,
+      },
+    };
+  }
 
-//   if (session.user?.role === "Safety") {
-//     return {
-//       redirect: {
-//         destination: "/safety",
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (session.user?.role === "Safety") {
+    return {
+      redirect: {
+        destination: "/safety",
+        permanent: false,
+      },
+    };
+  }
 
-//   // const contractors = await prisma.contractor.findMany();
-//   return {
-//     props: {},
-//   };
-// };
+  const contractors = await prisma.contractor.findMany();
+  return {
+    props: {
+      contractors,
+    },
+  };
+};
 
 // <Head>
 //   <title>Attendance</title>

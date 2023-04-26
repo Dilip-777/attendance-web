@@ -1,4 +1,4 @@
-import { Close } from "@mui/icons-material";
+import Close from "@mui/icons-material/Close";
 import { Button, IconButton, Snackbar, Stack } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";

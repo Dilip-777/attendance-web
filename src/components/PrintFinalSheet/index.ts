@@ -1,13 +1,8 @@
-import TableHead from "@/components/PrintFinalSheet/tableHead";
 import {
   Document,
   HeadingLevel,
   Paragraph,
   Packer,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
   TextRun,
   AlignmentType,
 } from "docx";
@@ -17,7 +12,6 @@ import { ContractorDetails, ServiceDetails } from "./contractordetails";
 import { Contractor, Safety, Stores, Workorder, payoutTracker } from "@prisma/client";
 import { BankDetails, CostDetails } from "./otherDetails";
 import dayjs from "dayjs";
-import { AppRegistration } from "@mui/icons-material";
 import ApprovalInformation from "./approvalInfo";
 // import { saveAs } from "file-saver";
 

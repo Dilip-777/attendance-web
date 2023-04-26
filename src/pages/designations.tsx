@@ -15,30 +15,22 @@ import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Add, Delete, Edit, NavigateBefore, Search } from "@mui/icons-material";
+import Delete from "@mui/icons-material/Delete";
+import Edit from "@mui/icons-material/Edit";
+import Search from "@mui/icons-material/Search";
 import Backdrop from "@mui/material/Backdrop";
 import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import InputAdornment from "@mui/material/InputAdornment";
 import Modal from "@mui/material/Modal";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
-import Stack from "@mui/material/Stack";
-import {
-  Chip,
-  CircularProgress,
-  FormControl,
-  TextField,
-  styled,
-} from "@mui/material/";
+import { styled } from "@mui/material/";
 import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import type { Session } from "next-auth";
 import prisma from "@/lib/prisma";
 import { Department, Designations, User } from "@prisma/client";
-import EditUser from "@/components/Admin/EditUser";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import EditDesignation from "@/components/Admin/EditDesignation";

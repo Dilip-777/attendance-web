@@ -16,7 +16,7 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { Search } from "@mui/icons-material";
+import Search from "@mui/icons-material/Search";
 import { InputAdornment, OutlinedInput, styled } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";

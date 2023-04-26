@@ -15,7 +15,10 @@ import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Edit, NavigateBefore, Search } from "@mui/icons-material";
+import Edit from "@mui/icons-material/Edit";
+import NavigateBefore from "@mui/icons-material/NavigateBefore";
+import Search from "@mui/icons-material/Search";
+
 import Backdrop from "@mui/material/Backdrop";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
@@ -29,9 +32,8 @@ import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import type { Session } from "next-auth";
 import prisma from "@/lib/prisma";
-import { Department, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 
