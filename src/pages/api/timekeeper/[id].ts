@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 
 export default async function gettimekeeper(req: NextApiRequest, res: NextApiResponse) {
-    const { id } = req.query
+    const { id, role } = req.query
     if(req.method === "GET") {
        
         try {
