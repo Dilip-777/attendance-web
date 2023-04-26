@@ -429,10 +429,12 @@ export default function TimeKeeperTable({
             numSelected={selected.length}
             contractorName={contractorName}
             setContractorName={setContractorName}
-            contractors={contractors.map((c) => ({
-              value: c.contractorname,
-              label: c.contractorname,
-            }))}
+            contractors={
+              contractors?.map((c) => ({
+                value: c.contractorname,
+                label: c.contractorname,
+              })) || []
+            }
             value={value}
             setValue={setValue}
             showApprove={showApprove()}
@@ -768,56 +770,56 @@ const Comments = ({ comments }: { comments: Comment[] }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession({ req: context.req });
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session?.user?.email as string,
-    },
-  });
+// export const getServerSideProps: GetServerSideProps = async (context) => {
+//   const session = await getSession({ req: context.req });
+//   if (!session) {
+//     return {
+//       redirect: {
+//         destination: "/login",
+//         permanent: false,
+//       },
+//     };
+//   }
+//   const user = await prisma.user.findUnique({
+//     where: {
+//       email: session?.user?.email as string,
+//     },
+//   });
 
-  if (user?.role === "Admin") {
-    return {
-      redirect: {
-        destination: "/admin",
-        permanent: false,
-      },
-    };
-  }
+//   if (user?.role === "Admin") {
+//     return {
+//       redirect: {
+//         destination: "/admin",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  if (user?.role === "Stores") {
-    return {
-      redirect: {
-        destination: "/store",
-        permanent: false,
-      },
-    };
-  }
+//   if (user?.role === "Stores") {
+//     return {
+//       redirect: {
+//         destination: "/store",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  if (user?.role === "Safety") {
-    return {
-      redirect: {
-        destination: "/safety",
-        permanent: false,
-      },
-    };
-  }
+//   if (user?.role === "Safety") {
+//     return {
+//       redirect: {
+//         destination: "/safety",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  const contractors = await prisma.contractor.findMany();
-  return {
-    props: {
-      contractors,
-    },
-  };
-};
+//   const contractors = await prisma.contractor.findMany();
+//   return {
+//     props: {
+//       contractors,
+//     },
+//   };
+// };
 
 // <Head>
 //   <title>Attendance</title>
