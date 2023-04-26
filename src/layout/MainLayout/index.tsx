@@ -25,6 +25,7 @@ import React from "react";
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })(
   ({ theme, open }: { theme: Theme; open: boolean }) => ({
     ...theme.typography.mainContent,
+    marginTop: "70px",
     ...(!open && {
       borderBottomLeftRadius: 0,
       borderBottomRightRadius: 0,
@@ -99,7 +100,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             : "none",
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ py: "10px" }}>
           <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
         </Toolbar>
       </AppBar>
