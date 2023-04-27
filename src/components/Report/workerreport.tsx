@@ -72,7 +72,7 @@ export default function WorkerReport({
           value={contractor}
           handleChange={(v) => setContractor(v as number)}
           options={contractors.map((contractor) => ({
-            value: contractor.id as string,
+            value: contractor.contractorId as number,
             label: contractor.contractorname,
           }))}
           label="Contractor"
