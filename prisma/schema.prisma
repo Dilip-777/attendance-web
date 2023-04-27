@@ -121,14 +121,14 @@ model Contractor {
   ifscno      String?
   businessdetaildocument      String?
   uploadutilitybill      String?
-  organisationtype      String
+  organisationtype      String?
   dateofincorporation      String?
   associationwithcompetitor   Boolean @default(false)
   memorandam_of_associate      String?
   listofdirector      String?
   profileofkeyperson      String?
   competitorname      String?
-  isocertified Boolean
+  isocertified Boolean   @default(false)
   turnoverlastyear      String?
   turnover2yearback      String?
   uploadbranchdetail      String?
@@ -179,7 +179,7 @@ model Contractor {
 model Employee {
   id   String   @id @default(cuid())
     contractorname  String
-    employeeId      String
+    employeeId      Int  @unique
     employeename String
     designation String 
     department String
@@ -192,8 +192,8 @@ model Employee {
     servicecharge Int?
     gst Int?
     tds Int?
-    contractorId String
-    contractor         Contractor     @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+    contractorId Int
+    contractor         Contractor     @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
 model HOAuditor {

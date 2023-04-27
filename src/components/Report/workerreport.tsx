@@ -15,7 +15,9 @@ export default function WorkerReport({
 }: {
   contractors: Contractor[];
 }) {
-  const [contractor, setContractor] = useState(contractors[0].id || "");
+  const [contractor, setContractor] = useState(
+    contractors[0].contractorId || 0
+  );
   const [loading, setLoading] = useState(false);
   const handleSubmit = async () => {
     setLoading(true);
@@ -38,7 +40,7 @@ export default function WorkerReport({
     ];
     res.data.forEach((item: Employee) => {
       tableRows.push([
-        item.employeeId as string,
+        item.employeeId.toString(),
         item.employeename,
         item.contractorname,
         item.designation,
@@ -68,7 +70,7 @@ export default function WorkerReport({
       <Stack sx={{ maxWidth: "7rem" }} spacing={3}>
         <FormSelect
           value={contractor}
-          handleChange={(v) => setContractor(v as string)}
+          handleChange={(v) => setContractor(v as number)}
           options={contractors.map((contractor) => ({
             value: contractor.id as string,
             label: contractor.contractorname,

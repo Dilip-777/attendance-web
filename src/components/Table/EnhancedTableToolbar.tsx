@@ -7,7 +7,8 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { Button, styled } from "@mui/material";
+import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import { Box, Button, Stack, styled } from "@mui/material";
 import { alpha } from "@mui/material";
 
 interface EnhancedTableToolbarProps {
@@ -16,6 +17,7 @@ interface EnhancedTableToolbarProps {
   setFilterName: React.Dispatch<React.SetStateAction<string>>;
   type?: string;
   handleClickReport?: () => void;
+  upload?: React.ReactNode;
 }
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
@@ -76,10 +78,20 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             <Delete />
           </IconButton>
         </Tooltip>
-      ) : type === "contractor" ? (
-        <Button variant="contained" onClick={handleClickReport}>
-          Print
-        </Button>
+      ) : type === "contractor" && props.upload ? (
+        <Stack direction="row" spacing={2}>
+          {" "}
+          <Tooltip title="Print">
+            <IconButton onClick={handleClickReport}>
+              <LocalPrintshopIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Upload">
+            <Box>{props.upload}</Box>
+          </Tooltip>
+        </Stack>
+      ) : props.upload ? (
+        props.upload
       ) : (
         <Tooltip title="Filter list">
           <IconButton>

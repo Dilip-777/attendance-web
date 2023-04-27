@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { Employee } from "@prisma/client";
 import _ from "lodash";
 import CustomTable from "@/components/Table/TablePagination";
+import ImportData from "@/components/employeeImport";
 
 const createHeadCells = (
   id: string,
@@ -59,6 +60,7 @@ export default function Employees({ employees }: { employees: Employee[] }) {
       filterName={filterName}
       setFilterName={setFilterName}
       editLink="/employees"
+      upload={<ImportData />}
     />
   );
 }

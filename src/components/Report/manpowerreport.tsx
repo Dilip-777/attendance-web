@@ -34,7 +34,7 @@ export default function ManPowerReport() {
     ];
     res.data.forEach((item: Employee) => {
       tableRows.push([
-        item.employeeId as string,
+        item.employeeId.toString(),
         item.employeename,
         item.contractorname,
         item.designation,

@@ -16,6 +16,7 @@ import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import CustomTable from "@/components/Table/TablePagination";
+import ImportData from "@/components/importContractors";
 
 const style = {
   position: "absolute" as "absolute",
@@ -235,6 +236,7 @@ export default function Contractors({
         setOpen={setOpen}
         type="contractor"
         handleClickReport={handleClickReport}
+        upload={<ImportData />}
       />
 
       <Modal

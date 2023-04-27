@@ -17,11 +17,13 @@ const AuthCardWrapper = ({
   <MainCard
     sx={{
       maxWidth: { xs: 400, lg: 475 },
-      margin: { xs: 2.5, md: 3 },
+      margin: 0,
       "& > *": {
         flexGrow: 1,
         flexBasis: "50%",
       },
+      borderRadius: "5px",
+      // backgroundColor: "transparent",
     }}
     content={false}
     {...other}

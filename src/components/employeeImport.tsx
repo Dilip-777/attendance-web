@@ -94,39 +94,26 @@ function ImportData() {
   const importing = async (data: any) => {
     console.log(data);
 
-    const body = data.map((data: any) => {
-      return {
-        contractorid: data.contractor_id?.toString(),
-        contractorname: data.contractor_name,
-        employeeid: data.employee_id?.toString(),
-        employeename: data.employee_name,
-        designation: data.designation,
-        department: data.department,
-        machineInTime:
-          new Date(data.machine_intime * 24 * 60 * 60 * 1000)
-            .toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-            ?.toString() || "8:00",
-        machineOutTime:
-          new Date(data.machine_outtime * 24 * 60 * 60 * 1000)
-            .toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-            ?.toString() || "17:00",
-        machineshift: data.shift || "day",
-        attendance: data.attendence?.toString(),
-        attendancedate: getDate(data.entry_date)?.toString(),
-        overtime: data.overtime?.toString(),
-        eleave: data.e_leave || "0",
-        gender: data.gender || "M",
-      };
-    });
+    const body = data.map((data: any) => ({
+      employeeId: data.employeeId,
+      employeename: data.employeeName,
+      contractorname: data.contractorname,
+      contractorId: data.contractorId,
+      designation: data.designation,
+      department: data.department,
+      gender: data.gender || "",
+      phone: data.phone?.toString() || "",
+      emailid: data.emailid || "",
+      basicsalary_in_duration: data.basicsalary_in_duration || "",
+      basicsalary: data.basicsalary || 0,
+      allowed_wrking_hr_per_day: data.allowed_wrking_hr_per_day || 0,
+      servicecharge: data.servicecharge || 0,
+      gst: data.gst || 0,
+      tds: data.tds || 0,
+    }));
     setLoading(true);
     const res = await axios
-      .post("/api/importdata?type=timekeeper", body)
+      .post("/api/importdata?type=employee", body)
       .then((res) => {
         setError(false);
         handleClick();

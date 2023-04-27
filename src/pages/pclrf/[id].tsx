@@ -343,11 +343,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+  const contractor = await prisma.contractor.findUnique({
+    where: {
+      id: id as string,
+    },
+  });
 
   const employeeCountsByDesignation = await prisma.employee.groupBy({
     by: ["designation"],
     where: {
-      contractorId: id as string,
+      contractorId: contractor?.contractorId as number,
       department: "LRF",
     },
     _count: {
@@ -363,23 +368,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const designation = group.designation;
     const count = group._count.id;
     result[designation] = count;
-  });
-
-  const contractor = await prisma.contractor.findUnique({
-    where: {
-      id: id as string,
-    },
-  });
-  const timekeeper = await prisma.timeKeeper.findMany({
-    where: {
-      contractorname: contractor?.contractorname,
-      attendance: "1",
-      department: "LRF",
-      approvedByTimekeeper: true,
-      NOT: {
-        status: "Pending",
-      },
-    },
   });
 
   return {

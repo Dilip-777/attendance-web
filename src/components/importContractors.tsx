@@ -94,39 +94,17 @@ function ImportData() {
   const importing = async (data: any) => {
     console.log(data);
 
-    const body = data.map((data: any) => {
-      return {
-        contractorid: data.contractor_id?.toString(),
-        contractorname: data.contractor_name,
-        employeeid: data.employee_id?.toString(),
-        employeename: data.employee_name,
-        designation: data.designation,
-        department: data.department,
-        machineInTime:
-          new Date(data.machine_intime * 24 * 60 * 60 * 1000)
-            .toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-            ?.toString() || "8:00",
-        machineOutTime:
-          new Date(data.machine_outtime * 24 * 60 * 60 * 1000)
-            .toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-            ?.toString() || "17:00",
-        machineshift: data.shift || "day",
-        attendance: data.attendence?.toString(),
-        attendancedate: getDate(data.entry_date)?.toString(),
-        overtime: data.overtime?.toString(),
-        eleave: data.e_leave || "0",
-        gender: data.gender || "M",
-      };
-    });
+    const body = data.map((data: any) => ({
+      contractorname: data.contractorname,
+      contractorId: data.contractorId,
+      servicedetail: data.servicedetail,
+      supplierdetail: data.supplierdetail,
+      contactperson: data.contactperson,
+      mobilenumber: data.mobilenumber?.toString(),
+    }));
     setLoading(true);
     const res = await axios
-      .post("/api/importdata?type=timekeeper", body)
+      .post("/api/importdata?type=contractor", body)
       .then((res) => {
         setError(false);
         handleClick();

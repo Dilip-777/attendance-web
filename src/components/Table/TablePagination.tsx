@@ -37,6 +37,7 @@ interface Props {
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   type?: string;
   handleClickReport?: () => void;
+  upload?: React.ReactNode;
 }
 
 const CustomTable = (props: Props) => {
@@ -104,6 +105,7 @@ const CustomTable = (props: Props) => {
           setFilterName={props.setFilterName}
           handleClickReport={props.handleClickReport}
           type={props.type}
+          upload={props.upload}
         />
         <TableContainer
           sx={{

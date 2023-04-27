@@ -325,7 +325,7 @@ export default function PlantCommercialCCM({
 
   const count = {
     date: "",
-    ele: result["20WM"] || 0,
+    ele: result.ELE || 0,
     lco: result.LCO || 0,
     tman: result.TMAN || 0,
     filter: result.FILTER || 0,
@@ -523,11 +523,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+  const contractor = await prisma.contractor.findUnique({
+    where: {
+      id: id as string,
+    },
+  });
 
   const employeeCountsByDesignation = await prisma.employee.groupBy({
     by: ["designation"],
     where: {
-      contractorId: id as string,
+      contractorId: contractor?.contractorId as number,
       department: "CCM",
     },
     _count: {
@@ -535,20 +540,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  console.log(employeeCountsByDesignation);
-
-  // Create a new object that maps the designation to the employee count
   const result: { [key: string]: number | string } = { date: "2", total: 2 };
   employeeCountsByDesignation.forEach((group) => {
     const designation = group.designation;
     const count = group._count.id;
     result[designation] = count;
-  });
-
-  const contractor = await prisma.contractor.findUnique({
-    where: {
-      id: id as string,
-    },
   });
 
   return {

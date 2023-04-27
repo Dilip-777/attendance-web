@@ -35,11 +35,16 @@ export default async function employee (req: NextApiRequest, res: NextApiRespons
                 }
             })
 
+            if(!contractor) {
+                res.status(404).json({message: "Contractor not found", error: "contractorId"})
+                return;
+            }
+
             const employee = await prisma.employee.create({
                 data: {
                     id: shortid.generate(),
-                    contractorname: contractor?.contractorname || "",
-                    contractorId: contractorId,
+                    contractorname: contractor.contractorname,
+                    contractorId: contractor.contractorId,
                     ...data
                 }
             })

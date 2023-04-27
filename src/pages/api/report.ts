@@ -6,12 +6,11 @@ export default async function report(
   res: NextApiResponse
 ) {
   const { type, contractor, department, designation } = req.query;
-  console.log(type, contractor);
 
   if (type === "worker") {
     const employees = await prisma.employee.findMany({
       where: {
-        contractorId: contractor as string,
+        contractorId: parseInt(contractor as string),
       },
     });
     res.status(200).json(employees);
@@ -30,7 +29,7 @@ export default async function report(
     const contractorids = employees.map((employee) => employee.contractorId);
     const contractors = await prisma.contractor.findMany({
       where: {
-        id: {
+        contractorId: {
           in: contractorids,
         },
       },
