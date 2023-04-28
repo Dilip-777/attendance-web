@@ -209,9 +209,7 @@ export default function FinalSheetTable({
               <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                 Safety Voilation's Penality
               </TableCell>
-              <TableCell align="center">
-                {total > 0 ? safetydeduction : "0"}
-              </TableCell>
+              <TableCell align="center">{safetydeduction}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
@@ -219,7 +217,7 @@ export default function FinalSheetTable({
               <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                 Consumables / Rechargeable Items
               </TableCell>
-              <TableCell align="center">0</TableCell>
+              <TableCell align="center">{storededuction}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
@@ -235,9 +233,7 @@ export default function FinalSheetTable({
               <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                 Any Other Deductions
               </TableCell>
-              <TableCell align="center">
-                {total > 0 ? storededuction : "0"}
-              </TableCell>
+              <TableCell align="center">{0}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell />

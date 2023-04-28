@@ -58,6 +58,7 @@ const validationSchema = Yup.object().shape({
   attendancedate: Yup.string().optional(),
   machineInTime: Yup.string().optional(),
   machineOutTime: Yup.string().optional(),
+  machineduration: Yup.string().optional(),
   machineshift: Yup.string().optional(),
   overtime: Yup.number().optional(),
   eleave: Yup.number().optional(),
@@ -65,6 +66,7 @@ const validationSchema = Yup.object().shape({
   manualouttime: Yup.string().optional(),
   manualshift: Yup.string().optional(),
   manualovertime: Yup.number().optional(),
+  manualduration: Yup.string().optional(),
   mleave: Yup.number().optional(),
   department: Yup.string().optional(),
   gender: Yup.string().optional(),
@@ -113,8 +115,9 @@ export default function EditTimkeeper({
     employeeid: timekeeper?.employeeid || "",
     designation: timekeeper?.designation || "",
 
-    machineInTime: timekeeper?.machineInTime || "10:00",
-    machineOutTime: timekeeper?.machineOutTime || "18:00",
+    machineInTime: timekeeper?.machineInTime || "",
+    machineOutTime: timekeeper?.machineOutTime || "",
+    machineduration: timekeeper?.machineduration || "",
     machineshift: timekeeper?.machineshift || "Day",
     attendance: timekeeper?.attendance || 0,
     attendancedate: timekeeper?.attendancedate || "",
@@ -124,6 +127,7 @@ export default function EditTimkeeper({
     manualouttime: timekeeper?.manualouttime || "",
     manualshift: timekeeper?.manualshift || "",
     manualovertime: timekeeper?.manualovertime || "",
+    manualduration: timekeeper?.manualduration || "",
     mleave: timekeeper?.mleave || "",
     department: timekeeper?.department || "",
     gender: timekeeper?.gender || "",
@@ -243,6 +247,14 @@ export default function EditTimkeeper({
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
                     <FormInput
+                      name="machineduration"
+                      label="Machine Total Duration "
+                      placeHolder="Machine Total Duration"
+                      disabled={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
                       name="machineshift"
                       label="Machine Shift"
                       placeHolder="Machine Shift"
@@ -302,6 +314,14 @@ export default function EditTimkeeper({
                       name="manualouttime"
                       label="Manual Out Time"
                       placeHolder="Manual Out Time"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="manualduration"
+                      label="Manual Total Duration"
+                      placeHolder="Manual Total Duration"
                       disabled={false}
                     />
                   </Grid>

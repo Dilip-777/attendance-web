@@ -60,14 +60,16 @@ export default function Row(props: Props) {
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
-              <Typography variant="h6" gutterBottom component="div">
-                Items
+              <Typography variant="h5" gutterBottom component="div">
+                Items: {items.length}
               </Typography>
               <Table aria-label="purchases">
                 <TableHead>
                   <TableRow>
                     {headcells1.map((headcell) => (
-                      <TableCell align="left">{headcell.label}</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }} align="center">
+                        {headcell.label}
+                      </TableCell>
                     ))}
                     {/* <TableCell>Date</TableCell>
                     <TableCell>Customer</TableCell>
@@ -79,7 +81,7 @@ export default function Row(props: Props) {
                   {items.map((item) => (
                     <TableRow key={item.id}>
                       {headcells1.map((headcell) => (
-                        <TableCell align="left">
+                        <TableCell align="center">
                           {_.get(item, headcell.id, "-") || "-"}
                         </TableCell>
                       ))}

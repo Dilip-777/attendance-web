@@ -120,6 +120,7 @@ function ImportData() {
         attendance: data.attendence?.toString(),
         attendancedate: getDate(data.entry_date)?.toString(),
         overtime: data.overtime?.toString(),
+        machineduration: data.machine_duration?.toString(),
         eleave: data.e_leave || "0",
         gender: data.gender || "M",
       };
