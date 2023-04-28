@@ -136,6 +136,8 @@ export default function FinalSheet({
     fetchAll();
   }, [selectedContractor, value, department]);
 
+  console.log(store);
+
   // console.log(timekeepers, rows, totalPayable, loading);
 
   const handlePrint = async () => {
