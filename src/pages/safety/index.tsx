@@ -4,7 +4,7 @@ import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { Employee, Safety, Stores } from "@prisma/client";
 import _ from "lodash";
-import CustomTable from "@/components/Table/TablePagination";
+import CustomTable from "@/components/Table/Table";
 
 const createHeadCells = (
   id: string,

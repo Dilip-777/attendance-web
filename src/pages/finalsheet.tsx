@@ -275,7 +275,7 @@ export default function FinalSheet({
           rows={rows}
           total={totalPayable}
           department={department}
-          storededuction={store?.chargeableamount || 0}
+          storededuction={store?.totalAmount || 0}
           safetydeduction={safety?.netchargeableamount || 0}
         />
       )}

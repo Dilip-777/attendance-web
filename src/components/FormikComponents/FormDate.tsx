@@ -32,7 +32,9 @@ const FormDate: React.FC<Props> = ({
 }) => {
   const { setFieldValue } = useFormikContext<any>();
   const [field, meta] = useField(name);
-  const [value, setValue] = React.useState<any>(dayjs(field.value) || null);
+  const [value, setValue] = React.useState<any>(
+    field.value ? dayjs(field.value, "DD/MM/YYYY") : null
+  );
   const { onChange, ...other } = field;
   const isError = Boolean(meta.touched && meta.error);
 

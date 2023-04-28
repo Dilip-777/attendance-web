@@ -15,7 +15,7 @@ import { Contractor, Department } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import CustomTable from "@/components/Table/TablePagination";
+import CustomTable from "@/components/Table/Table";
 import ImportData from "@/components/importContractors";
 
 const style = {
@@ -61,6 +61,8 @@ const headCells = [
   createHeadCells("mobilenumber", "Mobile Number", true, false),
   createHeadCells("officeaddress", "Office Address", false, false),
   createHeadCells("website", "Website", false, false),
+  createHeadCells("expirationDate", "Expiration Date", false, false),
+  createHeadCells("servicecharge", "Service Charge", true, false),
   createHeadCells("organisationtype", "Organisation Type", false, false),
   createHeadCells("isocertified", "Is Certified", false, false),
   createHeadCells("uniquenumber", "Unique Number", false, false),

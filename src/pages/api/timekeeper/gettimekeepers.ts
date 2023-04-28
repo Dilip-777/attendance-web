@@ -16,9 +16,6 @@ export default async function getTimeKeeper(
         attendancedate: {
           contains: month as string,
         },
-        NOT: {
-          status: "Pending",
-        },
       },
     });
     //        const data: TimeKeeper[] = await prisma.$queryRaw`

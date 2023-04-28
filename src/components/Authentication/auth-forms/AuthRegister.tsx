@@ -83,10 +83,9 @@ const FirebaseRegister = ({ ...others }) => {
             .max(255)
             .required("Email is required"),
           password: Yup.string().max(255).required("Password is required"),
-          confirmPassword: Yup.string().oneOf(
-            [Yup.ref("password"), undefined],
-            "Passwords must match"
-          ),
+          confirmPassword: Yup.string()
+            .oneOf([Yup.ref("password"), undefined], "Passwords must match")
+            .required("Required"),
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           await axios
@@ -97,6 +96,8 @@ const FirebaseRegister = ({ ...others }) => {
               mobileNumber: values.mobileNumber.toString(),
             })
             .then((res) => {
+              console.log("called");
+
               router.push("/admin");
             })
             .catch((err) => {

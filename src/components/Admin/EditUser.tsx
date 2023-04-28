@@ -1,4 +1,4 @@
-import { Button, Paper, Stack } from "@mui/material";
+import { Button, CircularProgress, Paper, Stack } from "@mui/material";
 import { useRouter } from "next/router";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
@@ -6,6 +6,7 @@ import { Formik } from "formik";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import { User } from "@prisma/client";
 import axios from "axios";
+import { useState } from "react";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
@@ -21,6 +22,7 @@ export default function EditUser({
   handleClose: () => void;
   selectedUser: User | null;
 }) {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const initialValues = {
@@ -51,6 +53,7 @@ export default function EditUser({
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={async (values) => {
+            setLoading(true);
             await axios
               .post("/api/admin/editUser", {
                 name: values.name,
@@ -59,11 +62,13 @@ export default function EditUser({
                 role: values.role,
               })
               .then((res) => {
+                router.replace(router.asPath);
                 handleClose();
               })
               .catch((err) => {
                 console.log(err);
               });
+            setLoading(false);
           }}
         >
           {({ handleSubmit }) => (
@@ -110,8 +115,15 @@ export default function EditUser({
                   type="submit"
                   variant="contained"
                   sx={{ float: "right", mr: 10 }}
+                  disabled={loading}
                 >
                   Submit
+                  {loading && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: "#364152" }}
+                    />
+                  )}
                 </Button>
               </Stack>
             </form>

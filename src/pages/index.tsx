@@ -107,6 +107,7 @@ const headCells = [
   createHeadCells("employeename", "Employee Name", false, false),
   createHeadCells("machineintime", "Machine In Time", false, false),
   createHeadCells("machineouttime", "Machine Out Time", false, false),
+  createHeadCells("machineduration", "Machine Total Duration", false, false),
   createHeadCells("machineshift", "Machine Shift", false, false),
   createHeadCells("attendance", "Attendance", true, false),
   createHeadCells("attendancedance", "Attendance Date", true, false),
@@ -114,6 +115,7 @@ const headCells = [
   createHeadCells("machineleave", "Machine Leave", true, false),
   createHeadCells("manualintime", "Manual In Time", false, false),
   createHeadCells("manualouttime", "Manual Out Time", false, false),
+  createHeadCells("manualduration", "Manual Total Duration", false, false),
   createHeadCells("manualshift", "Manual Shift", false, false),
   createHeadCells("manualovertime", "Manual Over Time", true, false),
   createHeadCells("manualleave", "Manual Leave", true, false),
@@ -125,6 +127,7 @@ const headCells = [
   ),
   createHeadCells("designation", "Designation", false, false),
   createHeadCells("gender", "Gender", false, false),
+  createHeadCells("status", "Status", false, false),
   createHeadCells("comment", "Comment", false, false),
   createHeadCells("uploaddocument", "Upload Document", false, false),
 ];
@@ -236,7 +239,6 @@ export default function TimeKeeperTable({
   const [orderBy, setOrderBy] = React.useState<keyof TimeKeeper>("employeeid");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const router = useRouter();
   const [timekeeper, setTimeKepeer] = React.useState<TimeKeeper[]>([]);
@@ -248,10 +250,6 @@ export default function TimeKeeperTable({
   const [contractorName, setContractorName] = React.useState("all");
   const [value, setValue] = React.useState<Dayjs>(dayjs());
   const { data: session } = useSession();
-  const [excelFile, setExcelFile] = React.useState<string | ArrayBuffer | null>(
-    null
-  );
-  const [excelFileError, setExcelFileError] = React.useState<string | null>("");
 
   const headcell1 = createHeadCells("status", "Status", false, true);
   const headcell2 = createHeadCells("action", "Action", false, true);
@@ -383,8 +381,6 @@ export default function TimeKeeperTable({
 
   const isSelected = (contractorname: string) =>
     selected.indexOf(contractorname) !== -1;
-  console.log(timekeeper.find((t) => !t.approvedByTimekeeper));
-  console.log(timekeeper.find((t) => t.status === "Pending"));
 
   const showApprove = () => {
     const timekeeper1 = timekeeper.filter(
@@ -399,8 +395,6 @@ export default function TimeKeeperTable({
       } else return false;
     } else return false;
   };
-
-  console.log(timekeeper);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -477,6 +471,7 @@ export default function TimeKeeperTable({
                   ) as any,
                   getComparator(order, orderBy)
                 )
+                  .filter((t) => t.status !== "Pending")
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const isItemSelected = isSelected(row.employeeid as string);
@@ -510,6 +505,9 @@ export default function TimeKeeperTable({
                         <TableCell align="left">{row.machineInTime}</TableCell>
                         <TableCell align="left">{row.machineOutTime}</TableCell>
                         <TableCell align="left">
+                          {row.machineduration || "-"}
+                        </TableCell>
+                        <TableCell align="left">
                           {row.machineshift || "-"}
                         </TableCell>
                         <TableCell align="left">
@@ -529,6 +527,9 @@ export default function TimeKeeperTable({
                           {row.manualouttime || "-"}
                         </TableCell>
                         <TableCell align="left">
+                          {row.manualduration || "-"}
+                        </TableCell>
+                        <TableCell align="left">
                           {row.manualshift || "-"}
                         </TableCell>
                         <TableCell align="left">
@@ -542,6 +543,7 @@ export default function TimeKeeperTable({
                           {row.designation || "-"}
                         </TableCell>
                         <TableCell align="left">{row.gender || "-"}</TableCell>
+                        <TableCell align="left">{row.status || "-"}</TableCell>
                         <TableCell
                           align="left"
                           onClick={() => handleOpen1(row.id as string)}
@@ -605,7 +607,7 @@ export default function TimeKeeperTable({
                       contractorName === "all"
                   ) as any,
                   getComparator(order, orderBy)
-                ).length === 0 && (
+                ).filter((t) => t.status !== "Pending").length === 0 && (
                   <TableRow
                     style={{
                       height: 50,
@@ -623,8 +625,9 @@ export default function TimeKeeperTable({
             count={
               timekeeper.filter(
                 (t) =>
-                  t.contractorname === contractorName ||
-                  contractorName === "all"
+                  (t.contractorname === contractorName ||
+                    contractorName === "all") &&
+                  t.status !== "Pending"
               ).length
             }
             rowsPerPage={rowsPerPage}

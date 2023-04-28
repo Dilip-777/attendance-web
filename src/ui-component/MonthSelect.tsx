@@ -6,13 +6,13 @@ import { Dayjs } from "dayjs";
 interface props {
   value: Dayjs;
   onChange: (value: Dayjs | null) => void;
-  label: string;
+  label?: string;
 }
 
 export default function MonthSelect({ value, onChange, label }: props) {
   return (
     <Box display="flex" flexDirection="column">
-      <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>
+      {label && <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>}
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           sx={{ minWidth: "15rem" }}

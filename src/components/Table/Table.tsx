@@ -170,8 +170,9 @@ const CustomTable = (props: Props) => {
                           >
                             {_.get(row, headCell.id) === true && "Yes"}
                             {_.get(row, headCell.id) === false && "No"}
-                            {typeof _.get(row, headCell.id) !== "boolean" &&
-                              _.get(row, headCell.id)}
+                            {(typeof _.get(row, headCell.id) !== "boolean" &&
+                              _.get(row, headCell.id, "-")) ||
+                              "-"}
                           </TableCell>
                         ))}
                       {props.setContractorId && props.setOpen && (

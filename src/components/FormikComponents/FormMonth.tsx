@@ -45,6 +45,7 @@ const SelectMonth: React.FC<Props> = ({
         <DatePicker
           {...other}
           disabled={disabled}
+          views={["month", "year"]}
           //   value={value}
           format="MM/YYYY"
           //   disableFuture

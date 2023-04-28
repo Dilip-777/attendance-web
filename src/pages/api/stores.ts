@@ -21,25 +21,30 @@ export default async function Stores(
     res.status(200).json(stores);
   }
   if (req.method === "POST") {
-    const { id } = req.body;
-    const isExist = await prisma.stores.findUnique({
-      where: {
-        id: id ,
-      },
-    });
-    if (isExist) {
-      const store = await prisma.stores.update({
-        where: {
-          id: id ,
-        },
-        data: req.body,
-      });
-      res.status(200).json(store);
-    } else {
+    const {  storeItems, ...rest } = req.body;
+   
+
+
+
+
+  
       const store = await prisma.stores.create({
-        data: req.body,
+        data: {
+          ...rest,
+        },
       });
-      res.status(200).json(store);
-    }
+
+      console.log(storeItems);
+      console.log(rest);
+      
+      
+     
+      const storeItemsData = await prisma.storeItem.createMany({
+        data: storeItems,
+        skipDuplicates: true,
+      });
+
+      res.status(200).json({  ...rest });
+    
   }
 }

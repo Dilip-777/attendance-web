@@ -28,57 +28,57 @@ export default function themeTypography(theme: any) {
         h6: {
             fontWeight: 500,
             color: theme.heading as string,
-            fontSize: '0.69rem'
+            fontSize: '0.75rem'
         },
         h5: {
-            fontSize: '0.8rem',
+            fontSize: '0.875rem',
             color: theme.heading as string,
             fontWeight: 500
         },
         h4: {
-            fontSize: '0.92rem',
+            fontSize: '1rem',
             color: theme.heading as string,
             fontWeight: 600
         },
         h3: {
-            fontSize: '1.13rem',
+            fontSize: '1.25rem',
             color: theme.heading as string,
             fontWeight: 600
         },
         h2: {
-            fontSize: '1.25rem',
+            fontSize: '1.5rem',
             color: theme.heading as string,
             fontWeight: 700
         },
         h1: {
-            fontSize: '1.9rem',
+            fontSize: '2.125rem',
             color: theme.heading,
             fontWeight: 700
         },
         subtitle1: {
-            fontSize: '0.8rem',
+            fontSize: '0.875rem',
             fontWeight: 500,
             color: theme.textDark
         },
         subtitle2: {
-            fontSize: '0.67rem',
+            fontSize: '0.75rem',
             fontWeight: 400,
             color: theme.darkTextSecondary
         },
         caption: {
-            fontSize: '0.69rem',
+            fontSize: '0.75rem',
             color: theme.darkTextSecondary,
             fontWeight: 400
         },
         body1: {
-            fontSize: '0.79rem',
+            fontSize: '0.875rem',
             fontWeight: 400,
             lineHeight: '1.334em'
         },
         body2: {
             letterSpacing: '0em',
             fontWeight: 400,
-            lineHeight: '1.3em',
+            lineHeight: '1.5em',
             color: theme.darkTextPrimary
         },
         button: {
@@ -108,7 +108,7 @@ export default function themeTypography(theme: any) {
         mainContent: {
             backgroundColor: theme.background,
             width: '100%',
-            minHeight: 'calc(100vh - 70px)',
+            minHeight: 'calc(100vh - 88px)',
             flexGrow: 1,
             padding: '20px',
             marginTop: '88px',
@@ -116,7 +116,7 @@ export default function themeTypography(theme: any) {
             borderRadius: `${theme?.customization?.borderRadius}px`
         },
         menuCaption: {
-            fontSize: '0.79rem',
+            fontSize: '0.875rem',
             fontWeight: 500,
             color: theme.heading,
             padding: '6px',
@@ -124,7 +124,7 @@ export default function themeTypography(theme: any) {
             marginTop: '10px'
         },
         subMenuCaption: {
-            fontSize: '0.6rem',
+            fontSize: '0.6875rem',
             fontWeight: 500,
             color: theme.darkTextSecondary,
             // textTransform: 'capitalize'

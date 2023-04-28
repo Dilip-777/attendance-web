@@ -19,6 +19,7 @@ import {
   Grid,
   MenuItem,
   Select,
+  Stack,
 } from "@mui/material";
 import getColony from "@/utils/getColony";
 import dayjs, { Dayjs } from "dayjs";
@@ -114,6 +115,8 @@ export default function PlantCommercial({
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
 
+  const sgst = Math.round(total * 0.09);
+
   const fetchTimekeepers = async () => {
     setLoading(true);
     const res = await axios.get(
@@ -192,20 +195,24 @@ export default function PlantCommercial({
       >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <MonthSelect
-              label="Select Date"
-              value={dayjs(value, "MM/YYYY")}
-              onChange={onChange}
-            />
+            <MonthSelect value={dayjs(value, "MM/YYYY")} onChange={onChange} />
           </Grid>
         </Grid>
-        <Typography variant="h4" sx={{ width: "15rem" }}>
-          Contractor : {contractor.contractorname}
-        </Typography>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Typography variant="h4" sx={{ width: "20rem" }}>
+            Contractor Name :{" "}
+            <span style={{ fontWeight: "500" }}>
+              {contractor.contractorname}
+            </span>
+          </Typography>
+          <Typography variant="h4" sx={{ width: "20rem" }}>
+            Department : <span style={{ fontWeight: "500" }}>Colony</span>
+          </Typography>
+        </Stack>
       </Box>
       <TableContainer
         sx={{
-          maxHeight: 560,
+          maxHeight: 500,
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
             width: 9,
@@ -217,17 +224,29 @@ export default function PlantCommercial({
           },
         }}
       >
-        <Table aria-label="sticky table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="center" colSpan={1}>
+        <Table stickyHeader aria-label="sticky table">
+          <TableHead sx={{ width: "100%" }}>
+            <TableRow sx={{ bgcolor: "#e0e0e0" }}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                colSpan={1}
+              >
                 Date
               </TableCell>
 
-              <TableCell align="center" colSpan={2}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                colSpan={2}
+              >
                 Colony
               </TableCell>
-              <TableCell align="center" colSpan={1}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                colSpan={1}
+              >
                 TOTAL
               </TableCell>
             </TableRow>
@@ -269,20 +288,44 @@ export default function PlantCommercial({
               </TableRow>
             )}
             <TableRow>
-              <TableCell rowSpan={10} />
-              <TableCell colSpan={0}></TableCell>
-              <TableCell colSpan={1}>Total</TableCell>
+              <TableCell rowSpan={5} />
+              <TableCell colSpan={1}></TableCell>
+              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+                Total
+              </TableCell>
               <TableCell align="center">{total}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={1}></TableCell>
-              <TableCell colSpan={1}>SGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell colSpan={0}></TableCell>
+              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+                SGST 9%
+              </TableCell>
+              <TableCell align="center">{sgst}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={1}></TableCell>
-              <TableCell colSpan={1}>CGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell colSpan={0}></TableCell>
+              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+                CGST 9%
+              </TableCell>
+              <TableCell align="center">{sgst}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={0}></TableCell>
+              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+                Service Charge
+              </TableCell>
+              <TableCell align="center">
+                {contractor.servicecharge || 0}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={0}></TableCell>
+              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+                Total Net Amount
+              </TableCell>
+              <TableCell align="center">
+                {total + sgst + sgst + (contractor.servicecharge || 0)}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>

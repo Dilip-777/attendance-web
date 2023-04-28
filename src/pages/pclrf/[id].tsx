@@ -12,7 +12,7 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { Contractor, TimeKeeper } from "@prisma/client";
-import { Box, FormControl, Grid, MenuItem, Select } from "@mui/material";
+import { Box, FormControl, Grid, MenuItem, Select, Stack } from "@mui/material";
 import getLRF from "@/utils/getlrf";
 import MonthSelect from "@/ui-component/MonthSelect";
 import dayjs, { Dayjs } from "dayjs";
@@ -160,6 +160,8 @@ export default function PlantCommercialCCM({
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
 
+  const sgst = Math.floor(total * 0.09);
+
   const fetchTimekeepers = async () => {
     setLoading(true);
     const res = await axios.get(
@@ -217,20 +219,24 @@ export default function PlantCommercialCCM({
       >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <MonthSelect
-              label="Select Date"
-              value={dayjs(value, "MM/YYYY")}
-              onChange={onChange}
-            />
+            <MonthSelect value={dayjs(value, "MM/YYYY")} onChange={onChange} />
           </Grid>
         </Grid>
-        <Typography variant="h4" sx={{ width: "15rem" }}>
-          Contractor : {contractor.contractorname}
-        </Typography>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Typography variant="h4" sx={{ width: "20rem" }}>
+            Contractor Name :{" "}
+            <span style={{ fontWeight: "500" }}>
+              {contractor.contractorname}
+            </span>
+          </Typography>
+          <Typography variant="h4" sx={{ width: "20rem" }}>
+            Department : <span style={{ fontWeight: "500" }}>LRF</span>
+          </Typography>
+        </Stack>
       </Box>
       <TableContainer
         sx={{
-          // maxHeight: 500,
+          maxHeight: 500,
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
             width: 9,
@@ -242,14 +248,18 @@ export default function PlantCommercialCCM({
           },
         }}
       >
-        <Table aria-label="sticky table">
+        <Table stickyHeader aria-label="sticky table">
           <TableHead>
-            <TableRow>
+            <TableRow sx={{ bgcolor: "#e0e0e0" }}>
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
                   align={column.align}
-                  style={{ top: 57, minWidth: column.minWidth }}
+                  style={{
+                    minWidth: column.minWidth,
+                    fontWeight: "700",
+                    backgroundColor: "#e0e0e0",
+                  }}
                 >
                   {column.label}{" "}
                   {!(column.id === "date" || column.id === "total") && (
@@ -262,7 +272,7 @@ export default function PlantCommercialCCM({
           <TableBody>
             {!loading ? (
               rows
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index}>
@@ -287,23 +297,47 @@ export default function PlantCommercialCCM({
             <TableRow>
               <TableCell rowSpan={7} />
               <TableCell colSpan={3}></TableCell>
-              <TableCell colSpan={3}>Total</TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+                Total
+              </TableCell>
               <TableCell align="center">{total}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={3}></TableCell>
-              <TableCell colSpan={3}>SGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+                SGST 9%
+              </TableCell>
+              <TableCell align="center">{sgst}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={3}></TableCell>
-              <TableCell colSpan={3}>CGST 9%</TableCell>
-              <TableCell align="center">{total * 1.09}</TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+                CGST 9%
+              </TableCell>
+              <TableCell align="center">{sgst}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={3}></TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+                Service Charge
+              </TableCell>
+              <TableCell align="center">
+                {contractor.servicecharge || 0}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={3}></TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+                Total Net Amount
+              </TableCell>
+              <TableCell align="center">
+                {total + sgst + sgst + (contractor.servicecharge || 0)}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
+      {/* <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component="div"
         count={rows.length}
@@ -311,7 +345,7 @@ export default function PlantCommercialCCM({
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      /> */}
     </Paper>
   );
 }

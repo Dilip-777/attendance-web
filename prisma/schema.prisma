@@ -56,12 +56,14 @@ model SaveTimekeeper {
     attendancedate String
     machineInTime String
     machineOutTime String?
+    machineduration String?  
     machineshift String
     attendance String
     overtime String
     eleave String
     manualintime String?
     manualouttime String?
+        manualduration   String?
     manualshift String?
     manualovertime String?
     mleave String?
@@ -79,12 +81,14 @@ model TimeKeeper {
     attendancedate String
     machineInTime String
     machineOutTime String?
+    machineduration String?  
     machineshift String
     attendance String
     overtime String
     eleave String
     manualintime String?
     manualouttime String?
+    manualduration   String? 
     manualshift String?
     manualovertime String?
     mleave String?
@@ -117,6 +121,8 @@ model Contractor {
   mobilenumber      String
   emailid      String?    
   website      String?
+  expirationDate   String?
+  servicecharge    Int?
   bankaccountnumber   String?
   ifscno      String?
   businessdetaildocument      String?
@@ -309,13 +315,21 @@ model Stores {
   month   String   
   contractorid   Int
   contractorName  String
+  storeItems    StoreItem[]
+  totalAmount   Int
+  contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model StoreItem {
+  id    String   @id @default(cuid())
+  storeId  String
   division     String
   chargeableItemIssued  String
   quantity    Int
   units  String
   rate   Int
   chargeableamount  Int
-  contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+  store    Stores     @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
 
 model Safety {
@@ -325,7 +339,7 @@ model Safety {
   contractorName  String
   division     String
   chargeableItemIssued  String
-  chargeablevoilation   String
+  penalty   String
   netchargeableamount   Int
   contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }

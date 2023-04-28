@@ -28,7 +28,7 @@ const validationSchema = Yup.object().shape({
   month: Yup.string().required("Required"),
   division: Yup.string().required("Required"),
   chargeableItemIssued: Yup.string().required("Required"),
-  chargeablevoilation: Yup.string().required("Required"),
+  penalty: Yup.string().required("Required"),
   netchargeableamount: numberType,
 });
 
@@ -51,7 +51,7 @@ export default function Edit({
       : dayjs().format("MM/YYYY"),
     division: safety?.division || "",
     chargeableItemIssued: safety?.chargeableItemIssued || "",
-    chargeablevoilation: safety?.chargeablevoilation || "",
+    penalty: safety?.penalty || "",
     netchargeableamount: safety?.netchargeableamount || 0,
   };
 
@@ -152,7 +152,7 @@ export default function Edit({
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
                     <FormInput
-                      name="chargeablevoilation"
+                      name="penalty"
                       label="Chargeable Voilation*"
                       placeHolder="Enter the Chargeable Voilation"
                       disabled={false}

@@ -124,7 +124,7 @@ export function print(rows: any[], total: number,department: string, contractor:
             }),
 
            
-          DocTable({department: department, rows: rows, total: total, safetypenality: safety?.netchargeableamount || 0, deduction: store?.chargeableamount || 0}),
+          DocTable({department: department, rows: rows, total: total, safetypenality: safety?.netchargeableamount || 0, deduction: store?.totalAmount || 0}),
 
             new Paragraph({
             children: [new TextRun({ text: "CONTRACTOR MONTHLY COST CHARGED IN PROFIT & LOSS A/C FOR CURRENT FINANCIAL YEAR", size: 15, bold: true })],

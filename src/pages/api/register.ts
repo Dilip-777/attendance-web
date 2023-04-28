@@ -13,7 +13,7 @@ export default async function register(
     },
   });
   if (isUserExist) {
-    res.status(400).json({ message: "Email already exist" });
+    return  res.status(400).json({ message: "Email already exist" });
   }
   const hashedPassword = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
@@ -31,5 +31,5 @@ export default async function register(
   });
       
 
-  res.status(200).json(user);
+  // res.status(200).json(user);
 }
