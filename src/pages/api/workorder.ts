@@ -29,4 +29,41 @@ export default async function workorder (req: NextApiRequest, res: NextApiRespon
         })
         res.status(200).json(workorder);
     }
+    else if(req.method === "PUT") {
+        const { id, contractorId, ...rest } = req.body
+        const contractor = await prisma.contractor.findUnique({
+            where : {
+                id: contractorId
+            }
+        })
+        if(!contractor) {
+            res.status(404).json({message: "Contractor not found"})
+        }
+        const body = {
+            id: id,
+            contractorId: contractor?.contractorId.toString(),
+            contractorName: contractor?.contractorname,
+            ...rest,
+            amendmentDocument: rest.amendmentDocument?.newFilename || null,
+            addendumDocument: rest.addendumDocument?.newFilename || null,
+            uploadDocument: rest.uploadDocument?.newFilename || null,
+        }
+        const workorder = await prisma.workorder.update({
+            where: {
+                id: id
+            },
+            data: body
+        })
+        res.status(200).json(workorder);
+    }
+    else if(req.method === "DELETE") {
+        const { id } = req.body
+        
+        const workorder = await prisma.workorder.delete({
+            where: {
+                id: id
+            }
+        })
+        res.status(200).json(workorder);
+    }
 }

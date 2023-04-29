@@ -5,15 +5,22 @@ import getTotalAmountAndRows from "@/utils/get8hr";
 import getColony from "@/utils/getColony";
 import getCCM from "@/utils/getccm";
 import getLRF from "@/utils/getlrf";
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+// import {
+//   Box,
+//   Button,
+//   CircularProgress,
+//   Divider,
+//   Paper,
+//   Stack,
+//   Typography,
+// } from "@mui/material";
 import {
   Contractor,
   Department,
@@ -345,8 +352,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const contractors = await prisma.contractor.findMany();
   const workorders = await prisma.workorder.findMany();
   const departments = await prisma.department.findMany();
+  const designations = await prisma.designations.findMany();
 
   return {
-    props: { contractors, workorders, departments },
+    props: { contractors, workorders, departments, designations },
   };
 };

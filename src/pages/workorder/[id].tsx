@@ -22,7 +22,7 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, Employee } from "@prisma/client";
+import { Contractor, Workorder } from "@prisma/client";
 import axios from "axios";
 import FormDate from "@/components/FormikComponents/FormDate";
 import FileUpload from "@/components/FormikComponents/FileUpload";
@@ -46,27 +46,33 @@ const validationSchema = Yup.object().shape({
 
 export default function AddWordOrder({
   contractors,
-  employee,
+  workorder,
 }: {
   contractors: Contractor[];
-  employee: Employee;
+  workorder: Workorder;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const initialValues = {
-    contractorId: "",
-    nature: "",
-    startDate: "",
-    endDate: "",
-    location: "",
-    workDescription: "",
-    repeatOrOneTime: "",
-    alert1Month: false,
-    alert15days: false,
-    amendmentDocument: undefined,
-    addendumDocument: undefined,
-    uploadDocument: undefined,
+    contractorId: workorder?.contractorId || "",
+    nature: workorder?.nature || "",
+    startDate: workorder?.startDate || "",
+    endDate: workorder?.endDate || "",
+    location: workorder?.location || "",
+    workDescription: workorder?.workDescription || "",
+    repeatOrOneTime: workorder?.repeatOrOneTime || "",
+    alert1Month: workorder?.alert1Month || false,
+    alert15days: workorder?.alert15days || false,
+    amendmentDocument: workorder?.amendmentDocument
+      ? { newFilename: workorder.amendmentDocument }
+      : undefined,
+    addendumDocument: workorder?.addendumDocument
+      ? { newFilename: workorder.addendumDocument }
+      : undefined,
+    uploadDocument: workorder?.uploadDocument
+      ? { newFilename: workorder.uploadDocument }
+      : undefined,
   };
 
   return (
@@ -89,7 +95,7 @@ export default function AddWordOrder({
       >
         <Box sx={{ height: "3rem", display: "flex", alignItems: "center" }}>
           <Typography variant="h4" ml={5} my="auto">
-            Add Employee
+            {workorder ? "Edit Work Order" : "Add Work Order"}
           </Typography>
         </Box>
         <Divider />
@@ -98,27 +104,34 @@ export default function AddWordOrder({
           validationSchema={validationSchema}
           onSubmit={async (values) => {
             setLoading(true);
-            await axios
-              .post("/api/workorder", values)
-              .then((res) => {
-                console.log(res);
-                router.push("/workorder");
-              })
-              .catch((err) => {
-                console.log(err);
-              });
+            if (workorder) {
+              await axios
+                .put(`/api/workorder`, {
+                  id: workorder.id,
+                  ...values,
+                })
+                .then((res) => {
+                  console.log(res);
+                  router.push("/workorder");
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else {
+              await axios
+                .post("/api/workorder", values)
+                .then((res) => {
+                  console.log(res);
+                  router.push("/workorder");
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }
             setLoading(false);
           }}
         >
           {({ handleSubmit, values, errors }) => {
-            // if (!errors.startDate) {
-            //   const options1 = options.filter((option) =>
-            //     option.department.includes(values.startDate)
-            //   );
-            //   setOptions(options1);
-            // }
-            console.log(errors);
-
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={6} mt={2} container>
@@ -178,11 +191,15 @@ export default function AddWordOrder({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormInput
+                    <FormSelect
                       name="repeatOrOneTime"
                       label="Repeat Or One Time*"
                       placeHolder="Repeat Or One Time"
                       disabled={false}
+                      options={[
+                        { value: "Repeat", label: "Repeat" },
+                        { value: "One Time", label: "One Time" },
+                      ]}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -282,7 +299,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const employee = await prisma.employee.findUnique({
+  const workorder = await prisma.workorder.findUnique({
     where: {
       id: id as string,
     },
@@ -291,7 +308,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       contractors,
-      employee,
+      workorder,
     },
   };
 };

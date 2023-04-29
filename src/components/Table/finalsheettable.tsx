@@ -47,36 +47,6 @@ export default function FinalSheetTable({
   storededuction: number;
   safetydeduction: number;
 }) {
-  const downloadTxtFile = () => {
-    // Convert JSON data to formatted string
-    const jsonRows = JSON.stringify(rows, null, 2);
-    const tableRows = [
-      ["Name".padEnd(30), "Age".padEnd(30), "Email".padEnd(10)],
-    ];
-    rows.forEach((item) => {
-      tableRows.push([
-        item.date.padEnd(30),
-        String(item.m8).toString().padEnd(3),
-        item.f8.toString().padEnd(25),
-      ]);
-    });
-    const tableRowsString = tableRows.map((row) => row.join("\t")).join("\n");
-    const txtContent = `JSON data:\n${jsonRows}\n\nTable data:\n${tableRowsString}`;
-
-    // Download text file
-    const blob = new Blob([txtContent], {
-      type: "text/plain;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "data.txt");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const headers = [
     "Total Man days",
     "Rate",
