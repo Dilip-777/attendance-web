@@ -9,7 +9,7 @@ import {
 import _ from "lodash";
 import DocTable from "./table";
 import { ContractorDetails, ServiceDetails } from "./contractordetails";
-import { Contractor, Safety, Stores, Workorder, payoutTracker } from "@prisma/client";
+import { Contractor, Designations, Safety, Stores, Workorder, payoutTracker } from "@prisma/client";
 import { BankDetails, CostDetails } from "./otherDetails";
 import dayjs from "dayjs";
 import ApprovalInformation from "./approvalInfo";
@@ -69,7 +69,7 @@ const headcells = [
   createHeadcell("total", "Total", 1),
 ];
 
-export function print(rows: any[], total: number,department: string, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number ) {
+export function print(rows: any[], total: number,department: string, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number , designations: Designations[]) {
 
   const previousMonth = getPreviousMonth(date)
   const beforemonth = getPreviousMonth(previousMonth)
@@ -124,7 +124,7 @@ export function print(rows: any[], total: number,department: string, contractor:
             }),
 
            
-          DocTable({department: department, rows: rows, total: total, safetypenality: safety?.netchargeableamount || 0, deduction: store?.totalAmount || 0}),
+          DocTable({department: department, rows: rows, total: total, safetypenality: safety?.netchargeableamount || 0, deduction: store?.totalAmount || 0, designations}),
 
             new Paragraph({
             children: [new TextRun({ text: "CONTRACTOR MONTHLY COST CHARGED IN PROFIT & LOSS A/C FOR CURRENT FINANCIAL YEAR", size: 15, bold: true })],

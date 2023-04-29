@@ -1,17 +1,15 @@
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
-import {
-  Modal,
-  Backdrop,
-  Slide,
-  Stack,
-  Typography,
-  IconButton,
-  Divider,
-  Box,
-  Button,
-  Paper,
-  CircularProgress,
-} from "@mui/material";
+import Modal from "@mui/material/Modal";
+import Backdrop from "@mui/material/Backdrop";
+import Slide from "@mui/material/Slide";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import Divider from "@mui/material/Divider";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import CircularProgress from "@mui/material/CircularProgress";
 import { payoutTracker } from "@prisma/client";
 import axios from "axios";
 import * as Yup from "yup";

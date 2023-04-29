@@ -1,5 +1,6 @@
 import * as React from "react";
 import FinalSheetTable from "./finalsheettable";
+import { Designations } from "@prisma/client";
 
 export default function FinalSheetta({
   rows,
@@ -7,13 +8,35 @@ export default function FinalSheetta({
   department,
   storededuction,
   safetydeduction,
+  designations,
 }: {
   rows: any[];
   total: number;
   department: string;
   storededuction: number;
   safetydeduction: number;
+  designations: Designations[];
 }) {
+  const s8hr = designations.map((d) => {
+    if (d.gender === "Male")
+      return { main: d.designation, sub: "M", id: d.designationid };
+    else if (d.gender === "Female")
+      return { main: d.designation, sub: "F", id: d.designationid };
+    else return { main: d.designation, id: d.designationid };
+  });
+
+  console.log(s8hr);
+
+  const sidebar = designations
+    .filter((d) => d.departmentname === department)
+    .map((d) => {
+      if (d.gender === "Male")
+        return { main: d.designation, sub: "M", id: d.designationid };
+      else if (d.gender === "Female")
+        return { main: d.designation, sub: "F", id: d.designationid };
+      else return { main: d.designation, id: d.designationid };
+    });
+
   const side8hr = [
     { main: "8MW", sub: "M", id: "m8" },
     { main: "8MW", sub: "F", id: "f8" },
@@ -66,59 +89,73 @@ export default function FinalSheetta({
   const sidecolony = [
     { main: "Colony", sub: "Male", id: "m" },
     { main: "Colony", sub: "Female", id: "f" },
-    { main: "Total", sub: " ", id: "total" },
+    // { main: "Total", sub: " ", id: "total" },
   ];
 
-  switch (department) {
-    case "CCM":
-      return (
-        <FinalSheetTable
-          rows={rows}
-          total={Math.floor(total || 0)}
-          department={department}
-          sides={sideccm}
-          storededuction={storededuction}
-          safetydeduction={safetydeduction}
-        />
-      );
-      break;
-    case "LRF":
-      return (
-        <FinalSheetTable
-          rows={rows}
-          total={Math.floor(total || 0)}
-          department={department}
-          sides={sidelrf}
-          storededuction={storededuction}
-          safetydeduction={safetydeduction}
-        />
-      );
-      break;
-    case "Colony":
-      return (
-        <FinalSheetTable
-          rows={rows}
-          total={Math.floor(total || 0)}
-          department={department}
-          sides={sidecolony}
-          storededuction={storededuction}
-          safetydeduction={safetydeduction}
-        />
-      );
-      break;
-    case "8HR":
-    case "12HR":
-      return (
-        <FinalSheetTable
-          rows={rows}
-          total={Math.floor(total || 0)}
-          department={department}
-          sides={side8hr}
-          storededuction={storededuction}
-          safetydeduction={safetydeduction}
-        />
-      );
-    default:
-      return <></>;
+  if (department === "Colony") {
+    sidebar.push(...sidecolony);
   }
+
+  // switch (department) {
+  //   case "CCM":
+  //     return (
+  //       <FinalSheetTable
+  //         rows={rows}
+  //         total={Math.floor(total || 0)}
+  //         department={department}
+  //         sides={sideccm}
+  //         storededuction={storededuction}
+  //         safetydeduction={safetydeduction}
+  //       />
+  //     );
+  //     break;
+  //   case "LRF":
+  //     return (
+  //       <FinalSheetTable
+  //         rows={rows}
+  //         total={Math.floor(total || 0)}
+  //         department={department}
+  //         sides={sidelrf}
+  //         storededuction={storededuction}
+  //         safetydeduction={safetydeduction}
+  //       />
+  //     );
+  //     break;
+  //   case "Colony":
+  //     return (
+  //       <FinalSheetTable
+  //         rows={rows}
+  //         total={Math.floor(total || 0)}
+  //         department={department}
+  //         sides={sidecolony}
+  //         storededuction={storededuction}
+  //         safetydeduction={safetydeduction}
+  //       />
+  //     );
+  //     break;
+  //   case "8HR":
+  //   case "12HR":
+  //     return (
+  //       <FinalSheetTable
+  //         rows={rows}
+  //         total={Math.floor(total || 0)}
+  //         department={department}
+  //         sides={s8hr}
+  //         storededuction={storededuction}
+  //         safetydeduction={safetydeduction}
+  //       />
+  //     );
+  //   default:
+  //     return <></>;
+  // }
+  return (
+    <FinalSheetTable
+      rows={rows}
+      total={Math.floor(total || 0)}
+      department={department}
+      sides={sidebar}
+      storededuction={storededuction}
+      safetydeduction={safetydeduction}
+    />
+  );
 }

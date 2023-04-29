@@ -309,7 +309,9 @@ export default function TimeKeeperTable({
   };
 
   const fetchTimeKeeper = async () => {
-    setLoading(true);
+    if (timekeeper.length === 0) {
+      setLoading(true);
+    }
 
     await axios
       .get(
@@ -330,7 +332,7 @@ export default function TimeKeeperTable({
 
   React.useEffect(() => {
     fetchTimeKeeper();
-  }, [value]);
+  }, [value, session]);
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {

@@ -24,6 +24,7 @@ import Typography from "@mui/material/Typography";
 import {
   Contractor,
   Department,
+  Designations,
   Safety,
   Stores,
   TimeKeeper,
@@ -42,10 +43,12 @@ export default function FinalSheet({
   contractors,
   workorders,
   departments,
+  designations,
 }: {
   contractors: Contractor[];
   workorders: Workorder[];
   departments: Department[];
+  designations: Designations[];
 }) {
   const [value, setValue] = useState<string>(dayjs().format("MM/YYYY"));
   const [selectedContractor, setSelectedContractor] = useState<number>(
@@ -162,7 +165,8 @@ export default function FinalSheet({
       details.payoutracker,
       details.prevMonthAmount,
       details.prevprevMonthAmount,
-      details.prevYearAmount
+      details.prevYearAmount,
+      designations
     );
     // const c = contractors.find((c) => c.contractorId === selectedContractor);
     // const w = workorders.find(
@@ -252,6 +256,9 @@ export default function FinalSheet({
             { label: "Contractor Name", value: f?.contractorname as string },
             { label: "Mobile Number", value: f?.mobilenumber as string },
             { label: "Office Address", value: f?.officeaddress as string },
+            { label: "Pan Number", value: f?.pancardno as string },
+            { label: "Area of Work", value: f?.areaofwork as string },
+            { label: "Type of Contractor", value: "-" },
           ]}
         />
         <Divider sx={{ my: 2 }} />
@@ -286,6 +293,7 @@ export default function FinalSheet({
           department={department}
           storededuction={store?.totalAmount || 0}
           safetydeduction={safety?.netchargeableamount || 0}
+          designations={designations}
         />
       )}
       <Divider sx={{ my: 2 }} />

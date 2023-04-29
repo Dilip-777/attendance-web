@@ -1,12 +1,11 @@
 import Close from "@mui/icons-material/Close";
-import {
-  Alert,
-  Button,
-  CircularProgress,
-  IconButton,
-  Snackbar,
-  Stack,
-} from "@mui/material";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
+import Snackbar from "@mui/material/Snackbar";
+import Stack from "@mui/material/Stack";
+
 import axios from "axios";
 import React, { useState } from "react";
 import shortid from "shortid";

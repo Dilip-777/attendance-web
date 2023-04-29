@@ -10,9 +10,10 @@ import TableRow from "@mui/material/TableRow";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, TimeKeeper } from "@prisma/client";
+import { Contractor, TimeKeeper, Workorder } from "@prisma/client";
 import {
   Box,
+  Divider,
   FormControl,
   Grid,
   MenuItem,
@@ -21,25 +22,25 @@ import {
   Typography,
 } from "@mui/material";
 import getTotalAmountAndRows from "@/utils/get8hr";
-import dayjs, { Dayjs } from "dayjs";
 import MonthSelect from "@/ui-component/MonthSelect";
+import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
 interface Column {
   id:
     | "date"
-    | "m8"
-    | "f8"
-    | "m20"
-    | "f20"
-    | "dm"
-    | "qc"
-    | "store"
-    | "k7m"
-    | "k7f"
-    | "rmhs"
-    | "ps"
-    | "hk"
-    | "svr"
+    | "m8mw"
+    | "f8mw"
+    | "m20mw"
+    | "f20mw"
+    | "mdmplant"
+    | "mqc"
+    | "mstore"
+    | "mk7"
+    | "fk7"
+    | "mrmhs"
+    | "fps"
+    | "mhk"
+    | "msvr"
     | "total";
   label: string;
   border?: boolean;
@@ -58,14 +59,14 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "m8",
+    id: "m8mw",
     label: "M",
     minWidth: 50,
     align: "center",
     format: (value: number) => value.toString(),
   },
   {
-    id: "f8",
+    id: "f8mw",
     label: "F",
     minWidth: 50,
     border: true,
@@ -73,7 +74,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "m20",
+    id: "m20mw",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -81,7 +82,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "f20",
+    id: "f20mw",
     label: "F",
     minWidth: 50,
     align: "center",
@@ -89,7 +90,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "dm",
+    id: "mdmplant",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -97,7 +98,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "qc",
+    id: "mqc",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -105,7 +106,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "store",
+    id: "mstore",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -113,14 +114,14 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "k7m",
+    id: "mk7",
     label: "M",
     minWidth: 50,
     align: "center",
     format: (value: number) => value.toString(),
   },
   {
-    id: "k7f",
+    id: "fk7",
     label: "F",
     minWidth: 50,
     align: "center",
@@ -128,7 +129,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "rmhs",
+    id: "mrmhs",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -136,7 +137,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "ps",
+    id: "fps",
     label: "F",
     minWidth: 50,
     align: "center",
@@ -144,7 +145,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "hk",
+    id: "mhk",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -152,7 +153,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "svr",
+    id: "msvr",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -170,36 +171,38 @@ const columns: Column[] = [
 
 interface Data {
   date: string;
-  m8: number;
-  f8: number;
-  m20: number;
-  f20: number;
-  dm: number;
-  qc: number;
-  store: number;
-  k7m: number;
-  k7f: number;
-  rmhs: number;
-  ps: number;
-  hk: number;
-  svr: number;
+  m8mw: number;
+  f8mw: number;
+  m20mw: number;
+  f20mw: number;
+  mdmplant: number;
+  mqc: number;
+  mstore: number;
+  mk7: number;
+  fk7: number;
+  mrmhs: number;
+  fps: number;
+  mhk: number;
+  msvr: number;
   total: number;
 }
 
-const FormSelect = ({
+export const FormSelect = ({
   value,
   setValue,
   options,
 }: {
-  value: number;
-  setValue: React.Dispatch<React.SetStateAction<number>>;
-  options: { value: number; label: string }[];
+  value: number | string;
+  setValue: React.Dispatch<React.SetStateAction<number>> | any;
+  options: { value: number | string; label: string }[];
 }) => {
   return (
-    <FormControl fullWidth variant="outlined" size="small">
+    <FormControl fullWidth variant="outlined">
       <Select
         value={value}
         onChange={(e) => setValue(e.target.value as number)}
+        placeholder="Select"
+        // defaultValue={value}
       >
         {options.map((option, index) => (
           <MenuItem key={index} value={option.value}>
@@ -219,8 +222,6 @@ export default function PlantCommercial({
   const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [month, setMonth] = React.useState<number>(new Date().getMonth() + 1);
-  const [year, setYear] = React.useState<number>(new Date().getFullYear());
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState([] as Data[]);
   const [total, setTotal] = React.useState(0);
@@ -271,12 +272,25 @@ export default function PlantCommercial({
 
   return (
     <Paper sx={{ width: "100%" }}>
-      <Box sx={{ height: "5rem", display: "flex", p: 3, mb: 2 }}>
+      <Box
+        sx={{
+          height: "5rem",
+          display: "flex",
+          p: 3,
+          justifyContent: "flex-start",
+          mb: 2,
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <MonthSelect value={dayjs(value, "MM/YYYY")} onChange={onChange} />
+            <MonthSelect
+              // label="Select Date"
+              value={dayjs(value, "MM/YYYY")}
+              onChange={onChange}
+            />
           </Grid>
         </Grid>
+
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="h4" sx={{ width: "20rem" }}>
             Contractor Name :{" "}
@@ -285,10 +299,11 @@ export default function PlantCommercial({
             </span>
           </Typography>
           <Typography variant="h4" sx={{ width: "20rem" }}>
-            Department : <span style={{ fontWeight: "500" }}>12HR</span>
+            Department : <span style={{ fontWeight: "500" }}>8HR</span>
           </Typography>
         </Stack>
       </Box>
+
       <TableContainer
         sx={{
           maxHeight: 500,
@@ -413,7 +428,12 @@ export default function PlantCommercial({
                 // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   return (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={row.f8}>
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      tabIndex={-1}
+                      key={row.f8mw}
+                    >
                       {columns.map((column) => {
                         const value = row[column.id];
                         return (
@@ -520,9 +540,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: id as string,
     },
   });
+  const workorders = await prisma.workorder.findMany({
+    where: {
+      contractorId: id as string,
+    },
+  });
   return {
     props: {
-      contractor: contractor,
+      workorders,
+      contractor,
     },
   };
 };

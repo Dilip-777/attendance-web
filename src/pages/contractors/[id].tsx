@@ -57,6 +57,8 @@ const validationSchema = Yup.object().shape({
   servicecharge: Yup.number().required("Rquired"),
   bankaccountnumber: stringtype.required("Required"),
   ifscno: stringtype.required("Required"),
+  pancardno: stringtype,
+  areaofwork: stringtype,
   // Organsiation Details
   organisationtype: stringtype,
   dateofincorporation: stringtype,
@@ -135,6 +137,8 @@ export default function EditContractor({
     mobilenumber: contractor?.mobilenumber || 0,
     emailid: contractor?.emailid || "",
     website: contractor?.website || "",
+    pancardno: contractor?.pancardno || "",
+    areaofwork: contractor?.areaofwork || "",
     expirationDate: contractor?.expirationDate || "",
     servicecharge: contractor?.servicecharge || 0,
     bankaccountnumber: contractor?.bankaccountnumber || "",
@@ -392,6 +396,22 @@ export default function EditContractor({
                         placeHolder="Enter the Service Charge"
                         disabled={false}
                         type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <FormInput
+                        name="pancardno"
+                        label="Pan Card Number*"
+                        placeHolder="Enter Pan Card Number"
+                        disabled={false}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <FormInput
+                        name="areaofwork"
+                        label="Area of Work*"
+                        placeHolder="Enter Area of Work"
+                        disabled={false}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>

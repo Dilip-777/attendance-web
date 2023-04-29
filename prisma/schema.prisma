@@ -119,6 +119,8 @@ model Contractor {
   designation      String?
   telephonenumber      String?
   mobilenumber      String
+  pancardno    String?
+  areaofwork   String?
   emailid      String?    
   website      String?
   expirationDate   String?

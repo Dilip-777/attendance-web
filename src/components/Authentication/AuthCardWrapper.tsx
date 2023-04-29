@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 
 // material-ui
-import { Box } from "@mui/material";
+import Box from "@mui/material/Box";
 
 // project import
 import MainCard from "@/ui-component/cards/MainCard";

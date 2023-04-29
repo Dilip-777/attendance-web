@@ -9,6 +9,7 @@ import {
 } from "docx";
 import _ from "lodash";
 import TableHead from "./tableHead";
+import { Designations } from "@prisma/client";
 
 interface side {
   main: string;
@@ -103,12 +104,14 @@ export default function DocTable({
   department,
   safetypenality,
   deduction,
+  designations,
 }: {
   rows: any[];
   total: number;
   department: string;
   safetypenality: number;
   deduction: number;
+  designations: Designations[];
 }) {
   const side8hr: side[] = [
     { main: "8MW", sub: "M", id: "m8" },
@@ -159,27 +162,39 @@ export default function DocTable({
     { main: "Total", id: "total" },
   ];
 
-  const sidecolony: side[] = [
+  const sidecolony = [
     { main: "Colony", sub: "Male", id: "m" },
     { main: "Colony", sub: "Female", id: "f" },
-    { main: "Total", sub: " ", id: "total" },
+    // { main: "Total", sub: " ", id: "total" },
   ];
 
-  const getHeader = () => {
-    switch (department) {
-      case "8HR":
-      case "12HR":
-        return side8hr;
-      case "CCM":
-        return sideccm;
-      case "LRF":
-        return sidelrf;
-      case "Colony":
-        return sidecolony;
-      default:
-        return side8hr;
-    }
-  };
+  const sidebar = designations
+    .filter((d) => d.departmentname === department)
+    .map((d) => {
+      if (d.gender === "Male")
+        return { main: d.designation, sub: "M", id: d.designationid };
+      else if (d.gender === "Female")
+        return { main: d.designation, sub: "F", id: d.designationid };
+      else return { main: d.designation, id: d.designationid };
+    });
+
+  if (department === "Colony") {
+    sidebar.push(...sidecolony);
+  }
+
+  switch (department) {
+    case "8HR":
+    case "12HR":
+    case "Colony":
+      sidebar.push({ main: "Total", sub: " ", id: "total" });
+      break;
+    case "CCM":
+    case "LRF":
+      sidebar.push({ main: "Total", id: "total" });
+      break;
+    default:
+      break;
+  }
 
   const colspan = department === "CCM" || department === "LRF" ? 5 : 9;
 
@@ -190,7 +205,7 @@ export default function DocTable({
       new TableRow({
         children: TableHead({ department: department }),
       }),
-      ...getHeader().map(
+      ...sidebar.map(
         (header) =>
           new TableRow({
             children: header.sub

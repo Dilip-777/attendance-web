@@ -28,19 +28,19 @@ import axios from "axios";
 interface Column {
   id:
     | "date"
-    | "m8"
-    | "f8"
-    | "m20"
-    | "f20"
-    | "dm"
-    | "qc"
-    | "store"
-    | "k7m"
-    | "k7f"
-    | "rmhs"
-    | "ps"
-    | "hk"
-    | "svr"
+    | "m8mw"
+    | "f8mw"
+    | "m20mw"
+    | "f20mw"
+    | "mdmplant"
+    | "mqc"
+    | "mstore"
+    | "mk7"
+    | "fk7"
+    | "mrmhs"
+    | "fps"
+    | "mhk"
+    | "msvr"
     | "total";
   label: string;
   border?: boolean;
@@ -59,14 +59,14 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "m8",
+    id: "m8mw",
     label: "M",
     minWidth: 50,
     align: "center",
     format: (value: number) => value.toString(),
   },
   {
-    id: "f8",
+    id: "f8mw",
     label: "F",
     minWidth: 50,
     border: true,
@@ -74,7 +74,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "m20",
+    id: "m20mw",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -82,7 +82,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "f20",
+    id: "f20mw",
     label: "F",
     minWidth: 50,
     align: "center",
@@ -90,7 +90,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "dm",
+    id: "mdmplant",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -98,7 +98,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "qc",
+    id: "mqc",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -106,7 +106,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "store",
+    id: "mstore",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -114,14 +114,14 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "k7m",
+    id: "mk7",
     label: "M",
     minWidth: 50,
     align: "center",
     format: (value: number) => value.toString(),
   },
   {
-    id: "k7f",
+    id: "fk7",
     label: "F",
     minWidth: 50,
     align: "center",
@@ -129,7 +129,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "rmhs",
+    id: "mrmhs",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -137,7 +137,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "ps",
+    id: "fps",
     label: "F",
     minWidth: 50,
     align: "center",
@@ -145,7 +145,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "hk",
+    id: "mhk",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -153,7 +153,7 @@ const columns: Column[] = [
     format: (value: number) => value.toString(),
   },
   {
-    id: "svr",
+    id: "msvr",
     label: "M",
     minWidth: 50,
     align: "center",
@@ -171,19 +171,19 @@ const columns: Column[] = [
 
 interface Data {
   date: string;
-  m8: number;
-  f8: number;
-  m20: number;
-  f20: number;
-  dm: number;
-  qc: number;
-  store: number;
-  k7m: number;
-  k7f: number;
-  rmhs: number;
-  ps: number;
-  hk: number;
-  svr: number;
+  m8mw: number;
+  f8mw: number;
+  m20mw: number;
+  f20mw: number;
+  mdmplant: number;
+  mqc: number;
+  mstore: number;
+  mk7: number;
+  fk7: number;
+  mrmhs: number;
+  fps: number;
+  mhk: number;
+  msvr: number;
   total: number;
 }
 
@@ -428,7 +428,12 @@ export default function PlantCommercial({
                 // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   return (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={row.f8}>
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      tabIndex={-1}
+                      key={row.f8mw}
+                    >
                       {columns.map((column) => {
                         const value = row[column.id];
                         return (

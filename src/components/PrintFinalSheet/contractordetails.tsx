@@ -39,6 +39,9 @@ export function ContractorDetails({ contractor }: { contractor: Contractor }) {
     { id: "contractorname", label: "Contractor Name" },
     { id: "mobilenumber", label: "Mobile Number" },
     { id: "officeaddress", label: "Office Address" },
+    { id: "pancardnumber", label: "Pan No" },
+    { id: "areaofwork", label: "Area of Work" },
+    { id: "type", label: "Type of Contractor" },
   ];
   const table = new Table({
     rows: [
@@ -49,7 +52,7 @@ export function ContractorDetails({ contractor }: { contractor: Contractor }) {
       }),
       new TableRow({
         children: contractorheaders.map((header) =>
-          tableCell(`${_.get(contractor, header.id)}`, false)
+          tableCell(`${_.get(contractor, header.id, "-")}`, false)
         ),
       }),
     ],

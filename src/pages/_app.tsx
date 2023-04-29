@@ -44,7 +44,7 @@ const MyApp = ({ Component, pageProps }: any) => {
             referrerPolicy="no-referrer"
           />
         </Head>
-        {loading || status === "loading" ? (
+        {loading ? (
           <Box
             sx={{
               display: "flex",

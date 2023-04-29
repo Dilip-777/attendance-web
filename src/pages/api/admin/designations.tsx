@@ -12,7 +12,8 @@ export default async function designations(
   } else if (req.method === "POST") {
     const data = req.body;
 
-    let id = data?.designation?.toLowerCase();
+    let id = data.designation;
+    id = id.replace(/\s+/g, "").toLowerCase();
     if (data?.gender === "Male") {
       id = "m" + id;
     } else if (data?.gender === "Female") id = "f" + id;
@@ -37,11 +38,17 @@ export default async function designations(
     res.status(200).json(designation);
   } else if (req.method === "PUT") {
     const data = req.body;
+    let id = data.designation;
+    id = id.replace(/\s+/g, "").toLowerCase();
+    if (data?.gender === "Male") {
+      id = "m" + id;
+    } else if (data?.gender === "Female") id = "f" + id;
     const designation = await prisma.designations.update({
       where: {
         id: data?.id,
       },
       data: {
+        designationid: id,
         ...data,
       },
     });
