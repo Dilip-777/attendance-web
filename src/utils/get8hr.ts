@@ -66,16 +66,19 @@ const getCount = (
 
 const  totalovertime1: Record<string, string | number>  = {
     date: "Total Overtime",
+    total: 0
 }
 const attendancecount: Record<string, string | number> = {
   date: "Attendance Count",
 }
 const totalamount1: Record<string, string | number> = {
   date: "Total Amount",
+  total: 0
 }
 
 const otamount: Record<string, string | number> = {
   date: "OT Amount",
+  total: 0
 }
 
 const totalnetamount : Record<string, string | number> = {
@@ -88,6 +91,7 @@ const cprate: Record<string, string | number> = {
 
 const cpamount: Record<string, string | number> = {
   date: "CP Amount",
+  total: 0
 }
 
 const total : Record<string, string | number> = {
@@ -110,7 +114,10 @@ const netPayable1 : Record<string, string | number> = {
   date: "Net Payable"
 }
 
+
+
 const rows2: any[] = []
+
 
 if(designations) {
 
@@ -133,14 +140,20 @@ if(designations) {
       
     const id = designation.designationid
     attendancecount[id] = filtered.length
+    
     rate[id] = designation.basicsalary
     totalamount1[id] = _.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0))
+    totalamount1["total"] = totalamount1.total as number + Number(_.get(totalamount1, id, 0))
     totalovertime1[id] = filtered.reduce((acc, curr) => acc + parseInt(curr.manualovertime || curr.overtime), 0);
+    totalovertime1["total"] = totalovertime1.total as number + Number(_.get(totalovertime1, id, 0))
     const otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day)
     otamount[id] = Number(_.get(totalovertime1, id, 0)) * otRate
+    otamount["total"] = otamount.total as number + Number(_.get(otamount, id, 0))
     totalnetamount[id] = Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0))
+    
     cprate[id] = designation.servicecharge as number
     cpamount[id] = Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0))
+    cpamount["total"] = cpamount.total as number + Number(_.get(cpamount, id, 0))
     total[id] = Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
     gst1[id] = Math.floor(_.get(total, id, 0) as number * 0.18)
     billAmount1[id] = Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
@@ -149,8 +162,20 @@ if(designations) {
  })
 }
 
+attendancecount["total"] = timekeeper.length
+rate["total"] = 0
+totalnetamount["total"] = parseInt(totalamount1.total as string) + parseInt(otamount.total as string)
+
+total["total"] = totalnetamount.total + parseInt(cpamount.total as string)
+gst1["total"] = Math.floor(total.total * 0.18)
+billAmount1["total"] = total.total + gst1.total
+tds1["total"] = Math.floor(total.total * 0.01)
+netPayable1["total"] = billAmount1.total + tds1.total
+
+
 
 rows2.push(attendancecount)
+
 rows2.push(rate)
 
 rows2.push(totalamount1)

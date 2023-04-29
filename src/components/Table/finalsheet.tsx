@@ -94,6 +94,20 @@ export default function FinalSheetta({
     sidebar.push(...sidecolony);
   }
 
+  switch (department) {
+    case "8HR":
+    case "12HR":
+    case "Colony":
+      sidebar.push({ main: "Total", sub: " ", id: "total" });
+      break;
+    case "CCM":
+    case "LRF":
+      sidebar.push({ main: "Total", id: "total" });
+      break;
+    default:
+      break;
+  }
+
   // switch (department) {
   //   case "CCM":
   //     return (

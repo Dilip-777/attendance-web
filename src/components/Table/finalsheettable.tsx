@@ -132,11 +132,12 @@ export default function FinalSheetTable({
               department === "Colony"
                 ? headers
                 : ccmheader
-              ).map((header) => (
+              ).map((header, index) => (
                 <TableCell
                   align="center"
                   sx={{ fontWeight: "700" }}
                   colSpan={1}
+                  key={index}
                 >
                   {header}
                 </TableCell>
