@@ -100,19 +100,23 @@ function ImportData() {
         designation: data.designation,
         department: data.department,
         machineInTime:
-          new Date(data.machine_intime * 24 * 60 * 60 * 1000)
-            .toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-            ?.toString() || "8:00",
+          data.machine_intime === 0
+            ? "00:00"
+            : new Date(data.machine_intime * 24 * 60 * 60 * 1000)
+                .toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+                ?.toString() || "",
         machineOutTime:
-          new Date(data.machine_outtime * 24 * 60 * 60 * 1000)
-            .toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-            ?.toString() || "17:00",
+          data.machine_outtime === 0
+            ? "00:00"
+            : new Date(data.machine_outtime * 24 * 60 * 60 * 1000)
+                .toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+                ?.toString() || "",
         machineshift: data.shift || "day",
         attendance: data.attendence?.toString(),
         attendancedate: getDate(data.entry_date)?.toString(),
@@ -123,16 +127,18 @@ function ImportData() {
       };
     });
     setLoading(true);
-    const res = await axios
-      .post("/api/importdata?type=timekeeper", body)
-      .then((res) => {
-        setError(false);
-        handleClick();
-      })
-      .catch((err) => {
-        setError(true);
-        handleClick();
-      });
+    // const res = await axios
+    //   .post("/api/importdata?type=timekeeper", body)
+    //   .then((res) => {
+    //     setError(false);
+    //     handleClick();
+    //   })
+    //   .catch((err) => {
+    //     setError(true);
+    //     handleClick();
+    //   });
+    console.log(body);
+
     setLoading(false);
   };
 
