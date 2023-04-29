@@ -22,29 +22,18 @@ export default async function Stores(
   }
   if (req.method === "POST") {
     const {  storeItems, ...rest } = req.body;
-   
-
-
-
-
-  
       const store = await prisma.stores.create({
         data: {
           ...rest,
         },
       });
-
-      console.log(storeItems);
-      console.log(rest);
-      
-      
-     
+         
       const storeItemsData = await prisma.storeItem.createMany({
         data: storeItems,
         skipDuplicates: true,
       });
 
-      res.status(200).json({  ...rest });
+      res.status(200).json({  success: true });
     
   }
 }

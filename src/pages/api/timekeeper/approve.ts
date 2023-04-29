@@ -18,7 +18,6 @@ export default async function handler(
            approvedByTimekeeper: true
         }
     })
-    console.log(timekeeper);
     
     res.status(200).json(timekeeper)
   }

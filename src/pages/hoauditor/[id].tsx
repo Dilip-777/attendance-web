@@ -150,8 +150,6 @@ export default function HoAuditorForm({
           }}
         >
           {({ handleSubmit, errors, values }) => {
-            console.log(errors);
-            console.log(values);
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Stack spacing={0}>

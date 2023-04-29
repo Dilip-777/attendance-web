@@ -85,43 +85,59 @@ export default function FinalSheet({
       `/api/gettimekeeper?contractor=${selectedContractor}&month=${value}&department=${department}`
     );
 
-    if (department === "8HR" || department === "12HR") {
-      const { rows1, totalnetPayable } = getTotalAmountAndRows(
-        res.data,
-        dayjs(value, "MM/YYYY").month() + 1,
-        dayjs(value, "MM/YYYY").year()
-      );
+    console.log(designations.filter((d) => d.departmentname === department));
 
-      setRows(rows1);
-      setTotalPayable(totalnetPayable);
-    } else if (department === "CCM") {
-      const { rows1, totalnetPayable } = getCCM(
-        res.data,
-        dayjs(value, "MM/YYYY").month() + 1,
-        dayjs(value, "MM/YYYY").year()
-      );
+    console.log(department, res.data);
 
-      setRows(rows1);
-      setTotalPayable(totalnetPayable);
-    } else if (department === "LRF") {
-      const { rows1, totalnetPayable } = getLRF(
-        res.data,
-        dayjs(value, "MM/YYYY").month() + 1,
-        dayjs(value, "MM/YYYY").year()
-      );
+    const { rows1, totalnetPayable } = getTotalAmountAndRows(
+      res.data,
+      dayjs(value, "MM/YYYY").month() + 1,
+      dayjs(value, "MM/YYYY").year(),
+      designations.filter((d) => d.departmentname === department),
+      department
+    );
+    setRows(rows1);
+    console.log(rows1);
 
-      setRows(rows1);
-      setTotalPayable(totalnetPayable);
-    } else {
-      const { rows1, totalnetPayable } = getColony(
-        res.data,
-        dayjs(value, "MM/YYYY").month() + 1,
-        dayjs(value, "MM/YYYY").year()
-      );
+    setTotalPayable(totalnetPayable);
+    // if (department === "8HR" || department === "12HR") {
+    //   const { rows1, totalnetPayable } = getTotalAmountAndRows(
+    //     res.data,
+    //     dayjs(value, "MM/YYYY").month() + 1,
+    //     dayjs(value, "MM/YYYY").year(),
+    //     designations
+    //   );
 
-      setRows(rows1);
-      setTotalPayable(totalnetPayable);
-    }
+    //   setRows(rows1);
+    //   setTotalPayable(totalnetPayable);
+    // } else if (department === "CCM") {
+    //   const { rows1, totalnetPayable } = getCCM(
+    //     res.data,
+    //     dayjs(value, "MM/YYYY").month() + 1,
+    //     dayjs(value, "MM/YYYY").year()
+    //   );
+
+    //   setRows(rows1);
+    //   setTotalPayable(totalnetPayable);
+    // } else if (department === "LRF") {
+    //   const { rows1, totalnetPayable } = getLRF(
+    //     res.data,
+    //     dayjs(value, "MM/YYYY").month() + 1,
+    //     dayjs(value, "MM/YYYY").year()
+    //   );
+
+    //   setRows(rows1);
+    //   setTotalPayable(totalnetPayable);
+    // } else {
+    //   const { rows1, totalnetPayable } = getColony(
+    //     res.data,
+    //     dayjs(value, "MM/YYYY").month() + 1,
+    //     dayjs(value, "MM/YYYY").year()
+    //   );
+
+    //   setRows(rows1);
+    //   setTotalPayable(totalnetPayable);
+    // }
     setTimekeepers(res.data);
     setLoading(false);
   };

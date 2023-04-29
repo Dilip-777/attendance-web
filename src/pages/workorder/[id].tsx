@@ -111,7 +111,6 @@ export default function AddWordOrder({
                   ...values,
                 })
                 .then((res) => {
-                  console.log(res);
                   router.push("/workorder");
                 })
                 .catch((err) => {

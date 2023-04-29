@@ -47,7 +47,7 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
       // }
       break;
     case 'PUT':
-      // try {
+      try {
         const { id, designations } = req.body;
         
         const department =  await prisma.department.update({
@@ -58,13 +58,12 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
             designations: designations
           }
         })
-        console.log(department);
         
                 res.status(200).json({ success: true });
-      // }
-      // catch (error) {
-      //   res.status(400).json({ success: false });
-      // }
+      }
+      catch (error) {
+        res.status(400).json({ success: false });
+      }
       break;
       case 'DELETE':
         try {

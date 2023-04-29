@@ -394,8 +394,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  console.log(employeeCountsByDesignation);
-
   // Create a new object that maps the designation to the employee count
   const result: { [key: string]: number | string } = { date: "2", total: 2 };
   employeeCountsByDesignation.forEach((group) => {

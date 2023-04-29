@@ -247,15 +247,6 @@ export default function PlantCommercial({
     fetchTimekeepers();
   }, [value]);
 
-  const date = new Date();
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const formattedDate = formatter.format(date);
-  console.log(formattedDate);
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };

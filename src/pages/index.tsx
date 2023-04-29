@@ -210,11 +210,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </IconButton>
         </Tooltip>
       ) : (
-        // <Tooltip title="Filter list">
-        //   <IconButton>
-        //     <FilterListIcon />
-        //   </IconButton>
-        // </Tooltip>
         <Stack direction="row" spacing={2}>
           <ImportData />
           {value.month() < dayjs().month() &&
@@ -389,14 +384,17 @@ export default function TimeKeeperTable({
       (t) => t.contractorname === contractorName || contractorName === "all"
     );
     if (session?.user?.role === "TimeKeeper") {
-      console.log("there");
       if (timekeeper1.find((t) => !t.approvedByTimekeeper)) {
-        console.log("here");
-
         return timekeeper1.find((t) => t.status === "Pending") ? false : true;
       } else return false;
     } else return false;
   };
+  //  const d = new Date("00:00" * 24 * 60 * 60 * 1000)
+  //   .toLocaleTimeString("en-US", {
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //   })
+  //   ?.toString();
 
   return (
     <Box sx={{ width: "100%" }}>

@@ -310,7 +310,6 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
   const [selectedWorkorder, setSelectedWorkorder] = React.useState<
     string | undefined
   >(undefined);
-  console.log(workorder);
 
   const handleClose = () => {
     setOpen(false);

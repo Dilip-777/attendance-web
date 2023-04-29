@@ -113,7 +113,7 @@ model Contractor {
   contractorname      String
   contractorId       Int    @unique
   servicedetail      String
-  supplierdetail      String
+  supplierdetail      String  
   officeaddress      String?
   contactperson      String
   designation      String?

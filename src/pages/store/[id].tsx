@@ -75,7 +75,6 @@ export default function Edit({
   const router = useRouter();
 
   const { id } = router.query;
-  console.log(contractors);
 
   const initialValues = {
     contractorid: store?.contractorid || "",

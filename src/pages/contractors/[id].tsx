@@ -281,8 +281,6 @@ export default function EditContractor({
           }}
         >
           {({ handleSubmit, errors, values, isSubmitting }) => {
-            console.log(errors);
-            console.log(values);
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Stack spacing={0}>

@@ -159,15 +159,6 @@ export default function PlantCommercial({
     { value: 2023, label: "2023" },
   ];
 
-  const date = new Date();
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const formattedDate = formatter.format(date);
-  console.log(formattedDate);
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };

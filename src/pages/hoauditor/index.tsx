@@ -334,7 +334,6 @@ export default function Employees({
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterName, setFilterName] = React.useState("");
   const router = useRouter();
-  console.log(hocommercial);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -353,8 +352,6 @@ export default function Employees({
     }
     setSelected([]);
   };
-
-  console.log(dayjs("03-01-2023", "MM-DD-YYYY").format("MMMM"));
 
   const handleClick = (
     event: React.MouseEvent<unknown>,

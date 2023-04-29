@@ -1,4 +1,5 @@
-import { TimeKeeper } from "@prisma/client";
+import { Designations, TimeKeeper } from "@prisma/client";
+import _ from "lodash";
 
 interface Column {
   id:
@@ -42,7 +43,7 @@ interface Data {
   total: number;
 }
 
-const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number) => {
+const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number, designations?: Designations[], department?: string) => {
 
   const otrate = timekeeper.length > 0 && timekeeper[0].department === "8HR" ? 8: 12
 
@@ -58,6 +59,117 @@ const getCount = (
       (item) => item.designation === designation && (item.gender === gender || item.gender === extra )
     ).length;
   };
+
+    const rate: Record<string, string | number>  = {
+    date: "Rate",
+}
+
+const  totalovertime1: Record<string, string | number>  = {
+    date: "Total Overtime",
+}
+const attendancecount: Record<string, string | number> = {
+  date: "Attendance Count",
+}
+const totalamount1: Record<string, string | number> = {
+  date: "Total Amount",
+}
+
+const otamount: Record<string, string | number> = {
+  date: "OT Amount",
+}
+
+const totalnetamount : Record<string, string | number> = {
+  date: "Total Net Amount",
+}
+
+const cprate: Record<string, string | number> = {
+  date: "CP",
+}
+
+const cpamount: Record<string, string | number> = {
+  date: "CP Amount",
+}
+
+const total : Record<string, string | number> = {
+  date: "Total"
+}
+
+const gst1 : Record<string, string | number> = {
+  date: "GST"
+}
+
+const billAmount1 : Record<string, string | number> = {
+  date: "Bill Amount"
+}
+
+const tds1 : Record<string, string | number> = {
+  date: "TDS"
+}
+
+const netPayable1 : Record<string, string | number> = {
+  date: "Net Payable"
+}
+
+const rows2: any[] = []
+
+if(designations) {
+
+  
+  designations.forEach((designation) => {
+    const filtered = timekeeper.filter((item) => {
+      if(designation.gender === "Male" || designation.gender === "M") {
+            return item.designation === designation.designation && item.gender && item.gender[0] === designation.gender[0]
+        }
+        else if(designation.gender === "Female" || designation.gender === "F") {
+          return item.designation === designation.designation && item.gender && item.gender[0] === designation.gender[0]
+        }
+        else {
+          console.log("called", item.designation, designation.designation);
+          
+          return item.designation === designation.designation
+        }
+      })
+      console.log(filtered,designation.designation);
+      
+    const id = designation.designationid
+    attendancecount[id] = filtered.length
+    rate[id] = designation.basicsalary
+    totalamount1[id] = _.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0))
+    totalovertime1[id] = filtered.reduce((acc, curr) => acc + parseInt(curr.manualovertime || curr.overtime), 0);
+    const otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day)
+    otamount[id] = Number(_.get(totalovertime1, id, 0)) * otRate
+    totalnetamount[id] = Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0))
+    cprate[id] = designation.servicecharge as number
+    cpamount[id] = Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0))
+    total[id] = Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
+    gst1[id] = Math.floor(_.get(total, id, 0) as number * 0.18)
+    billAmount1[id] = Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
+    tds1[id] = Math.floor(_.get(total, id, 0) as number * 0.01)
+    netPayable1[id] = Number(_.get(billAmount1, id, 0)) + Number(_.get(tds1, id, 0))
+ })
+}
+
+
+rows2.push(attendancecount)
+rows2.push(rate)
+
+rows2.push(totalamount1)
+rows2.push(totalovertime1)
+rows2.push(otamount)
+rows2.push(totalnetamount)
+if(department === "8HR" || department === "12HR" || department === "Colony") {
+  rows2.push(cprate)
+  rows2.push(cpamount)
+  rows2.push(total)
+} 
+rows2.push(gst1)
+rows2.push(billAmount1)
+rows2.push(tds1)
+rows2.push(netPayable1)
+
+
+
+  
 
   const getData = (date: string): Data => {
     const filtered = timekeeper.filter((item) => item.attendancedate === date);
@@ -302,6 +414,8 @@ const getCount = (
     };
   };
 
+
+
    const getTaxable = (totalAmount: Data, cpAmount: Data) => {
        const taxable:  Data = {
 
@@ -494,9 +608,11 @@ const getCount = (
 
     const taxable = getTaxable(totalAmount, cpAmount);
     rows1.push(taxable);
+  
    
     const gst = getGst(taxable);
     rows1.push(gst);
+   
      
     const billAmount = getBillAmount(taxable, gst);
     rows1.push(billAmount);
@@ -512,7 +628,7 @@ const getCount = (
 
     
 
-    return { rows, totalAmount, totalOtAmount, totalAttendance, Amount, total1: totalAmount.total + cpAmount.total, rows1, totalnetPayable: netPayable.total};
+    return { rows, totalAmount, totalOtAmount, totalAttendance, Amount, total1: totalAmount.total + cpAmount.total, rows1: rows2, totalnetPayable: netPayable.total};
 
 
 

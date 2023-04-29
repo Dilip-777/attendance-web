@@ -107,8 +107,6 @@ export default function EditTimkeeper({
     fetchTimeKeeper();
   }, [id]);
 
-  console.log(timekeeper);
-
   const initialValues = {
     contractorId: timekeeper?.contractorid || "",
     contractorName: timekeeper?.contractorname || "John Doe",

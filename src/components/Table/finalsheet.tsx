@@ -25,8 +25,6 @@ export default function FinalSheetta({
     else return { main: d.designation, id: d.designationid };
   });
 
-  console.log(s8hr);
-
   const sidebar = designations
     .filter((d) => d.departmentname === department)
     .map((d) => {
