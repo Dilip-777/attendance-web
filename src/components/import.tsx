@@ -127,17 +127,16 @@ function ImportData() {
       };
     });
     setLoading(true);
-    // const res = await axios
-    //   .post("/api/importdata?type=timekeeper", body)
-    //   .then((res) => {
-    //     setError(false);
-    //     handleClick();
-    //   })
-    //   .catch((err) => {
-    //     setError(true);
-    //     handleClick();
-    //   });
-    console.log(body);
+    const res = await axios
+      .post("/api/importdata?type=timekeeper", body)
+      .then((res) => {
+        setError(false);
+        handleClick();
+      })
+      .catch((err) => {
+        setError(true);
+        handleClick();
+      });
 
     setLoading(false);
   };
