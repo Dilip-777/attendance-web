@@ -36,7 +36,7 @@ import prisma from "@/lib/prisma";
 import { Workorder } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
-import { Close } from "@mui/icons-material";
+import Close from "@mui/icons-material/Close";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
