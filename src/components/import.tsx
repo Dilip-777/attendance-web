@@ -16,6 +16,7 @@ function ImportData() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [key, setKey] = useState(0);
 
   // submit
   const [excelData, setExcelData] = useState(null);
@@ -25,6 +26,9 @@ function ImportData() {
   const fileType = ["application/vnd.xlsx", "application/vnd.ms-excel"];
   const handleFile = (e: any) => {
     let selectedFile = e.target.files[0];
+    console.log(selectedFile);
+    console.log(e.target.files);
+
     if (selectedFile) {
       let reader = new FileReader();
       reader.readAsArrayBuffer(selectedFile);
@@ -39,6 +43,7 @@ function ImportData() {
         console.log(data);
         importing(data);
       };
+      setKey(key + 1);
       //   } else {
       //     setExcelFileError("Please select only excel file types");
       //     setExcelFile(null);
@@ -146,6 +151,7 @@ function ImportData() {
       .then((res) => {
         setError(false);
         handleClick();
+        // set
       })
       .catch((err) => {
         setError(true);
@@ -165,6 +171,7 @@ function ImportData() {
           <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
         )}
         <input
+          key={key}
           hidden
           type="file"
           className="form-control"
