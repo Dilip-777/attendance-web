@@ -5,74 +5,24 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import Box from "@mui/material/Box";
+import FormControl from "@mui/material/FormControl";
+import Grid from "@mui/material/Grid";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, TimeKeeper } from "@prisma/client";
-import {
-  Box,
-  FormControl,
-  FormLabel,
-  Grid,
-  MenuItem,
-  Select,
-  Stack,
-} from "@mui/material";
-import getColony from "@/utils/getColony";
+import { Contractor, Designations } from "@prisma/client";
+import getTotalAmountAndRows from "@/utils/get8hr";
+import MonthSelect from "@/ui-component/MonthSelect";
 import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
-import MonthSelect from "@/ui-component/MonthSelect";
-interface Column {
-  id: "date" | "m" | "f" | "total";
-  label: string;
-  border?: boolean;
-  minWidth?: number;
-  align?: "right" | "center" | "left";
-  format?: (value: number) => string;
-}
-
-const columns: Column[] = [
-  {
-    id: "date",
-    label: "",
-    minWidth: 120,
-    border: true,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "m",
-    label: "M",
-    minWidth: 80,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "f",
-    label: "F",
-    minWidth: 80,
-    border: true,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-  {
-    id: "total",
-    label: "",
-    minWidth: 80,
-    align: "center",
-    format: (value: number) => value.toString(),
-  },
-];
-
-interface Data {
-  date: string;
-  m: number;
-  f: number;
-  total: number;
-}
+import _ from "lodash";
+import { useRouter } from "next/router";
 
 export const FormSelect = ({
   value,
@@ -84,7 +34,7 @@ export const FormSelect = ({
   options: { value: number | string; label: string }[];
 }) => {
   return (
-    <FormControl fullWidth variant="outlined" size="small">
+    <FormControl fullWidth variant="outlined">
       <Select
         value={value}
         onChange={(e) => setValue(e.target.value as number)}
@@ -103,29 +53,49 @@ export const FormSelect = ({
 
 export default function PlantCommercial({
   contractor,
+  designations,
 }: {
   contractor: Contractor;
+  designations: Designations[];
 }) {
   const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [month, setMonth] = React.useState<number>(new Date().getMonth() + 1);
-  const [year, setYear] = React.useState<number>(new Date().getFullYear());
   const [loading, setLoading] = React.useState(false);
-  const [rows, setRows] = React.useState([] as Data[]);
+  const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
   const [total, setTotal] = React.useState(0);
 
-  const sgst = Math.round(total * 0.09);
+  const router = useRouter();
+  const { department } = router.query;
+
+  const sgst = Math.floor(total * 0.09);
+
+  const columns = [{ id: "date", label: "Date", minWidth: 80 }];
+
+  const extra = designations.map((designation) => {
+    const label = designation.gender === "Male" ? "M" : "F";
+    return {
+      id: designation.designationid,
+      label,
+      minWidth: 50,
+    };
+  });
+
+  columns.push(...extra);
+
+  console.log(rows);
+
+  columns.push({ id: "total", label: "Total", minWidth: 60 });
 
   const fetchTimekeepers = async () => {
     setLoading(true);
     const res = await axios.get(
-      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}&department=Colony`
+      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}&department=${department}`
     );
-    const { rows, total1 } = getColony(
+    const { rows, total1 } = getTotalAmountAndRows(
       res.data,
       dayjs(value, "MM/YYYY").month() + 1,
-      dayjs(value, "MM/YYYY").year()
+      dayjs(value, "MM/YYYY").year(),
+      designations,
+      department as string
     );
     setRows(rows);
     setTotal(total1);
@@ -135,40 +105,6 @@ export default function PlantCommercial({
   React.useEffect(() => {
     fetchTimekeepers();
   }, [value]);
-
-  const months = [
-    { value: 1, label: "January" },
-    { value: 2, label: "February" },
-    { value: 3, label: "March" },
-    { value: 4, label: "April" },
-    { value: 5, label: "May" },
-    { value: 6, label: "June" },
-    { value: 7, label: "July" },
-    { value: 8, label: "August" },
-    { value: 9, label: "September" },
-    { value: 10, label: "October" },
-    { value: 11, label: "November" },
-    { value: 12, label: "December" },
-  ];
-
-  const years = [
-    { value: 2019, label: "2019" },
-    { value: 2020, label: "2020" },
-    { value: 2021, label: "2021" },
-    { value: 2022, label: "2022" },
-    { value: 2023, label: "2023" },
-  ];
-
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
 
   const onChange = (value: Dayjs | null) =>
     setValue(value?.format("MM/YYYY") || "");
@@ -186,9 +122,14 @@ export default function PlantCommercial({
       >
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <MonthSelect value={dayjs(value, "MM/YYYY")} onChange={onChange} />
+            <MonthSelect
+              // label="Select Date"
+              value={dayjs(value, "MM/YYYY")}
+              onChange={onChange}
+            />
           </Grid>
         </Grid>
+
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="h4" sx={{ width: "20rem" }}>
             Contractor Name :{" "}
@@ -197,10 +138,11 @@ export default function PlantCommercial({
             </span>
           </Typography>
           <Typography variant="h4" sx={{ width: "20rem" }}>
-            Department : <span style={{ fontWeight: "500" }}>Colony</span>
+            Department : <span style={{ fontWeight: "500" }}>{department}</span>
           </Typography>
         </Stack>
       </Box>
+
       <TableContainer
         sx={{
           maxHeight: 500,
@@ -216,7 +158,7 @@ export default function PlantCommercial({
         }}
       >
         <Table stickyHeader aria-label="sticky table">
-          <TableHead sx={{ width: "100%" }}>
+          <TableHead>
             <TableRow sx={{ bgcolor: "#e0e0e0" }}>
               <TableCell
                 align="center"
@@ -225,14 +167,16 @@ export default function PlantCommercial({
               >
                 Date
               </TableCell>
-
-              <TableCell
-                align="center"
-                sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
-                colSpan={2}
-              >
-                Colony
-              </TableCell>
+              {designations.map((designation) => (
+                <TableCell
+                  key={designation.id}
+                  align="center"
+                  sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                  colSpan={1}
+                >
+                  {designation.designation}
+                </TableCell>
+              ))}
               <TableCell
                 align="center"
                 sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
@@ -241,68 +185,72 @@ export default function PlantCommercial({
                 TOTAL
               </TableCell>
             </TableRow>
-            <TableRow>
-              {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align={column.align}
-                  style={{ top: 57, minWidth: column.minWidth }}
-                >
-                  {column.label}
-                </TableCell>
+            {department === "8HR" ||
+              department === "12HR" ||
+              (department === "Colony" && (
+                <TableRow>
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column.id}
+                      align={"center"}
+                      style={{
+                        top: 57,
+                        minWidth: column.minWidth,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {column.label}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
           </TableHead>
           <TableBody>
             {!loading ? (
-              rows
-                // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  return (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={row.f}>
-                      {columns.map((column) => {
-                        const value = row[column.id];
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            {column.format && typeof value === "number"
-                              ? column.format(value)
-                              : value}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })
+              rows.map((row, index) => {
+                return (
+                  <TableRow hover role="checkbox" tabIndex={-1} key={row.f8mw}>
+                    {columns.map((column) => {
+                      const value = _.get(row, column.id, "-");
+                      return (
+                        <TableCell key={column.id} align={"center"}>
+                          {value}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell>Loading...</TableCell>
               </TableRow>
             )}
             <TableRow>
-              <TableCell rowSpan={5} />
-              <TableCell colSpan={1}></TableCell>
-              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+              {/* <TableCell rowSpan={10} /> */}
+              <TableCell colSpan={designations.length - 2}></TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
                 Total
               </TableCell>
               <TableCell align="center">{total}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={0}></TableCell>
-              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+              <TableCell colSpan={designations.length - 2}></TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
                 SGST 9%
               </TableCell>
               <TableCell align="center">{sgst}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={0}></TableCell>
-              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+              <TableCell colSpan={designations.length - 2}></TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
                 CGST 9%
               </TableCell>
               <TableCell align="center">{sgst}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={0}></TableCell>
-              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+              <TableCell colSpan={designations.length - 2}></TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
                 Service Charge
               </TableCell>
               <TableCell align="center">
@@ -310,8 +258,8 @@ export default function PlantCommercial({
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={0}></TableCell>
-              <TableCell colSpan={1} sx={{ fontWeight: "600" }}>
+              <TableCell colSpan={designations.length - 2}></TableCell>
+              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
                 Total Net Amount
               </TableCell>
               <TableCell align="center">
@@ -337,7 +285,7 @@ export default function PlantCommercial({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  const { id } = context.query;
+  const { contractorid, department } = context.query;
 
   if (!session) {
     return {
@@ -363,12 +311,29 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
   const contractor = await prisma.contractor.findUnique({
     where: {
-      id: id as string,
+      id: contractorid as string,
     },
   });
+
+  const designations = await prisma.designations.findMany({
+    where: {
+      departmentname: department as string,
+    },
+  });
+
+  if (!contractor || !department) {
+    return {
+      redirect: {
+        destination: "/admin",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
       contractor,
+      designations,
     },
   };
 };

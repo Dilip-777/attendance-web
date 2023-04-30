@@ -4,7 +4,7 @@ interface props {
   value: string | number;
   handleChange: (value: string | number) => void;
   options: { value: string | number; label: string }[];
-  label: string;
+  label?: string;
 }
 
 export default function FormSelect({
@@ -15,7 +15,7 @@ export default function FormSelect({
 }: props) {
   return (
     <FormControl sx={{ minWidth: "15rem" }}>
-      <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>
+      {label && <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>}
       <Select value={value} onChange={(e) => handleChange(e.target.value)}>
         {options.map((option) => (
           <MenuItem key={option.value} value={option.value}>

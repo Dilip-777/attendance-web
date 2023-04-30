@@ -316,15 +316,6 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
     setSelectedWorkorder(undefined);
   };
 
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data1
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       const newSelected = workorder.map((n) => n.contractorName);
@@ -368,10 +359,6 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
   const isSelected = (contractorName: string) =>
     selected.indexOf(contractorName) !== -1;
 
@@ -403,9 +390,11 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
         />
         <TableContainer
           sx={{
+            maxHeight: 440,
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,
+              width: 9,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",

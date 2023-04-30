@@ -27,14 +27,14 @@ const Upload = () => {
 
     const result = await response.json();
     console.log(result); // Handle the uploaded file here
-    const url = result.url;
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "finalsheet.docx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // const url = result.url;
+    // const link = document.createElement("a");
+    // link.href = url;
+    // link.download = "finalsheet.docx";
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+    // URL.revokeObjectURL(url);
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {

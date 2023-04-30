@@ -123,7 +123,16 @@ function ImportData() {
         attendance: data.attendence?.toString(),
         attendancedate: getDate(data.entry_date)?.toString(),
         overtime: data.overtime?.toString(),
-        machineduration: data.machine_duration?.toString(),
+        machineduration: data.machine_duration
+          ? data.machine_duration === 0
+            ? "00:00"
+            : new Date(data.machine_duration * 24 * 60 * 60 * 1000)
+                .toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+                ?.toString()
+          : "-",
         eleave: data.e_leave || "0",
         gender: data.gender || "M",
       };

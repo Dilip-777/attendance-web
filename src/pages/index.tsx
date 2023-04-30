@@ -34,12 +34,12 @@ import axios from "axios";
 import { getSession, useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
-import { FormSelect } from "./pc8hr/[id]";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import ImportData from "@/components/import";
+import FormSelect from "@/ui-component/FormSelect";
 
 const style = {
   position: "absolute",
@@ -189,7 +189,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 ...contractors,
               ]}
               value={contractorName}
-              setValue={setContractorName}
+              handleChange={(e) => setContractorName(e as string)}
             />
           </Box>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

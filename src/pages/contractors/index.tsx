@@ -90,6 +90,14 @@ export default function Contractors({
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
 
+  // React.useEffect(() => {
+  //   const user = session?.user;
+  //   if(user) {
+  //     user.role = "TimeKeeper";
+  //     session.user = user;
+  //     await session.s
+  //   }
+  // })
   const options = departments.map((d) => ({
     link: `pc${d.department.toLowerCase()}`,
     label: d.department,
@@ -265,14 +273,18 @@ export default function Contractors({
                   onChange={(e) => setValue(e.target.value)}
                 >
                   {options?.map((option) => (
-                    <MenuItem value={option.link}>{option.label}</MenuItem>
+                    <MenuItem value={option.label}>{option.label}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
               <Button
                 variant="contained"
                 disabled={Boolean(!value)}
-                onClick={() => router.push(`/${value}/${contractorId}`)}
+                onClick={() =>
+                  router.push(
+                    `plantcommercial?department=${value}&contractorid=${contractorId}`
+                  )
+                }
               >
                 View Attendance
               </Button>
