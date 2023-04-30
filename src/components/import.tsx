@@ -99,24 +99,26 @@ function ImportData() {
         employeename: data.employee_name,
         designation: data.designation,
         department: data.department,
-        machineInTime:
-          data.machine_intime === 0
+        machineInTime: data.machine_intime
+          ? data.machine_intime === 0
             ? "00:00"
             : new Date(data.machine_intime * 24 * 60 * 60 * 1000)
                 .toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })
-                ?.toString() || "",
-        machineOutTime:
-          data.machine_outtime === 0
+                ?.toString()
+          : "Invalid Entry Time",
+        machineOutTime: data.machine_outtime
+          ? data.machine_outtime === 0
             ? "00:00"
             : new Date(data.machine_outtime * 24 * 60 * 60 * 1000)
                 .toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })
-                ?.toString() || "",
+                ?.toString()
+          : "Invalid Entry Time",
         machineshift: data.shift || "day",
         attendance: data.attendence?.toString(),
         attendancedate: getDate(data.entry_date)?.toString(),

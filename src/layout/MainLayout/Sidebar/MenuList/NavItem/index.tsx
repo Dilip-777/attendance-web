@@ -55,27 +55,6 @@ const NavItem = ({ item, level }: { item: any; level: any }) => {
     itemTarget = "_blank";
   }
 
-  // if (item?.external) {
-  //     listItemProps = { component: 'a', href: item.url, target: itemTarget };
-  // }
-
-  const itemHandler = (id: any) => {
-    dispatch({ type: MENU_OPEN, id });
-    if (matchesSM) dispatch({ type: SET_MENU, opened: false });
-  };
-
-  // active menu item on page load
-  useEffect(() => {
-    const currentIndex = document.location.pathname
-      .toString()
-      .split("/")
-      .findIndex((id) => id === item.id);
-    if (currentIndex > -1) {
-      dispatch({ type: MENU_OPEN, id: item.id });
-    }
-    // eslint-disable-next-line
-  }, []);
-
   return (
     <ListItemButton
       disabled={item.disabled}

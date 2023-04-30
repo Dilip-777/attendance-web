@@ -434,9 +434,11 @@ export default function TimeKeeperTable({
 
           <TableContainer
             sx={{
+              maxHeight: 470,
               scrollBehavior: "smooth",
               "&::-webkit-scrollbar": {
                 height: 10,
+                width: 10,
               },
               "&::-webkit-scrollbar-thumb": {
                 backgroundColor: "#bdbdbd",
@@ -445,6 +447,7 @@ export default function TimeKeeperTable({
             }}
           >
             <Table
+              stickyHeader
               sx={{ minWidth: 750 }}
               aria-labelledby="tableTitle"
               size="medium"

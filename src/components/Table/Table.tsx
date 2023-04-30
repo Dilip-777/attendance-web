@@ -109,9 +109,11 @@ const CustomTable = (props: Props) => {
         />
         <TableContainer
           sx={{
+            maxHeight: 450,
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,
+              width: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",
@@ -120,6 +122,7 @@ const CustomTable = (props: Props) => {
           }}
         >
           <Table
+            stickyHeader
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
             size="medium"
