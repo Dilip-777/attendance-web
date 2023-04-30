@@ -31,6 +31,9 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
             data: data,
             skipDuplicates: true
         })
+        // const timeKeeper = await prisma.timeKeeper.create({
+        //    data: data[0]
+        // })
         
         res.status(200).json({ success: true })
     }

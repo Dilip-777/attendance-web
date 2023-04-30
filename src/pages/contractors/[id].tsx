@@ -27,17 +27,16 @@ import prisma from "@/lib/prisma";
 import { Contractor } from "@prisma/client";
 import { CircularProgress } from "@mui/material";
 import FormDate from "@/components/FormikComponents/FormDate";
+import dayjs from "dayjs";
 // import { Contractor } from "@prisma/client"
 
 const fileType = Yup.object().required("Required").optional();
 
 const stringtype = Yup.string().required("Required").optional();
 
-const numberType = Yup.number()
-  .required("Required")
-  .transform((value, originalValue) => {
-    return originalValue !== "" ? null : value;
-  });
+const numberType = Yup.number().transform((value, originalValue) => {
+  return originalValue !== "" ? null : value;
+});
 
 const validationSchema = Yup.object().shape({
   contractorname: Yup.string().required("Required"),
@@ -385,6 +384,7 @@ export default function EditContractor({
                         label="Expiration Date*"
                         placeHolder="Enter Expiration Date"
                         disabled={false}
+                        minDate={dayjs()}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>

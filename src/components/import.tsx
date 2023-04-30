@@ -120,9 +120,9 @@ function ImportData() {
                 ?.toString()
           : "Invalid Entry Time",
         machineshift: data.shift || "day",
-        attendance: data.attendence?.toString(),
+        attendance: data.attendence?.toString() || "0",
         attendancedate: getDate(data.entry_date)?.toString(),
-        overtime: data.overtime?.toString(),
+        overtime: data.overtime?.toString() || "0",
         machineduration: data.machine_duration
           ? data.machine_duration === 0
             ? "00:00"
@@ -130,6 +130,9 @@ function ImportData() {
                 .toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  second: "2-digit",
+                  hour12: false,
+                  timeZone: "UTC", // or specify the time zone you want to display
                 })
                 ?.toString()
           : "-",

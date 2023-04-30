@@ -225,10 +225,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function TimeKeeperTable({
-  contractors,
-}: {
-  contractors: Contractor[];
+export default function TimeKeeperTable({}: // contractors,
+{
+  // contractors: Contractor[];
 }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof TimeKeeper>("employeeid");
@@ -241,6 +240,7 @@ export default function TimeKeeperTable({
   const [open, setOpen] = React.useState(false);
   const [open1, setOpen1] = React.useState(false);
   const [selected1, setSelected1] = React.useState<Comment[] | Upload[]>();
+  const [contractors, setContractors] = React.useState<Contractor[]>([]);
   const matches = useMediaQuery("(min-width:600px)");
   const [contractorName, setContractorName] = React.useState("all");
   const [value, setValue] = React.useState<Dayjs>(dayjs());
@@ -303,6 +303,18 @@ export default function TimeKeeperTable({
       });
   };
 
+  const fetchContrators = async () => {
+    await axios
+      .get("/api/hr/contractors")
+      .then((res) => {
+        const contractors = res.data;
+        setContractors(contractors);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const fetchTimeKeeper = async () => {
     if (timekeeper.length === 0) {
       setLoading(true);
@@ -328,6 +340,10 @@ export default function TimeKeeperTable({
   React.useEffect(() => {
     fetchTimeKeeper();
   }, [value, session]);
+
+  React.useEffect(() => {
+    fetchContrators();
+  }, []);
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -364,6 +380,18 @@ export default function TimeKeeperTable({
 
     setSelected(newSelected);
   };
+
+  const decimalTime = 0.5416666666666666;
+  const milliseconds = decimalTime * 24 * 60 * 60 * 1000;
+  const time = new Date(milliseconds).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: "UTC", // or specify the time zone you want to display
+  });
+
+  console.log(time); // Output: "13:00:00"
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -805,11 +833,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const contractors = await prisma.contractor.findMany();
   return {
-    props: {
-      contractors,
-    },
+    props: {},
   };
 };
 
