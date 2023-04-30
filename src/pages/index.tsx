@@ -40,14 +40,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import ImportData from "@/components/import";
 import FormSelect from "@/ui-component/FormSelect";
-
-const style = {
-  position: "absolute",
-  overflowY: "auto",
-  borderRadius: "15px",
-  bgcolor: "background.paper",
-  boxShadow: 24,
-};
+import CustomModal from "@/components/Timekeeper/ViewCommentsDocuments";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -260,18 +253,18 @@ export default function TimeKeeperTable({}: // contractors,
   };
 
   const handleOpen1 = async (id: string) => {
-    setLoading(true);
+    // setLoading(true);
     const comment = await axios.get(`/api/comment/${id}`);
-    setSelected1(comment.data);
-    setLoading(false);
     setOpen1(true);
+    setSelected1(comment.data);
+    // setLoading(false);
   };
 
   const handleOpen = async (id: string) => {
-    setLoading(true);
+    // setLoading(true);
     const upload = await axios.get(`/api/document/${id}`);
     setSelected1(upload.data);
-    setLoading(false);
+    // setLoading(false);
     setOpen(true);
   };
 
@@ -656,132 +649,15 @@ export default function TimeKeeperTable({}: // contractors,
           />
         </Paper>
       )}
-      <Modal
-        aria-labelledby="transition-modal-title"
-        aria-describedby="transition-modal-description"
-        open={open || open1}
-        onClose={handleClose}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-        sx={{ display: "flex", justifyContent: " flex-end" }}
-      >
-        <Slide
-          direction={matches ? "left" : "up"}
-          timeout={500}
-          in={open || open1}
-          mountOnEnter
-          unmountOnExit
-        >
-          <Box
-            p={{ xs: 0, sm: 2 }}
-            width={{ xs: "100%", sm: 400, md: 500 }}
-            height={{ xs: "70%", sm: "100%" }}
-            top={{ xs: "30%", sm: "0" }}
-            sx={style}
-          >
-            <Stack sx={{ overflowY: "auto" }} p={3}>
-              <Typography sx={{ fontSize: "1.2rem", fontWeight: "700" }}>
-                <IconButton
-                  onClick={handleClose}
-                  sx={{
-                    // zIndex: 2,
-                    padding: "5px",
-
-                    marginRight: "1rem",
-                    background: "white",
-                    ":hover": { background: "white" },
-                  }}
-                >
-                  <NavigateBefore fontSize="large" />
-                </IconButton>
-                {open ? "Documents" : "Comments"}
-              </Typography>
-              <Divider />
-              {selected1 && selected1?.length > 0 ? (
-                open ? (
-                  <Documents documents={selected1 as Upload[]} />
-                ) : (
-                  <Comments comments={selected1 as Comment[]} />
-                )
-              ) : (
-                <Typography sx={{ fontSize: "1.2rem", fontWeight: "700" }}>
-                  {open ? "No Documents" : "No Comments"}
-                </Typography>
-              )}
-            </Stack>
-          </Box>
-        </Slide>
-      </Modal>
+      <CustomModal
+        open={open}
+        open1={open1}
+        handleClose={handleClose}
+        selected1={selected1}
+      />
     </Box>
   );
 }
-
-const Documents = ({ documents }: { documents: Upload[] }) => {
-  const router = useRouter();
-  return (
-    <Stack spacing={2} alignItems="flex-start" mt={2}>
-      {documents.map((document) => (
-        <Stack
-          key={document.id}
-          width="100%"
-          sx={{ border: "2px solid #E3E8EF", borderRadius: "10px" }}
-          alignItems="flex-start"
-          spacing={1}
-          p={2}
-        >
-          <Stack spacing={0.5}>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, fontSize: "1.1rem" }}
-            >
-              {document.userName}
-            </Typography>
-            <Typography variant="subtitle2">{document.role}</Typography>
-          </Stack>
-
-          <Typography
-            sx={{ cursor: "pointer" }}
-            onClick={() => router.push(`/uploadedFiles/${document.document}`)}
-          >
-            Click to View to the Document
-          </Typography>
-        </Stack>
-      ))}
-    </Stack>
-  );
-};
-
-const Comments = ({ comments }: { comments: Comment[] }) => {
-  return (
-    <Stack spacing={2} alignItems="flex-start" mt={2}>
-      {comments.map((comment) => (
-        <Stack
-          key={comment.id}
-          width="100%"
-          sx={{ border: "2px solid #E3E8EF", borderRadius: "10px" }}
-          alignItems="flex-start"
-          spacing={1}
-          p={2}
-        >
-          <Stack spacing={0.5}>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, fontSize: "1.1rem" }}
-            >
-              {comment.userName}
-            </Typography>
-            <Typography variant="subtitle2">{comment.role}</Typography>
-          </Stack>
-          <Divider />
-          <Typography>{comment.comment}</Typography>
-        </Stack>
-      ))}
-    </Stack>
-  );
-};
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });

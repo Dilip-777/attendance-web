@@ -2,68 +2,53 @@ import PropTypes from "prop-types";
 import { Dispatch, SetStateAction, useState } from "react";
 
 // material-ui
-import { useTheme, styled } from "@mui/material/styles";
+import { useTheme, styled } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import ButtonBase from "@mui/material/ButtonBase";
-import Card from "@mui/material/Card";
-import Grid from "@mui/material/Grid";
 import InputAdornment from "@mui/material/InputAdornment";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import Popper from "@mui/material/Popper";
 import Typography from "@mui/material/Typography";
 
-// third-party
-import PopupState, { bindPopper, bindToggle } from "material-ui-popup-state";
-
-import { shouldForwardProp } from "@mui/system";
+// import { shouldForwardProp } from "@mui/system";
 import Search from "@mui/icons-material/Search";
 import Tune from "@mui/icons-material/Tune";
 
-// styles
-const PopperStyle = styled(Popper, { shouldForwardProp })(({ theme }) => ({
-  zIndex: 1100,
-  width: "99%",
-  top: "-55px !important",
-  padding: "0 12px",
-  [theme.breakpoints.down("sm")]: {
-    padding: "0 10px",
+const OutlineInputStyle = styled(
+  OutlinedInput,
+  {}
+)(({ theme }) => ({
+  width: 434,
+  marginLeft: 16,
+  paddingLeft: 16,
+  paddingRight: 16,
+  "& input": {
+    background: "transparent !important",
+    paddingLeft: "4px !important",
+  },
+  [theme.breakpoints.down("lg")]: {
+    width: 250,
+  },
+  [theme.breakpoints.down("md")]: {
+    width: "100%",
+    marginLeft: 4,
+    background: "#fff",
   },
 }));
 
-const OutlineInputStyle = styled(OutlinedInput, { shouldForwardProp })(
-  ({ theme }) => ({
-    width: 434,
-    marginLeft: 16,
-    paddingLeft: 16,
-    paddingRight: 16,
-    "& input": {
-      background: "transparent !important",
-      paddingLeft: "4px !important",
-    },
-    [theme.breakpoints.down("lg")]: {
-      width: 250,
-    },
-    [theme.breakpoints.down("md")]: {
-      width: "100%",
-      marginLeft: 4,
-      background: "#fff",
-    },
-  })
-);
-
-const HeaderAvatarStyle = styled(Avatar, { shouldForwardProp })(
-  ({ theme }) => ({
-    ...theme.typography.commonAvatar,
-    ...theme.typography.mediumAvatar,
-    background: theme.palette.secondary.light,
-    color: theme.palette.secondary.dark,
-    "&:hover": {
-      background: theme.palette.secondary.dark,
-      color: theme.palette.secondary.light,
-    },
-  })
-);
+const HeaderAvatarStyle = styled(
+  Avatar,
+  {}
+)(({ theme }) => ({
+  ...theme.typography.commonAvatar,
+  ...theme.typography.mediumAvatar,
+  background: theme.palette.secondary.light,
+  color: theme.palette.secondary.dark,
+  "&:hover": {
+    background: theme.palette.secondary.dark,
+    color: theme.palette.secondary.light,
+  },
+}));
 
 // ==============================|| SEARCH INPUT - MOBILE||============================== //
 
@@ -117,7 +102,6 @@ const MobileSearch = ({
                     color: theme.palette.orange.light,
                   },
                 }}
-                {...bindToggle(popupState)}
               >
                 {/* <IconX stroke={1.5} size="1.3rem" /> */}
                 <Typography fontSize="1.2rem" fontWeight="500">
@@ -134,12 +118,6 @@ const MobileSearch = ({
   );
 };
 
-MobileSearch.propTypes = {
-  value: PropTypes.string,
-  setValue: PropTypes.func,
-  popupState: PopupState,
-};
-
 // ==============================|| SEARCH INPUT ||============================== //
 
 const SearchSection = () => {
@@ -149,7 +127,7 @@ const SearchSection = () => {
   return (
     <>
       <Box sx={{ display: { xs: "block", md: "none" } }}>
-        <PopupState variant="popper" popupId="demo-popup-popper">
+        {/* <PopupState variant="popper" popupId="demo-popup-popper">
           {(popupState) => (
             <>
               <Box sx={{ ml: 2 }}>
@@ -158,7 +136,6 @@ const SearchSection = () => {
                     variant="rounded"
                     {...bindToggle(popupState)}
                   >
-                    {/* <IconSearch stroke={1.5} size="1.2rem" /> */}
                     <Search sx={{ fontSize: "1.2rem" }} />
                   </HeaderAvatarStyle>
                 </ButtonBase>
@@ -196,7 +173,7 @@ const SearchSection = () => {
               </PopperStyle>
             </>
           )}
-        </PopupState>
+        </PopupState> */}
       </Box>
       <Box sx={{ display: { xs: "none", md: "block" } }}>
         <OutlineInputStyle

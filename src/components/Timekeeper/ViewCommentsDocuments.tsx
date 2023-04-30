@@ -12,10 +12,16 @@ import {
 } from "@mui/material";
 import { Comment, Upload } from "@prisma/client";
 
-import { matches } from "lodash";
-import style from "styled-jsx/style";
 import Documents from "./Document";
 import Comments from "./Comment";
+
+const style = {
+  position: "absolute",
+  overflowY: "auto",
+  borderRadius: "15px",
+  bgcolor: "background.paper",
+  boxShadow: 24,
+};
 
 export default function CustomModal({
   open,

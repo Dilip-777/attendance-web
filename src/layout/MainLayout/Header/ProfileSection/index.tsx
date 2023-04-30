@@ -34,8 +34,6 @@ const ProfileSection = () => {
   const customization = useSelector((state: any) => state.customization);
   const router = useRouter();
   const { data: session } = useSession();
-
-  const [sdm, setSdm] = useState(true);
   const [value, setValue] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);

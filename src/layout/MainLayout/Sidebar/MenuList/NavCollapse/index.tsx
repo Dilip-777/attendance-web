@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 // material-ui
-import { useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material";
 import {
   Collapse,
   List,

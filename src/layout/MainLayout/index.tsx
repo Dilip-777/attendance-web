@@ -1,8 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet } from "react-router-dom";
 
 // material-ui
-import { styled, useTheme } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material";
 import {
   AppBar,
   Box,

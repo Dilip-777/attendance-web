@@ -1,8 +1,7 @@
 import PropTypes from "prop-types";
-import { useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import ButtonBase from "@mui/material/ButtonBase";
 import LogoSection from "../LogoSection";
 import SearchSection from "./SearchSection";
 import ProfileSection from "./ProfileSection";

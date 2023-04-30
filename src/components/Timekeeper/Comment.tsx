@@ -1,7 +1,7 @@
 import { Stack, Typography, Divider } from "@mui/material";
 import { Comment } from "@prisma/client";
 
-export default function Comments({ comments }: { comments: Comment[] }) {
+const Comments = ({ comments }: { comments: Comment[] }) => {
   return (
     <Stack spacing={2} alignItems="flex-start" mt={2}>
       {comments.map((comment) => (
@@ -28,4 +28,6 @@ export default function Comments({ comments }: { comments: Comment[] }) {
       ))}
     </Stack>
   );
-}
+};
+
+export default Comments;

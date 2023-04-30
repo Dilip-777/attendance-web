@@ -14,6 +14,9 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
             data: data,
             skipDuplicates: true
        }) 
+    // const employee = await prisma.employee.create({
+    //     data: data[0]
+    // })
        res.status(200).json({ success: true })
     }
 

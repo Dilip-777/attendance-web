@@ -3,9 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 // material-ui
 import { Box, ButtonBase, Typography } from "@mui/material";
 
-// project imports
-import { MENU_OPEN } from "@/store/actions";
-
 // ==============================|| MAIN LOGO ||============================== //
 
 const LogoSection = () => {
