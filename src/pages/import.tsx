@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import cloudinary from "@/lib/cloudinary";
 
 const Upload = () => {
   const [file, setFile] = useState<File | null>(null);
