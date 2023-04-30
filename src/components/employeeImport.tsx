@@ -17,6 +17,7 @@ function ImportData() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [key, setKey] = useState(0);
 
   // submit
   const [excelData, setExcelData] = useState(null);
@@ -40,13 +41,7 @@ function ImportData() {
         console.log(data);
         importing(data);
       };
-      //   } else {
-      //     setExcelFileError("Please select only excel file types");
-      //     setExcelFile(null);
-      //   }
-      // } else {
-      //   console.log("plz select your file");
-      // }
+      setKey(key + 1);
     }
   };
 
@@ -134,6 +129,7 @@ function ImportData() {
         )}
         <input
           hidden
+          key={key}
           type="file"
           className="form-control"
           onChange={handleFile}

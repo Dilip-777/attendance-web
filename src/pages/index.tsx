@@ -381,18 +381,6 @@ export default function TimeKeeperTable({}: // contractors,
     setSelected(newSelected);
   };
 
-  const decimalTime = 0.5416666666666666;
-  const milliseconds = decimalTime * 24 * 60 * 60 * 1000;
-  const time = new Date(milliseconds).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-    timeZone: "UTC", // or specify the time zone you want to display
-  });
-
-  console.log(time); // Output: "13:00:00"
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };

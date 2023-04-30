@@ -44,13 +44,6 @@ function ImportData() {
         importing(data);
       };
       setKey(key + 1);
-      //   } else {
-      //     setExcelFileError("Please select only excel file types");
-      //     setExcelFile(null);
-      //   }
-      // } else {
-      //   console.log("plz select your file");
-      // }
     }
   };
 

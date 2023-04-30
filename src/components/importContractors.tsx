@@ -18,6 +18,7 @@ function ImportData() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [key, setKey] = useState(0);
 
   // submit
   const [excelData, setExcelData] = useState(null);
@@ -41,13 +42,7 @@ function ImportData() {
         console.log(data);
         importing(data);
       };
-      //   } else {
-      //     setExcelFileError("Please select only excel file types");
-      //     setExcelFile(null);
-      //   }
-      // } else {
-      //   console.log("plz select your file");
-      // }
+      setKey(key + 1);
     }
   };
 
@@ -125,6 +120,7 @@ function ImportData() {
           <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
         )}
         <input
+          key={key}
           hidden
           type="file"
           className="form-control"
