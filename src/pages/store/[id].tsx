@@ -169,6 +169,13 @@ export default function Edit({
           }}
         >
           {({ handleSubmit, values, setFieldValue }) => {
+            const totalamount = values.storeItems.reduce(
+              (acc: any, item: any) => acc + Number(item.chargeableamount || 0),
+              0
+            );
+            if (totalamount !== values.totalamount) {
+              setFieldValue("totalamount", totalamount);
+            }
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={6} mt={2} container>
@@ -272,6 +279,7 @@ export default function Edit({
 
 function FieldArray1({
   values,
+  setFieldValue,
 }: {
   values: any;
   setFieldValue: (
@@ -285,6 +293,7 @@ function FieldArray1({
       name="storeItems"
       render={({ form, push, remove }) => {
         const { storeItems } = form.values;
+
         return (
           <>
             <Stack mb={2} spacing={0}>
@@ -293,90 +302,99 @@ function FieldArray1({
                   Chargeable Items : {storeItems?.length || 0}
                 </Typography>
               </Stack>
-              {storeItems?.map((value: any, index: number) => (
-                <Box key={index} p={2} borderRadius={8}>
-                  <Grid
-                    container
-                    columns={12}
-                    // spacing={{ xs: 1, sm: 1 }}
-                  >
-                    <Grid item xs={12} sm={6} md={4}>
-                      <FormInput
-                        name={`storeItems.${index}.chargeableItemIssued`}
-                        label="Chargeable Item Issued*"
-                        placeHolder="Chargeable Item Issued"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                      <FormInput
-                        name={`storeItems.${index}.quantity`}
-                        label="Quantity*"
-                        placeHolder="Enter the Quantity"
-                        type="number"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                      <FormInput
-                        name={`storeItems.${index}.division`}
-                        label="Division*"
-                        placeHolder="Enter the Division"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                      <FormInput
-                        name={`storeItems.${index}.units`}
-                        label="Units*"
-                        placeHolder="Enter the Units"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                      <FormInput
-                        name={`storeItems.${index}.rate`}
-                        label="Rate*"
-                        placeHolder="Enter the Rate"
-                        type="number"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <FormInput
-                        name={`storeItems.${index}.chargeableamount`}
-                        label="Chargeable Amount*"
-                        placeHolder="Enter the Chargeable Amount"
-                        type="number"
-                      />
-                    </Grid>
+              {storeItems?.map((value: any, index: number) => {
+                if (value.rate * value.quantity !== value.chargeableamount) {
+                  setFieldValue(
+                    `storeItems.${index}.chargeableamount`,
+                    value.rate * value.quantity
+                  );
+                }
+                return (
+                  <Box key={index} p={2} borderRadius={8}>
+                    <Grid
+                      container
+                      columns={12}
+                      // spacing={{ xs: 1, sm: 1 }}
+                    >
+                      <Grid item xs={12} sm={6} md={4}>
+                        <FormInput
+                          name={`storeItems.${index}.chargeableItemIssued`}
+                          label="Chargeable Item Issued*"
+                          placeHolder="Chargeable Item Issued"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <FormInput
+                          name={`storeItems.${index}.quantity`}
+                          label="Quantity*"
+                          placeHolder="Enter the Quantity"
+                          type="number"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <FormInput
+                          name={`storeItems.${index}.division`}
+                          label="Division*"
+                          placeHolder="Enter the Division"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <FormInput
+                          name={`storeItems.${index}.units`}
+                          label="Units*"
+                          placeHolder="Enter the Units"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <FormInput
+                          name={`storeItems.${index}.rate`}
+                          label="Rate*"
+                          placeHolder="Enter the Rate"
+                          type="number"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <FormInput
+                          name={`storeItems.${index}.chargeableamount`}
+                          label="Chargeable Amount*"
+                          placeHolder="Enter the Chargeable Amount"
+                          type="number"
+                        />
+                      </Grid>
 
-                    <Grid item xs={12} px={10} pb={2}>
-                      {storeItems.length > 1 && (
-                        <Button
-                          onClick={() => {
-                            values.storeItems[index].chargeableItemIssued = "";
-                            values.storeItems[index].quantity = 0;
-                            values.storeItems[index].division = "";
-                            values.storeItems[index].units = "";
-                            values.storeItems[index].rate = 0;
-                            values.storeItems[index].chargeableamount = 0;
-                            remove(index);
-                          }}
-                          variant="contained"
-                          color="error"
-                          sx={{ float: "right" }}
-                        >
-                          Remove <Delete />
-                        </Button>
-                      )}
+                      <Grid item xs={12} px={10} pb={2}>
+                        {storeItems.length > 1 && (
+                          <Button
+                            onClick={() => {
+                              values.storeItems[index].chargeableItemIssued =
+                                "";
+                              values.storeItems[index].quantity = 0;
+                              values.storeItems[index].division = "";
+                              values.storeItems[index].units = "";
+                              values.storeItems[index].rate = 0;
+                              values.storeItems[index].chargeableamount = 0;
+                              remove(index);
+                            }}
+                            variant="contained"
+                            color="error"
+                            sx={{ float: "right" }}
+                          >
+                            Remove <Delete />
+                          </Button>
+                        )}
+                      </Grid>
                     </Grid>
-                  </Grid>
-                  <Stack
-                    justifyContent="flex-start"
-                    alignItems="flex-start"
-                    spacing={3}
-                  >
-                    <Box display="flex" sx={{ alignSelf: "center" }}></Box>
-                  </Stack>
-                  <Divider />
-                </Box>
-              ))}
+                    <Stack
+                      justifyContent="flex-start"
+                      alignItems="flex-start"
+                      spacing={3}
+                    >
+                      <Box display="flex" sx={{ alignSelf: "center" }}></Box>
+                    </Stack>
+                    <Divider />
+                  </Box>
+                );
+              })}
               <IconButton
                 onClick={() =>
                   push({

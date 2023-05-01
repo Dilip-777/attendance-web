@@ -334,16 +334,27 @@ model StoreItem {
   store    Stores     @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
 
+
+
 model Safety {
   id   String   @id @default(cuid())
   month   String   
   contractorid   Int
   contractorName  String
-  division     String
-  chargeableItemIssued  String
-  penalty   String
-  netchargeableamount   Int
+  safetyItems   SafetyItem[]
+  totalAmount   Int
   contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+
+model SafetyItem {
+  id   String   @id @default(cuid())
+  safetyId   String
+  division   String
+  chargeableItemIssued  String
+  penalty    Int
+  netchargeableamount  Int
+  safety   Safety   @relation(fields: [safetyId], references: [id], onDelete: Cascade)
 }
 
 

@@ -10,7 +10,8 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { StoreItem, Stores } from "@prisma/client";
+import Delete from "@mui/icons-material/Delete";
+import { Safety, SafetyItem, StoreItem, Stores } from "@prisma/client";
 import _ from "lodash";
 
 interface Headcell {
@@ -21,14 +22,15 @@ interface Headcell {
 }
 
 interface Props {
-  row: Stores;
-  items: StoreItem[];
+  row: Stores | Safety;
+  items: StoreItem[] | SafetyItem[];
   headcells: Headcell[];
   headcells1: Headcell[];
+  handleDelete: (id: string) => void;
 }
 
 export default function Row(props: Props) {
-  const { row, items, headcells, headcells1 } = props;
+  const { row, items, headcells, headcells1, handleDelete } = props;
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -48,6 +50,12 @@ export default function Row(props: Props) {
             {_.get(row, headcell.id, "-") || "-"}
           </TableCell>
         ))}
+        <TableCell>
+          <IconButton onClick={() => handleDelete(row.id)}>
+            <Delete />
+          </IconButton>
+        </TableCell>
+
         {/* <TableCell component="th" scope="row">
           {row.name}
         </TableCell>

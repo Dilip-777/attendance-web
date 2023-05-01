@@ -10,7 +10,10 @@ import { StoreItem, Stores } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { TableCell, TableRow } from "@mui/material";
+import { IconButton, TableCell, TableRow } from "@mui/material";
+import axios from "axios";
+import { useRouter } from "next/router";
+import Delete from "@mui/icons-material/Delete";
 
 const createHeadCells = (
   id: string,
@@ -78,8 +81,20 @@ interface Props {
   storeItems: StoreItem[];
 }
 
-export default function CollapsibleTable({ stores, storeItems }: Props) {
+export default function Store({ stores, storeItems }: Props) {
   const [filter, setFilter] = React.useState("");
+  const router = useRouter();
+  const handleDelete = async (id: string) => {
+    const res = await axios
+      .delete("api/stores", {
+        data: {
+          id,
+        },
+      })
+      .then((res) => {
+        router.replace(router.asPath);
+      });
+  };
   return (
     <Paper>
       <EnhancedTableToolbar
@@ -103,6 +118,7 @@ export default function CollapsibleTable({ stores, storeItems }: Props) {
                 items={storeItems.filter((item) => item.storeId === row.id)}
                 headcells={headcells}
                 headcells1={headcells1}
+                handleDelete={handleDelete}
               />
             ))}
 

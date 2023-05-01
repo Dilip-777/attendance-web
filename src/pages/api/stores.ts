@@ -36,4 +36,13 @@ export default async function Stores(
       res.status(200).json({  success: true });
     
   }
+  else if(req.method === "DELETE") {
+    const { id } = req.body;
+    const store = await prisma.stores.delete({
+      where: {
+        id: id,
+      },
+    });
+    res.status(200).json(store);
+  }
 }

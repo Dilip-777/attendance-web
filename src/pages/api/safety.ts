@@ -21,25 +21,47 @@ export default async function Stores(
     res.status(200).json(safety);
   }
   if (req.method === "POST") {
-    const { id } = req.body;
+    const { id, safetyItems, ...data } = req.body;
     const isExist = await prisma.safety.findUnique({
       where: {
         id: id,
       },
     });
     if (isExist) {
+
       const safety = await prisma.safety.update({
         where: {
           id: id,
         },
-        data: req.body,
+        data: {
+          id: id,
+          ...data,
+        },
       });
       res.status(200).json(safety);
     } else {
       const safety = await prisma.safety.create({
-        data: req.body,
+        data: {
+          id: id,
+          ...data,
+        },
       });
+
+      const safetyItemsData = await prisma.safetyItem.createMany({
+        data: safetyItems,
+        skipDuplicates: true,
+      });
+
       res.status(200).json(safety);
     }
+  }
+  else if(req.method === "DELETE") {
+    const { id } = req.body;
+    const safety = await prisma.safety.delete({
+      where: {
+        id: id,
+      },
+    });
+    res.status(200).json(safety);
   }
 }
