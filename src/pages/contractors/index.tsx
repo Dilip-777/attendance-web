@@ -17,6 +17,7 @@ import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import CustomTable from "@/components/Table/Table";
 import ImportData from "@/components/importContractors";
+import axios from "axios";
 
 const style = {
   position: "absolute" as "absolute",
@@ -89,6 +90,15 @@ export default function Contractors({
   const [contractorId, setContractorId] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
+
+  const fetchContractors = async () => {
+    const res = await axios.get("/api/contractors");
+    console.log(res.data);
+  };
+
+  React.useEffect(() => {
+    fetchContractors();
+  }, []);
 
   // React.useEffect(() => {
   //   const user = session?.user;
@@ -299,9 +309,6 @@ export default function Contractors({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  const departments = await prisma.department.findMany();
-
-  const contractors = await prisma.contractor.findMany();
   if (!session) {
     return {
       redirect: {
@@ -324,6 +331,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  const departments = await prisma.department.findMany();
+
+  const contractors = await prisma.contractor.findMany();
   return {
     props: {
       contractors,
