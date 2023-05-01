@@ -39,7 +39,7 @@ export default async function payouttracker(req: NextApiRequest, res: NextApiRes
                     },
                     data: {
                         ...rest,
-                        finalpayableamount: finalpayableamount - (store?.totalAmount || 0) - (safety?.netchargeableamount|| 0)
+                        finalpayableamount: finalpayableamount - (store?.totalAmount || 0) - (safety?.totalAmount|| 0)
                     }
                 })
                 res.status(200).json(payouttracker)
@@ -49,7 +49,7 @@ export default async function payouttracker(req: NextApiRequest, res: NextApiRes
             data: {
                 id: shortid.generate(),
                 ...rest,
-                finalpayableamount: finalpayableamount - (store?.totalAmount || 0) - (safety?.netchargeableamount|| 0)
+                finalpayableamount: finalpayableamount - (store?.totalAmount || 0) - (safety?.totalAmount|| 0)
             }
          })
         res.status(200).json(payouttracker)

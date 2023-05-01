@@ -93,14 +93,6 @@ export default function Row(props: Props) {
                           {_.get(item, headcell.id, "-") || "-"}
                         </TableCell>
                       ))}
-                      {/* <TableCell component="th" scope="row">
-                        {historyRow.date}
-                      </TableCell>
-                      <TableCell>{historyRow.customerId}</TableCell>
-                      <TableCell align="left">{historyRow.amount}</TableCell>
-                      <TableCell align="left">
-                        {Math.round(historyRow.amount * row.price * 100) / 100}
-                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>

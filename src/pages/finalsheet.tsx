@@ -308,7 +308,7 @@ export default function FinalSheet({
           total={totalPayable}
           department={department}
           storededuction={store?.totalAmount || 0}
-          safetydeduction={safety?.netchargeableamount || 0}
+          safetydeduction={safety?.totalAmount || 0}
           designations={designations}
         />
       )}
