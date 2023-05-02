@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useTheme } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -74,10 +73,6 @@ const Header = ({
       <ProfileSection />
     </>
   );
-};
-
-Header.propTypes = {
-  handleLeftDrawerToggle: PropTypes.func,
 };
 
 export default Header;

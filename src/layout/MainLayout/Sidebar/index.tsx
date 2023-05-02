@@ -1,6 +1,3 @@
-import PropTypes from "prop-types";
-
-// material-ui
 import { useTheme } from "@mui/material";
 import { Box, Drawer, useMediaQuery } from "@mui/material";
 
@@ -99,12 +96,6 @@ const Sidebar = ({
       </Drawer>
     </Box>
   );
-};
-
-Sidebar.propTypes = {
-  drawerOpen: PropTypes.bool,
-  drawerToggle: PropTypes.func,
-  window: PropTypes.object,
 };
 
 export default Sidebar;

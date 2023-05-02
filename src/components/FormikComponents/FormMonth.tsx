@@ -37,7 +37,7 @@ const SelectMonth: React.FC<Props> = ({
   const isError = Boolean(meta.touched && meta.error);
 
   return (
-    <FormControl error={isError} disabled={disabled} sx={{ my: 2 }}>
+    <FormControl error={isError} disabled={disabled} sx={{ my: 2, width: 300 }}>
       <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
         {label}
       </FormLabel>
@@ -50,7 +50,7 @@ const SelectMonth: React.FC<Props> = ({
           format="MM/YYYY"
           //   disableFuture
           value={dayjs(field.value, "MM/YYYY")}
-          sx={{ width: "100%", minWidth: 300 }}
+          sx={{ width: 300 }}
           onChange={(newValue) => {
             setFieldValue(name, newValue.format("MM/YYYY"));
           }}

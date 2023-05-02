@@ -47,7 +47,7 @@ const FormDate: React.FC<Props> = ({
           value={value}
           format="DD/MM/YYYY"
           //   disableFuture
-          sx={{ width: "100%", minWidth: 300 }}
+          sx={{ width: 300 }}
           onChange={(newValue) => {
             setValue(newValue);
             setFieldValue(name, newValue.format("DD/MM/YYYY"));

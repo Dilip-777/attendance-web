@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { Dispatch, SetStateAction, useState } from "react";
 
 // material-ui
@@ -9,8 +8,6 @@ import ButtonBase from "@mui/material/ButtonBase";
 import InputAdornment from "@mui/material/InputAdornment";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Typography from "@mui/material/Typography";
-
-// import { shouldForwardProp } from "@mui/system";
 import Search from "@mui/icons-material/Search";
 import Tune from "@mui/icons-material/Tune";
 

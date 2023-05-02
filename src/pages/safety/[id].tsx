@@ -173,8 +173,8 @@ export default function Edit({
 
             return (
               <form noValidate onSubmit={handleSubmit}>
-                <Grid ml={6} mt={2} container>
-                  <Grid item xs={12} sm={6} md={4}>
+                <Grid ml={3} mt={2} container>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormSelect
                       name="contractorid"
                       label="Contractor Name*"
@@ -188,7 +188,7 @@ export default function Edit({
                       }
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <SelectMonth
                       name="month"
                       label="Month*"
@@ -197,7 +197,7 @@ export default function Edit({
                       format="MM/YYYY"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} xl={3}>
                     <FormInput
                       name="totalAmount"
                       label="Total Amount*"
@@ -208,7 +208,7 @@ export default function Edit({
 
                   <FieldArray1 setFieldValue={setFieldValue} values={values} />
 
-                  {/* <Grid item xs={12} sm={6} md={4}>
+                  {/* <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="division"
                       label="Division*"
@@ -217,7 +217,7 @@ export default function Edit({
                     />
                    
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="penalty"
                       label="Chargeable Voilation*"
@@ -226,7 +226,7 @@ export default function Edit({
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="netchargeableamount"
                       label="Net Chargeable Amount*"
@@ -285,21 +285,21 @@ function FieldArray1({
                       columns={12}
                       // spacing={{ xs: 1, sm: 1 }}
                     >
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} xl={4}>
                         <FormInput
                           name={`safetyItems.${index}.chargeableItemIssued`}
                           label="Chargeable Item Issued*"
                           placeHolder="Chargeable Item Issued"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} xl={4}>
                         <FormInput
                           name={`safetyItems.${index}.division`}
                           label="Division*"
                           placeHolder="Enter the Division"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item xs={12} sm={6} xl={3}>
                         <FormInput
                           name={`safetyItems.${index}.penalty`}
                           label="Penalty*"
@@ -307,7 +307,7 @@ function FieldArray1({
                           type="number"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} md={4}>
+                      <Grid item xs={12} sm={6} xl={4}>
                         <FormInput
                           name={`safetyItems.${index}.netchargeableamount`}
                           label="Chargeable Amount*"
@@ -316,7 +316,7 @@ function FieldArray1({
                         />
                       </Grid>
 
-                      <Grid item xs={12} md={8} px={10} mt={"auto"} pb={2}>
+                      <Grid item xs={12} xl={8} px={10} mt={"auto"} pb={2}>
                         {safetyItems.length > 1 && (
                           <Button
                             onClick={() => {
@@ -410,7 +410,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  const safetyItems = await prisma.safetyItem.findMany();
+  const safetyItems = await prisma.safetyItem.findMany({
+    where: {
+      safetyId: id as string,
+    },
+  });
 
   return {
     props: {

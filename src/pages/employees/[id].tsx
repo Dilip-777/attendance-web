@@ -19,15 +19,22 @@ import { CircularProgress } from "@mui/material";
 
 const numberType = Yup.number().required("Required");
 
+const mobilenumbertype = Yup.string().matches(
+  /^(?:\+91[1-9]\d{9}|0[1-9]\d{9}|[1-9]\d{9})$/,
+  "Please enter a valid mobile number"
+);
+
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().required("Required"),
   employeeId: numberType,
-  employeename: Yup.string().required("Required"),
+  employeename: Yup.string()
+    .required("Required")
+    .matches(/^[A-Za-z ]+$/, "Please enter only letters and spaces"),
   designation: Yup.string().required("Required"),
   department: Yup.string().required("Required"),
   gender: Yup.string().required("Required"),
-  phone: numberType,
-  emailid: Yup.string().required("Required").optional(),
+  phone: mobilenumbertype.required("Required"),
+  emailid: Yup.string().required("Required").email().optional(),
   basicsalary_in_duration: Yup.string().required("Required"),
   basicsalary: numberType,
   allowed_wrking_hr_per_day: numberType,
@@ -66,6 +73,34 @@ export default function Edit({
     tds: employee?.tds || 0,
   };
 
+  const d = new Set(
+    designations.map((d) => ({
+      value: d.designation,
+      label: d.designation,
+    }))
+  );
+
+  const getOptions = (department: string) => {
+    const options = designations
+      .filter((d) => d.departmentname === department)
+      .map((d) => ({
+        value: d.designation,
+        label: d.designation,
+      }));
+    console.log(options);
+
+    const unique = options.filter((item, index) => {
+      return (
+        index ===
+        options.findIndex((obj) => {
+          return JSON.stringify(obj) === JSON.stringify(item);
+        })
+      );
+    });
+
+    return unique;
+  };
+
   return (
     <>
       <Paper
@@ -100,7 +135,8 @@ export default function Edit({
               .post("/api/hr/employee", {
                 id: employee ? employee.id : undefined,
                 ...rest,
-                employeeId: employeeId.toString(),
+                contractorId: Number(rest.contractorId),
+                employeeId: employeeId,
                 phone: String(phone),
               })
               .then((res) => {
@@ -116,16 +152,10 @@ export default function Edit({
           }}
         >
           {({ handleSubmit, values, isSubmitting }) => {
-            // if (!errors.designation) {
-            //   const options1 = options.filter((option) =>
-            //     option.department.includes(values.designation)
-            //   );
-            //   setOptions(options1);
-            // }
             return (
               <form noValidate onSubmit={handleSubmit}>
-                <Grid ml={6} mt={2} container>
-                  <Grid item xs={12} sm={6} md={4}>
+                <Grid ml={3} mt={2} container>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormSelect
                       name="contractorId"
                       label="Contractor Name*"
@@ -133,13 +163,13 @@ export default function Edit({
                       disabled={false}
                       options={
                         contractors?.map((contractor) => ({
-                          value: contractor.id,
+                          value: contractor.contractorId,
                           label: contractor.contractorname,
                         })) || []
                       }
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="employeeId"
                       label="Employee Id*"
@@ -148,7 +178,7 @@ export default function Edit({
                       disabled={false}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="employeename"
                       label="Employee Name*"
@@ -156,7 +186,7 @@ export default function Edit({
                       disabled={false}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormSelect
                       name="department"
                       label="Department*"
@@ -168,7 +198,7 @@ export default function Edit({
                       }))}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormSelect
                       name="gender"
                       label="Gender*"
@@ -181,30 +211,24 @@ export default function Edit({
                       ]}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormSelect
                       name="designation"
                       label="Designation*"
                       placeHolder="Enter the Designation"
                       disabled={false}
-                      options={designations
-                        .filter((d) => d.departmentname === values.department)
-                        .map((d) => ({
-                          value: d.designation,
-                          label: d.designation,
-                        }))}
+                      options={getOptions(values.department)}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="phone"
                       label="Phone Number*"
                       placeHolder="Enter the Phone Number"
                       disabled={false}
-                      type="number"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="emailid"
                       label="Email*"
@@ -212,7 +236,7 @@ export default function Edit({
                       disabled={false}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormSelect
                       name="basicsalary_in_duration"
                       label="Basic Salary in Duration*"
@@ -224,7 +248,7 @@ export default function Edit({
                       ]}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="basicsalary"
                       label="Basic Salary*"
@@ -233,7 +257,7 @@ export default function Edit({
                       type="number"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="allowed_wrking_hr_per_day"
                       label="Allowed Working Hours Per Day*"
@@ -242,7 +266,7 @@ export default function Edit({
                       type="number"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="servicecharge"
                       label="Service Charge*"
@@ -251,7 +275,7 @@ export default function Edit({
                       type="number"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="gst"
                       label="GST*"
@@ -260,7 +284,7 @@ export default function Edit({
                       disabled={false}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="tds"
                       label="TDS*"

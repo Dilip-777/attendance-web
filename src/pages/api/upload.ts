@@ -1,6 +1,6 @@
 import { NextApiHandler, NextApiRequest } from "next";
 import formidable from "formidable";
-import path, { resolve } from "path";
+import path from "path";
 import fs from "fs/promises"
 
 export const config = {

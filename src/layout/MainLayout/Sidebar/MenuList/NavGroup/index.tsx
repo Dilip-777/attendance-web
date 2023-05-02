@@ -1,6 +1,3 @@
-import PropTypes from "prop-types";
-
-// material-ui
 import { useTheme } from "@mui/material";
 import { Divider, List, Typography } from "@mui/material";
 
@@ -62,10 +59,6 @@ const NavGroup = ({ item }: { item: any }) => {
       <Divider sx={{ mt: 0.25, mb: 1.25 }} />
     </>
   );
-};
-
-NavGroup.propTypes = {
-  item: PropTypes.object,
 };
 
 export default NavGroup;

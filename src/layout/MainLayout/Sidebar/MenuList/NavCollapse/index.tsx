@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -18,6 +17,10 @@ import NavItem from "../NavItem";
 
 // assets
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useRouter } from "next/router";
 
 // ==============================|| SIDEBAR MENU LIST COLLAPSE ITEMS ||============================== //
@@ -124,19 +127,7 @@ const NavCollapse = ({ menu, level }: { menu: any; level: any }) => {
             )
           }
         />
-        {/* {open ? (
-            <IconChevronUp
-              stroke={1.5}
-              size="1rem"
-              style={{ marginTop: "auto", marginBottom: "auto" }}
-            />
-          ) : (
-            <IconChevronDown
-              stroke={1.5}
-              size="1rem"
-              style={{ marginTop: "auto", marginBottom: "auto" }}
-            />
-          )} */}
+        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
       </ListItemButton>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List
@@ -161,11 +152,6 @@ const NavCollapse = ({ menu, level }: { menu: any; level: any }) => {
       </Collapse>
     </>
   );
-};
-
-NavCollapse.propTypes = {
-  menu: PropTypes.object,
-  level: PropTypes.number,
 };
 
 export default NavCollapse;

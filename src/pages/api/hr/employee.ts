@@ -11,11 +11,11 @@ export default async function employee (req: NextApiRequest, res: NextApiRespons
         const {id,contractorId, ...data} = req.body
         const isExist = await prisma.employee.findFirst({
             where: {
-                employeeId: data.employeeId.toString(),
+                employeeId: data.employeeId,
             }
         })
         if(isExist) {
-            res.status(409).json({message: "Employee already exists", error: "employeeId"})
+            res.status(409).json({message: "Employee Id already exists", error: "employeeId"})
             return;
         }
         if(id) {
@@ -31,7 +31,7 @@ export default async function employee (req: NextApiRequest, res: NextApiRespons
 
             const contractor = await prisma.contractor.findUnique({
                 where: {
-                    id: contractorId
+                    contractorId: contractorId
                 }
             })
 

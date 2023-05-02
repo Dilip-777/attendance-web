@@ -92,7 +92,7 @@ export default function Contractors({
   const [value, setValue] = React.useState("");
 
   const fetchContractors = async () => {
-    const res = await axios.get("/api/contractors");
+    const res = await axios.get("/api/hr/contractors");
     console.log(res.data);
   };
 

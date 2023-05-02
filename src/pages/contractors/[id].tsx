@@ -38,8 +38,15 @@ const numberType = Yup.number().transform((value, originalValue) => {
   return originalValue !== "" ? null : value;
 });
 
+const mobilenumbertype = Yup.string().matches(
+  /^(?:\+91[1-9]\d{9}|0[1-9]\d{9}|[1-9]\d{9})$/,
+  "Please enter a valid mobile number"
+);
+
 const validationSchema = Yup.object().shape({
-  contractorname: Yup.string().required("Required"),
+  contractorname: Yup.string()
+    .required("Required")
+    .matches(/^[A-Za-z ]+$/, "Please enter only letters and spaces"),
   contractorId: Yup.number().required("Required"),
   servicedetail: Yup.string().required("Required"),
   supplierdetail: Yup.string().required("Required"),
@@ -48,10 +55,10 @@ const validationSchema = Yup.object().shape({
   officeaddress: Yup.string().required("Required"),
   contactperson: Yup.string().required("Required"),
   designation: Yup.string().required("Required"),
-  telephonenumber: numberType.nullable(),
-  mobilenumber: Yup.number().required("Rquired"),
-  emailid: stringtype,
-  website: stringtype,
+  telephonenumber: mobilenumbertype,
+  mobilenumber: mobilenumbertype.required("Mobile number is required"),
+  emailid: stringtype.email("Please enter a valid email address"),
+  website: stringtype.url("Please enter a valid website URL"),
   expirationDate: stringtype,
   servicecharge: Yup.number().required("Rquired"),
   bankaccountnumber: stringtype.required("Required"),
@@ -65,7 +72,10 @@ const validationSchema = Yup.object().shape({
   memorandam_of_associate: fileType,
   listofdirector: fileType,
   profileofkeyperson: fileType,
-  competitorname: stringtype,
+  competitorname: stringtype.matches(
+    /^[A-Za-z ]+$/,
+    "Please enter only letters and spaces"
+  ),
   isocertified: stringtype,
   turnoverlastyear: stringtype,
   turnover2yearback: stringtype,
@@ -197,7 +207,7 @@ export default function EditContractor({
     <>
       <Paper
         sx={{
-          height: "83.7vh",
+          height: { sm: "80vh", md: "82.2vh", xl: "83.7vh" },
           pt: "1rem",
           pb: "8rem",
           overflow: "hidden auto",
@@ -286,8 +296,12 @@ export default function EditContractor({
                   <Typography variant="h5" ml={1} mt={2}>
                     General
                   </Typography>
-                  <Grid ml={{ xs: 0, sm: 2, md: 6 }} container>
-                    <Grid item xs={12} sm={6} md={4}>
+                  <Grid
+                    columnSpacing={3}
+                    ml={{ xs: 0, sm: 2, lg: 0 }}
+                    container
+                  >
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="contractorId"
                         label="Contractor Id*"
@@ -296,7 +310,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="contractorname"
                         label="Contractor Name*"
@@ -304,7 +318,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="servicedetail"
                         label="Service Detail*"
@@ -312,7 +326,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="supplierdetail"
                         label="Supplier Detail*"
@@ -320,7 +334,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="officeaddress"
                         label="Office Address*"
@@ -328,7 +342,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="contactperson"
                         label="Contact Person*"
@@ -336,7 +350,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="designation"
                         label="Designation*"
@@ -344,7 +358,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="telephonenumber"
                         label="Telephone Number"
@@ -353,16 +367,16 @@ export default function EditContractor({
                         type="number"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="mobilenumber"
                         label="Mobile Number*"
                         placeHolder="Enter Mobile Number"
                         disabled={false}
-                        type="number"
+                        // type="number"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="emailid"
                         label="Email"
@@ -370,7 +384,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="website"
                         label="Website"
@@ -378,7 +392,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormDate
                         name="expirationDate"
                         label="Expiration Date*"
@@ -387,7 +401,7 @@ export default function EditContractor({
                         minDate={dayjs()}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="servicecharge"
                         label="Service Charge*"
@@ -396,7 +410,7 @@ export default function EditContractor({
                         type="number"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="pancardno"
                         label="Pan Card Number*"
@@ -404,7 +418,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="areaofwork"
                         label="Area of Work*"
@@ -412,7 +426,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="bankaccountnumber"
                         label="Bank Account Number*"
@@ -420,7 +434,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="ifscno"
                         label="IFSC Code*"
@@ -428,13 +442,13 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="businessdetaildocument"
                         label="Business Details Document"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="uploadutilitybill"
                         label="Upload Utility Bill"
@@ -448,8 +462,8 @@ export default function EditContractor({
                     Organisation
                   </Typography>
 
-                  <Grid ml={{ xs: 0, sm: 2, md: 6 }} mt={2} container>
-                    <Grid item xs={12} sm={6} md={4}>
+                  <Grid ml={{ xs: 0, sm: 4 }} mt={2} container>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormSelect
                         name="organisationtype"
                         label="Organisation Type"
@@ -476,15 +490,15 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                      <FormInput
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormDate
                         name="dateofincorporation"
                         label="Date of Incorporation"
                         placeHolder="Date of Incorporation"
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormSelect
                         name="associationwithcompetitor"
                         label="Are you an associative member of any organisation?"
@@ -496,25 +510,25 @@ export default function EditContractor({
                         ]}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="memorandam_of_associate"
                         label="Memorandum of Associate"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="listofdirector"
                         label="List of Directors"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="profileofkeyperson"
                         label="Profile of Key Person"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="competitorname"
                         label="Competitor Name"
@@ -522,7 +536,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormSelect
                         name="isocertified"
                         label="ISO Certified"
@@ -534,7 +548,7 @@ export default function EditContractor({
                         ]}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="turnoverlastyear"
                         label="What is Turnover of Last Year"
@@ -542,7 +556,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="turnover2yearback"
                         label="What is Turnover of 2nd Last Year"
@@ -550,19 +564,19 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="uploadbranchdetail"
                         label="Branch Detail"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="uploadreturndetail"
                         label="Return Detail"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="uniquenumber"
                         label="Unique Number"
@@ -570,7 +584,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="registration_number"
                         label="Registration Number"
@@ -579,7 +593,7 @@ export default function EditContractor({
                         type="number"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="first_registration_number"
                         label="Fist Registration Number"
@@ -588,7 +602,7 @@ export default function EditContractor({
                         type="number"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="latest_mnth_gst1_filed"
                         label="Latest Month GST 1 Filed"
@@ -596,7 +610,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="latest_mnth_gst2b_filed"
                         label="Latest Month GST 2 Filed"
@@ -604,7 +618,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormSelect
                         name="comply_regulatory"
                         label="Comply Regulatory"
@@ -616,20 +630,20 @@ export default function EditContractor({
                         ]}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="upload_registration_cert"
                         label="Registration Certificate"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload name="upload_licence1" label="License1" />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload name="upload_licence2" label="License2" />
                     </Grid>
 
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="code_of_proprietor"
                         label="Code No of Proprietor"
@@ -644,8 +658,8 @@ export default function EditContractor({
                   <Typography variant="h5" ml={1} my="auto">
                     Service / Product Details
                   </Typography>
-                  <Grid ml={{ xs: 0, sm: 2, md: 6 }} mt={0} container>
-                    <Grid item xs={12} sm={6} md={4}>
+                  <Grid ml={{ xs: 0, sm: 4 }} mt={0} container>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="list_major_product"
                         label="List Major Products"
@@ -653,7 +667,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="qualty_control_procedure"
                         label="What are your Quality Control Procedure"
@@ -661,7 +675,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="valueadd_product"
                         label="What value add product can you provide?"
@@ -669,7 +683,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="five_strength_points"
                         label="What are your five strength points?"
@@ -677,7 +691,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="weakness"
                         label="What are your five weakness points?"
@@ -685,7 +699,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="selection_training_method"
                         label="What is your selection and training method?"
@@ -693,7 +707,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="delivery_procedure"
                         label="What is your delivery procedure?"
@@ -701,7 +715,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="clientele"
                         label="What is your clientele?"
@@ -716,11 +730,11 @@ export default function EditContractor({
                   <Typography variant="h5" ml={1} my="auto">
                     Reference Details
                   </Typography>
-                  <Grid ml={{ xs: 0, sm: 2, md: 6 }} mt={2} container>
+                  <Grid ml={{ xs: 0, sm: 4 }} mt={2} container>
                     <Grid item xs={12}>
                       <Typography>Organisation1:</Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_organistaion_1"
                         label="Reference Organisation"
@@ -728,7 +742,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_contact_person_1"
                         label="Reference Contact Person"
@@ -736,7 +750,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_designation_1"
                         label="Reference Designation"
@@ -744,7 +758,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_contact_1"
                         label="Reference Contact"
@@ -752,7 +766,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="period_of_service_1"
                         label="Period of Service"
@@ -766,7 +780,7 @@ export default function EditContractor({
                     <Grid item xs={12}>
                       <Typography>Organisation2</Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_organistaion_2"
                         label="Reference Organisation"
@@ -774,7 +788,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_contact_person_2"
                         label="Reference Contact Person"
@@ -782,7 +796,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_designation_2"
                         label="Reference Designation"
@@ -790,7 +804,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_contact_2"
                         label="Reference Contact"
@@ -798,7 +812,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="period_of_service_2"
                         label="Period of Service"
@@ -812,7 +826,7 @@ export default function EditContractor({
                     <Grid item xs={12}>
                       <Typography>Organisation3</Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_organistaion_3"
                         label="Reference Organisation"
@@ -820,7 +834,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_contact_person_3"
                         label="Reference Contact Person"
@@ -828,7 +842,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_designation_3"
                         label="Reference Designation"
@@ -836,7 +850,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="reference_contact_3"
                         label="Reference Contact"
@@ -844,7 +858,7 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FormInput
                         name="period_of_service_3"
                         label="Period of Service"
@@ -852,22 +866,22 @@ export default function EditContractor({
                         disabled={false}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="upload_list_ofclientele"
                         label="Upload List of Clientele"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload
                         name="upload_certificate_services"
                         label="Upload Certificate of Services"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload name="upload_doc1" label="Upload Document1" />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid item xs={12} sm={6} lg={4}>
                       <FileUpload name="upload_doc2" label="Upload Document2" />
                     </Grid>
                   </Grid>
