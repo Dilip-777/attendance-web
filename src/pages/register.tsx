@@ -17,7 +17,6 @@ import { getSession } from "next-auth/react";
 const Register = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down("md"));
-  const router = useRouter();
 
   return (
     <AuthWrapper1>
@@ -102,6 +101,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     };
   }
+
   if (session?.user?.role !== "Admin") {
     return {
       redirect: {
