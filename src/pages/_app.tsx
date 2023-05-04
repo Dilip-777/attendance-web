@@ -15,6 +15,7 @@ import { Provider } from "react-redux";
 import { SessionProvider } from "next-auth/react";
 import NProgress from "nprogress";
 import Head from "next/head";
+import "../style.css";
 
 export default function App({
   Component,

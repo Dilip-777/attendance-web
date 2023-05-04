@@ -54,7 +54,7 @@ const FormInput: React.FC<Props> = ({
         {label}
       </FormLabel>
       <OutlineInputStyle
-        sx={{ maxWidth: 300, width: "100%" }}
+        sx={{ maxWidth: { xs: 250, xl: 300 }, width: "100%" }}
         id="input-search-header"
         placeholder={placeHolder}
         aria-describedby="search-helper-text"

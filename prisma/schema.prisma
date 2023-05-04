@@ -42,6 +42,7 @@ model User {
   mobileNumber  String?
   password String
   role    Role   @default(None)
+  specialRole   Boolean   @default(false)
   accounts      Account[]
     sessions      Session[]
 }

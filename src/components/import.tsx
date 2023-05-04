@@ -10,11 +10,9 @@ import React, { useState } from "react";
 import * as XLSX from "xlsx";
 
 function ImportData() {
-  // on change states
-  const [excelFile, setExcelFile] = useState<string | ArrayBuffer | null>(null);
-  const [excelFileError, setExcelFileError] = useState<string | null>("");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [key, setKey] = useState(0);
 
@@ -86,8 +84,43 @@ function ImportData() {
     return formattedDate;
   };
 
-  const importing = async (data: any) => {
+  const importing = async (data: any[]) => {
     console.log(data);
+
+    const keys: string[] = [];
+
+    const indices: number[] = [];
+
+    data.forEach((d: any, index: number) => {
+      [
+        "contractor_name",
+        "contractor_id",
+        "employee_name",
+        "employee_id",
+        "designation",
+        "department",
+      ].forEach((key) => {
+        if (!d[key]) {
+          if (keys.indexOf(key) === -1) {
+            keys.push(key);
+          }
+          if (!indices.includes(index + 1)) {
+            indices.push(index + 1);
+          }
+        }
+      });
+    });
+
+    if (keys.length > 0) {
+      setMessage(
+        `Please check the following keys: ${keys.join(
+          ", "
+        )} at rows: ${indices.join(", ")}`
+      );
+      setError(true);
+      handleClick();
+      return;
+    }
 
     const body = data.map((data: any) => {
       return {
@@ -147,6 +180,7 @@ function ImportData() {
         // set
       })
       .catch((err) => {
+        setMessage("Please Provide Valid Data");
         setError(true);
         handleClick();
       });
@@ -183,7 +217,7 @@ function ImportData() {
           severity={error ? "error" : "success"}
           sx={{ width: "100%" }}
         >
-          {error ? "Please Provide Valid Data" : "Data Uploaded Successfully"}
+          {error ? message : "Data Uploaded Successfully"}
         </Alert>
       </Snackbar>
     </Stack>

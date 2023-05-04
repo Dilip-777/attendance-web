@@ -71,7 +71,7 @@ const FormSelect: React.FC<Props> = ({
       fullWidth
       error={isError}
       disabled={disabled}
-      sx={{ my: 2, maxWidth: 300 }}
+      sx={{ my: 2, maxWidth: { xs: 250, xl: 300 }, width: "100%" }}
     >
       <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
         {label}
@@ -84,7 +84,10 @@ const FormSelect: React.FC<Props> = ({
         {...fieldWithoutOnChange}
         {...props}
         input={
-          <OutlineInputStyle sx={{ width: 300 }} placeholder={placeHolder} />
+          <OutlineInputStyle
+            sx={{ maxWidth: { xs: 250, xl: 300 }, width: "100%" }}
+            placeholder={placeHolder}
+          />
         }
       >
         {options.map((option, index) => (

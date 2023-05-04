@@ -25,7 +25,11 @@ import MainCard from "@/ui-component/cards/MainCard";
 
 // assets
 import { useRouter } from "next/router";
+import Router from "next/router";
 import { signOut, useSession } from "next-auth/react";
+import { ListItem } from "@mui/material";
+import FormSelect from "@/ui-component/FormSelect";
+import axios from "axios";
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -38,6 +42,13 @@ const ProfileSection = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLInputElement>(null);
+  // const [role, setRole] = useState<string | undefined>(
+  //   session?.user?.role || ""
+  // );
+
+  // useEffect(() => {
+  //   setRole(session?.user?.role || "");
+  // }, [session]);
 
   const handleClose = (event: globalThis.MouseEvent | TouchEvent) => {
     if (anchorRef.current && anchorRef.current.contains(event.target as Node)) {
@@ -69,6 +80,14 @@ const ProfileSection = () => {
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
+
+  // const handleChange = async (v: string) => {
+  //   setRole(v);
+  //   const res = await axios.put("/api/shiftrole", {
+  //     id: session?.user?.id,
+  //     role: v,
+  //   });
+  // };
 
   const prevOpen = useRef(open);
   useEffect(() => {
@@ -134,7 +153,7 @@ const ProfileSection = () => {
           horizontal: "left",
         }}
       >
-        <Paper>
+        <Paper sx={{ maxWidth: "22rem" }}>
           <ClickAwayListener onClickAway={handleClose}>
             <MainCard
               border={false}
@@ -159,7 +178,7 @@ const ProfileSection = () => {
                   </Typography>
                 </Stack>
                 <OutlinedInput
-                  sx={{ width: "100%", pr: 1, pl: 2, my: 2 }}
+                  sx={{ width: "100%", pr: 1, pl: 2, my: 2, maxWidth: "20rem" }}
                   id="input-search-profile"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
@@ -174,6 +193,30 @@ const ProfileSection = () => {
                     "aria-label": "weight",
                   }}
                 />
+
+                {/* <ListItem> */}
+                {/* <FormSelect
+                  value={role as string}
+                  handleChange={(v) => {
+                    handleChange(v as string);
+                  }}
+                  options={[
+                    { label: "Admin", value: "Admin" },
+                    { label: "TimeKeeper", value: "TimeKeeper" },
+                    { value: "HR", label: "HR" },
+                    { value: "PlantCommercial", label: "PlantCommercial" },
+                    {
+                      value: "HoCommercialAuditor",
+                      label: "HoCommercialAuditor",
+                    },
+                    { value: "Corporate", label: "Corporate" },
+                    { value: "Stores", label: "Stores" },
+                    { value: "Safety", label: "Safety" },
+                  ]}
+                  fullWidth={true}
+                  sx={{ maxWidth: "20rem", mb: 2 }}
+                />
+                <Divider /> */}
                 <Divider />
               </Box>
 
@@ -246,6 +289,7 @@ const ProfileSection = () => {
                       }
                     />
                   </ListItemButton>
+
                   <ListItemButton
                     sx={{
                       borderRadius: `${customization.borderRadius}px`,

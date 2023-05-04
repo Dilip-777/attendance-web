@@ -337,9 +337,12 @@ export default function TimeKeeper({ users }: { users: User[] }) {
         />
         <TableContainer
           sx={{
+            maxHeight: "calc(100vh - 16rem)",
+            overflow: "auto",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,
+              width: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",
@@ -351,6 +354,7 @@ export default function TimeKeeper({ users }: { users: User[] }) {
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
             size="medium"
+            stickyHeader
           >
             <EnhancedTableHead
               numSelected={selected.length}
@@ -458,7 +462,7 @@ export default function TimeKeeper({ users }: { users: User[] }) {
         >
           <Box
             p={{ xs: 0, sm: 2 }}
-            width={{ xs: "100%", sm: 400, md: 500 }}
+            width={{ xs: "100%", sm: 400 }}
             height={{ xs: "70%", sm: "100%" }}
             top={{ xs: "30%", sm: "0" }}
             sx={style}

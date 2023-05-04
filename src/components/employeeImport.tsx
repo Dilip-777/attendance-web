@@ -17,6 +17,7 @@ function ImportData() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const [key, setKey] = useState(0);
 
   // submit
@@ -87,6 +88,41 @@ function ImportData() {
   const importing = async (data: any) => {
     console.log(data);
 
+    const keys: string[] = [];
+
+    const indices: number[] = [];
+
+    data.forEach((d: any, index: number) => {
+      [
+        "contractorname",
+        "contractorId",
+        "employeeName",
+        "employeeId",
+        "designation",
+        "department",
+      ].forEach((key) => {
+        if (!d[key]) {
+          if (keys.indexOf(key) === -1) {
+            keys.push(key);
+          }
+          if (!indices.includes(index + 1)) {
+            indices.push(index + 1);
+          }
+        }
+      });
+    });
+
+    if (keys.length > 0) {
+      setMessage(
+        `Please check the following keys: ${keys.join(
+          ", "
+        )} at rows: ${indices.join(", ")}`
+      );
+      setError(true);
+      handleClick();
+      return;
+    }
+
     const body = data
       // .filter((d: any, i: number) => )
       .map((data: any) => ({
@@ -96,7 +132,7 @@ function ImportData() {
         contractorId: data.contractorId,
         designation: data.designation,
         department: data.department,
-        gender: data.gender || "",
+        gender: data.gender || "Male",
         phone: data.phone?.toString() || "",
         emailid: data.emailid || "",
         basicsalary_in_duration: data.basicsalary_in_duration || "",
@@ -114,6 +150,7 @@ function ImportData() {
         handleClick();
       })
       .catch((err) => {
+        setMessage("Please Provide Valid Data");
         setError(true);
         handleClick();
       });
@@ -149,7 +186,7 @@ function ImportData() {
           severity={error ? "error" : "success"}
           sx={{ width: "100%" }}
         >
-          {error ? "Please Provide Valid Data" : "Data Uploaded Successfully"}
+          {error ? message : "Data Uploaded Successfully"}
         </Alert>
       </Snackbar>
     </Stack>

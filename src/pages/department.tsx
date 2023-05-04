@@ -285,9 +285,12 @@ export default function TimeKeeper({
         />
         <TableContainer
           sx={{
+            maxHeight: "calc(100vh - 16rem)",
+            overflow: "auto",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,
+              width: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",
@@ -497,7 +500,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const designations = await prisma.designations.findMany();
 
-  if (session?.user?.role !== "Admin") {
+  if (!(session?.user?.role === "Admin" || session?.user?.role === "HR")) {
     return {
       redirect: {
         destination: "/",

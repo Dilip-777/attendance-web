@@ -443,7 +443,8 @@ export default function TimeKeeperTable({}: // contractors,
 
           <TableContainer
             sx={{
-              maxHeight: 470,
+              maxHeight: "calc(100vh - 16rem)",
+              overflowY: "auto",
               scrollBehavior: "smooth",
               "&::-webkit-scrollbar": {
                 height: 10,

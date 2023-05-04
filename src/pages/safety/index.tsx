@@ -76,7 +76,22 @@ export default function Safety1({ safety, safetyItem }: Props) {
         numSelected={0}
       />
 
-      <TableContainer component={Paper}>
+      <TableContainer
+        sx={{
+          maxHeight: "calc(100vh - 11rem)",
+          overflowY: "auto",
+          scrollBehavior: "smooth",
+          "&::-webkit-scrollbar": {
+            height: 10,
+            width: 10,
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#bdbdbd",
+            borderRadius: 2,
+          },
+        }}
+        component={Paper}
+      >
         <Table aria-label="collapsible table">
           <EnhancedTableHead
             headCells={headcells}

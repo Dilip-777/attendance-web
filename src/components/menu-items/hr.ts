@@ -1,9 +1,11 @@
 import AssignmentInd from '@mui/icons-material/AssignmentInd';
 import Person from '@mui/icons-material/Person';
+import TripOriginIcon from '@mui/icons-material/TripOrigin';
+import Dashboard from '@mui/icons-material/Dashboard';
 
 // constant
 const icons = {
-      AssignmentInd, Person
+      AssignmentInd, Person, TripOriginIcon, Dashboard
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -58,7 +60,23 @@ const hr = {
                     target: true
                 },
             ]
-        }
+        },
+          {
+            id: '/department',
+            title: 'Departments',
+            type: 'item',
+            url: '/department',
+            icon: icons.TripOriginIcon,
+            breadcrumbs: false
+        },
+        {
+            id: '/designations',
+            title: 'Designations',
+            type: 'item',
+            url: '/designations',
+            icon: icons.Dashboard,
+            breadcrumbs: false
+        },
     ]
 };
 

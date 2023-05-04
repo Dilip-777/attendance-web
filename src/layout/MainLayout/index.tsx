@@ -28,6 +28,7 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })(
     ...(!open && {
       borderBottomLeftRadius: 0,
       borderBottomRightRadius: 0,
+      overflow: "hidden",
       transition: theme.transitions.create("margin", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
@@ -84,7 +85,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", overflow: "hidden" }}>
       <CssBaseline />
       {/* header */}
       <AppBar

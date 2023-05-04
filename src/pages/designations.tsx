@@ -246,9 +246,12 @@ export default function TimeKeeper({
         />
         <TableContainer
           sx={{
+            maxHeight: "calc(100vh - 16rem)",
+            overflow: "auto",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,
+              width: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",
@@ -380,7 +383,7 @@ export default function TimeKeeper({
         >
           <Box
             p={{ xs: 0, sm: 2 }}
-            width={{ xs: "100%", sm: 400, md: 500 }}
+            width={{ xs: "100%", sm: 400 }}
             height={{ xs: "70%", sm: "100%" }}
             top={{ xs: "30%", sm: "0" }}
             sx={style}
@@ -403,7 +406,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const departments = await prisma.department.findMany();
 
-  if (session?.user?.role !== "Admin") {
+  if (!(session?.user?.role === "Admin" || session?.user?.role === "HR")) {
     return {
       redirect: {
         destination: "/",

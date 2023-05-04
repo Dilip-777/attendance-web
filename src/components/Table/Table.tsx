@@ -109,7 +109,8 @@ const CustomTable = (props: Props) => {
         />
         <TableContainer
           sx={{
-            maxHeight: 450,
+            maxHeight: "calc(100vh - 16rem)",
+            overflowY: "auto",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,

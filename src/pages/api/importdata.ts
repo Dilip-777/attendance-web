@@ -10,7 +10,8 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
     const data = req.body
     const { type } = req.query
     if(type === "employee") {
-       const employees = await prisma.employee.createMany({
+       try {
+        const employees = await prisma.employee.createMany({
             data: data,
             skipDuplicates: true
        }) 
@@ -18,6 +19,9 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
     //     data: data[0]
     // })
        res.status(200).json({ success: true })
+       } catch(error) {
+           res.status(400).json({ success: false, error: error })
+       }
     }
 
     else if(type === "contractor") {

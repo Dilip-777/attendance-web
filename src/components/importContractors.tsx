@@ -19,6 +19,7 @@ function ImportData() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [key, setKey] = useState(0);
+  const [message, setMessage] = useState("");
 
   // submit
   const [excelData, setExcelData] = useState(null);
@@ -88,6 +89,41 @@ function ImportData() {
   const importing = async (data: any) => {
     console.log(data);
 
+    const keys: string[] = [];
+
+    const indices: number[] = [];
+
+    data.forEach((d: any, index: number) => {
+      [
+        "contractorname",
+        "contractorId",
+        "servicedetail",
+        "supplierdetail",
+        "contactperson",
+        "mobilenumber",
+      ].forEach((key) => {
+        if (!d[key]) {
+          if (keys.indexOf(key) === -1) {
+            keys.push(key);
+          }
+          if (!indices.includes(index + 1)) {
+            indices.push(index + 1);
+          }
+        }
+      });
+    });
+
+    if (keys.length > 0) {
+      setMessage(
+        `Please check the following keys: ${keys.join(
+          ", "
+        )} at rows: ${indices.join(", ")}`
+      );
+      setError(true);
+      handleClick();
+      return;
+    }
+
     const body = data.map((data: any) => ({
       contractorname: data.contractorname,
       contractorId: data.contractorId,
@@ -104,6 +140,7 @@ function ImportData() {
         handleClick();
       })
       .catch((err) => {
+        setMessage("Please Provide Valid Data");
         setError(true);
         handleClick();
       });
@@ -139,7 +176,7 @@ function ImportData() {
           severity={error ? "error" : "success"}
           sx={{ width: "100%" }}
         >
-          {error ? "Please Provide Valid Data" : "Data Uploaded Successfully"}
+          {error ? message : "Data Uploaded Successfully"}
         </Alert>
       </Snackbar>
     </Stack>

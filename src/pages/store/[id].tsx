@@ -179,7 +179,7 @@ export default function Edit({
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={3} mt={2} container>
-                  <Grid item xs={12} sm={6} xl={4}>
+                  <Grid item xs={12} sm={6} lg={4}>
                     <FormSelect
                       name="contractorid"
                       label="Contractor Name*"
@@ -192,7 +192,7 @@ export default function Edit({
                       }
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} xl={4}>
+                  <Grid item xs={12} sm={6} lg={4}>
                     <SelectMonth
                       name="month"
                       label="Month*"
@@ -200,7 +200,7 @@ export default function Edit({
                       format="MM/YYYY"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} xl={4}>
+                  <Grid item xs={12} sm={6} lg={4}>
                     <FormInput
                       name="totalamount"
                       label="Total Amount*"
@@ -318,14 +318,14 @@ function FieldArray1({
                       columnSpacing={2}
                       // spacing={{ xs: 1, sm: 1 }}
                     >
-                      <Grid item xs={12} sm={6} xl={4}>
+                      <Grid item xs={12} sm={6} lg={4}>
                         <FormInput
                           name={`storeItems.${index}.chargeableItemIssued`}
                           label="Chargeable Item Issued*"
                           placeHolder="Chargeable Item Issued"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} xl={4}>
+                      <Grid item xs={12} sm={6} lg={4}>
                         <FormInput
                           name={`storeItems.${index}.quantity`}
                           label="Quantity*"
@@ -333,21 +333,21 @@ function FieldArray1({
                           type="number"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} xl={4}>
+                      <Grid item xs={12} sm={6} lg={4}>
                         <FormInput
                           name={`storeItems.${index}.division`}
                           label="Division*"
                           placeHolder="Enter the Division"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} xl={4}>
+                      <Grid item xs={12} sm={6} lg={4}>
                         <FormInput
                           name={`storeItems.${index}.units`}
                           label="Units*"
                           placeHolder="Enter the Units"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} xl={4}>
+                      <Grid item xs={12} sm={6} lg={4}>
                         <FormInput
                           name={`storeItems.${index}.rate`}
                           label="Rate*"
@@ -355,7 +355,7 @@ function FieldArray1({
                           type="number"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} xl={4}>
+                      <Grid item xs={12} sm={6} lg={4}>
                         <FormInput
                           name={`storeItems.${index}.chargeableamount`}
                           label="Chargeable Amount*"

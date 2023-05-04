@@ -6,7 +6,7 @@ export default async function editUser(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { email, name, mobileNumber, role } = req.body;
+  const { email, name, mobileNumber, role, specialRole } = req.body;
   const user = await prisma.user.update({
     where: {
       email,
@@ -15,6 +15,7 @@ export default async function editUser(
       name,
       mobileNumber,
       role,
+      specialRole,
     },
   });
 

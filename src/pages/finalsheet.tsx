@@ -213,7 +213,22 @@ export default function FinalSheet({
       <CircularProgress sx={{ color: "#673ab7" }} />
     </Box>
   ) : (
-    <Paper sx={{ p: 3 }}>
+    <Paper
+      sx={{
+        overflow: "auto",
+        p: 3,
+        maxHeight: "calc(100vh - 6rem)",
+        scrollBehavior: "smooth",
+        "&::-webkit-scrollbar": {
+          height: 10,
+          width: 9,
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "#bdbdbd",
+          borderRadius: 2,
+        },
+      }}
+    >
       <Box>
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Stack

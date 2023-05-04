@@ -16,6 +16,7 @@ const validationSchema = Yup.object().shape({
   email: Yup.string().email("Invalid Email").required("Required"),
   mobileNumber: Yup.string().required("Required"),
   role: Yup.string().required("Required"),
+  specialRole: Yup.boolean(),
 });
 
 export default function EditUser({
@@ -33,6 +34,7 @@ export default function EditUser({
     email: selectedUser?.email || "",
     mobileNumber: selectedUser?.mobileNumber || "",
     role: selectedUser?.role || "",
+    specialRole: selectedUser?.specialRole || false,
   };
 
   return (
@@ -63,6 +65,7 @@ export default function EditUser({
                 email: values.email,
                 mobileNumber: values.mobileNumber,
                 role: values.role,
+                specialRole: values.specialRole,
               })
               .then((res) => {
                 router.replace(router.asPath);
@@ -112,6 +115,15 @@ export default function EditUser({
                       label: "HoCommercialAuditor",
                     },
                     { value: "Corporate", label: "Corporate" },
+                  ]}
+                />
+                <FormSelect
+                  name="specialRole"
+                  label="Special Role"
+                  placeHolder="Select the Special Role"
+                  options={[
+                    { value: true, label: "Yes" },
+                    { value: false, label: "No" },
                   ]}
                 />
                 <Button

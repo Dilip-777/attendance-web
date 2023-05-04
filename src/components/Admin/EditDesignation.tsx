@@ -50,7 +50,7 @@ export default function EditDesignation({
       <Paper
         sx={{
           pt: "1rem",
-
+          px: "2rem",
           overflow: "hidden auto",
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
@@ -155,7 +155,7 @@ export default function EditDesignation({
                 <Button
                   type="submit"
                   variant="contained"
-                  sx={{ float: "right", mr: 10 }}
+                  sx={{ float: "right", mr: 10, width: 300 }}
                   disabled={loading}
                 >
                   Submit
