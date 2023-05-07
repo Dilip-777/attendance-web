@@ -64,6 +64,7 @@ export default function PlantCommercial({
   const [total, setTotal] = React.useState(0);
 
   const router = useRouter();
+  const colspan = designations.length > 2 ? 3 : 1;
   const { department } = router.query;
 
   const sgst = Math.floor(total * 0.09);
@@ -105,6 +106,8 @@ export default function PlantCommercial({
   React.useEffect(() => {
     fetchTimekeepers();
   }, [value]);
+
+  console.log(designations.length, designations);
 
   const onChange = (value: Dayjs | null) =>
     setValue(value?.format("MM/YYYY") || "");
@@ -185,25 +188,25 @@ export default function PlantCommercial({
                 TOTAL
               </TableCell>
             </TableRow>
-            {department === "8HR" ||
-              department === "12HR" ||
-              (department === "Colony" && (
-                <TableRow>
-                  {columns.map((column) => (
-                    <TableCell
-                      key={column.id}
-                      align={"center"}
-                      style={{
-                        top: 57,
-                        minWidth: column.minWidth,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {column.label}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+            {((department as string)?.toLowerCase() === "colony" ||
+              department === "8HR" ||
+              department === "12HR") && (
+              <TableRow>
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    align={"center"}
+                    style={{
+                      top: 57,
+                      minWidth: column.minWidth,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {column.label}
+                  </TableCell>
+                ))}
+              </TableRow>
+            )}
           </TableHead>
           <TableBody>
             {!loading ? (
@@ -228,29 +231,46 @@ export default function PlantCommercial({
             )}
             <TableRow>
               {/* <TableCell rowSpan={10} /> */}
-              <TableCell colSpan={designations.length - 2}></TableCell>
-              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+              <TableCell
+                colSpan={designations.length > 2 ? designations.length - 2 : 2}
+              ></TableCell>
+              <TableCell
+                colSpan={colspan}
+                // align="left"
+                sx={{ fontWeight: "600" }}
+              >
                 Total
               </TableCell>
               <TableCell align="center">{total}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={designations.length - 2}></TableCell>
-              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+              <TableCell
+                colSpan={designations.length > 2 ? designations.length - 2 : 2}
+              ></TableCell>
+
+              <TableCell
+                colSpan={colspan}
+                // align="center"
+                sx={{ fontWeight: "600" }}
+              >
                 SGST 9%
               </TableCell>
               <TableCell align="center">{sgst}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={designations.length - 2}></TableCell>
-              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+              <TableCell
+                colSpan={designations.length > 2 ? designations.length - 2 : 2}
+              ></TableCell>
+              <TableCell colSpan={colspan} sx={{ fontWeight: "600" }}>
                 CGST 9%
               </TableCell>
               <TableCell align="center">{sgst}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={designations.length - 2}></TableCell>
-              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+              <TableCell
+                colSpan={designations.length > 2 ? designations.length - 2 : 2}
+              ></TableCell>
+              <TableCell colSpan={colspan} sx={{ fontWeight: "600" }}>
                 Service Charge
               </TableCell>
               <TableCell align="center">
@@ -258,8 +278,10 @@ export default function PlantCommercial({
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={designations.length - 2}></TableCell>
-              <TableCell colSpan={3} sx={{ fontWeight: "600" }}>
+              <TableCell
+                colSpan={designations.length > 2 ? designations.length - 2 : 2}
+              ></TableCell>
+              <TableCell colSpan={colspan} sx={{ fontWeight: "600" }}>
                 Total Net Amount
               </TableCell>
               <TableCell align="center">

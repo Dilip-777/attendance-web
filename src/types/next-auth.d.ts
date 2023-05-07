@@ -9,10 +9,12 @@ declare module "next-auth" {
     user?: {
       id: string;
       role: string;
+      specialRole: boolean;
     } & DefaultSession["user"];
   }
 
   interface User extends DefaultUser {
         role: string;
+        specialRole: boolean;
     }
 }

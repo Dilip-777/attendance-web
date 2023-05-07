@@ -25,12 +25,15 @@ export default async function gettimekeeper (req: NextApiRequest, res: NextApiRe
                 endsWith: month as string
             },
             contractorid: contractor as string,
-            department: department as string,
+            department: {
+                contains: department as string
+            },
             attendance: "1",
             approvedByTimekeeper: true
             
         }
     })
+    
     res.status(200).json(timekeepers)
             
 }

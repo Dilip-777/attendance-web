@@ -26,7 +26,7 @@ import MainCard from "@/ui-component/cards/MainCard";
 // assets
 import { useRouter } from "next/router";
 import Router from "next/router";
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { ListItem } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
 import axios from "axios";
@@ -42,13 +42,13 @@ const ProfileSection = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLInputElement>(null);
-  // const [role, setRole] = useState<string | undefined>(
-  //   session?.user?.role || ""
-  // );
+  const [role, setRole] = useState<string | undefined>(
+    session?.user?.role || ""
+  );
 
-  // useEffect(() => {
-  //   setRole(session?.user?.role || "");
-  // }, [session]);
+  useEffect(() => {
+    setRole(session?.user?.role || "");
+  }, [session]);
 
   const handleClose = (event: globalThis.MouseEvent | TouchEvent) => {
     if (anchorRef.current && anchorRef.current.contains(event.target as Node)) {
@@ -81,13 +81,22 @@ const ProfileSection = () => {
     setOpen((prevOpen) => !prevOpen);
   };
 
-  // const handleChange = async (v: string) => {
-  //   setRole(v);
-  //   const res = await axios.put("/api/shiftrole", {
-  //     id: session?.user?.id,
-  //     role: v,
-  //   });
-  // };
+  const handleChange = async (v: string) => {
+    setRole(v);
+    const res = await axios
+      .put("/api/shiftrole", {
+        id: session?.user?.id,
+        role: v,
+      })
+      .then(async (res) => {
+        await signIn("credentials", {
+          email: session?.user?.email,
+          specialRole: session?.user?.specialRole,
+        });
+        router.push("/");
+      })
+      .catch((err) => console.log(err));
+  };
 
   const prevOpen = useRef(open);
   useEffect(() => {
@@ -195,28 +204,28 @@ const ProfileSection = () => {
                 />
 
                 {/* <ListItem> */}
-                {/* <FormSelect
-                  value={role as string}
-                  handleChange={(v) => {
-                    handleChange(v as string);
-                  }}
-                  options={[
-                    { label: "Admin", value: "Admin" },
-                    { label: "TimeKeeper", value: "TimeKeeper" },
-                    { value: "HR", label: "HR" },
-                    { value: "PlantCommercial", label: "PlantCommercial" },
-                    {
-                      value: "HoCommercialAuditor",
-                      label: "HoCommercialAuditor",
-                    },
-                    { value: "Corporate", label: "Corporate" },
-                    { value: "Stores", label: "Stores" },
-                    { value: "Safety", label: "Safety" },
-                  ]}
-                  fullWidth={true}
-                  sx={{ maxWidth: "20rem", mb: 2 }}
-                />
-                <Divider /> */}
+                {session?.user?.specialRole && (
+                  <FormSelect
+                    value={role as string}
+                    handleChange={(v) => {
+                      handleChange(v as string);
+                    }}
+                    options={[
+                      { label: "TimeKeeper", value: "TimeKeeper" },
+                      { value: "HR", label: "HR" },
+                      { value: "PlantCommercial", label: "PlantCommercial" },
+                      {
+                        value: "HoCommercialAuditor",
+                        label: "HoCommercialAuditor",
+                      },
+                      { value: "Corporate", label: "Corporate" },
+                      { value: "Stores", label: "Stores" },
+                      { value: "Safety", label: "Safety" },
+                    ]}
+                    fullWidth={true}
+                    sx={{ maxWidth: "20rem", mb: 2 }}
+                  />
+                )}
                 <Divider />
               </Box>
 

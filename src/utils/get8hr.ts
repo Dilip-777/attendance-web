@@ -3,6 +3,7 @@ import _ from "lodash";
 
 
 const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number, designations?: Designations[], department?: string) => {
+console.log(timekeeper);
 
     const rate: Record<string, string | number>  = {
     date: "Rate",
@@ -68,7 +69,7 @@ const netPayable1 : Record<string, string | number> = {
     }
     designations?.forEach((designation) => {
       const id = designation.designationid
-      const count = filtered.filter((item) => item.designation === designation.designation && item.gender && (designation.gender === "Both" || designation.gender[0] === item.gender[0])).length
+      const count = filtered.filter((item) => item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && (designation.gender === "Both" || designation.gender[0] === item.gender[0])).length
       obj[id] = count
       obj["total"] = obj.total as number + count
     })
@@ -96,23 +97,18 @@ const rows2: any[] = []
 
 
 if(designations) {
-
-  
   designations.forEach((designation) => {
     const filtered = timekeeper.filter((item) => {
       if(designation.gender === "Male" || designation.gender === "M") {
-            return item.designation === designation.designation && item.gender && item.gender[0] === designation.gender[0]
+            return item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && item.gender[0] === designation.gender[0]
         }
         else if(designation.gender === "Female" || designation.gender === "F") {
-          return item.designation === designation.designation && item.gender && item.gender[0] === designation.gender[0]
+          return item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && item.gender[0] === designation.gender[0]
         }
         else {
-          console.log("called", item.designation, designation.designation);
-          
-          return item.designation === designation.designation
+          return item.designation.toLowerCase() === designation.designation.toLowerCase()
         }
       })
-      console.log(filtered,designation.designation);
       
     const id = designation.designationid
     attendancecount[id] = filtered.length
@@ -125,8 +121,7 @@ if(designations) {
     const otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day)
     otamount[id] = Number(_.get(totalovertime1, id, 0)) * otRate
     otamount["total"] = otamount.total as number + Number(_.get(otamount, id, 0))
-    totalnetamount[id] = Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0))
-    
+    totalnetamount[id] = Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0))   
     cprate[id] = designation.servicecharge as number
     cpamount[id] = Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0))
     cpamount["total"] = cpamount.total as number + Number(_.get(cpamount, id, 0))
@@ -141,15 +136,11 @@ if(designations) {
 attendancecount["total"] = timekeeper.length
 rate["total"] = 0
 totalnetamount["total"] = parseInt(totalamount1.total as string) + parseInt(otamount.total as string)
-
 total["total"] = totalnetamount.total + parseInt(cpamount.total as string)
 gst1["total"] = Math.floor(total.total * 0.18)
 billAmount1["total"] = total.total + gst1.total
 tds1["total"] = Math.floor(total.total * 0.01)
 netPayable1["total"] = billAmount1.total + tds1.total
-
-
-
 rows2.push(attendancecount)
 rows.push(attendancecount)
 
@@ -164,7 +155,7 @@ rows2.push(otamount)
 rows.push(otamount)
 rows2.push(totalnetamount)
 rows.push(totalnetamount)
-if(department === "8HR" || department === "12HR" || department === "Colony") {
+if(department === "8HR" || department === "12HR" || department?.toLowerCase() === "colony") {
   rows2.push(cprate)
   rows.push(cprate)
   rows2.push(cpamount)

