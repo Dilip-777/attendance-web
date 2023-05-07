@@ -27,7 +27,14 @@ import Modal from "@mui/material/Modal";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
 import Stack from "@mui/material/Stack";
-import { styled } from "@mui/material/";
+import {
+  FormControl,
+  FormLabel,
+  Tab,
+  Tabs,
+  TextField,
+  styled,
+} from "@mui/material/";
 import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
@@ -36,6 +43,7 @@ import prisma from "@/lib/prisma";
 import { User } from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
+import axios from "axios";
 
 const style = {
   position: "absolute",
@@ -44,6 +52,39 @@ const style = {
   bgcolor: "background.paper",
   boxShadow: 24,
 };
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -262,6 +303,32 @@ export default function TimeKeeper({ users }: { users: User[] }) {
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const router = useRouter();
   const matches = useMediaQuery("(min-width:600px)");
+  const [value, setValue] = React.useState(0);
+  const [password, setPassword] = React.useState("");
+
+  const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
+
+  const resetPassword = async () => {
+    await axios
+      .post("/api/admin/resetpassword", {
+        id: selectedUser?.id,
+        password,
+      })
+      .then((res) => {
+        handleClose();
+        setPassword("");
+        setValue(0);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   const handleClose = () => {
     setOpen(false);
@@ -485,7 +552,41 @@ export default function TimeKeeper({ users }: { users: User[] }) {
                 Edit Details
               </Typography>
               <Divider />
-              <EditUser selectedUser={selectedUser} handleClose={handleClose} />
+              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  aria-label="basic tabs example"
+                >
+                  <Tab label="General" {...a11yProps(0)} />
+                  <Tab label="Reset Password" {...a11yProps(1)} />
+                </Tabs>
+              </Box>
+              <TabPanel value={value} index={0}>
+                <EditUser
+                  selectedUser={selectedUser}
+                  handleClose={handleClose}
+                />
+              </TabPanel>
+              <TabPanel value={value} index={1}>
+                <FormControl fullWidth>
+                  <FormLabel>Password</FormLabel>
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    value={password}
+                    onChange={handleChangePassword}
+                  />
+                  <Button
+                    onClick={() => resetPassword()}
+                    type="submit"
+                    sx={{ my: 3 }}
+                    variant="contained"
+                  >
+                    Submit
+                  </Button>
+                </FormControl>
+              </TabPanel>
             </Stack>
           </Box>
         </Slide>

@@ -41,8 +41,6 @@ export default function EditUser({
     <>
       <Paper
         sx={{
-          pt: "1rem",
-
           overflow: "hidden auto",
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
@@ -63,7 +61,7 @@ export default function EditUser({
               .post("/api/admin/editUser", {
                 name: values.name,
                 email: values.email,
-                mobileNumber: values.mobileNumber,
+                mobileNumber: values.mobileNumber.toString(),
                 role: values.role,
                 specialRole: values.specialRole,
               })
@@ -79,7 +77,7 @@ export default function EditUser({
         >
           {({ handleSubmit }) => (
             <form noValidate onSubmit={handleSubmit}>
-              <Stack spacing={3} sx={{ mt: 2, ml: 1 }}>
+              <Stack spacing={3} sx={{ ml: 1 }}>
                 <FormInput
                   name="name"
                   label="Name"
