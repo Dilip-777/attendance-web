@@ -114,11 +114,21 @@ if(designations) {
     attendancecount[id] = filtered.length
     
     rate[id] = designation.basicsalary
-    totalamount1[id] = _.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0))
+    if(designation.basicsalary_in_duration === "Monthly") {
+      totalamount1[id] = Math.floor(_.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0)) / 30)
+    }
+    else totalamount1[id] = _.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0))
+
     totalamount1["total"] = totalamount1.total as number + Number(_.get(totalamount1, id, 0))
     totalovertime1[id] = filtered.reduce((acc, curr) => acc + parseInt(curr.manualovertime || curr.overtime), 0);
     totalovertime1["total"] = totalovertime1.total as number + Number(_.get(totalovertime1, id, 0))
-    const otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day)
+    let otRate = 0
+    if(designation.basicsalary_in_duration === "Monthly") {
+       otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day / 30)
+    }
+    else {
+      otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day)
+    }
     otamount[id] = Number(_.get(totalovertime1, id, 0)) * otRate
     otamount["total"] = otamount.total as number + Number(_.get(otamount, id, 0))
     totalnetamount[id] = Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0))   

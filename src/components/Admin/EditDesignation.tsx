@@ -17,6 +17,7 @@ const validationSchema = Yup.object().shape({
   basicsalary: Yup.number().required("Required"),
   allowed_wrking_hr_per_day: Yup.number().required("Required"),
   servicecharge: Yup.number().required("Required"),
+  basicsalary_in_duration: Yup.string().required("Required"),
 });
 
 export default function EditDesignation({
@@ -33,16 +34,14 @@ export default function EditDesignation({
   const [loading, setLoading] = useState(false);
 
   const initialValues = {
-    departmentname:
-      selectedDesignation?.departmentname || departments.length > 0
-        ? departments[0].department
-        : "",
+    departmentname: selectedDesignation?.departmentname || "",
     designation: selectedDesignation?.designation || "",
     gender: selectedDesignation?.gender || "",
     basicsalary: selectedDesignation?.basicsalary || 0,
     allowed_wrking_hr_per_day:
       selectedDesignation?.allowed_wrking_hr_per_day || 0,
     servicecharge: selectedDesignation?.servicecharge || 0,
+    basicsalary_in_duration: selectedDesignation?.basicsalary_in_duration || "",
   };
 
   return (
@@ -151,6 +150,15 @@ export default function EditDesignation({
                   label="Service Charge"
                   placeHolder="Enter the Service Charge"
                   type="number"
+                />
+                <FormSelect
+                  name="basicsalary_in_duration"
+                  label="Basic Salary in Duration"
+                  placeHolder="Enter the Basic Salary"
+                  options={[
+                    { value: "Hourly", label: "Hourly" },
+                    { value: "Monthly", label: "Monthly" },
+                  ]}
                 />
                 <Button
                   type="submit"

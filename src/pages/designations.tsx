@@ -80,6 +80,12 @@ const headCells = [
     false,
     false
   ),
+  createHeadCells(
+    "basicsalary_in_duration",
+    "Basic Salary In Duration",
+    false,
+    false
+  ),
   createHeadCells("servicecharge", "Service Charge", false, false),
 ];
 
@@ -310,6 +316,7 @@ export default function TimeKeeper({
                       <TableCell>{row.gender}</TableCell>
                       <TableCell>{row.basicsalary}</TableCell>
                       <TableCell>{row.allowed_wrking_hr_per_day}</TableCell>
+                      <TableCell>{row.basicsalary_in_duration}</TableCell>
                       <TableCell>{row.servicecharge}</TableCell>
 
                       <TableCell size="small" align="center">

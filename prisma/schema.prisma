@@ -293,6 +293,7 @@ model Designations {
   gender       String
   allowed_wrking_hr_per_day   Int
   servicecharge   Float?
+   basicsalary_in_duration String   @default("Hourly")
    department         Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
 
