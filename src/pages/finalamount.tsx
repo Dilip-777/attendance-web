@@ -12,6 +12,8 @@ import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import {
   Contractor,
+  Department,
+  Designations,
   TimeKeeper,
   Workorder,
   payoutTracker,
@@ -21,9 +23,6 @@ import getTotalAmountAndRows from "@/utils/get8hr";
 import MonthSelect from "@/ui-component/MonthSelect";
 import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
-import getCCM from "@/utils/getccm";
-import getLRF from "@/utils/getlrf";
-import getColony from "@/utils/getColony";
 
 interface Data {
   date: string;
@@ -72,8 +71,12 @@ export const FormSelect = ({
 
 export default function PlantCommercial({
   workorders,
+  designations,
+  departments,
 }: {
   workorders: Workorder[];
+  designations: Designations[];
+  departments: Department[];
 }) {
   const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [page, setPage] = React.useState(0);
@@ -100,47 +103,26 @@ export default function PlantCommercial({
   const getAttendance = (contractorname: string) => {
     console.log(timekeepers.filter((t) => t.contractorname === contractorname));
 
-    const { totalnetPayable: total8HR, rows1 } = getTotalAmountAndRows(
-      timekeepers.filter(
-        (t) => t.contractorname === contractorname && t.department === "8HR"
-      ),
-      dayjs(value, "MM/YYYY").month() + 1,
-      dayjs(value, "MM/YYYY").year()
-    );
-    console.log(rows1);
+    let total = 0;
+    const totals = [];
 
-    const { totalnetPayable: total12HR } = getTotalAmountAndRows(
-      timekeepers.filter(
-        (t) => t.contractorname === contractorname && t.department === "12HR"
-      ),
-      dayjs(value, "MM/YYYY").month() + 1,
-      dayjs(value, "MM/YYYY").year()
-    );
-    const { totalnetPayable: totalccm } = getCCM(
-      timekeepers.filter(
-        (t) => t.contractorname === contractorname && t.department === "CCM"
-      ),
-      dayjs(value, "MM/YYYY").month() + 1,
-      dayjs(value, "MM/YYYY").year()
-    );
-    const { totalnetPayable: totallrf } = getLRF(
-      timekeepers.filter(
-        (t) => t.contractorname === contractorname && t.department === "LRF"
-      ),
-      dayjs(value, "MM/YYYY").month() + 1,
-      dayjs(value, "MM/YYYY").year()
-    );
-    const { totalnetPayable: totalcolony } = getColony(
-      timekeepers.filter(
-        (t) => t.contractorname === contractorname && t.department === "Colony"
-      ),
-      dayjs(value, "MM/YYYY").month() + 1,
-      dayjs(value, "MM/YYYY").year()
-    );
+    departments.forEach((d) => {
+      const { totalnetPayable } = getTotalAmountAndRows(
+        timekeepers.filter(
+          (t) =>
+            t.contractorname === contractorname && t.department === d.department
+        ),
+        dayjs(value, "MM/YYYY").month() + 1,
+        dayjs(value, "MM/YYYY").year(),
+        designations.filter((da) => da.departmentname === d.department),
+        d.department
+      );
+      total += totalnetPayable;
+      totals.push(totalnetPayable);
+    });
 
-    const total = total8HR + total12HR + totalccm + totallrf + totalcolony;
-
-    return [total8HR, total12HR, totalccm, totallrf, totalcolony, total];
+    totals.push(total);
+    return totals;
   };
 
   React.useEffect(() => {
@@ -316,10 +298,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  const designations = await prisma.designations.findMany();
+  const departments = await prisma.department.findMany();
   const workorders = await prisma.workorder.findMany();
   return {
     props: {
       workorders,
+      designations,
+      departments,
     },
   };
 };
