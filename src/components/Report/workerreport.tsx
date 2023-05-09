@@ -70,9 +70,9 @@ export default function WorkerReport({
       <Stack sx={{ maxWidth: "7rem" }} spacing={3}>
         <FormSelect
           value={contractor}
-          handleChange={(v) => setContractor(v as number)}
+          handleChange={(v) => setContractor(v as string)}
           options={contractors.map((contractor) => ({
-            value: contractor.contractorId as number,
+            value: contractor.contractorId as string,
             label: contractor.contractorname,
           }))}
           label="Contractor"

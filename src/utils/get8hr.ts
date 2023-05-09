@@ -3,7 +3,7 @@ import _ from "lodash";
 
 
 const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number, designations?: Designations[], department?: string) => {
-console.log(timekeeper);
+console.log(timekeeper, "timekeeper", month, year, designations, department);
 
     const rate: Record<string, string | number>  = {
     date: "Rate",
@@ -170,7 +170,7 @@ rows2.push(tds1)
 rows2.push(netPayable1) 
 
 
-    return { rows,  total1: total.total, rows1: rows2, totalnetPayable: totalnetamount.total};
+    return { rows,  total1: total.total, rows1: rows2, totalnetPayable: netPayable1.total};
   }
 
   export default getTotalAmountAndRows

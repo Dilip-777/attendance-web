@@ -46,8 +46,8 @@ const mobilenumbertype = Yup.string().matches(
 const validationSchema = Yup.object().shape({
   contractorname: Yup.string()
     .required("Required")
-    .matches(/^[A-Za-z ]+$/, "Please enter only letters and spaces"),
-  contractorId: Yup.number().required("Required"),
+    .matches(/^[A-Za-z .]+$/, "Please enter only letters and spaces"),
+  contractorId: Yup.string().required("Required"),
   servicedetail: Yup.string().required("Required"),
   supplierdetail: Yup.string().required("Required"),
   businessdetaildocument: fileType,
@@ -65,6 +65,10 @@ const validationSchema = Yup.object().shape({
   ifscno: stringtype.required("Required"),
   pancardno: stringtype,
   areaofwork: stringtype,
+  beneficialname: stringtype,
+  gstin: stringtype,
+  typeofcontractor: stringtype,
+  strategicbusinessunit: stringtype,
   // Organsiation Details
   organisationtype: stringtype,
   dateofincorporation: stringtype,
@@ -132,9 +136,11 @@ export default function EditContractor({
   // const [value, setValue] = useState("");
   const { id } = router.query;
 
+  console.log(contractor);
+
   const initialValues = {
     contractorname: contractor?.contractorname || "",
-    contractorId: contractor?.contractorId || null,
+    contractorId: contractor?.contractorId || "",
     servicedetail: contractor?.servicedetail || "",
     supplierdetail: contractor?.supplierdetail || "",
     businessdetaildocument: undefined,
@@ -152,6 +158,11 @@ export default function EditContractor({
     servicecharge: contractor?.servicecharge || 0,
     bankaccountnumber: contractor?.bankaccountnumber || "",
     ifscno: contractor?.ifscno || "",
+    beneficialname: contractor?.beneficialname || "",
+    gstin: contractor?.gstin || "",
+    typeofcontractor: contractor?.typeofcontractor || "",
+    strategicbusinessunit: contractor?.strategicbusinessunit || "",
+
     organisationtype: contractor?.organisationtype || "",
     dateofincorporation: contractor?.dateofincorporation || "",
     associationwithcompetitor: contractor?.associationwithcompetitor || "",
@@ -248,6 +259,7 @@ export default function EditContractor({
                 .put("/api/hr/contractors", {
                   id: id,
                   ...otherValues,
+                  gstin: String(values.gstin),
                   associationwithcompetitor:
                     associationwithcompetitor === "Yes" ? true : false,
                   isocertified: isocertified === "Yes" ? true : false,
@@ -306,7 +318,6 @@ export default function EditContractor({
                         name="contractorId"
                         label="Contractor Id*"
                         placeHolder="Enter the Contractor Id"
-                        type="number"
                         disabled={false}
                       />
                     </Grid>
@@ -439,6 +450,39 @@ export default function EditContractor({
                         name="ifscno"
                         label="IFSC Code*"
                         placeHolder="Enter IFSC Code"
+                        disabled={false}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="beneficialname"
+                        label="Beneficial Name*"
+                        placeHolder="Enter Beneficial Name"
+                        disabled={false}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="gstin"
+                        label="GSTIN*"
+                        placeHolder="Enter GSTIN"
+                        disabled={false}
+                        // type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="typeofcontractor"
+                        label="Type of Contractor*"
+                        placeHolder="Enter Type of Contractor"
+                        disabled={false}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="strategicbusinessunit"
+                        label="Strategic Business Unit*"
+                        placeHolder="Enter Strategic Business Unit"
                         disabled={false}
                       />
                     </Grid>

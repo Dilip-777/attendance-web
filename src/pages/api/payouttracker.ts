@@ -97,7 +97,7 @@ export default async function payouttracker(req: NextApiRequest, res: NextApiRes
             month: {
                 contains: prevYear,
             },
-            contractorId: parseInt(contractorid as string),
+            contractorId: contractorid as string,
         },
         _sum: {
             finalpayableamount: true,
@@ -107,21 +107,21 @@ export default async function payouttracker(req: NextApiRequest, res: NextApiRes
     const prevPayout = await prisma.payoutTracker.findFirst({
         where: {
             month: prevMonthString,
-            contractorId: parseInt(contractorid as string),
+            contractorId: contractorid as string,
         }
     })
 
     const prevprevPayout = await prisma.payoutTracker.findFirst({
         where: {
             month: prevprevMonthString,
-            contractorId: parseInt(contractorid as string),
+            contractorId: contractorid as string,
         }
     })
 
     const currentpayout = await prisma.payoutTracker.findFirst({
         where: {
             month: month as string,
-            contractorId: parseInt(contractorid as string),
+            contractorId: contractorid as string,
         }
     })
 
@@ -130,7 +130,7 @@ export default async function payouttracker(req: NextApiRequest, res: NextApiRes
         const payoutracker = await prisma.payoutTracker.findFirst({
             where: {
                 month: prevMonthString as string,
-                contractorId: parseInt(contractorid as string)
+                contractorId: contractorid as string
             }
         })
 

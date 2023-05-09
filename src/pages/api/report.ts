@@ -10,7 +10,7 @@ export default async function report(
   if (type === "worker") {
     const employees = await prisma.employee.findMany({
       where: {
-        contractorId: parseInt(contractor as string),
+        contractorId: contractor as string,
       },
     });
     res.status(200).json(employees);

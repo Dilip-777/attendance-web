@@ -96,10 +96,8 @@ function ImportData() {
     data.forEach((d: any, index: number) => {
       [
         "contractorname",
-        "contractorId",
+        "contractorid",
         "servicedetail",
-        "supplierdetail",
-        "contactperson",
         "mobilenumber",
       ].forEach((key) => {
         if (!d[key]) {
@@ -126,11 +124,20 @@ function ImportData() {
 
     const body = data.map((data: any) => ({
       contractorname: data.contractorname,
-      contractorId: data.contractorId,
+      contractorId: data.contractorid,
       servicedetail: data.servicedetail,
-      supplierdetail: data.supplierdetail,
-      contactperson: data.contactperson,
+      supplierdetail: data.supplierdetail || "",
+      contactperson: data.contactperson || "",
       mobilenumber: data.mobilenumber?.toString(),
+      beneficialname: data.BENEFICIARY_NAME || "",
+      bankaccountnumber: data.ACCOUNT_NUMBER?.toString() || "",
+      gstin: data.GSTIN || "",
+      typeofcontractor: data.TYPE_OF_CONTRACTOR || "",
+      strategicbusinessunit: data.STRATEGIC_BUSINESS_UNIT || "",
+      ifscno: data.IFSC_CODE || "",
+      pancardno: data.PAN_NO || "",
+      officeaddress: data.Office_Address || "",
+      areaofwork: data.AREA_OF_WORKS || "",
     }));
     setLoading(true);
     const res = await axios

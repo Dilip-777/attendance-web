@@ -2,9 +2,6 @@ import prisma from "@/lib/prisma";
 import FormSelect from "@/ui-component/FormSelect";
 import MonthSelect from "@/ui-component/MonthSelect";
 import getTotalAmountAndRows from "@/utils/get8hr";
-import getColony from "@/utils/getColony";
-import getCCM from "@/utils/getccm";
-import getLRF from "@/utils/getlrf";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -51,10 +48,10 @@ export default function FinalSheet({
   designations: Designations[];
 }) {
   const [value, setValue] = useState<string>(dayjs().format("MM/YYYY"));
-  const [selectedContractor, setSelectedContractor] = useState<number>(
+  const [selectedContractor, setSelectedContractor] = useState<string>(
     contractors.length > 0 && contractors[0].contractorId
       ? contractors[0]?.contractorId
-      : 0
+      : ""
   );
   const [rows, setRows] = useState<any[]>([]);
   const [timekeepers, setTimekeepers] = useState<TimeKeeper[]>([]);
@@ -85,10 +82,6 @@ export default function FinalSheet({
       `/api/gettimekeeper?contractor=${selectedContractor}&month=${value}&department=${department}`
     );
 
-    console.log(designations.filter((d) => d.departmentname === department));
-
-    console.log(department, res.data);
-
     const { rows1, totalnetPayable } = getTotalAmountAndRows(
       res.data,
       dayjs(value, "MM/YYYY").month() + 1,
@@ -97,47 +90,8 @@ export default function FinalSheet({
       department
     );
     setRows(rows1);
-    console.log(rows1);
 
     setTotalPayable(totalnetPayable);
-    // if (department === "8HR" || department === "12HR") {
-    //   const { rows1, totalnetPayable } = getTotalAmountAndRows(
-    //     res.data,
-    //     dayjs(value, "MM/YYYY").month() + 1,
-    //     dayjs(value, "MM/YYYY").year(),
-    //     designations
-    //   );
-
-    //   setRows(rows1);
-    //   setTotalPayable(totalnetPayable);
-    // } else if (department === "CCM") {
-    //   const { rows1, totalnetPayable } = getCCM(
-    //     res.data,
-    //     dayjs(value, "MM/YYYY").month() + 1,
-    //     dayjs(value, "MM/YYYY").year()
-    //   );
-
-    //   setRows(rows1);
-    //   setTotalPayable(totalnetPayable);
-    // } else if (department === "LRF") {
-    //   const { rows1, totalnetPayable } = getLRF(
-    //     res.data,
-    //     dayjs(value, "MM/YYYY").month() + 1,
-    //     dayjs(value, "MM/YYYY").year()
-    //   );
-
-    //   setRows(rows1);
-    //   setTotalPayable(totalnetPayable);
-    // } else {
-    //   const { rows1, totalnetPayable } = getColony(
-    //     res.data,
-    //     dayjs(value, "MM/YYYY").month() + 1,
-    //     dayjs(value, "MM/YYYY").year()
-    //   );
-
-    //   setRows(rows1);
-    //   setTotalPayable(totalnetPayable);
-    // }
     setTimekeepers(res.data);
     setLoading(false);
   };
@@ -162,8 +116,6 @@ export default function FinalSheet({
     fetchAll();
   }, [selectedContractor, value, department]);
 
-  console.log(store);
-
   // console.log(timekeepers, rows, totalPayable, loading);
 
   const handlePrint = async () => {
@@ -184,15 +136,6 @@ export default function FinalSheet({
       details.prevYearAmount,
       designations
     );
-    // const c = contractors.find((c) => c.contractorId === selectedContractor);
-    // const w = workorders.find(
-    //   (w) => w.contractorId === f?.id && w.startDate.includes(value)
-    // );
-    // if (department === "8HR" || department === "12HR") {
-    //   print8HR(rows, c, w, department, totalPayable);
-    // } else {
-    //   printOther(rows, c, w, department, totalPayable);
-    // }
   };
 
   const onChange = (value: Dayjs | null) =>
@@ -240,7 +183,7 @@ export default function FinalSheet({
           >
             <FormSelect
               value={selectedContractor}
-              handleChange={(value) => setSelectedContractor(value as number)}
+              handleChange={(value) => setSelectedContractor(value as string)}
               options={contractors.map((c) => ({
                 value: c.contractorId || "",
                 label: c.contractorname,
@@ -289,7 +232,10 @@ export default function FinalSheet({
             { label: "Office Address", value: f?.officeaddress as string },
             { label: "Pan Number", value: f?.pancardno as string },
             { label: "Area of Work", value: f?.areaofwork as string },
-            { label: "Type of Contractor", value: "-" },
+            {
+              label: "Type of Contractor",
+              value: f?.typeofcontractor as string,
+            },
           ]}
         />
         <Divider sx={{ my: 2 }} />
@@ -355,7 +301,7 @@ export default function FinalSheet({
       </Typography>
       <Details
         rows={[
-          { label: "Beneficial Name", value: f?.contractorname as string },
+          { label: "Beneficial Name", value: f?.beneficialname as string },
           { label: "Account Number", value: f?.bankaccountnumber as string },
           { label: "IFSC Code", value: f?.ifscno as string },
           {

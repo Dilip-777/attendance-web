@@ -122,6 +122,43 @@ function ImportData() {
       return;
     }
 
+    data.forEach((d: any, index: number) => {
+      console.log(d.machine_intime, d.machine_outtime);
+      const fractionalDay = d.machine_outtime; // Example fractional day value
+      const date = new Date();
+      date.setHours(fractionalDay * 24);
+      date.setMinutes((fractionalDay * 24 - date.getHours()) * 60);
+      const timeString = date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      console.log(timeString);
+    });
+    const convertTime = (time: number) => {
+      const fractionalDay = time; // Example fractional day value
+      const date = new Date();
+      date.setHours(fractionalDay * 24);
+      date.setMinutes((fractionalDay * 24 - date.getHours()) * 60);
+      const timeString = date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      if (timeString === "Invalid Date") {
+        return fractionalDay.toString();
+      }
+
+      const decimalValue = time;
+
+      const hours = Math.floor(decimalValue * 24);
+      const minutes = Math.round((decimalValue * 24 - hours) * 60);
+
+      const timeValue = `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}`;
+
+      return timeValue;
+    };
+
     const body = data.map((data: any) => {
       return {
         contractorid: data.contractor_id?.toString(),
@@ -133,22 +170,12 @@ function ImportData() {
         machineInTime: data.machine_intime
           ? data.machine_intime === 0
             ? "00:00"
-            : new Date(data.machine_intime * 24 * 60 * 60 * 1000)
-                .toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-                ?.toString()
+            : convertTime(data.machine_intime)
           : "Invalid Entry Time",
         machineOutTime: data.machine_outtime
           ? data.machine_outtime === 0
             ? "00:00"
-            : new Date(data.machine_outtime * 24 * 60 * 60 * 1000)
-                .toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-                ?.toString()
+            : convertTime(data.machine_outtime)
           : "Invalid Entry Time",
         machineshift: data.shift || "day",
         attendance: data.attendence?.toString() || "0",

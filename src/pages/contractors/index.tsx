@@ -276,9 +276,9 @@ export default function Contractors({
           <Box sx={style}>
             <Stack spacing={3}>
               <FormControl>
-                <FormLabel>Select the Designation</FormLabel>
+                <FormLabel>Select the Department</FormLabel>
                 <Select
-                  placeholder="Select the designation"
+                  placeholder="Select the Department"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
                 >

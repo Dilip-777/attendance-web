@@ -14,7 +14,7 @@ export default async function employee (req: NextApiRequest, res: NextApiRespons
                 employeeId: data.employeeId,
             }
         })
-        if(isExist) {
+        if(isExist && !id) {
             res.status(409).json({message: "Employee Id already exists", error: "employeeId"})
             return;
         }

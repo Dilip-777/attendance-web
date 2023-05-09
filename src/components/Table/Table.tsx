@@ -182,16 +182,16 @@ const CustomTable = (props: Props) => {
                       {props.setContractorId && props.setOpen && (
                         <>
                           {session?.user?.role !== "HR" && (
-                            <TableCell
-                              onClick={() => {
-                                if (props.setContractorId && props.setOpen) {
-                                  props.setContractorId(row.id as string);
-                                  props.setOpen(true);
-                                }
-                              }}
-                              align="center"
-                            >
-                              <IconButton sx={{ m: 0 }}>
+                            <TableCell align="center">
+                              <IconButton
+                                onClick={() => {
+                                  if (props.setContractorId && props.setOpen) {
+                                    props.setContractorId(row.id as string);
+                                    props.setOpen(true);
+                                  }
+                                }}
+                                sx={{ m: 0 }}
+                              >
                                 <Visibility fontSize="small" />
                               </IconButton>
                             </TableCell>

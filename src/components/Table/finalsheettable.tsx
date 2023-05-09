@@ -77,7 +77,7 @@ export default function FinalSheetTable({
   ];
 
   const colspan =
-    department === "8HR" || department === "12HR" || department === "Colony"
+    department === "8HR" || department === "12HR" || department === "COLONY"
       ? 8
       : 4;
 
@@ -118,7 +118,7 @@ export default function FinalSheetTable({
               </TableCell>
               {(department === "8HR" ||
                 department === "12HR" ||
-                department === "Colony") && (
+                department === "COLONY") && (
                 <TableCell
                   align="center"
                   sx={{ fontWeight: "700" }}
@@ -129,7 +129,7 @@ export default function FinalSheetTable({
               )}
               {(department === "8HR" ||
               department === "12HR" ||
-              department === "Colony"
+              department === "COLONY"
                 ? headers
                 : ccmheader
               ).map((header, index) => (

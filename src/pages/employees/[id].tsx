@@ -26,7 +26,7 @@ const mobilenumbertype = Yup.string().matches(
 
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().required("Required"),
-  employeeId: numberType,
+  employeeId: Yup.string().required("Required"),
   employeename: Yup.string()
     .required("Required")
     .matches(/^[A-Za-z ]+$/, "Please enter only letters and spaces"),
@@ -58,7 +58,7 @@ export default function Edit({
 
   const initialValues = {
     contractorId: employee?.contractorId || "",
-    employeeId: employee?.employeeId || 0,
+    employeeId: employee?.employeeId || "",
     employeename: employee?.employeename || "",
     designation: employee?.designation || "",
     department: employee?.department || "",
@@ -130,12 +130,13 @@ export default function Edit({
           validationSchema={validationSchema}
           onSubmit={(values, { setErrors, setSubmitting }) => {
             const { phone, employeeId, ...rest } = values;
+
             setSubmitting(true);
             axios
               .post("/api/hr/employee", {
                 id: employee ? employee.id : undefined,
                 ...rest,
-                contractorId: Number(rest.contractorId),
+                contractorId: rest.contractorId,
                 employeeId: employeeId,
                 phone: String(phone),
               })
@@ -174,7 +175,6 @@ export default function Edit({
                       name="employeeId"
                       label="Employee Id*"
                       placeHolder="Enter Employee Id"
-                      type="number"
                       disabled={false}
                     />
                   </Grid>

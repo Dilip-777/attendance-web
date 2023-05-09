@@ -112,7 +112,7 @@ enum Status {
 model Contractor {
   id   String   @id @default(cuid())
   contractorname      String
-  contractorId       Int    @unique
+  contractorId       String    @unique
   servicedetail      String
   supplierdetail      String  
   officeaddress      String?
@@ -128,6 +128,10 @@ model Contractor {
   servicecharge    Int?
   bankaccountnumber   String?
   ifscno      String?
+  beneficialname  String?
+  gstin        String?
+  typeofcontractor   String?
+  strategicbusinessunit   String?
   businessdetaildocument      String?
   uploadutilitybill      String?
   organisationtype      String?
@@ -188,7 +192,7 @@ model Contractor {
 model Employee {
   id   String   @id @default(cuid())
     contractorname  String
-    employeeId      Int  @unique
+    employeeId      String  @unique
     employeename String
     designation String 
     department String
@@ -198,10 +202,10 @@ model Employee {
     basicsalary_in_duration String
     basicsalary Int
 	allowed_wrking_hr_per_day Int
-    servicecharge Int?
-    gst Int?
-    tds Int?
-    contractorId Int
+    servicecharge Float?
+    gst Float?
+    tds Float?
+    contractorId String
     contractor         Contractor     @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
@@ -243,7 +247,7 @@ model HOAuditor {
 
 model payoutTracker {
   id     String    @id @default(cuid())
-  contractorId   Int
+  contractorId   String
   contractorName String
   month          String
   amount         Int
@@ -288,7 +292,7 @@ model Designations {
   basicsalary    Int
   gender       String
   allowed_wrking_hr_per_day   Int
-  servicecharge   Int?
+  servicecharge   Float?
    department         Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
 
@@ -316,7 +320,7 @@ model Upload {
 model Stores {
   id   String   @id @default(cuid())
   month   String   
-  contractorid   Int
+  contractorid   String
   contractorName  String
   storeItems    StoreItem[]
   totalAmount   Int
@@ -340,7 +344,7 @@ model StoreItem {
 model Safety {
   id   String   @id @default(cuid())
   month   String   
-  contractorid   Int
+  contractorid   String
   contractorName  String
   safetyItems   SafetyItem[]
   totalAmount   Int

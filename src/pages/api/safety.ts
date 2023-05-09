@@ -10,7 +10,7 @@ export default async function Stores(
     if(contractorid && month) {
       const safety = await prisma.safety.findFirst({
         where: {
-          contractorid: parseInt(contractorid as string),
+          contractorid: contractorid as string,
           month: month as string,
         },
       });

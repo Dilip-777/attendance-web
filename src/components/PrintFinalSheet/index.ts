@@ -36,45 +36,10 @@ const prevMonthString = prevMonth.format('MM/YYYY');
 return prevMonthString;
 }
 
-const headers = [
-  createHeadcell("date", "Date", 1),
-  createHeadcell("8MW", "8MW", 2),
-  createHeadcell("20MW", "20MW", 2),
-  createHeadcell("DM", "DM Plant", 1),
-  createHeadcell("QC", "QC", 1),
-  createHeadcell("Store", "Store", 1),
-  createHeadcell("K7", "K7 & 1-6PROC", 2),
-  createHeadcell("RMHS", "RMHS", 1),
-  createHeadcell("PS", "PS", 1),
-  createHeadcell("HK", "HK", 1),
-  createHeadcell("SVR", "SVR", 1),
-  createHeadcell("total", "Total", 1),
-];
-
-const headcells = [
-  createHeadcell("date", "", 1),
-  createHeadcell("m8", "M", 1),
-  createHeadcell("f8", "F", 1),
-  createHeadcell("m20", "M", 1),
-  createHeadcell("f20", "F", 1),
-  createHeadcell("dm", "M", 1),
-  createHeadcell("qc", "M", 1),
-  createHeadcell("store", "M", 1),
-  createHeadcell("k7m", "M", 1),
-  createHeadcell("k7f", "F", 1),
-  createHeadcell("rmhs", "M", 1),
-  createHeadcell("ps", "F", 1),
-  createHeadcell("hk", "M", 1),
-  createHeadcell("svr", "M", 1),
-  createHeadcell("total", "Total", 1),
-];
-
 export function print(rows: any[], total: number,department: string, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number , designations: Designations[]) {
 
   const previousMonth = getPreviousMonth(date)
   const beforemonth = getPreviousMonth(previousMonth)
-
-  console.log("payoutracker", payouttracker);
   
 
   let doc = new Document({
