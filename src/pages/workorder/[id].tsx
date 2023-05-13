@@ -27,7 +27,7 @@ import axios from "axios";
 import FormDate from "@/components/FormikComponents/FormDate";
 import FileUpload from "@/components/FormikComponents/FileUpload";
 
-const fileType = Yup.object().required("Required").optional();
+const fileType = Yup.string().optional();
 
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().required("Required"),

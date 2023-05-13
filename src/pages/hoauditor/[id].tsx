@@ -25,7 +25,7 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { Dayjs } from "dayjs";
 // import { Contractor } from "@prisma/client"
 
-const fileType = Yup.object().required("Required").optional();
+const fileType = Yup.string().optional();
 
 const validationSchema = Yup.object().shape({
   contractorname: Yup.string().required("Required"),

@@ -30,7 +30,7 @@ import FormDate from "@/components/FormikComponents/FormDate";
 import dayjs from "dayjs";
 // import { Contractor } from "@prisma/client"
 
-const fileType = Yup.object().required("Required").optional();
+const fileType = Yup.string().optional();
 
 const stringtype = Yup.string().required("Required").optional();
 
