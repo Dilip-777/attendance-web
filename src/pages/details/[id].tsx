@@ -49,7 +49,7 @@ const validationSchema = Yup.object().shape({
   department: Yup.string().optional(),
   gender: Yup.string().required("Required"),
   comment: Yup.string().required("Required"),
-  uploadDocument: Yup.object().optional(),
+  uploadDocument: Yup.string().optional(),
 });
 
 export default function EditTimkeeper({
