@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
+    esmExternals: false,
     modularizeImports: {
       "@mui/material": {
         transform: "@mui/material/${member}",

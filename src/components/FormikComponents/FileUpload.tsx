@@ -15,6 +15,7 @@ import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import InsertDriveFile from "@mui/icons-material/InsertDriveFile";
 import axios from "axios";
+import { set } from "lodash";
 
 const StyledCard = styled(Card)(
   ({ theme, isError }: { theme: Theme; isError: boolean }) => ({
@@ -60,13 +61,76 @@ const FileUpload: React.FC<Props> = ({
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append("myFile", file1);
-      const { data } = await axios.post("/api/upload", formData);
-      setFieldValue(name, data.file);
+      // const formData = new FormData();
+      formData.append("file", file1);
+      formData.append("upload_preset", "attendance-web"); // Replace with your Cloudinary upload preset name
+      formData.append("resource_type", "raw");
+
+      try {
+        const response = await fetch(
+          "https://api.cloudinary.com/v1_1/dddvmk9xs/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        console.log(response);
+
+        const result = await response.json();
+        console.log(result);
+
+        setFieldValue(name, result.secure_url);
+
+        // return result;
+      } catch (error) {
+        console.log(error);
+      }
+      // formData.append("myFile", file1);
+      // // const { data } = await axios.post("/api/upload", formData);
+      // const data = Upload(file1);
+      // setFieldValue(name, data.file);
+      // console.log();
     } catch (error) {
       console.log(error);
     }
     setLoading(false);
+  };
+
+  const Upload = (file: File | undefined) => {
+    // const [file, setFile] = useState<File | null>(null);
+    // const [documentUrl, setDocumentUrl] = useState("");
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+      event.preventDefault();
+
+      if (!file) {
+        console.log("No file selected");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "attendance-web"); // Replace with your Cloudinary upload preset name
+      formData.append("resource_type", "raw");
+
+      try {
+        const response = await fetch(
+          "https://api.cloudinary.com/v1_1/dddvmk9xs/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        console.log(response);
+
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   return (
@@ -103,7 +167,7 @@ const FileUpload: React.FC<Props> = ({
             ) : field.value?.mimetype?.indexOf("image") > -1 ? (
               <img
                 style={{ maxWidth: "100%", height: "100%" }}
-                src={`/uploadedFiles/${field.value.newFilename}`}
+                src={`${field.value}`}
                 alt=""
               />
             ) : (
@@ -142,8 +206,8 @@ const FileUpload: React.FC<Props> = ({
         <Box width="100%" textAlign="center" py="0.7rem" bgcolor="white">
           <Typography fontWeight="500" fontSize="0.8rem">
             {field.value
-              ? field.value?.newFilename?.slice(0, 18) +
-                (field.value.newFilename?.length > 18 ? "..." : "")
+              ? field.value.slice(0, 18) +
+                (field.value.length > 18 ? "..." : "")
               : label.slice(0, 18) + (label.length > 18 ? "..." : "")}
           </Typography>
         </Box>

@@ -91,12 +91,12 @@ export default async function handler(
               id: isDocumentUploaded[0].id,
             },
             data: {
-              document: uploadDocument.newFilename,
+              document: uploadDocument,
             },
           })
         : await prisma.upload.create({
             data: {
-              document: uploadDocument.newFilename,
+              document: uploadDocument,
               userId: userId,
               userName: userName,
               role: role,

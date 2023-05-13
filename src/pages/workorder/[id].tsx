@@ -65,13 +65,13 @@ export default function AddWordOrder({
     alert1Month: workorder?.alert1Month || false,
     alert15days: workorder?.alert15days || false,
     amendmentDocument: workorder?.amendmentDocument
-      ? { newFilename: workorder.amendmentDocument }
+      ? workorder.amendmentDocument
       : undefined,
     addendumDocument: workorder?.addendumDocument
-      ? { newFilename: workorder.addendumDocument }
+      ? workorder.addendumDocument
       : undefined,
     uploadDocument: workorder?.uploadDocument
-      ? { newFilename: workorder.uploadDocument }
+      ? workorder.uploadDocument
       : undefined,
   };
 

@@ -53,17 +53,13 @@ const Header = ({
                 color: theme.palette.secondary.light,
               },
             }}
-            // aria-haspopup="true"
-            onClick={handleLeftDrawerToggle}
             color="inherit"
           >
             <MenuBook sx={{ fontSize: "1.3rem", stroke: 1.5 }} />
           </Avatar>
         </IconButton>
-        {/* </ButtonBase> */}
       </Box>
 
-      {/* header search */}
       <SearchSection />
       <Box sx={{ flexGrow: 1 }} />
       <Box sx={{ flexGrow: 1 }} />

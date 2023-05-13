@@ -23,8 +23,6 @@ const MenuList = () => {
   const [navItems, setNavItems] = useState<any>();
   const { data: session } = useSession();
 
-  console.log(session);
-
   const getNavItems = () => {
     let items = [];
     if (session?.user?.role === "Admin") items = adminItems.items;

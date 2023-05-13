@@ -20,9 +20,9 @@ export default async function workorder (req: NextApiRequest, res: NextApiRespon
             contractorId: contractor?.contractorId.toString(),
             contractorName: contractor?.contractorname,
             ...rest,
-            amendmentDocument: rest.amendmentDocument?.newFilename || null,
-            addendumDocument: rest.addendumDocument?.newFilename || null,
-            uploadDocument: rest.uploadDocument?.newFilename || null,
+            amendmentDocument: rest.amendmentDocument || null,
+            addendumDocument: rest.addendumDocument || null,
+            uploadDocument: rest.uploadDocument || null,
         }
         const workorder = await prisma.workorder.create({
             data: body
@@ -44,9 +44,9 @@ export default async function workorder (req: NextApiRequest, res: NextApiRespon
             contractorId: contractor?.contractorId.toString(),
             contractorName: contractor?.contractorname,
             ...rest,
-            amendmentDocument: rest.amendmentDocument?.newFilename || null,
-            addendumDocument: rest.addendumDocument?.newFilename || null,
-            uploadDocument: rest.uploadDocument?.newFilename || null,
+            amendmentDocument: rest.amendmentDocument || null,
+            addendumDocument: rest.addendumDocument || null,
+            uploadDocument: rest.uploadDocument || null,
         }
         const workorder = await prisma.workorder.update({
             where: {

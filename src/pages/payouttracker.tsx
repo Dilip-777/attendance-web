@@ -172,7 +172,7 @@ export default function Employees({
   const handleUpload = async (doc: any) => {
     await axios.put("/api/payouttracker", {
       id: doc.id,
-      uploadreceipt: doc.data.file.newFilename,
+      uploadreceipt: doc.data.file,
     });
   };
 
@@ -498,7 +498,7 @@ function UploadButtons({
       formData.append("myFile", file1);
       setValue(file1);
       const { data } = await axios.post("/api/upload", formData);
-      setUrl(`/uploadedFiles/${data.file.newFilename}`);
+      setUrl(`${data.file}`);
       handleUpload({ id, data });
     } catch (error) {
       console.log(error);
