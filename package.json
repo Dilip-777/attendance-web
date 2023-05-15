@@ -42,7 +42,7 @@
     "sass": "^1.59.3",
     "shortid": "^2.2.16",
     "typescript": "5.0.2",
-    "uploadthing": "^2.0.1",
+    "uploadthing": "^2.0.5",
     "xlsx": "^0.18.5",
     "yup": "^1.0.2"
   },

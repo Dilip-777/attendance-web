@@ -134,6 +134,7 @@ interface EnhancedTableToolbarProps {
   contractors: { value: string; label: string }[];
   handleApprove: () => void;
   showApprove: boolean;
+  contractorlist: Contractor[];
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -146,6 +147,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     setValue,
     handleApprove,
     showApprove,
+    contractorlist,
   } = props;
 
   return (
@@ -204,7 +206,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Tooltip>
       ) : (
         <Stack direction="row" spacing={2}>
-          <ImportData />
+          <ImportData contractors={contractorlist} />
           {value.month() < dayjs().month() &&
             showApprove &&
             contractorName !== "all" && (
@@ -420,6 +422,7 @@ export default function TimeKeeperTable({}: // contractors,
       ) : (
         <Paper sx={{ width: "100%", mb: 2 }}>
           <EnhancedTableToolbar
+            contractorlist={contractors}
             numSelected={selected.length}
             contractorName={contractorName}
             setContractorName={setContractorName}

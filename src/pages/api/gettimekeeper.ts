@@ -11,7 +11,9 @@ export default async function gettimekeeper (req: NextApiRequest, res: NextApiRe
                 attendancedate: {
                     endsWith: month as string
                 },
-                attendance: "1",
+                attendance: {
+                    not: "0"
+                },
                 approvedByTimekeeper: true
             }
         })
@@ -28,7 +30,9 @@ export default async function gettimekeeper (req: NextApiRequest, res: NextApiRe
             department: {
                 contains: department as string
             },
-            attendance: "1",
+            attendance: {
+                not: "0"
+                },
             approvedByTimekeeper: true
             
         }

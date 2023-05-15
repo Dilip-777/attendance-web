@@ -153,7 +153,7 @@ export default function FinalSheetTable({
                 {item.sub && <TableCell align="center">{item.sub}</TableCell>}
                 {rows.map((row, index) => (
                   <TableCell key={index} align="center">
-                    {Math.floor(_.get(row, item.id)) || 0}
+                    {_.get(row, item.id) || 0}
                   </TableCell>
                 ))}
               </TableRow>

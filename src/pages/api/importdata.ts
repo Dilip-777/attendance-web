@@ -38,6 +38,26 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
             data: data,
             skipDuplicates: true
         })
+
+        const employees = await prisma.employee.findMany({
+            where: {
+                gender: "Female"
+            },
+            select: {
+                employeeId: true
+            }
+        })
+
+        const updatedTimekeepers = await prisma.timeKeeper.updateMany({
+           data: {
+             gender: "Female"
+           },
+           where: {
+            employeeid: {
+                in: employees.map((employee) => employee.employeeId)
+            }
+           }
+        })
         // const timeKeeper = await prisma.timeKeeper.create({
         //    data: data[0]
         // })

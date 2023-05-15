@@ -1,7 +1,3 @@
-import { forwardRef } from "react";
-
-// material-ui
-import { useTheme } from "@mui/material/styles";
 import {
   Card,
   CardContent,
@@ -44,8 +40,6 @@ const MainCard = ({
   sx?: any;
   title?: string;
 }) => {
-  const theme = useTheme();
-
   return (
     <Card
       {...others}
@@ -60,7 +54,6 @@ const MainCard = ({
         ...sx,
       }}
     >
-      {/* card header and action */}
       {title && (
         <CardHeader
           sx={headerSX}
@@ -70,11 +63,7 @@ const MainCard = ({
           action={secondary}
         />
       )}
-
-      {/* content & header divider */}
       {title && <Divider />}
-
-      {/* card content */}
       {content && (
         <CardContent sx={contentSX} className={contentClass}>
           {children}

@@ -3,17 +3,11 @@ import {
   Button,
   CircularProgress,
   Divider,
-  FormControl,
-  FormLabel,
   Grid,
-  OutlinedInput,
   Paper,
-  Stack,
-  styled,
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { shouldForwardProp } from "@mui/system";
 import { useEffect, useState } from "react";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
@@ -60,7 +54,6 @@ export default function EditTimkeeper({
   departments: Department[];
 }) {
   const router = useRouter();
-  const [value, setValue] = useState("");
   const { id } = router.query;
   const [loading, setLoading] = useState(false);
   const [timekeeper, setTimeKepeer] = useState<TimeKeeper>();
@@ -336,12 +329,6 @@ export default function EditTimkeeper({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    {/* <FormInput
-                    name="department"
-                    label="Department"
-                    placeHolder="Department"
-                    disabled={false}
-                  /> */}
                     <FormSelect
                       name="department"
                       label="Department"
@@ -407,16 +394,20 @@ export default function EditTimkeeper({
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const session = await getSession({ req });
-  const departments = await prisma.department.findMany();
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session?.user?.id,
-    },
-  });
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  const departments = await prisma.department.findMany();
   return {
     props: {
-      role: user?.role,
+      role: session?.user?.role,
       departments,
     },
   };

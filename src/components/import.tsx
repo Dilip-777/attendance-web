@@ -1,24 +1,47 @@
 import Close from "@mui/icons-material/Close";
+import {
+  Modal,
+  Backdrop,
+  Fade,
+  FormControl,
+  FormLabel,
+  Select,
+  MenuItem,
+  Box,
+} from "@mui/material";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
+import { Contractor } from "@prisma/client";
 import axios from "axios";
+import _ from "lodash";
+import router from "next/router";
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 
-function ImportData() {
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
+};
+
+function ImportData({ contractors }: { contractors: Contractor[] }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [key, setKey] = useState(0);
-
-  // submit
-  const [excelData, setExcelData] = useState(null);
-  // it will contain array of objects
+  const [contractor, setContractor] = useState<string | null>(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [data, setData] = useState<any[]>([]);
 
   // handle File
   const fileType = ["application/vnd.xlsx", "application/vnd.ms-excel"];
@@ -39,7 +62,9 @@ function ImportData() {
         const worksheet = workbook.Sheets[worksheetName];
         const data = XLSX.utils.sheet_to_json(worksheet);
         console.log(data);
-        importing(data);
+        setOpenModal(true);
+        setData(data);
+        // importing(data);
       };
       setKey(key + 1);
     }
@@ -93,12 +118,12 @@ function ImportData() {
 
     data.forEach((d: any, index: number) => {
       [
-        "contractor_name",
-        "contractor_id",
-        "employee_name",
-        "employee_id",
-        "designation",
-        "department",
+        "Employee Name",
+        "Employee Code",
+        "Designation",
+        "Department",
+        "Att Status",
+        "Attendance Date",
       ].forEach((key) => {
         if (!d[key]) {
           if (keys.indexOf(key) === -1) {
@@ -122,20 +147,9 @@ function ImportData() {
       return;
     }
 
-    data.forEach((d: any, index: number) => {
-      console.log(d.machine_intime, d.machine_outtime);
-      const fractionalDay = d.machine_outtime; // Example fractional day value
-      const date = new Date();
-      date.setHours(fractionalDay * 24);
-      date.setMinutes((fractionalDay * 24 - date.getHours()) * 60);
-      const timeString = date.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      console.log(timeString);
-    });
     const convertTime = (time: number) => {
       const fractionalDay = time; // Example fractional day value
+      if (fractionalDay === 0) return "00:00";
       const date = new Date();
       date.setHours(fractionalDay * 24);
       date.setMinutes((fractionalDay * 24 - date.getHours()) * 60);
@@ -159,45 +173,51 @@ function ImportData() {
       return timeValue;
     };
 
+    const getAttendance = (attendance: string) => {
+      if (attendance === "Present") {
+        return "1";
+      } else if (attendance === "1/2Present") {
+        return "0.5";
+      } else {
+        return "0";
+      }
+    };
+
+    const selected = contractors.find((c) => c.contractorId === contractor);
+
     const body = data.map((data: any) => {
       return {
-        contractorid: data.contractor_id?.toString(),
-        contractorname: data.contractor_name,
-        employeeid: data.employee_id?.toString(),
-        employeename: data.employee_name,
-        designation: data.designation,
-        department: data.department,
-        machineInTime: data.machine_intime
-          ? data.machine_intime === 0
-            ? "00:00"
-            : convertTime(data.machine_intime)
-          : "Invalid Entry Time",
-        machineOutTime: data.machine_outtime
-          ? data.machine_outtime === 0
-            ? "00:00"
-            : convertTime(data.machine_outtime)
-          : "Invalid Entry Time",
-        machineshift: data.shift || "day",
-        attendance: data.attendence?.toString() || "0",
-        attendancedate: getDate(data.entry_date)?.toString(),
-        overtime: data.overtime?.toString() || "0",
-        machineduration: data.machine_duration
-          ? data.machine_duration === 0
-            ? "00:00"
-            : new Date(data.machine_duration * 24 * 60 * 60 * 1000)
-                .toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                  hour12: false,
-                  timeZone: "UTC", // or specify the time zone you want to display
-                })
-                ?.toString()
-          : "-",
+        contractorid: selected?.contractorId,
+        contractorname: selected?.contractorname,
+        employeeid: _.get(data, "Employee Code")?.toString(),
+        employeename: _.get(data, "Employee Name"),
+        designation: data.Designation,
+        department: data.Department,
+        machineInTime: _.get(data, "In Time", "00:00"),
+        machineOutTime: _.get(data, "Out Time", "00:00"),
+        machineshift: _.get(data, "Shift Code") || "-",
+        attendance: getAttendance(_.get(data, "Att Status")) || "0",
+        attendancedate: getDate(_.get(data, "Attendance Date"))?.toString(),
+        overtime: _.get(data, "Over Time", "00:00").slice(0, 2),
+        machineduration: _.get(data, "Duration", "00:00"),
+        // machineduration: _.get(data, "Duration")
+        //   ? _.get(data, "Duration") === 0
+        //     ? "00:00"
+        //     : new Date(_.get(data, "Duration") * 24 * 60 * 60 * 1000)
+        //         .toLocaleTimeString("en-US", {
+        //           hour: "2-digit",
+        //           minute: "2-digit",
+        //           second: "2-digit",
+        //           hour12: false,
+        //           timeZone: "UTC", // or specify the time zone you want to display
+        //         })
+        //         ?.toString()
+        //   : "-",
         eleave: data.e_leave || "0",
-        gender: data.gender || "M",
+        gender: data.gender || "Male",
       };
     });
+
     setLoading(true);
     const res = await axios
       .post("/api/importdata?type=timekeeper", body)
@@ -211,11 +231,8 @@ function ImportData() {
         setError(true);
         handleClick();
       });
-
     setLoading(false);
   };
-
-  // new Date(timeValue * 24 * 60 * 60 * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
@@ -247,6 +264,57 @@ function ImportData() {
           {error ? message : "Data Uploaded Successfully"}
         </Alert>
       </Snackbar>
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        open={openModal}
+        onClose={() => {
+          setOpenModal(false);
+          setContractor(null);
+        }}
+        closeAfterTransition
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            timeout: 500,
+          },
+        }}
+      >
+        <Fade in={openModal}>
+          <Box sx={style}>
+            <Stack spacing={3}>
+              <FormControl>
+                <FormLabel>Select the Contractor</FormLabel>
+                <Select
+                  placeholder="Select the Contractor"
+                  value={contractor}
+                  onChange={(e) => setContractor(e.target.value as string)}
+                >
+                  {contractors
+                    .map((c) => ({
+                      value: c.contractorId,
+                      label: c.contractorname,
+                    }))
+                    ?.map((option) => (
+                      <MenuItem value={option.value}>{option.label}</MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+              <Button
+                variant="contained"
+                disabled={Boolean(!contractor)}
+                onClick={() => {
+                  importing(data);
+                  setOpenModal(false);
+                  setContractor(null);
+                }}
+              >
+                Upload
+              </Button>
+            </Stack>
+          </Box>
+        </Fade>
+      </Modal>
     </Stack>
   );
 }

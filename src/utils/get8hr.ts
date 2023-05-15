@@ -62,14 +62,16 @@ const netPayable1 : Record<string, string | number> = {
   
 
   const getData = (date: string) => {
-    const filtered = timekeeper.filter((item) => item.attendancedate === date);
+    const filtered = timekeeper.filter((item) => item.attendancedate === date && item.attendance === "1");
+    const halfpresent = timekeeper.filter((item) => item.attendancedate === date && item.attendance === "0.5");
+
     const obj: Record <string, string | number > = {
          date: date,
           total: 0
     }
     designations?.forEach((designation) => {
       const id = designation.designationid
-      const count = filtered.filter((item) => item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && (designation.gender === "Both" || designation.gender[0] === item.gender[0])).length
+      const count = filtered.filter((item) => item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && (designation.gender === "Both" || designation.gender[0] === item.gender[0])).length + halfpresent.filter((item) => item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && (designation.gender === "Both" || designation.gender[0] === item.gender[0])).length / 2
       obj[id] = count
       obj["total"] = obj.total as number + count
     })
@@ -99,6 +101,20 @@ const rows2: any[] = []
 if(designations) {
   designations.forEach((designation) => {
     const filtered = timekeeper.filter((item) => {
+      if(item.attendance === "0.5") return false
+      if(designation.gender === "Male" || designation.gender === "M") {
+            return item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && item.gender[0] === designation.gender[0]
+        }
+        else if(designation.gender === "Female" || designation.gender === "F") {
+          return item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && item.gender[0] === designation.gender[0]
+        }
+        else {
+          return item.designation.toLowerCase() === designation.designation.toLowerCase()
+        }
+      })
+
+    const filtered1 = timekeeper.filter((item) => {
+      if(item.attendance === "1") return false
       if(designation.gender === "Male" || designation.gender === "M") {
             return item.designation.toLowerCase() === designation.designation.toLowerCase() && item.gender && item.gender[0] === designation.gender[0]
         }
@@ -111,7 +127,7 @@ if(designations) {
       })
       
     const id = designation.designationid
-    attendancecount[id] = filtered.length
+    attendancecount[id] = filtered.length + filtered1.length / 2
     
     rate[id] = designation.basicsalary
     if(designation.basicsalary_in_duration === "Monthly") {
@@ -127,7 +143,7 @@ if(designations) {
        otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day / 30)
     }
     else {
-      otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day)
+      otRate = Math.floor(designation.basicsalary / designation.allowed_wrking_hr_per_day)
     }
     otamount[id] = Number(_.get(totalovertime1, id, 0)) * otRate
     otamount["total"] = otamount.total as number + Number(_.get(otamount, id, 0))

@@ -6,7 +6,6 @@ import { Divider, Grid, Stack, Typography, useMediaQuery } from "@mui/material";
 import AuthWrapper1 from "../components/Authentication/AuthWrapper1";
 import AuthCardWrapper from "../components/Authentication/AuthCardWrapper";
 import AuthRegister from "../components/Authentication/auth-forms/AuthRegister";
-import { useRouter } from "next/router";
 import { GetServerSidePropsContext } from "next";
 import { getSession } from "next-auth/react";
 

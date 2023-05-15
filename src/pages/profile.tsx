@@ -14,7 +14,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { User } from "@prisma/client";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
@@ -102,7 +101,6 @@ export default function Profile() {
           router.push("/");
         }
       } catch (err: any) {
-        console.log(err.response.data.message);
         setError(err.response.data.message);
       }
     } else {
