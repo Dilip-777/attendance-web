@@ -13,6 +13,7 @@ import { Router, useRouter } from "next/router";
 import { useState } from "react";
 import { Provider } from "react-redux";
 import { SessionProvider } from "next-auth/react";
+import { Analytics } from "@vercel/analytics/react";
 import NProgress from "nprogress";
 import Head from "next/head";
 import "../style.css";
@@ -79,6 +80,7 @@ export default function App({
           </ThemeProvider>
         </StyledEngineProvider>
       </SessionProvider>
+      <Analytics />
     </Provider>
   );
 }
