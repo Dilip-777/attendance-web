@@ -1,10 +1,15 @@
 import { useTheme } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import LogoSection from "../LogoSection";
-import SearchSection from "./SearchSection";
-import ProfileSection from "./ProfileSection";
-import NotificationSection from "./NotificationSection";
+// import LogoSection from "../LogoSection";
+import dynamic from "next/dynamic";
+const LogoSection = dynamic(() => import("../LogoSection"));
+const SearchSection = dynamic(() => import("./SearchSection"));
+const ProfileSection = dynamic(() => import("./ProfileSection"));
+const NotificationSection = dynamic(() => import("./NotificationSection"));
+// import SearchSection from "./SearchSection";
+// import ProfileSection from "./ProfileSection";
+// import NotificationSection from "./NotificationSection";
 import MenuBook from "@mui/icons-material/MenuBook";
 import { IconButton } from "@mui/material";
 

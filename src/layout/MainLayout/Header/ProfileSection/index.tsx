@@ -25,10 +25,12 @@ import MainCard from "@/ui-component/cards/MainCard";
 
 // assets
 import { useRouter } from "next/router";
-import Router from "next/router";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { ListItem } from "@mui/material";
-import FormSelect from "@/ui-component/FormSelect";
+// import FormSelect from "@/ui-component/FormSelect";
+import dynamic from "next/dynamic";
+// const MainCard = dynamic(() => import("@/ui-component/cards/MainCard"));
+const FormSelect = dynamic(() => import("@/ui-component/FormSelect"));
+
 import axios from "axios";
 
 // ==============================|| PROFILE MENU ||============================== //

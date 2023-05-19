@@ -1,10 +1,15 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Divider,
-  Typography,
-} from "@mui/material";
+// import {
+//   Card,
+//   CardContent,
+//   CardHeader,
+//   Divider,
+//   Typography,
+// } from "@mui/material";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
 
 // constant
 const headerSX = {
