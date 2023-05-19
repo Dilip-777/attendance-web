@@ -1,14 +1,4 @@
-import Head from "next/head";
 import * as React from "react";
-import Backdrop from "@mui/material/Backdrop";
-import Button from "@mui/material/Button";
-import Fade from "@mui/material/Fade";
-import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
-import MenuItem from "@mui/material/MenuItem";
-import Modal from "@mui/material/Modal";
-import Select from "@mui/material/Select";
-import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import { useRouter } from "next/router";
 import { Contractor, Department } from "@prisma/client";
@@ -16,27 +6,12 @@ import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import CustomTable from "@/components/Table/Table";
-import ImportData from "@/components/importContractors";
+import dynamic from "next/dynamic";
+const ImportData = dynamic(() => import("@/components/importContractors"));
+const ContractorModal = dynamic(() => import("@/components/contractors/modal"));
+// import ImportData from "@/components/importContractors";
 import axios from "axios";
-
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  p: 4,
-};
-
-const options = [
-  { link: "/pc8hr", label: "8HR" },
-  { link: "/pc12hr", label: "12HR" },
-  { link: "pcccm", label: "CCM" },
-  { link: "pclrf", label: "LRF" },
-  { link: "pccolony", label: "Colony" },
-];
+// import ContractorModal from "@/components/contractors/modal";
 
 const createHeadCells = (
   id: string,
@@ -259,7 +234,16 @@ export default function Contractors({
         upload={<ImportData />}
       />
 
-      <Modal
+      <ContractorModal
+        open={open}
+        handleClose={handleClose}
+        contractorId={contractorId}
+        options={options}
+        setValue={setValue}
+        value={value}
+      />
+
+      {/* <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
         open={open}
@@ -301,7 +285,7 @@ export default function Contractors({
             </Stack>
           </Box>
         </Fade>
-      </Modal>
+      </Modal> */}
     </Box>
   );
 }
