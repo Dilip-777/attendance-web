@@ -124,7 +124,7 @@ function ImportData() {
 
     const body = data.map((data: any) => ({
       contractorname: data.contractorname,
-      contractorId: data.contractorid,
+      contractorId: data.contractorid.toString(),
       servicedetail: data.servicedetail,
       supplierdetail: data.supplierdetail || "",
       contactperson: data.contactperson || "",

@@ -126,10 +126,10 @@ function ImportData() {
     const body = data
       // .filter((d: any, i: number) => )
       .map((data: any) => ({
-        employeeId: data.employeeId,
+        employeeId: data.employeeId.toString(),
         employeename: data.employeeName,
         contractorname: data.contractorname,
-        contractorId: data.contractorId,
+        contractorId: data.contractorId.toString(),
         designation: data.designation,
         department: data.department,
         gender: data.gender || "Male",
