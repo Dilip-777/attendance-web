@@ -9,7 +9,7 @@ import {
 import _ from "lodash";
 import DocTable from "./table";
 import { ContractorDetails, ServiceDetails } from "./contractordetails";
-import { Contractor, Designations, Safety, Stores, Workorder, payoutTracker } from "@prisma/client";
+import { Contractor, Department, Designations, Safety, Stores, Workorder, payoutTracker } from "@prisma/client";
 import { BankDetails, CostDetails } from "./otherDetails";
 import dayjs from "dayjs";
 import ApprovalInformation from "./approvalInfo";
@@ -36,7 +36,7 @@ const prevMonthString = prevMonth.format('MM/YYYY');
 return prevMonthString;
 }
 
-export function print(rows: any[], total: number,department: string, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number , designations: Designations[]) {
+export function print(rows: any[], total: number,department: Department | undefined, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number , designations: Designations[]) {
 
   const previousMonth = getPreviousMonth(date)
   const beforemonth = getPreviousMonth(previousMonth)

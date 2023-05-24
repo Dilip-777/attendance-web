@@ -297,11 +297,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 
 export default function Employees({ workorder }: { workorder: Workorder[] }) {
-  const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof Data1>("contractorName");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterName, setFilterName] = React.useState("");
   const router = useRouter();
@@ -531,11 +528,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                   );
                 })}
               {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
+                <TableRow>
                   <TableCell colSpan={6} />
                 </TableRow>
               )}

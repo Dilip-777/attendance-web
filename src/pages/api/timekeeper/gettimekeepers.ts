@@ -11,6 +11,7 @@ export default async function getTimeKeeper(
     res.status(405).json({ name: "Method Not Allowed" });
   } else {
     const { month, role } = req.query;
+    // await prisma.timeKeeper.deleteMany();
     const timekeepers = await prisma.timeKeeper.findMany({
       where: {
         attendancedate: {

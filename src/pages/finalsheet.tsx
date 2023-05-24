@@ -26,6 +26,7 @@ import { useEffect, useState } from "react";
 import FinalSheetta from "@/components/Table/finalsheet";
 import { print } from "@/components/PrintFinalSheet";
 import Details from "@/components/Table/details";
+import PrintPdf from "@/components/pdfPrint/print";
 
 export default function FinalSheet({
   contractors,
@@ -47,7 +48,9 @@ export default function FinalSheet({
   const [rows, setRows] = useState<any[]>([]);
   const [timekeepers, setTimekeepers] = useState<TimeKeeper[]>([]);
   const [totalPayable, setTotalPayable] = useState<number>(0);
-  const [department, setDepartment] = useState<string>("8HR");
+  const [department, setDepartment] = useState<string>(
+    departments?.length > 0 ? departments[0].department : ""
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [store, setStore] = useState<Stores | null>(null);
   const [safety, setSafety] = useState<Safety | null>(null);
@@ -78,7 +81,7 @@ export default function FinalSheet({
       dayjs(value, "MM/YYYY").month() + 1,
       dayjs(value, "MM/YYYY").year(),
       designations.filter((d) => d.departmentname === department),
-      department
+      departments.find((d) => d.department === department)
     );
     setRows(rows1);
 
@@ -113,7 +116,7 @@ export default function FinalSheet({
     print(
       rows,
       totalPayable,
-      department,
+      departments.find((d) => d.department === department),
       f as Contractor,
       workorders.find(
         (w) => w.contractorId === f?.id && w.startDate.includes(value)
@@ -210,6 +213,17 @@ export default function FinalSheet({
           >
             Print
           </Button>
+          {/* <PrintPdf
+            designations={designations}
+            department={
+              departments.find((d) => d.department === department) as Department
+            }
+            totalnetPayable={totalPayable}
+            rows1={rows}
+            store={store}
+            safety={safety}
+            details={details}
+          /> */}
         </Box>
         <Divider sx={{ my: 2 }} />
         <Typography variant="h4" sx={{ mb: 4, my: 2 }}>
@@ -258,7 +272,7 @@ export default function FinalSheet({
         <FinalSheetta
           rows={rows}
           total={totalPayable}
-          department={department}
+          department={departments.find((d) => d.department === department)}
           storededuction={store?.totalAmount || 0}
           safetydeduction={safety?.totalAmount || 0}
           designations={designations}
@@ -320,6 +334,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!(session.user?.role === "Corporate")) {
+    return {
+      redirect: {
+        destination: "/",
         permanent: false,
       },
     };

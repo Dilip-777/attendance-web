@@ -1,3 +1,4 @@
+import { Department } from "@prisma/client";
 import {
   AlignmentType,
   Paragraph,
@@ -13,7 +14,11 @@ interface Headcell {
   colspan?: number;
 }
 
-export default function TableHead({ department }: { department: string }) {
+export default function TableHead({
+  department,
+}: {
+  department: Department | undefined;
+}) {
   const headers = [
     "Designation",
     "Type",
@@ -46,7 +51,7 @@ export default function TableHead({ department }: { department: string }) {
     "Net Payable",
   ];
   const headcells =
-    department === "8HR" || department === "12HR" || department === "COLONY"
+    department?.basicsalary_in_duration?.toLowerCase() === "hourly"
       ? headers
       : ccmheader;
   return headcells.map(

@@ -18,3 +18,5 @@ declare module "next-auth" {
         specialRole: boolean;
     }
 }
+
+declare module "@react-pdf/renderer/lib/react-pdf.browser.es.js"

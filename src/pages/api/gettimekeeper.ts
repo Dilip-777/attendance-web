@@ -5,6 +5,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default async function gettimekeeper (req: NextApiRequest, res: NextApiResponse) {
     const { month, contractor , department } = req.query
 
+    // await prisma.timeKeeper.deleteMany()
+
     if(!contractor) {
         const timekeepers = await prisma.timeKeeper.findMany({
             where: {

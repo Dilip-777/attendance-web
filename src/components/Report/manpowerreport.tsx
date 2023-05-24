@@ -6,12 +6,18 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Contractor, Employee } from "@prisma/client";
+import { Contractor, Department, Employee } from "@prisma/client";
 import axios from "axios";
 import { useState } from "react";
 
-export default function ManPowerReport() {
-  const [department, setDepartment] = useState("8HR");
+export default function ManPowerReport({
+  departments,
+}: {
+  departments: Department[];
+}) {
+  const [department, setDepartment] = useState(
+    departments.length > 0 ? departments[0].department : ""
+  );
   const [loading, setLoading] = useState(false);
   const handleSubmit = async () => {
     setLoading(true);
@@ -65,13 +71,10 @@ export default function ManPowerReport() {
         <FormSelect
           value={department}
           handleChange={(v) => setDepartment(v as string)}
-          options={[
-            { value: "8HR", label: "8HR" },
-            { value: "12HR", label: "12HR" },
-            { value: "CCM", label: "CCM" },
-            { value: "LRF", label: "LRF" },
-            { value: "Colony", label: "Colony" },
-          ]}
+          options={departments.map((item) => ({
+            label: item.department,
+            value: item.department,
+          }))}
           label="Select  the Department"
         />
         <Button onClick={handleSubmit} variant="contained" disabled={loading}>

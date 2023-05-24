@@ -3,10 +3,11 @@ import Person from '@mui/icons-material/Person';
 import Storefront from '@mui/icons-material/Storefront';
 import Inventory from '@mui/icons-material/Inventory';
 import SupportIcon from '@mui/icons-material/Support';
+import AccountBalanceWallet from '@mui/icons-material/AccountBalanceWallet';
 
 // constant
 const icons = {
-      AssignmentInd, Person, Storefront, Inventory, SupportIcon
+      AssignmentInd, Person, Storefront, Inventory, SupportIcon, AccountBalanceWallet
 };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
@@ -84,6 +85,14 @@ const ho = {
             type: 'item',
             url: '/hoauditor',
             icon: icons.Storefront,
+            breadcrumbs: false
+        },
+         {
+            id: '/bills',
+            title: 'Bills',
+            type: 'item',
+            url: '/bills',
+            icon: icons.AccountBalanceWallet,
             breadcrumbs: false
         },
     ]

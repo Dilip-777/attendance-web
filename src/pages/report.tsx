@@ -94,7 +94,7 @@ export default function Reports({
           <DepartmentReport departments={departments} />
         </TabPanel>
         <TabPanel value={value} index={3}>
-          <ManPowerReport />
+          <ManPowerReport departments={departments} />
         </TabPanel>
         <TabPanel value={value} index={4}>
           <DesignationReport

@@ -42,6 +42,8 @@ import prisma from "@/lib/prisma";
 import { Department, Designations } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
+import FormSelect from "@/ui-component/FormSelect";
+import { set } from "lodash";
 
 const style = {
   position: "absolute",
@@ -79,6 +81,7 @@ const createHeadCells = (
 const headCells = [
   createHeadCells("id", "Id", false, false),
   createHeadCells("department", "Department", false, false),
+  createHeadCells("basicsalary_in_duration", "Salary Duration", false, false),
   createHeadCells("designation", "Designations", false, false),
 ];
 
@@ -169,6 +172,9 @@ export default function TimeKeeper({
   const [department, setDepartment] = React.useState(
     selectedDepartment?.department || ""
   );
+  const [salaryduration, setSalaryDuration] = React.useState(
+    selectedDepartment?.basicsalary_in_duration || ""
+  );
   const router = useRouter();
   const [departments, setDepartments] = React.useState<Department[]>([]);
   const matches = useMediaQuery("(min-width:600px)");
@@ -189,6 +195,7 @@ export default function TimeKeeper({
         .post("api/admin/department", {
           id: selectedDepartment?.id,
           department,
+          salaryduration,
         })
         .then((res) => {
           handleClose();
@@ -204,6 +211,7 @@ export default function TimeKeeper({
     const res = await axios
       .post("api/admin/department", {
         department,
+        salaryduration,
       })
       .then((res) => {
         handleClose();
@@ -212,6 +220,9 @@ export default function TimeKeeper({
       .catch((err) => {
         console.log(err);
       });
+
+    setDepartment("");
+    setSalaryDuration("");
     setLoading(false);
   };
 
@@ -345,6 +356,7 @@ export default function TimeKeeper({
                         {row?.id}
                       </TableCell>
                       <TableCell>{row.department}</TableCell>
+                      <TableCell>{row.basicsalary_in_duration}</TableCell>
                       <TableCell>
                         <Box display="flex">
                           {designations?.filter(
@@ -370,6 +382,9 @@ export default function TimeKeeper({
                           onClick={() => {
                             setSelectedDepartment(row);
                             setDepartment(row.department);
+                            setSalaryDuration(
+                              row.basicsalary_in_duration || ""
+                            );
                             setOpen(true);
                           }}
                           sx={{ m: 0 }}
@@ -469,6 +484,15 @@ export default function TimeKeeper({
                       variant="outlined"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
+                    />
+                    <FormSelect
+                      label="Basic Salary In Duration"
+                      value={salaryduration}
+                      handleChange={(e) => setSalaryDuration(e as string)}
+                      options={[
+                        { label: "Hourly", value: "Hourly" },
+                        { label: "Monthly", value: "Monthly" },
+                      ]}
                     />
                     <Button
                       variant="contained"

@@ -30,6 +30,7 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
             },
             data: {
               department: req.body.department,
+              basicsalary_in_duration: req.body.salaryduration
             }
           })
           res.status(200).json({ success: true });
@@ -39,6 +40,7 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
           data: {
             id: shortid.generate(),
             department: req.body.department,
+            basicsalary_in_duration: req.body.salaryduration
           },
         });
         res.status(201).json(department1);

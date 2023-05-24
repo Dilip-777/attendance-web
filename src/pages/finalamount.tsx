@@ -115,7 +115,7 @@ export default function PlantCommercial({
         dayjs(value, "MM/YYYY").month() + 1,
         dayjs(value, "MM/YYYY").year(),
         designations.filter((da) => da.departmentname === d.department),
-        d.department
+        departments.find((de) => de.department === d.department)
       );
       total += totalnetPayable;
       totals.push(totalnetPayable);
@@ -161,8 +161,6 @@ export default function PlantCommercial({
   const onChange = (value: Dayjs | null) =>
     setValue(value?.format("MM/YYYY") || "");
 
-  console.log(payouts, "payjhbjhgh");
-
   return (
     <Paper sx={{ width: "100%" }}>
       <Box
@@ -202,11 +200,14 @@ export default function PlantCommercial({
               <TableCell align="center">Contractor Name</TableCell>
               <TableCell align="center">Month</TableCell>
 
-              <TableCell align="center">8HR</TableCell>
+              {/* <TableCell align="center">8HR</TableCell>
               <TableCell align="center">12HR</TableCell>
               <TableCell align="center">CCM</TableCell>
               <TableCell align="center">LRF</TableCell>
-              <TableCell align="center">Colony</TableCell>
+              <TableCell align="center">Colony</TableCell> */}
+              {departments.map((d) => (
+                <TableCell align="center">{d.department}</TableCell>
+              ))}
               <TableCell align="center">Total</TableCell>
             </TableRow>
           </TableHead>

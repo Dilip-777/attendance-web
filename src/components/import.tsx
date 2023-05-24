@@ -198,7 +198,7 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
         machineshift: _.get(data, "Shift Code") || "-",
         attendance: getAttendance(_.get(data, "Att Status")) || "0",
         attendancedate: getDate(_.get(data, "Attendance Date"))?.toString(),
-        overtime: _.get(data, "Over Time", "00:00").slice(0, 2),
+        overtime: _.get(data, "Over Time", "00:00")?.slice(0, 2),
         machineduration: _.get(data, "Duration", "00:00"),
         // machineduration: _.get(data, "Duration")
         //   ? _.get(data, "Duration") === 0
@@ -231,6 +231,8 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
         setError(true);
         handleClick();
       });
+    // console.log(body);
+
     setLoading(false);
   };
 

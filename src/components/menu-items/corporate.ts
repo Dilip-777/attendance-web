@@ -11,11 +11,12 @@ import MonetizationOn from '@mui/icons-material/MonetizationOn';
 import Summarize from '@mui/icons-material/Summarize';
 import Inventory from '@mui/icons-material/Inventory';
 import Support from '@mui/icons-material/Support';
+import AccountBalanceWallet from '@mui/icons-material/AccountBalanceWallet';
 
 
 // constant
 const icons = {
-     Construction, AssignmentInd, Person, Assignment, Storefront,Description, MonetizationOn, Summarize, Support, Inventory
+     Construction, AssignmentInd, Person, Assignment, Storefront,Description, MonetizationOn, Summarize, Support, Inventory, AccountBalanceWallet
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -140,6 +141,14 @@ const corporator = {
             type: 'item',
             url: '/report',
             icon: icons.Summarize,
+            breadcrumbs: false
+        },
+         {
+            id: '/bills',
+            title: 'Bills',
+            type: 'item',
+            url: '/bills',
+            icon: icons.AccountBalanceWallet,
             breadcrumbs: false
         },
     ]

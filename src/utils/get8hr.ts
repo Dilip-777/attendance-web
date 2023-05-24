@@ -1,8 +1,8 @@
-import { Designations, TimeKeeper } from "@prisma/client";
+import { Department, Designations, TimeKeeper } from "@prisma/client";
 import _ from "lodash";
 
 
-const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number, designations?: Designations[], department?: string) => {
+const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number, designations?: Designations[], department?: Department | undefined) => {
 console.log(timekeeper, "timekeeper", month, year, designations, department);
 
     const rate: Record<string, string | number>  = {
@@ -15,6 +15,7 @@ const  totalovertime1: Record<string, string | number>  = {
 }
 const attendancecount: Record<string, string | number> = {
   date: "Attendance Count",
+  total: 0,
 }
 const totalamount1: Record<string, string | number> = {
   date: "Total Amount",
@@ -32,6 +33,7 @@ const totalnetamount : Record<string, string | number> = {
 
 const cprate: Record<string, string | number> = {
   date: "CP",
+  total: 0
 }
 
 const cpamount: Record<string, string | number> = {
@@ -128,6 +130,7 @@ if(designations) {
       
     const id = designation.designationid
     attendancecount[id] = filtered.length + filtered1.length / 2
+    attendancecount["total"] = attendancecount.total as number + Number(_.get(attendancecount, id, 0))
     
     rate[id] = designation.basicsalary
     if(designation.basicsalary_in_duration === "Monthly") {
@@ -159,7 +162,7 @@ if(designations) {
  })
 }
 
-attendancecount["total"] = timekeeper.length
+// attendancecount["total"] = timekeeper.length
 rate["total"] = 0
 totalnetamount["total"] = parseInt(totalamount1.total as string) + parseInt(otamount.total as string)
 total["total"] = totalnetamount.total + parseInt(cpamount.total as string)
@@ -181,7 +184,7 @@ rows2.push(otamount)
 rows.push(otamount)
 rows2.push(totalnetamount)
 rows.push(totalnetamount)
-if(department === "8HR" || department === "12HR" || department?.toLowerCase() === "colony") {
+if(department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
   rows2.push(cprate)
   rows.push(cprate)
   rows2.push(cpamount)
@@ -194,6 +197,9 @@ rows2.push(gst1)
 rows2.push(billAmount1)
 rows2.push(tds1)
 rows2.push(netPayable1) 
+
+console.log(rows2, timekeeper);
+
 
 
     return { rows,  total1: total.total, rows1: rows2, totalnetPayable: netPayable1.total};

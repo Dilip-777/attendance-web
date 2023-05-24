@@ -9,7 +9,7 @@ import {
 } from "docx";
 import _ from "lodash";
 import TableHead from "./tableHead";
-import { Designations } from "@prisma/client";
+import { Department, Designations } from "@prisma/client";
 
 interface side {
   main: string;
@@ -108,13 +108,13 @@ export default function DocTable({
 }: {
   rows: any[];
   total: number;
-  department: string;
+  department: Department | undefined;
   safetypenality: number;
   deduction: number;
   designations: Designations[];
 }) {
   const sidebar = designations
-    .filter((d) => d.departmentname === department)
+    .filter((d) => d.departmentname === department?.department)
     .map((d) => {
       if (d.gender === "Male")
         return { main: d.designation, sub: "M", id: d.designationid };
@@ -123,21 +123,14 @@ export default function DocTable({
       else return { main: d.designation, id: d.designationid };
     });
 
-  switch (department) {
-    case "8HR":
-    case "12HR":
-    case "COLONY":
-      sidebar.push({ main: "Total", sub: " ", id: "total" });
-      break;
-    case "CCM":
-    case "LRF":
-      sidebar.push({ main: "Total", id: "total" });
-      break;
-    default:
-      break;
+  if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
+    sidebar.push({ main: "Total", sub: " ", id: "total" });
+  } else {
+    sidebar.push({ main: "Total", id: "total" });
   }
 
-  const colspan = department === "CCM" || department === "LRF" ? 5 : 9;
+  const colspan =
+    department?.basicsalary_in_duration?.toLowerCase() === "monthly" ? 5 : 9;
 
   const rowspan = 6;
 
@@ -154,13 +147,17 @@ export default function DocTable({
                   tableCell(`${header.main}`),
                   tableCell(`${header.sub}`),
                   ...rows.map((row) =>
-                    tableCell(`${Math.floor(_.get(row, header.id))}`)
+                    tableCell(
+                      `${Math.round(_.get(row, header.id) * 100) / 100}`
+                    )
                   ),
                 ]
               : [
                   tableCell(`${header.main}`),
                   ...rows.map((row) =>
-                    tableCell(`${Math.floor(_.get(row, header.id))}`)
+                    tableCell(
+                      `${Math.round(_.get(row, header.id) * 100) / 100}`
+                    )
                   ),
                 ],
           })

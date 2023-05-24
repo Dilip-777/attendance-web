@@ -15,7 +15,9 @@ export default function DepartmentReport({
 }: {
   departments: Department[];
 }) {
-  const [department, setDepartment] = useState("8HR");
+  const [department, setDepartment] = useState(
+    departments.length > 0 ? departments[0].department : ""
+  );
   const [loading, setLoading] = useState(false);
   const handleSubmit = async () => {
     setLoading(true);
