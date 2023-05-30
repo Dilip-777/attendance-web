@@ -81,7 +81,7 @@ export function print(rows: any[], total: number,department: Department | undefi
             ServiceDetails({workorder, date}),
 
             new Paragraph({
-              children: [new TextRun({ text: `Department - ${department}`, size: 15, bold: true })],
+              children: [new TextRun({ text: `Department - ${department?.department}`, size: 15, bold: true })],
               spacing: {
                 after: 100,
                 before: 250

@@ -208,7 +208,7 @@ export default function PrintExcel({
       "",
       "Contractor Name",
       "",
-      `${contractor.contractorname}}`,
+      `${contractor.contractorname}`,
       "",
       "Contact NO:",
       "",
