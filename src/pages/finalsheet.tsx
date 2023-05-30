@@ -26,7 +26,11 @@ import { useEffect, useState } from "react";
 import FinalSheetta from "@/components/Table/finalsheet";
 import { print } from "@/components/PrintFinalSheet";
 import Details from "@/components/Table/details";
-import PrintPdf from "@/components/pdfPrint/print";
+// import PrintModal from "@/components/PrintFinalSheet/PrintModal";
+import dynamic from "next/dynamic";
+const PrintModal = dynamic(
+  () => import("@/components/PrintFinalSheet/PrintModal")
+);
 
 export default function FinalSheet({
   contractors,
@@ -55,7 +59,12 @@ export default function FinalSheet({
   const [store, setStore] = useState<Stores | null>(null);
   const [safety, setSafety] = useState<Safety | null>(null);
   const [details, setDetails] = useState<any>(null);
+  const [open, setOpen] = useState<boolean>(false);
   const f = contractors.find((c) => c.contractorId === selectedContractor);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const fetchStoreAndSafety = async () => {
     setLoading(true);
@@ -124,10 +133,10 @@ export default function FinalSheet({
       value,
       store,
       safety,
-      details.payoutracker,
-      details.prevMonthAmount,
-      details.prevprevMonthAmount,
-      details.prevYearAmount,
+      details?.payoutracker,
+      details?.prevMonthAmount,
+      details?.prevprevMonthAmount,
+      details?.prevYearAmount,
       designations
     );
   };
@@ -209,7 +218,7 @@ export default function FinalSheet({
               justifySelf: "space-between",
               mb: 2,
             }}
-            onClick={() => handlePrint()}
+            onClick={() => setOpen(true)}
           >
             Print
           </Button>
@@ -322,6 +331,26 @@ export default function FinalSheet({
             value: details?.payoutracker?.actualpaidoutmoney || "-",
           },
         ]}
+      />
+      <PrintModal
+        designations={designations}
+        department={departments.find((d) => d.department === department)}
+        total={totalPayable}
+        rows={rows}
+        safety={safety}
+        // details={details}
+        store={store}
+        contractor={f as Contractor}
+        date={value}
+        workorder={w}
+        month={value}
+        payouttracker={details?.payoutracker}
+        prevMonthAmount={details?.prevMonthAmount}
+        prevprevMonthAmount={details?.prevprevMonthAmount}
+        prevYearAmount={details?.prevYearAmount}
+        open={open}
+        // setOpen={setOpen}
+        handleClose={handleClose}
       />
     </Paper>
   );

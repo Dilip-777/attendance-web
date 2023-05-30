@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 export default async function register(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse 
 ) {
   const { email, password, name, mobileNumber } = req.body;
   const isUserExist = await prisma.user.findUnique({
