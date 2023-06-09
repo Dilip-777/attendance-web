@@ -964,19 +964,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session?.user?.id as string,
-    },
-  });
 
-  const contractor = await prisma.contractor.findUnique({
-    where: {
-      id: id as string,
-    },
-  });
-
-  if (user?.role === "Admin") {
+  if (session.user?.role === "Admin") {
     return {
       redirect: {
         destination: "/admin",
@@ -984,10 +973,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+  if (id !== "add") {
+    const contractor = await prisma.contractor.findUnique({
+      where: {
+        id: id as string,
+      },
+    });
+    return {
+      props: {
+        contractor,
+      },
+    };
+  }
 
   return {
-    props: {
-      contractor,
-    },
+    props: {},
   };
 };

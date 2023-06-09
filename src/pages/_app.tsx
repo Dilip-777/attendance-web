@@ -1,4 +1,6 @@
-import MainLayout from "@/layout/MainLayout";
+// import MainLayout from "@/layout/MainLayout";
+import dynamic from "next/dynamic";
+const MainLayout = dynamic(() => import("@/layout/MainLayout"));
 import { store } from "@/store";
 import theme from "@/themes";
 import {

@@ -1,3 +1,4 @@
+import { plantname } from "@/constants";
 import { Button } from "@mui/material";
 import {
   Contractor,
@@ -56,7 +57,7 @@ export default function PrintExcel({
 
     const headings = [
       {
-        header: ["Plant One"],
+        header: [plantname],
         colSpan: 10,
         bgcolor: "a3f2fd",
         font: { size: 16, bold: true },

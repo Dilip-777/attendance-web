@@ -68,7 +68,6 @@ export default function Employees({ employees }: { employees: Employee[] }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  const employees = await prisma.employee.findMany();
   if (!session) {
     return {
       redirect: {
@@ -77,13 +76,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session?.user?.email as string,
-    },
-  });
 
-  if (user?.role === "Admin") {
+  if (session.user?.role === "Admin") {
     return {
       redirect: {
         destination: "/admin",
@@ -91,6 +85,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+  const employees = await prisma.employee.findMany();
   return {
     props: {
       employees,

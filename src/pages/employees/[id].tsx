@@ -73,13 +73,6 @@ export default function Edit({
     tds: employee?.tds || 0,
   };
 
-  const d = new Set(
-    designations.map((d) => ({
-      value: d.designation,
-      label: d.designation,
-    }))
-  );
-
   const getOptions = (department: string) => {
     const options = designations
       .filter((d) => d.departmentname === department)
@@ -87,7 +80,6 @@ export default function Edit({
         value: d.designation,
         label: d.designation,
       }));
-    console.log(options);
 
     const unique = options.filter((item, index) => {
       return (
@@ -320,9 +312,6 @@ export default function Edit({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
   const { id } = context.query;
-  const departments = await prisma.department.findMany();
-
-  const contractors = await prisma.contractor.findMany();
   if (!session) {
     return {
       redirect: {
@@ -331,13 +320,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session?.user?.email as string,
-    },
-  });
 
-  if (user?.role === "Admin") {
+  if (session.user?.role === "Admin") {
     return {
       redirect: {
         destination: "/admin",
@@ -351,6 +335,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: id as string,
     },
   });
+  const departments = await prisma.department.findMany();
+
+  const contractors = await prisma.contractor.findMany();
 
   const designations = await prisma.designations.findMany();
 

@@ -3,7 +3,9 @@ import { Box, Drawer, useMediaQuery } from "@mui/material";
 
 // project imports
 import MenuList from "./MenuList";
-import LogoSection from "../LogoSection";
+// import LogoSection from "../LogoSection";
+import dynamic from "next/dynamic";
+const LogoSection = dynamic(() => import("../LogoSection"));
 import { drawerWidth } from "@/store/constant";
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
