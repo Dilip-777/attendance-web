@@ -274,7 +274,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
   const { id } = context.query;
 
-  const contractors = await prisma.contractor.findMany();
   if (!session) {
     return {
       redirect: {
@@ -283,13 +282,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session?.user?.email as string,
-    },
-  });
 
-  if (user?.role === "Admin") {
+  if (session.user?.role === "Admin") {
     return {
       redirect: {
         destination: "/admin",
@@ -298,16 +292,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const workorder = await prisma.workorder.findUnique({
-    where: {
-      id: id as string,
-    },
-  });
+  const contractors = await prisma.contractor.findMany();
+  if (id !== "add") {
+    const workorder = await prisma.workorder.findUnique({
+      where: {
+        id: id as string,
+      },
+    });
+
+    return {
+      props: {
+        contractors,
+        workorder,
+      },
+    };
+  }
 
   return {
     props: {
       contractors,
-      workorder,
     },
   };
 };

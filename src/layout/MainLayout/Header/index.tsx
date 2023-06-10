@@ -1,13 +1,14 @@
-import { useTheme } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
 import dynamic from "next/dynamic";
 const LogoSection = dynamic(() => import("../LogoSection"));
 const SearchSection = dynamic(() => import("./SearchSection"));
 const ProfileSection = dynamic(() => import("./ProfileSection"));
 const NotificationSection = dynamic(() => import("./NotificationSection"));
 import MenuBook from "@mui/icons-material/MenuBook";
-import { IconButton } from "@mui/material";
+// import { IconButton } from "@mui/material";
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 

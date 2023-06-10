@@ -10,10 +10,6 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-// project imports
-import { MENU_OPEN, SET_MENU } from "@/store/actions";
-
-// assets
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useRouter } from "next/router";
 

@@ -2,7 +2,10 @@ import { useRef } from "react";
 
 // material-ui
 import { useTheme } from "@mui/material/styles";
-import { Avatar, Box, ButtonBase } from "@mui/material";
+// import { Avatar, Box, ButtonBase } from "@mui/material";
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import ButtonBase from "@mui/material/ButtonBase";
 import NotificationsActive from "@mui/icons-material/NotificationsActive";
 
 // ==============================|| NOTIFICATION ||============================== //

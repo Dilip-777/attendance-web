@@ -1,5 +1,7 @@
-import { useTheme } from "@mui/material";
-import { Divider, List, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import Divider from "@mui/material/Divider";
+import List from "@mui/material/List";
+import Typography from "@mui/material/Typography";
 
 // project imports
 import NavItem from "../NavItem";

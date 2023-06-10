@@ -1,5 +1,8 @@
-import { useTheme } from "@mui/material";
-import { Box, Drawer, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+// import { Box, Drawer, useMediaQuery } from "@mui/material";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 // project imports
 import MenuList from "./MenuList";

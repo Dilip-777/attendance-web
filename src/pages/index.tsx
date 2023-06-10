@@ -14,17 +14,13 @@ import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
-import Modal from "@mui/material/Modal";
-import Slide from "@mui/material/Slide";
 import Stack from "@mui/material/Stack";
-import { Button } from "@mui/material/";
+// import { Button } from "@mui/material/";
+import Button from "@mui/material/Button";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Edit from "@mui/icons-material/Edit";
-import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import Close from "@mui/icons-material/Close";
 import Done from "@mui/icons-material/Done";
 
@@ -33,14 +29,19 @@ import { Comment, Contractor, TimeKeeper, Upload } from "@prisma/client";
 import axios from "axios";
 import { getSession, useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
-import prisma from "@/lib/prisma";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
-import ImportData from "@/components/import";
-import FormSelect from "@/ui-component/FormSelect";
-import CustomModal from "@/components/Timekeeper/ViewCommentsDocuments";
+import dynamic from "next/dynamic";
+const ImportData = dynamic(() => import("@/components/import"));
+const CustomModal = dynamic(
+  () => import("@/components/Timekeeper/ViewCommentsDocuments")
+);
+const FormSelect = dynamic(() => import("@/ui-component/FormSelect"));
+// import ImportData from "@/components/import";
+// import FormSelect from "@/ui-component/FormSelect";
+// import CustomModal from "@/components/Timekeeper/ViewCommentsDocuments";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -663,48 +664,48 @@ export default function TimeKeeperTable({}: // contractors,
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession({ req: context.req });
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
+// export const getServerSideProps: GetServerSideProps = async (context) => {
+//   const session = await getSession({ req: context.req });
+//   if (!session) {
+//     return {
+//       redirect: {
+//         destination: "/login",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  if (session.user?.role === "Admin") {
-    return {
-      redirect: {
-        destination: "/admin",
-        permanent: false,
-      },
-    };
-  }
+//   if (session.user?.role === "Admin") {
+//     return {
+//       redirect: {
+//         destination: "/admin",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  if (session.user?.role === "Stores") {
-    return {
-      redirect: {
-        destination: "/store",
-        permanent: false,
-      },
-    };
-  }
+//   if (session.user?.role === "Stores") {
+//     return {
+//       redirect: {
+//         destination: "/store",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  if (session.user?.role === "Safety") {
-    return {
-      redirect: {
-        destination: "/safety",
-        permanent: false,
-      },
-    };
-  }
+//   if (session.user?.role === "Safety") {
+//     return {
+//       redirect: {
+//         destination: "/safety",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  return {
-    props: {},
-  };
-};
+//   return {
+//     props: {},
+//   };
+// };
 
 // <Head>
 //   <title>Attendance</title>

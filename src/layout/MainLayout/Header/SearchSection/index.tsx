@@ -1,5 +1,5 @@
 // material-ui
-import { useTheme, styled } from "@mui/material";
+import { useTheme, styled } from "@mui/material/styles";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import ButtonBase from "@mui/material/ButtonBase";

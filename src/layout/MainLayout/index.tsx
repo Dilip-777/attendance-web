@@ -1,15 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 
 // material-ui
-import { styled, useTheme } from "@mui/material";
-import {
-  AppBar,
-  Box,
-  CssBaseline,
-  Theme,
-  Toolbar,
-  useMediaQuery,
-} from "@mui/material";
+import type { Theme } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material/styles";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
+import Toolbar from "@mui/material/Toolbar";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 // project imports
 import Header from "./Header";

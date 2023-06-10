@@ -79,6 +79,13 @@ export default function App({
                 <Component {...pageProps} />
               </MainLayout>
             )}
+            {/* {router.pathname === "/login" || router.pathname === "/register" ? (
+              <Component {...pageProps} />
+            ) : (
+              <MainLayout>
+                <Component {...pageProps} />
+              </MainLayout>
+            )} */}
           </ThemeProvider>
         </StyledEngineProvider>
       </SessionProvider>

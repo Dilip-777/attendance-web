@@ -1,14 +1,12 @@
 import Close from "@mui/icons-material/Close";
-import {
-  Modal,
-  Backdrop,
-  Fade,
-  FormControl,
-  FormLabel,
-  Select,
-  MenuItem,
-  Box,
-} from "@mui/material";
+import Modal from "@mui/material/Modal";
+import Backdrop from "@mui/material/Backdrop";
+import Fade from "@mui/material/Fade";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -18,7 +16,6 @@ import Stack from "@mui/material/Stack";
 import { Contractor } from "@prisma/client";
 import axios from "axios";
 import _ from "lodash";
-import router from "next/router";
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 

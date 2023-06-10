@@ -1,15 +1,24 @@
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
-import {
-  Modal,
-  Backdrop,
-  Slide,
-  Stack,
-  Typography,
-  IconButton,
-  Divider,
-  Box,
-  useMediaQuery,
-} from "@mui/material";
+// import {
+//   Modal,
+//   Backdrop,
+//   Slide,
+//   Stack,
+//   Typography,
+//   IconButton,
+//   Divider,
+//   Box,
+//   useMediaQuery,
+// } from "@mui/material";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import Modal from "@mui/material/Modal";
+import Slide from "@mui/material/Slide";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Backdrop from "@mui/material/Backdrop";
 import { Comment, Upload } from "@prisma/client";
 
 import Documents from "./Document";

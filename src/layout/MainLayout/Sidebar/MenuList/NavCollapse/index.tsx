@@ -2,25 +2,21 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 // material-ui
-import { useTheme } from "@mui/material";
-import {
-  Collapse,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import Collapse from "@mui/material/Collapse";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Typography from "@mui/material/Typography";
 
 // project imports
 import NavItem from "../NavItem";
 
 // assets
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useRouter } from "next/router";
 
 // ==============================|| SIDEBAR MENU LIST COLLAPSE ITEMS ||============================== //

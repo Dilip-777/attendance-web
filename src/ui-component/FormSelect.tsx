@@ -1,10 +1,7 @@
-import {
-  FormControl,
-  FormLabel,
-  MenuItem,
-  Select,
-  SelectProps,
-} from "@mui/material";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { SelectProps } from "@mui/material/Select";
 
 interface props extends SelectProps<string | number> {
   value: string | number;

@@ -1,10 +1,10 @@
 // material-ui
-import { Typography } from "@mui/material";
+// import { Typography } from "@mui/material";
+import Typography from "@mui/material/Typography";
 
 // project imports
 import NavGroup from "./NavGroup";
 import {
-  menuItems,
   adminItems,
   timekeeperItems,
   hritems,
