@@ -664,48 +664,48 @@ export default function TimeKeeperTable({}: // contractors,
   );
 }
 
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-//   const session = await getSession({ req: context.req });
-//   if (!session) {
-//     return {
-//       redirect: {
-//         destination: "/login",
-//         permanent: false,
-//       },
-//     };
-//   }
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession({ req: context.req });
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
 
-//   if (session.user?.role === "Admin") {
-//     return {
-//       redirect: {
-//         destination: "/admin",
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (session.user?.role === "Admin") {
+    return {
+      redirect: {
+        destination: "/admin",
+        permanent: false,
+      },
+    };
+  }
 
-//   if (session.user?.role === "Stores") {
-//     return {
-//       redirect: {
-//         destination: "/store",
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (session.user?.role === "Stores") {
+    return {
+      redirect: {
+        destination: "/store",
+        permanent: false,
+      },
+    };
+  }
 
-//   if (session.user?.role === "Safety") {
-//     return {
-//       redirect: {
-//         destination: "/safety",
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (session.user?.role === "Safety") {
+    return {
+      redirect: {
+        destination: "/safety",
+        permanent: false,
+      },
+    };
+  }
 
-//   return {
-//     props: {},
-//   };
-// };
+  return {
+    props: {},
+  };
+};
 
 // <Head>
 //   <title>Attendance</title>
