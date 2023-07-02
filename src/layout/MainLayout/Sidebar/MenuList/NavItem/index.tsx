@@ -23,6 +23,15 @@ const NavItem = ({ item, level }: { item: any; level: any }) => {
 
   const router = useRouter();
   let isSelelected = router.pathname.includes(item.id);
+  console.log(
+    "router.pathname",
+    router.pathname,
+    item.id,
+    isSelelected,
+    level,
+    item.url
+  );
+
   if (level > 0) {
     isSelelected = router.pathname === item.id;
   }

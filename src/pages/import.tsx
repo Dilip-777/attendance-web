@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import Box from "@mui/material/Box";
+import FormSelect from "@/ui-component/FormSelect";
 
 const Upload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -54,6 +56,18 @@ const Upload = () => {
           </a>
         </div>
       )}
+      <Box>
+        <FormSelect
+          label="Select"
+          handleChange={(e) => console.log(e)}
+          value="1"
+          options={[
+            { label: "Option 1", value: "1" },
+            { label: "Option 2", value: "2" },
+            { label: "Option 3", value: "3" },
+          ]}
+        />
+      </Box>
     </div>
   );
 };

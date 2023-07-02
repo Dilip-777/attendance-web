@@ -401,12 +401,6 @@ export default function TimeKeeperTable({}: // contractors,
       } else return false;
     } else return false;
   };
-  //  const d = new Date("00:00" * 24 * 60 * 60 * 1000)
-  //   .toLocaleTimeString("en-US", {
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //   })
-  //   ?.toString();
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -697,6 +691,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         destination: "/safety",
+        permanent: false,
+      },
+    };
+  }
+
+  if (session.user?.role === "Automobile") {
+    return {
+      redirect: {
+        destination: "/vehiclelogbook",
         permanent: false,
       },
     };

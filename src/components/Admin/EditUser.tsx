@@ -113,6 +113,7 @@ export default function EditUser({
                       label: "HoCommercialAuditor",
                     },
                     { value: "Corporate", label: "Corporate" },
+                    { value: "Automobile", label: "Automobile" },
                   ]}
                 />
                 <FormSelect

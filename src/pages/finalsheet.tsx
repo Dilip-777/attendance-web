@@ -121,31 +121,11 @@ export default function FinalSheet({
 
   // console.log(timekeepers, rows, totalPayable, loading);
 
-  const handlePrint = async () => {
-    print(
-      rows,
-      totalPayable,
-      departments.find((d) => d.department === department),
-      f as Contractor,
-      workorders.find(
-        (w) => w.contractorId === f?.id && w.startDate.includes(value)
-      ) as Workorder,
-      value,
-      store,
-      safety,
-      details?.payoutracker,
-      details?.prevMonthAmount,
-      details?.prevprevMonthAmount,
-      details?.prevYearAmount,
-      designations
-    );
-  };
-
   const onChange = (value: Dayjs | null) =>
     setValue(value?.format("MM/YYYY") || "");
 
   const w = workorders.find(
-    (c) => c.contractorId === f?.id && c.startDate.includes(value)
+    (c) => c.contractorId === f?.contractorId && c.startDate.includes(value)
   );
 
   return loading ? (

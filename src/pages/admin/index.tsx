@@ -27,14 +27,20 @@ import Modal from "@mui/material/Modal";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
 import Stack from "@mui/material/Stack";
-import {
-  FormControl,
-  FormLabel,
-  Tab,
-  Tabs,
-  TextField,
-  styled,
-} from "@mui/material/";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import TextField from "@mui/material/TextField";
+import { styled } from "@mui/material/styles";
+// import {
+//   FormControl,
+//   FormLabel,
+//   Tab,
+//   Tabs,
+//   TextField,
+//   styled,
+// } from "@mui/material/";
 import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
@@ -97,45 +103,6 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   },
 }));
 
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = "asc" | "desc";
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number
-) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
 const createHeadCells = (
   id: string,
   label: string,
@@ -157,69 +124,6 @@ const headCells = [
   createHeadCells("mobileNumber", "Mobile Number", false, false),
   createHeadCells("role", "Role", false, false),
 ];
-
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-}
-
-// function EnhancedTableHead(props: EnhancedTableProps) {
-//   const {
-//     onSelectAllClick,
-//     order,
-//     orderBy,
-//     numSelected,
-//     rowCount,
-//     onRequestSort,
-//   } = props;
-//   const createSortHandler =
-//     (property: string) => (event: React.MouseEvent<unknown>) => {
-//       onRequestSort(event, property);
-//     };
-
-//   return (
-//     <TableHead>
-//       <TableRow>
-//         <TableCell padding="checkbox">
-//           <Checkbox
-//             color="primary"
-//             indeterminate={numSelected > 0 && numSelected < rowCount}
-//             checked={rowCount > 0 && numSelected === rowCount}
-//             onChange={onSelectAllClick}
-//             inputProps={{
-//               "aria-label": "select all desserts",
-//             }}
-//           />
-//         </TableCell>
-//         {headCells .map((headCell) => (
-//           <TableCell
-//             key={headCell.id}
-//             align={headCell.numeric ? "right" : "left"}
-//             padding={headCell.disablePadding ? "none" : "normal"}
-//             sortDirection={orderBy === headCell.id ? order : false}
-//           >
-//             <TableSortLabel
-//               active={orderBy === headCell.id}
-//               direction={orderBy === headCell.id ? order : "asc"}
-//               onClick={createSortHandler(headCell.id as string)}
-//             >
-//               {headCell.label}
-//               {orderBy === headCell.id ? (
-//                 <Box component="span" sx={visuallyHidden}>
-//                   {order === "desc" ? "sorted descending" : "sorted ascending"}
-//                 </Box>
-//               ) : null}
-//             </TableSortLabel>
-//           </TableCell>
-//         ))}
-//       </TableRow>
-//     </TableHead>
-//   );
-// }
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
@@ -292,8 +196,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 
 export default function TimeKeeper({ users }: { users: User[] }) {
-  const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<string>("name");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -301,7 +203,6 @@ export default function TimeKeeper({ users }: { users: User[] }) {
   const [open, setOpen] = React.useState(false);
   const [filter, setFilter] = React.useState("");
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
-  const router = useRouter();
   const matches = useMediaQuery("(min-width:600px)");
   const [value, setValue] = React.useState(0);
   const [password, setPassword] = React.useState("");
@@ -333,15 +234,6 @@ export default function TimeKeeper({ users }: { users: User[] }) {
   const handleClose = () => {
     setOpen(false);
     setSelectedUser(null);
-  };
-
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: string
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
   };
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -382,10 +274,6 @@ export default function TimeKeeper({ users }: { users: User[] }) {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
   };
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
@@ -599,13 +487,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
   const users = await prisma.user.findMany();
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session?.user?.id,
-    },
-  });
 
-  if (user?.role !== "Admin") {
+  if (session?.user?.role !== "Admin") {
     return {
       redirect: {
         destination: "/",

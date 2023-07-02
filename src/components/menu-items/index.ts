@@ -7,6 +7,7 @@ import ho from './ho';
 import plantCommercial from './plantcommercial';
 import  store from './store';
 import safety from './safety';
+import automobile from './automobile';
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -31,7 +32,6 @@ const hritems = {
 }
 
 
-
 const hoitems = {
     items: [dashboard, ho]
 }
@@ -48,4 +48,8 @@ const safetyitems = {
     items : [safety]
 }
 
-export { menuItems, adminItems, timekeeperItems, hritems, hoitems, corporatorItems, plantCommercialItems, storeitems, safetyitems}
+const automobileItems = {
+    items: [automobile]
+}
+
+export { menuItems, adminItems, timekeeperItems, hritems, hoitems, corporatorItems, plantCommercialItems, storeitems, safetyitems, automobileItems }

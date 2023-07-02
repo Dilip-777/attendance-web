@@ -10,9 +10,11 @@ export default function getAutomobile (automobile: any[], month: number , year: 
     }
         const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
+    console.log(startDate, endDate);
+    
 const rows = [];
     for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
-        if(i > new Date().getDate()) break
+        if(i > new Date().getDate() && month > new Date().getMonth()) break;
       const date = `${i.toString().padStart(2, "0")}/${month
         .toString()
         .padStart(2, "0")}/${year}`;

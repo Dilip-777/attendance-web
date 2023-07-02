@@ -375,7 +375,7 @@ model SafetyItem {
 model Automobile{
     id String @id @default(cuid())
     contractorId String
-    workorderId String
+    workorderId String?
     date String?
     openingMeterReading Int?
     closingMeterReading Int?
@@ -383,15 +383,40 @@ model Automobile{
     endTime String?
     totalRunning Int?
     unit String?
-    hsdIssuedOrConsumed Int?
-    mainetenaceTime String?
+    hsdIssuedOrConsumed String?
+    maintenanceTime String?
     breakdownTime String?
     breakDownDaysCounted Int?
     reasonBehindBreakDown String?
     remarks String?
     status Status @default(Pending)
     rejectionReason String?
+     @@unique([date, contractorId])
 }
+
+model SaveAutomobile{
+    id String @id @default(cuid())
+    contractorId String
+    workorderId String?
+    date String?
+    openingMeterReading Int?
+    closingMeterReading Int?
+    startTime String?
+    endTime String?
+    totalRunning Int?
+    unit String?
+    hsdIssuedOrConsumed String?
+    maintenanceTime String?
+    breakdownTime String?
+    breakDownDaysCounted Int?
+    reasonBehindBreakDown String?
+    remarks String?
+    status Status @default(Pending)
+    rejectionReason String?
+     @@unique([date, contractorId])
+}
+
+
 
 enum Status {
   Approved
