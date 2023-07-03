@@ -1,7 +1,7 @@
 import { Box, FormLabel } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 interface props {
   value: Dayjs;
@@ -19,6 +19,7 @@ export default function MonthSelect({ value, onChange, label }: props) {
           views={["month", "year"]}
           value={value}
           onChange={(newValue) => onChange(newValue)}
+          maxDate={dayjs()}
         />
       </LocalizationProvider>
     </Box>

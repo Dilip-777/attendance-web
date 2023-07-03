@@ -3,10 +3,11 @@ import Person from '@mui/icons-material/Person';
 import Storefront from '@mui/icons-material/Storefront';
 import Support from '@mui/icons-material/Support';
 import Inventory from '@mui/icons-material/Inventory';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 // constant
 const icons = {
-      AssignmentInd, Person, Storefront, Inventory, Support
+      AssignmentInd, Person, Storefront, Inventory, Support, LocalShippingIcon
 };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
@@ -78,6 +79,14 @@ const plantCommercial = {
             icon: icons.Support,
              breadcrumbs: false
         },
+         {
+            id: '/vehiclelogbook',
+            title: 'Vehicle Log Book',
+            type: 'item',
+            url: '/vehiclelogbook',
+            icon: icons.LocalShippingIcon,
+            breadcrumbs: false
+        }
     ]
 };
 

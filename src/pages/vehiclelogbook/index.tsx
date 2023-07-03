@@ -136,7 +136,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           }))}
         />
         <MonthSelect
-          label="Select Date"
+          label="Select Month"
           value={dayjs(month, "MM/YYYY")}
           onChange={monthChange}
         />
