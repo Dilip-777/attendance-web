@@ -60,7 +60,7 @@ const createHeadCells = (
 const headCells = [
   createHeadCells("date", "Date", false, false),
   createHeadCells("openingMeterReading", "Opening Meter Reading", false, false),
-  createHeadCells("closingMeterReading", "Close Meter Reading", false, true),
+  createHeadCells("closingMeterReading", "Close Meter Reading", false, false),
   createHeadCells("totalRunning", "Total Running", false, false),
   createHeadCells(
     "hsdIssuedOrConsumed",
@@ -261,7 +261,7 @@ export default function Vehiclelogbook({
   React.useEffect(() => {
     if (session?.user?.role === "PlantCommercial") {
       if (!headCells.find((headCell) => headCell.id === "action"))
-        headCells.push(createHeadCells("action", "Action", false, false));
+        headCells.push(createHeadCells("action", "Action", false, true));
     }
   }, [session]);
 
@@ -517,32 +517,36 @@ export default function Vehiclelogbook({
                         selected={isItemSelected}
                       >
                         <TableCell padding="checkbox"></TableCell>
-                        {headCells.map((cell, index) => (
-                          <TableCell
-                            id={labelId}
-                            scope="row"
-                            padding="none"
-                            align="center"
-                            sx={{ minWidth: 150 }}
-                          >
-                            <TextEditor
-                              handleChange={handleChange}
-                              field={cell.id}
-                              date={row.date}
-                              value={_.get(row, cell.id, "-")}
-                              type={
-                                cell.id === "openingMeterReading" ||
-                                cell.id === "closingMeterReading" ||
-                                cell.id === "totalRunning" ||
-                                cell.id === "breakDownDaysCounted"
-                                  ? "number"
-                                  : "text"
-                              }
-                              discard={discard}
-                              setDiscard={setDiscard}
-                            />
-                          </TableCell>
-                        ))}
+
+                        {headCells.map(
+                          (cell, index) =>
+                            !cell.included && (
+                              <TableCell
+                                id={labelId}
+                                scope="row"
+                                padding="none"
+                                align="center"
+                                sx={{ minWidth: 150 }}
+                              >
+                                <TextEditor
+                                  handleChange={handleChange}
+                                  field={cell.id}
+                                  date={row.date}
+                                  value={_.get(row, cell.id, "-")}
+                                  type={
+                                    cell.id === "openingMeterReading" ||
+                                    cell.id === "closingMeterReading" ||
+                                    cell.id === "totalRunning" ||
+                                    cell.id === "breakDownDaysCounted"
+                                      ? "number"
+                                      : "text"
+                                  }
+                                  discard={discard}
+                                  setDiscard={setDiscard}
+                                />
+                              </TableCell>
+                            )
+                        )}
                         {session?.user?.role === "PlantCommercial" &&
                           row.status === "Pending" && (
                             <TableCell size="small" align="center">
