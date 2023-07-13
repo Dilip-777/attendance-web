@@ -8,6 +8,7 @@ import AuthCardWrapper from "../components/Authentication/AuthCardWrapper";
 import AuthRegister from "../components/Authentication/auth-forms/AuthRegister";
 import { GetServerSidePropsContext } from "next";
 import { getSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
 
 // assets
 
@@ -92,22 +93,27 @@ export default Register;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context);
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
 
-  if (session?.user?.role !== "Admin") {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
+  const firstuser = await prisma.user.findFirst();
+
+  if (firstuser) {
+    if (!session) {
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    if (session?.user?.role !== "Admin") {
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
   }
   return {
     props: {},
