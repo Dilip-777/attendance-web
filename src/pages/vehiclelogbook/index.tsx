@@ -271,10 +271,10 @@ export default function Vehiclelogbook({
   };
 
   const [contractor, setContractor] = React.useState<string | undefined>(
-    contractors.length > 0 ? contractors[0].contractorId : undefined
+    contractors.length > 0 ? contractors[0]?.contractorId : undefined
   );
   const [workorder, setWorkOrder] = React.useState<string | undefined>(
-    rows.length > 0 ? workorders[0].id : undefined
+    workorders.length > 0 ? workorders[0]?.id : undefined
   );
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {

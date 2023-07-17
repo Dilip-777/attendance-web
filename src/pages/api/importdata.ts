@@ -18,7 +18,7 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
                     in: ids
                 }
             }
-        })
+        }) 
         const employees = await prisma.employee.createMany({
             data: data,
             skipDuplicates: true
