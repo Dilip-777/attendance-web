@@ -11,412 +11,476 @@ datasource db {
 }
 
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? @db.Text
-    access_token      String? @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    @@unique([provider, providerAccountId])
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id    String      @id @default(cuid())
-  email String  @unique
-  name  String
-  mobileNumber  String?
-  password String
-  role    Role   @default(None)
-  specialRole   Boolean   @default(false)
-  accounts      Account[]
-    sessions      Session[]
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  mobileNumber String?
+  password     String
+  role         Role      @default(None)
+  specialRole  Boolean   @default(false)
+  accounts     Account[]
+  sessions     Session[]
 }
 
 model SaveTimekeeper {
-   id   String   @id
-  contractorid  String?
+  id              String  @id
+  contractorid    String?
   contractorname  String?
-    employeeid String
-    employeename   String?
-    designation String
-    attendancedate String
-    machineInTime String
-    machineOutTime String?
-    machineduration String?  
-    machineshift String
-    attendance String
-    overtime String
-    eleave String
-    manualintime String?
-    manualouttime String?
-        manualduration   String?
-    manualshift String?
-    manualovertime String?
-    mleave String?
-    department String?
-    gender String?
+  employeeid      String
+  employeename    String?
+  designation     String
+  attendancedate  String
+  machineInTime   String
+  machineOutTime  String?
+  machineduration String?
+  machineshift    String
+  attendance      String
+  overtime        String
+  eleave          String
+  manualintime    String?
+  manualouttime   String?
+  manualduration  String?
+  manualshift     String?
+  manualovertime  String?
+  mleave          String?
+  department      String?
+  gender          String?
 }
 
 model TimeKeeper {
-  id   String   @id @default(cuid())
-  contractorid  String?
-  contractorname  String?
-    employeeid String
-    employeename   String?
-    designation String
-    attendancedate String
-    machineInTime String
-    machineOutTime String?
-    machineduration String?  
-    machineshift String
-    attendance String
-    overtime String
-    eleave String
-    manualintime String?
-    manualouttime String?
-    manualduration   String? 
-    manualshift String?
-    manualovertime String?
-    mleave String?
-    department String?
-    gender String?
-    status   Status  @default(NoChanges)
-    comment  Comment[]
-    approvedByTimekeeper Boolean @default(false)
-    UploadDocument Upload[]
-     @@unique([attendancedate, employeeid])
+  id                   String    @id @default(cuid())
+  contractorid         String?
+  contractorname       String?
+  employeeid           String
+  employeename         String?
+  designation          String
+  attendancedate       String
+  machineInTime        String
+  machineOutTime       String?
+  machineduration      String?
+  machineshift         String
+  attendance           String
+  overtime             String
+  eleave               String
+  manualintime         String?
+  manualouttime        String?
+  manualduration       String?
+  manualshift          String?
+  manualovertime       String?
+  mleave               String?
+  department           String?
+  gender               String?
+  status               Status    @default(NoChanges)
+  comment              Comment[]
+  approvedByTimekeeper Boolean   @default(false)
+  UploadDocument       Upload[]
+
+  @@unique([attendancedate, employeeid])
 }
 
-
-
 model Contractor {
-  id   String   @id @default(cuid())
-  contractorname      String
-  contractorId       String    @unique
-  servicedetail      String
-  supplierdetail      String  
-  officeaddress      String?
-  contactperson      String
-  designation      String?
-  telephonenumber      String?
-  mobilenumber      String
-  pancardno    String?
-  areaofwork   String?
-  emailid      String?    
-  website      String?
-  expirationDate   String?
-  servicecharge    Int?
-  bankaccountnumber   String?
-  ifscno      String?
-  beneficialname  String?
-  gstin        String?
-  typeofcontractor   String?
-  strategicbusinessunit   String?
+  id                          String       @id @default(cuid())
+  contractorname              String
+  contractorId                String       @unique
+  servicedetail               String
+  supplierdetail              String
+  officeaddress               String?
+  contactperson               String
+  designation                 String?
+  telephonenumber             String?
+  mobilenumber                String
+  pancardno                   String?
+  areaofwork                  String?
+  emailid                     String?
+  website                     String?
+  expirationDate              String?
+  servicecharge               Int?
+  bankaccountnumber           String?
+  ifscno                      String?
+  beneficialname              String?
+  gstin                       String?
+  typeofcontractor            String?
+  strategicbusinessunit       String?
   businessdetaildocument      String?
-  uploadutilitybill      String?
-  organisationtype      String?
-  dateofincorporation      String?
-  associationwithcompetitor   Boolean @default(false)
-  memorandam_of_associate      String?
-  listofdirector      String?
-  profileofkeyperson      String?
-  competitorname      String?
-  isocertified Boolean   @default(false)
-  turnoverlastyear      String?
-  turnover2yearback      String?
-  uploadbranchdetail      String?
-  uploadreturndetail      String?
-  uniquenumber      String?
-  registration_number      String?
-  first_registration_number      String?
+  uploadutilitybill           String?
+  organisationtype            String?
+  dateofincorporation         String?
+  associationwithcompetitor   Boolean      @default(false)
+  memorandam_of_associate     String?
+  listofdirector              String?
+  profileofkeyperson          String?
+  competitorname              String?
+  isocertified                Boolean      @default(false)
+  turnoverlastyear            String?
+  turnover2yearback           String?
+  uploadbranchdetail          String?
+  uploadreturndetail          String?
+  uniquenumber                String?
+  registration_number         String?
+  first_registration_number   String?
   latest_mnth_gst1_filed      String?
-  latest_mnth_gst2b_filed      String?
-  comply_regulatory   Boolean   @default(false)
-  upload_registration_cert      String?
-  upload_licence1      String?
-  upload_licence2      String?
-  code_of_proprietor      String?
-  list_major_product      String?
-  qualty_control_procedure      String?
-  valueadd_product      String?
-  five_strength_points      String?
-  weakness      String?
-  selection_training_method      String?
-  delivery_procedure      String?
-  clientele      String?
-  reference_organistaion_1      String?
-  reference_contact_person_1      String?
-  reference_designation_1      String?
-  reference_contact_1      String?
-  period_of_service_1      String?
-  reference_organistaion_2      String?
-  reference_contact_person_2      String?
-  reference_designation_2      String?
-  reference_contact_2      String?
-  period_of_service_2      String?
-  reference_organistaion_3      String?
-  reference_contact_person_3      String?
-  reference_designation_3      String?
-  reference_contact_3      String?
-  period_of_service_3      String?
-  upload_list_ofclientele      String?
-  upload_certificate_services      String?
-  upload_doc1      String?
-  upload_doc2      String?
-  employee        Employee[] 
-  safety         Safety[]
-  bills         bills[]
-  stores        Stores[]
- 
+  latest_mnth_gst2b_filed     String?
+  comply_regulatory           Boolean      @default(false)
+  upload_registration_cert    String?
+  upload_licence1             String?
+  upload_licence2             String?
+  code_of_proprietor          String?
+  list_major_product          String?
+  qualty_control_procedure    String?
+  valueadd_product            String?
+  five_strength_points        String?
+  weakness                    String?
+  selection_training_method   String?
+  delivery_procedure          String?
+  clientele                   String?
+  reference_organistaion_1    String?
+  reference_contact_person_1  String?
+  reference_designation_1     String?
+  reference_contact_1         String?
+  period_of_service_1         String?
+  reference_organistaion_2    String?
+  reference_contact_person_2  String?
+  reference_designation_2     String?
+  reference_contact_2         String?
+  period_of_service_2         String?
+  reference_organistaion_3    String?
+  reference_contact_person_3  String?
+  reference_designation_3     String?
+  reference_contact_3         String?
+  period_of_service_3         String?
+  upload_list_ofclientele     String?
+  upload_certificate_services String?
+  upload_doc1                 String?
+  upload_doc2                 String?
+  employee                    Employee[]
+  safety                      Safety[]
+  bills                       bills[]
+  stores                      Stores[]
+  works                       Works[]
+  barBending                  BarBending[]
 }
 
 model bills {
-  id    String    @id @default(cuid())
-  contractorname   String
-  contractorId    String
-  month           String
-  amount          Int
+  id             String     @id @default(cuid())
+  contractorname String
+  contractorId   String
+  month          String
+  amount         Int
   document       String
-  contractor         Contractor     @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
 model Employee {
-  id   String   @id @default(cuid())
-    contractorname  String
-    employeeId      String  @unique
-    employeename String
-    designation String 
-    department String
-    gender String
-    phone String
-    emailid String?
-    basicsalary_in_duration String
-    basicsalary Int
-	  allowed_wrking_hr_per_day Int
-    servicecharge Float?
-    gst Float?
-    tds Float?
-    contractorId String
-    contractor         Contractor     @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  id                        String     @id @default(cuid())
+  contractorname            String
+  employeeId                String     @unique
+  employeename              String
+  designation               String
+  department                String
+  gender                    String
+  phone                     String
+  emailid                   String?
+  basicsalary_in_duration   String
+  basicsalary               Int
+  allowed_wrking_hr_per_day Int
+  servicecharge             Float?
+  gst                       Float?
+  tds                       Float?
+  contractorId              String
+  contractor                Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
 model HOAuditor {
-  id  String     @id @default(cuid())
-  contractorId    String
-  contractorname  String
-  workDescription  String
-  invoiceNo      String
-  date          String
-  monthOfInvoice   String
-  fromDate         String
-  toDate           String
-  basicbillamount   Int
-  firstbillormonthly  String
-  serviceCharges    Int
-  totalbillAmount   Int
-  gst               Int
-  netbillAmount     Int
-  bankDetails      String
-  onetimeInvoice   Boolean
-  verifiedComplainces  Boolean
-  workOrderAvailable   Boolean
-  licensesInPlace      Boolean
-  previousMonthPayReceived  Boolean
-  previousPayVerified     Boolean
+  id                       String  @id @default(cuid())
+  contractorId             String
+  contractorname           String
+  workDescription          String
+  invoiceNo                String
+  date                     String
+  monthOfInvoice           String
+  fromDate                 String
+  toDate                   String
+  basicbillamount          Int
+  firstbillormonthly       String
+  serviceCharges           Int
+  totalbillAmount          Int
+  gst                      Int
+  netbillAmount            Int
+  bankDetails              String
+  onetimeInvoice           Boolean
+  verifiedComplainces      Boolean
+  workOrderAvailable       Boolean
+  licensesInPlace          Boolean
+  previousMonthPayReceived Boolean
+  previousPayVerified      Boolean
   detailsSentToAuditAndHo  Boolean
-  gstChallanAttached      Boolean
-  deductions    String?
-  variationsInManpower   String?
+  gstChallanAttached       Boolean
+  deductions               String?
+  variationsInManpower     String?
   manchineOrRegisterMode   String
-  uploadDoc1     String?
-  uploadDoc2     String?
-  uploadDoc3     String?
-  uploadDoc4     String?
-  uploadDoc5     String?
-  uploadDoc6     String?
+  uploadDoc1               String?
+  uploadDoc2               String?
+  uploadDoc3               String?
+  uploadDoc4               String?
+  uploadDoc5               String?
+  uploadDoc6               String?
 }
 
 model payoutTracker {
-  id     String    @id @default(cuid())
-  contractorId   String
-  contractorName String
-  month          String
-  amount         Int
-  gst            Int
-  tds            Int
+  id                 String  @id @default(cuid())
+  contractorId       String
+  contractorName     String
+  month              String
+  amount             Int
+  gst                Int
+  tds                Int
   finalpayableamount Int
-  deduction   Int  @default(0)
-  actualpaidoutmoney  Int @default(0)
-  balance    Int  @default(0)
-  uploadreceipt  String?
+  deduction          Int     @default(0)
+  actualpaidoutmoney Int     @default(0)
+  balance            Int     @default(0)
+  uploadreceipt      String?
 }
 
 model Workorder {
-  id     String     @id @default(cuid())
-  contractorId   String
-  contractorName String
-  nature         String
-  startDate      String
-  endDate        String
-  location       String
-  workDescription String
-  repeatOrOneTime  String
-  alert1Month     Boolean
-  alert15days     Boolean
-  amendmentDocument  String?
-  addendumDocument   String?
-  uploadDocument  String?
+  id                String  @id @default(cuid())
+  contractorId      String
+  contractorName    String
+  nature            String
+  startDate         String
+  endDate           String
+  location          String
+  workDescription   String
+  repeatOrOneTime   String
+  alert1Month       Boolean
+  alert15days       Boolean
+  amendmentDocument String?
+  addendumDocument  String?
+  uploadDocument    String?
 }
 
 model Department {
-  id    String   @id @default(cuid())
-  department  String
-   basicsalary_in_duration String?
-  designations   Designations[]
+  id                      String         @id @default(cuid())
+  department              String
+  basicsalary_in_duration String?
+  designations            Designations[]
 }
 
 model Designations {
-  id     String   @id @default(cuid())
-  designationid    String
-  departmentId    String 
-  departmentname    String
-  designation    String
-  basicsalary    Int
-  gender       String
-  allowed_wrking_hr_per_day   Int
-  servicecharge   Float?
-   basicsalary_in_duration String   @default("Hourly")
-   department         Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  id                        String     @id @default(cuid())
+  designationid             String
+  departmentId              String
+  departmentname            String
+  designation               String
+  basicsalary               Int
+  gender                    String
+  allowed_wrking_hr_per_day Int
+  servicecharge             Float?
+  basicsalary_in_duration   String     @default("Hourly")
+  department                Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
-  id   String   @id @default(cuid())
-  comment   String
-  userId    String
-  userName  String
-  role      Role
-  timekeeperId  String
-  timekeeper         TimeKeeper     @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  comment      String
+  userId       String
+  userName     String
+  role         Role
+  timekeeperId String
+  timekeeper   TimeKeeper @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
 }
 
 model Upload {
-  id   String   @id @default(cuid())
-  document   String
-  userId    String
-  userName  String
-  docType   String?
-  role      Role
-  timekeeperId  String
-  timekeeper         TimeKeeper     @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  document     String
+  userId       String
+  userName     String
+  docType      String?
+  role         Role
+  timekeeperId String
+  timekeeper   TimeKeeper @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
 }
 
-
-
 model Stores {
-  id   String   @id @default(cuid())
-  month   String   
+  id             String      @id @default(cuid())
+  month          String
   contractorid   String
-  contractorName  String
-  storeItems    StoreItem[]
-  totalAmount   Int
-  contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+  contractorName String
+  storeItems     StoreItem[]
+  totalAmount    Int
+  contractor     Contractor  @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 
 model StoreItem {
-  id    String   @id @default(cuid())
-  storeId  String
-  division     String
-  chargeableItemIssued  String
-  quantity    Int
-  units  String
-  rate   Int
-  chargeableamount  Int
-  store    Stores     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  id                   String @id @default(cuid())
+  storeId              String
+  division             String
+  chargeableItemIssued String
+  quantity             Int
+  units                String
+  rate                 Int
+  chargeableamount     Int
+  store                Stores @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
-
-
 
 model Safety {
-  id   String   @id @default(cuid())
-  month   String   
+  id             String       @id @default(cuid())
+  month          String
   contractorid   String
-  contractorName  String
-  safetyItems   SafetyItem[]
-  totalAmount   Int
-  contractor         Contractor     @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+  contractorName String
+  safetyItems    SafetyItem[]
+  totalAmount    Int
+  contractor     Contractor   @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
-
 
 model SafetyItem {
-  id   String   @id @default(cuid())
-  safetyId   String
-  division   String
-  chargeableItemIssued  String
-  penalty    Int
+  id                   String @id @default(cuid())
+  safetyId             String
+  division             String
+  chargeableItemIssued String
+  penalty              Int
   netchargeableamount  Int
-  safety   Safety   @relation(fields: [safetyId], references: [id], onDelete: Cascade)
+  safety               Safety @relation(fields: [safetyId], references: [id], onDelete: Cascade)
 }
 
-model Automobile{
-    id String @id @default(cuid())
-    contractorId String
-    workorderId String?
-    date String?
-    openingMeterReading Int?
-    closingMeterReading Int?
-    startTime String?
-    endTime String?
-    totalRunning Int?
-    unit String?
-    hsdIssuedOrConsumed String?
-    maintenanceTime String?
-    breakdownTime String?
-    breakDownDaysCounted Int?
-    reasonBehindBreakDown String?
-    remarks String?
-    status Status @default(Pending)
-    rejectionReason String?
-     @@unique([date, contractorId])
+model Automobile {
+  id                    String  @id @default(cuid())
+  contractorId          String
+  workorderId           String?
+  date                  String?
+  openingMeterReading   Int?
+  closingMeterReading   Int?
+  startTime             String?
+  endTime               String?
+  totalRunning          Int?
+  unit                  String?
+  hsdIssuedOrConsumed   String?
+  maintenanceTime       String?
+  breakdownTime         String?
+  breakDownDaysCounted  Int?
+  reasonBehindBreakDown String?
+  remarks               String?
+  status                Status  @default(Pending)
+  rejectionReason       String?
+
+  @@unique([date, contractorId])
 }
 
-model SaveAutomobile{
-    id String @id @default(cuid())
-    contractorId String
-    workorderId String?
-    date String?
-    openingMeterReading Int?
-    closingMeterReading Int?
-    startTime String?
-    endTime String?
-    totalRunning Int?
-    unit String?
-    hsdIssuedOrConsumed String?
-    maintenanceTime String?
-    breakdownTime String?
-    breakDownDaysCounted Int?
-    reasonBehindBreakDown String?
-    remarks String?
-    status Status @default(Pending)
-    rejectionReason String?
-     @@unique([date, contractorId])
+model SaveAutomobile {
+  id                    String  @id @default(cuid())
+  contractorId          String
+  workorderId           String?
+  date                  String?
+  openingMeterReading   Int?
+  closingMeterReading   Int?
+  startTime             String?
+  endTime               String?
+  totalRunning          Int?
+  unit                  String?
+  hsdIssuedOrConsumed   String?
+  maintenanceTime       String?
+  breakdownTime         String?
+  breakDownDaysCounted  Int?
+  reasonBehindBreakDown String?
+  remarks               String?
+  status                Status  @default(Pending)
+  rejectionReason       String?
+
+  @@unique([date, contractorId])
 }
 
+// model 
 
+model Works {
+  id            String     @id @default(cuid())
+  description   String
+  contractorid  String
+  workItems     WorkItem[]
+  totalAmount   Float      @default(0)
+  totalQuantity Float      @default(0)
+  contractor    Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model WorkItem {
+  id                   String  @id @default(cuid())
+  workId               String
+  referenceWorkId      String?
+  description          String
+  unit                 String
+  unitrate             Float   @default(0)
+  previousBillQuantity Float   @default(0)
+  currentBillQuantity  Float   @default(0)
+  totalQuantity        Float   @default(0)
+  valueofpreviousBill  Float   @default(0)
+  valueofcurrentBill   Float   @default(0)
+  valueofTotalBill     Float   @default(0)
+  nos                  Int
+  length               Float
+  breadth              Float
+  height               Float?
+  quantity             Float
+  remarks              String?
+  work                 Works   @relation(fields: [workId], references: [id], onDelete: Cascade)
+}
+
+model BarBending {
+  id              String           @id @default(cuid())
+  description     String
+  contractorid    String
+  totalAmount     Float            @default(0)
+  barbendingItems BarBendingItem[]
+  contractor      Contractor       @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model BarBendingItem {
+  id               String     @id @default(cuid())
+  barBendingId     String
+  description      String
+  barmark          String?
+  diamark          Int
+  noofequipments   Int
+  costperequipment Float
+  totalcost        Float
+  a                Float      @default(0)
+  b                Float      @default(0)
+  c                Float      @default(0)
+  d                Float      @default(0)
+  e                Float      @default(0)
+  f                Float      @default(0)
+  g                Float      @default(0)
+  h                Float      @default(0)
+  cuttinglength    Float
+  totalLength      Float
+  unitweight       Float
+  totalweight      Float
+  remarks          String?
+  barBending       BarBending @relation(fields: [barBendingId], references: [id], onDelete: Cascade)
+}
 
 enum Status {
   Approved
@@ -424,8 +488,6 @@ enum Status {
   Rejected
   NoChanges
 }
-
-
 
 enum Role {
   None
@@ -438,4 +500,5 @@ enum Role {
   Stores
   Safety
   Automobile
+  Civil
 }

@@ -48,7 +48,7 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
             key={headCell.id}
             align={align || "left"}
             padding={"normal"}
-            sx={{ fontWeight: "600", minWidth: "8rem", bgcolor: "#eeeeee" }}
+            sx={{ fontWeight: "600", minWidth: "5rem", bgcolor: "#eeeeee" }}
           >
             {headCell.label}
           </TableCell>

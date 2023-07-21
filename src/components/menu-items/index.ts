@@ -8,6 +8,7 @@ import plantCommercial from './plantcommercial';
 import  store from './store';
 import safety from './safety';
 import automobile from './automobile';
+import civil from './civil';
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -52,4 +53,8 @@ const automobileItems = {
     items: [automobile]
 }
 
-export { menuItems, adminItems, timekeeperItems, hritems, hoitems, corporatorItems, plantCommercialItems, storeitems, safetyitems, automobileItems }
+const civilItems = {
+    items: [civil]
+}
+
+export { menuItems, adminItems, timekeeperItems, hritems, hoitems, corporatorItems, plantCommercialItems, storeitems, safetyitems, automobileItems, civilItems }

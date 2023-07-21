@@ -10,10 +10,9 @@ import { StoreItem, Stores } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { IconButton, TableCell, TableRow } from "@mui/material";
+import { TableCell, TableRow } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
-import Delete from "@mui/icons-material/Delete";
 
 const createHeadCells = (
   id: string,
@@ -123,7 +122,7 @@ export default function Store({ stores, storeItems }: Props) {
           <EnhancedTableHead
             headCells={headcells}
             numSelected={0}
-            rowCount={rows.length}
+            rowCount={stores.length}
           />
           <TableBody>
             {stores.map((row) => (

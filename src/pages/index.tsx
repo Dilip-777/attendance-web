@@ -669,6 +669,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  if (session.user?.role === "Civil") {
+    return {
+      redirect: {
+        destination: "/civil/measurement",
+        permanent: false,
+      },
+    };
+  }
+
   if (session.user?.role === "Admin") {
     return {
       redirect: {

@@ -224,6 +224,7 @@ const ProfileSection = () => {
                       { value: "Stores", label: "Stores" },
                       { value: "Safety", label: "Safety" },
                       { value: "Automobile", label: "Automobile" },
+                      { value: "Civil", label: "Civil" },
                     ]}
                     fullWidth={true}
                     sx={{ maxWidth: "20rem", mb: 2 }}
