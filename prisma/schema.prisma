@@ -184,6 +184,7 @@ model Contractor {
   stores                      Stores[]
   works                       Works[]
   barBending                  BarBending[]
+  workorders                  Workorder[]
 }
 
 model bills {
@@ -268,7 +269,7 @@ model payoutTracker {
 }
 
 model Workorder {
-  id                String  @id @default(cuid())
+  id                String       @id @default(cuid())
   contractorId      String
   contractorName    String
   nature            String
@@ -282,6 +283,9 @@ model Workorder {
   amendmentDocument String?
   addendumDocument  String?
   uploadDocument    String?
+  works             Works[]
+  contractor        Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  barBending        BarBending[]
 }
 
 model Department {
@@ -414,15 +418,16 @@ model SaveAutomobile {
   @@unique([date, contractorId])
 }
 
-// model 
-
 model Works {
   id            String     @id @default(cuid())
+  itemcode      Int        @unique @default(autoincrement())
+  workorderId   String
   description   String
   contractorid  String
   workItems     WorkItem[]
   totalAmount   Float      @default(0)
   totalQuantity Float      @default(0)
+  workorder     Workorder  @relation(fields: [workorderId], references: [id], onDelete: Cascade)
   contractor    Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 
@@ -450,10 +455,13 @@ model WorkItem {
 
 model BarBending {
   id              String           @id @default(cuid())
+  itemcode        Int              @unique @default(autoincrement())
+  workorderId     String
   description     String
   contractorid    String
   totalAmount     Float            @default(0)
   barbendingItems BarBendingItem[]
+  workorder       Workorder        @relation(fields: [workorderId], references: [id], onDelete: Cascade)
   contractor      Contractor       @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 

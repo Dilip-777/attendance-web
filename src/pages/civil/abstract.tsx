@@ -46,52 +46,13 @@ import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { User, WorkItem, Works } from "@prisma/client";
+import { Contractor, User, WorkItem, Workorder, Works } from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 // import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import _ from "lodash";
-
-const style = {
-  position: "absolute",
-  overflowY: "auto",
-  borderRadius: "15px",
-  bgcolor: "background.paper",
-  boxShadow: 24,
-};
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
+import FormSelect from "@/ui-component/FormSelect";
+import PrintExcel from "@/components/PrintAbstractSheet";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -108,37 +69,48 @@ const createHeadCells = (
   id: string,
   label: string,
   numeric: boolean,
-  included: boolean
+  included: boolean,
+  width?: number
 ) => {
   return {
     id: id,
     label: label,
     numeric: numeric,
     included: included,
+    width: width,
   };
 };
 
 const headCells = [
-  createHeadCells("description", "Item Description", false, false),
+  createHeadCells("itemcode", "Item Code", false, false),
+  createHeadCells("description", "Item Description", false, false, 35),
   createHeadCells("unit", "Unit", false, false),
   createHeadCells("unitrate", "Unit Rate", false, false),
   createHeadCells(
     "previousBillQuantity",
     "Previous Bill Quantity",
     false,
-    false
+    false,
+    15
   ),
-  createHeadCells("quantity", "Current Bill Quantity", false, false),
-  createHeadCells("totalQuantity", "Total Quantity", false, false),
+  createHeadCells("quantity", "Current Bill Quantity", false, false, 15),
+  createHeadCells("totalQuantity", "Total Quantity", false, false, 15),
   createHeadCells(
     "valueofpreviousBill",
     "Value of Previous Bill",
     false,
-    false
+    false,
+    15
   ),
-  createHeadCells("valueofcurrentBill", "Value of Current Bill", false, false),
-  createHeadCells("valueofTotalBill", "Value of Total Bill", false, false),
-  createHeadCells("remarks", "Remarks", false, false),
+  createHeadCells(
+    "valueofcurrentBill",
+    "Value of Current Bill",
+    false,
+    false,
+    15
+  ),
+  createHeadCells("valueofTotalBill", "Value of Total Bill", false, false, 15),
+  createHeadCells("remarks", "Remarks", false, false, 15),
 ];
 
 interface EnhancedTableToolbarProps {
@@ -254,14 +226,23 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-interface workitemstype extends WorkItem {
-  work: Works;
+interface worktype extends Works {
+  workItems: WorkItem[];
+  contractor: Contractor;
+}
+
+interface contractors extends Contractor {
+  workorders: Workorder[];
 }
 
 export default function AbstractSheet({
-  workitems,
+  // workitems,
+  workorders,
+  contractors,
 }: {
-  workitems: workitemstype[];
+  // workitems: worktype[];
+  workorders: Workorder[];
+  contractors: contractors[];
 }) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
@@ -269,12 +250,14 @@ export default function AbstractSheet({
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
   const [filter, setFilter] = React.useState("");
-  const [selectedUser, setSelectedUser] = React.useState<workitemstype | null>(
-    null
-  );
+  const [selectedUser, setSelectedUser] = React.useState<worktype | null>(null);
   const matches = useMediaQuery("(min-width:600px)");
   const [value, setValue] = React.useState(0);
   const [password, setPassword] = React.useState("");
+  const [contractor, setContractor] = React.useState<string | undefined>(
+    contractors.length > 0 ? contractors[0].contractorId : undefined
+  );
+  const [workitems, setWorkItems] = React.useState<worktype[]>([]);
 
   const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
@@ -345,6 +328,27 @@ export default function AbstractSheet({
     setPage(0);
   };
 
+  const contractor1 = contractors.find((v) => v.contractorId === contractor);
+  const workorder =
+    contractor1 && contractor1?.workorders.length > 0
+      ? contractor1?.workorders[0]
+      : undefined;
+  const info = [
+    { value: contractor1?.contractorname, label: "Name of Contractor" },
+    { value: workorder?.nature, label: "Nature of Work" },
+    { value: workorder?.location, label: "Location" },
+  ];
+
+  const fetchWorkItems = async () => {
+    const res = await axios.get("/api/workitem?contractorId=" + contractor);
+    console.log(res.data);
+    setWorkItems(res.data);
+  };
+
+  React.useEffect(() => {
+    fetchWorkItems();
+  }, [contractor]);
+
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty workitems.
@@ -352,16 +356,90 @@ export default function AbstractSheet({
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - workitems.length) : 0;
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box
+      sx={{
+        width: "100%",
+        overflowY: "auto",
+        height: "85vh",
+        scrollBehavior: "smooth",
+        "&::-webkit-scrollbar": {
+          height: 10,
+          width: 10,
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "#bdbdbd",
+          borderRadius: 2,
+        },
+      }}
+    >
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar
+        {/* <EnhancedTableToolbar
           numSelected={selected.length}
           filter={filter}
           setFilter={setFilter}
-        />
+        /> */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            p: "1rem",
+            alignItems: "center",
+          }}
+        >
+          <Stack direction="column" spacing={3}>
+            <FormSelect
+              handleChange={(v) => setContractor(v as string)}
+              options={contractors.map((v) => ({
+                label: v.contractorname,
+                value: v.contractorId,
+              }))}
+              label="Contractor"
+              value={
+                (contractor as string) ||
+                (contractors.length > 0 ? contractors[0].contractorId : "")
+              }
+            />
+            {contractor1 && contractor1?.workorders?.length > 0 && (
+              <Stack direction="column" spacing={2}>
+                {info.map((v) => (
+                  <Stack direction="row" spacing={2}>
+                    <Typography
+                      sx={{
+                        fontWeight: "700",
+                        fontSize: "1rem",
+                        minWidth: "12rem",
+                      }}
+                    >
+                      {v.label}:
+                    </Typography>
+                    <Typography sx={{ fontSize: "1rem" }}>{v.value}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            )}
+          </Stack>
+          {/* <Button
+            variant="contained"
+            onClick={() => {
+              PrintExcel({
+                works: workitems,
+                headcells: headCells,
+              });
+              console.log("clicked");
+            }}
+          >
+            Print
+          </Button> */}
+          <PrintExcel
+            works={workitems}
+            headcells={headCells}
+            info={info}
+            // contractor={contractor}
+          />
+        </Box>
         <TableContainer
           sx={{
-            maxHeight: "calc(100vh - 16rem)",
+            // maxHeight: "calc(100vh - 16rem)",
             overflow: "auto",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
@@ -388,69 +466,67 @@ export default function AbstractSheet({
               align="center"
             />
             <TableBody>
-              {workitems
-                .filter((user) =>
-                  user.description.toLowerCase().includes(filter.toLowerCase())
-                )
-                ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index: number) => {
-                  const isItemSelected = isSelected(row.id as string);
-                  const labelId = `enhanced-table-checkbox-${index}`;
-
-                  return (
-                    <TableRow
-                      hover
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={row.id}
-                      selected={isItemSelected}
-                      sx={{ cursor: "pointer" }}
+              {workitems.map((row) => (
+                <>
+                  <TableRow>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        onClick={(event) =>
+                          handleClick(event, row.id as string)
+                        }
+                        color="primary"
+                        // checked={isItemSelected}
+                        // inputProps={{
+                        //   "aria-labelledby": labelId,
+                        // }}
+                      />
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "700" }}
+                      // colSpan={10}
+                      align="center"
                     >
+                      {row.itemcode}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        maxHeight: "3rem",
+                        width: "15rem",
+                        fontWeight: "700",
+                      }}
+                    >
+                      {row.description}
+                    </TableCell>
+                  </TableRow>
+                  {row.workItems.map((item) => (
+                    <TableRow>
                       <TableCell padding="checkbox">
                         <Checkbox
                           onClick={(event) =>
-                            handleClick(event, row.id as string)
+                            handleClick(event, item.id as string)
                           }
                           color="primary"
-                          checked={isItemSelected}
-                          inputProps={{
-                            "aria-labelledby": labelId,
-                          }}
+                          sx={{ mt: "auto" }}
+                          // checked={isItemSelected}
+                          // inputProps={{
+                          //   "aria-labelledby": labelId,
+                          // }}
                         />
                       </TableCell>
                       {headCells.map((cell) => (
-                        <TableCell align="center">
-                          <Typography
-                            sx={{
-                              maxHeight: "3rem",
-                              width:
-                                cell.id === "description" ? "15rem" : "5rem",
-                            }}
-                          >
-                            {_.get(row, cell.id, "-")}
-                          </Typography>
+                        <TableCell
+                          sx={{
+                            maxHeight: "3rem",
+                            width: cell.id === "description" ? "15rem" : "5rem",
+                          }}
+                        >
+                          {_.get(item, cell.id, "-")}
                         </TableCell>
                       ))}
-                      {/* <TableCell id={labelId} scope="row" padding="none">
-                        {row?.id}
-                      </TableCell>
-                      <TableCell>{row.name}</TableCell>
-                      <TableCell>{row?.email}</TableCell>
-                      <TableCell>{row.mobileNumber}</TableCell>
-                      <TableCell>{row.role}</TableCell> */}
                     </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
+                  ))}
+                </>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
@@ -482,6 +558,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const workitems = await prisma.workItem.findMany();
 
+  const workorders = await prisma.workorder.findMany();
+  const contractors = await prisma.contractor.findMany({
+    include: {
+      workorders: true,
+    },
+  });
+
   //   if (session?.user?.role !== "Admin") {
   //     return {
   //       redirect: {
@@ -493,6 +576,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       workitems: workitems,
+      workorders: workorders,
+      contractors: contractors,
     },
   };
   //   }

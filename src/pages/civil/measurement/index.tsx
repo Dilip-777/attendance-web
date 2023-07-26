@@ -13,8 +13,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import Edit from "@mui/icons-material/Edit";
 import Add from "@mui/icons-material/Add";
-import { Works, WorkItem, Contractor } from "@prisma/client";
-import { Button, Stack, Tooltip } from "@mui/material";
+import { Works, WorkItem, Contractor, Workorder } from "@prisma/client";
+import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
 import AddMeasurement from "@/components/Civil/addmeasurement";
 import axios from "axios";
@@ -28,6 +28,10 @@ import { useRouter } from "next/router";
 interface worktypes extends Works {
   workItems: WorkItem[];
   contractor: Contractor;
+}
+
+interface contractor extends Contractor {
+  workorders: Workorder[];
 }
 
 const createHeadCells = (
@@ -195,7 +199,7 @@ function Row(props: { row: worktypes; handleOpen: (id: string) => void }) {
 export default function Measurement({
   contractors,
 }: {
-  contractors: Contractor[];
+  contractors: contractor[];
 }) {
   // const [contractors, setContractors] = React.useState<Contractor[]>([]);
   const [open, setOpen] = React.useState(false);
@@ -219,6 +223,16 @@ export default function Measurement({
     const res = await axios.get("/api/works?contractorid=" + contractor);
     setWorks(res.data);
   };
+  const contractor1 = contractors.find((v) => v.contractorId === contractor);
+  const workorder =
+    contractor1 && contractor1?.workorders.length > 0
+      ? contractor1?.workorders[0]
+      : undefined;
+  const info = [
+    { value: contractor1?.contractorname, label: "Name of Contractor" },
+    { value: workorder?.nature, label: "Nature of Work" },
+    { value: workorder?.location, label: "Location" },
+  ];
   React.useEffect(() => {
     // fetchContractors();
     fetchWorks();
@@ -242,7 +256,7 @@ export default function Measurement({
             alignItems: "center",
           }}
         >
-          <Stack direction="row" spacing={3} alignItems="center">
+          <Stack direction="column" spacing={3}>
             <FormSelect
               handleChange={(v) => setContractor(v as string)}
               options={contractors.map((v) => ({
@@ -255,6 +269,24 @@ export default function Measurement({
                 (contractors.length > 0 ? contractors[0].contractorId : "")
               }
             />
+            {contractor1 && contractor1?.workorders.length > 0 && (
+              <Stack direction="column" spacing={2}>
+                {info.map((v) => (
+                  <Stack direction="row" spacing={2}>
+                    <Typography
+                      sx={{
+                        fontWeight: "700",
+                        fontSize: "1rem",
+                        minWidth: "12rem",
+                      }}
+                    >
+                      {v.label}:
+                    </Typography>
+                    <Typography sx={{ fontSize: "1rem" }}>{v.value}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            )}
           </Stack>
           <Button
             onClick={() => router.push("/civil/measurement/add")}
@@ -309,6 +341,13 @@ export default function Measurement({
                     }}
                   />
                 ))
+              ) : contractors.find((v) => v.contractorId === contractor)
+                  ?.workorders.length === 0 ? (
+                <TableRow>
+                  <TableCell align="left" colSpan={6}>
+                    No Work Orders
+                  </TableCell>
+                </TableRow>
               ) : (
                 <TableRow>
                   <TableCell align="left" colSpan={6}>
@@ -346,7 +385,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    include: {
+      workorders: true,
+    },
+  });
 
   return {
     props: {

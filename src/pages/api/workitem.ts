@@ -4,15 +4,19 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default async function works(req: NextApiRequest, res: NextApiResponse) {
     
     if(req.method === "GET") {
-        const { contractorid: id} = req.query
+        const { contractorId: id} = req.query
         if(id) {
             const works = await prisma.works.findMany({
                 where: {
-                    contractorid: id as string
+                          contractorid: id as string
+                
                 },
                 include: {
                     contractor: true,
                     workItems: true
+                },
+                orderBy: {
+                    itemcode: "asc"
                 }
             })
             res.status(200).json(works)
@@ -44,6 +48,7 @@ export default async function works(req: NextApiRequest, res: NextApiResponse) {
             },
             data: {
                 totalAmount: workItem1.work.totalAmount + totalAmount,
+                totalQuantity: workItem1.work.totalQuantity + workItem1.quantity
             }
         })
 

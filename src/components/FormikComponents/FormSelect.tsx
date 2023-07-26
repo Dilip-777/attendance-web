@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { shouldForwardProp } from "@mui/system";
 import { useField, useFormikContext } from "formik";
-import React, { ChangeEvent, ChangeEventHandler } from "react";
+import React from "react";
 
 const OutlineInputStyle: any = styled(OutlinedInput, { shouldForwardProp })(
   ({ theme }) => ({
@@ -64,6 +64,19 @@ const FormSelect: React.FC<Props> = ({
     const { value } = event.target;
     setFieldValue(name, value);
   };
+
+  if (field.value) {
+    const option = options.find((option) => option.value === field.value);
+    if (option === undefined) {
+      setFieldValue(name, "", false);
+    }
+  }
+
+  // if (
+  //   options.find((option) => option.value === field.value) === undefined &&
+  //   !field.value
+  // )
+  //   setFieldValue(name, "");
 
   const { onChange, ...fieldWithoutOnChange } = field;
   return (

@@ -18,6 +18,7 @@ import {
   BarBendingItem,
   Contractor,
   WorkItem,
+  Workorder,
   Works,
 } from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
@@ -47,6 +48,7 @@ const workItemSchema = Yup.object().shape({
 const validationSchema = Yup.object().shape({
   description: Yup.string().required("Required"),
   contractorid: Yup.string().required("Required"),
+  workorderId: Yup.string().required("Required"),
   barbendingItems: Yup.array().of(workItemSchema).required("Required"),
 });
 
@@ -59,10 +61,12 @@ const AddBarBending = ({
   barbending,
   contractors,
   works,
+  workorders,
 }: {
   barbending: barbendingtypes;
   contractors: Contractor[];
   works: Works[];
+  workorders: Workorder[];
 }) => {
   const router = useRouter();
   //   const validationSchema = Yup.object().shape({
@@ -90,6 +94,7 @@ const AddBarBending = ({
   const initialValues = {
     description: barbending?.description || "",
     contractorid: barbending?.contractorid || "",
+    workorderId: barbending?.workorderId || "",
 
     barbendingItems: barbending
       ? barbending?.barbendingItems.map((w) => ({
@@ -228,7 +233,15 @@ const AddBarBending = ({
           router.push("/civil/barbending");
         }}
       >
-        {({ errors, touched, isSubmitting, handleSubmit }) => {
+        {({ errors, isSubmitting, handleSubmit, values, setFieldError }) => {
+          if (
+            workorders.filter((w) => w.contractorId === values.contractorid)
+              .length === 0 &&
+            !errors.workorderId
+          ) {
+            // errors.workorderId = "No Work Order for this Contractor";
+            setFieldError("workorderId", "No Work Order for this Contractor");
+          }
           return (
             <form noValidate onSubmit={handleSubmit}>
               <Box sx={{ padding: "2rem" }}>
@@ -242,6 +255,15 @@ const AddBarBending = ({
                       value: barbending.contractorId,
                       label: barbending.contractorname,
                     }))}
+                  />
+                  <FormSelect
+                    name="workorderId"
+                    label="Select Work Order"
+                    placeHolder="Work Order"
+                    sx={{ width: "100%", maxWidth: "100%" }}
+                    options={workorders
+                      .filter((w) => w.contractorId === values.contractorid)
+                      .map((work) => ({ value: work.id, label: work.nature }))}
                   />
                   <FormInput
                     name="description"
@@ -490,11 +512,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     },
   });
+  const workorders = await prisma.workorder.findMany();
+
   return {
     props: {
       barbending,
       contractors,
       works,
+      workorders,
     },
   };
 };

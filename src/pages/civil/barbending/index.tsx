@@ -19,8 +19,9 @@ import {
   Contractor,
   BarBending,
   BarBendingItem,
+  Workorder,
 } from "@prisma/client";
-import { Button, Stack, Tooltip } from "@mui/material";
+import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
 import AddMeasurement from "@/components/Civil/addmeasurement";
 import axios from "axios";
@@ -79,6 +80,10 @@ const headcells1 = [
   createHeadCells("totalweight", "Total Weight", true, false),
   createHeadCells("remarks", "Remarks", false, false),
 ];
+
+interface contractors extends Contractor {
+  workorders: Workorder[];
+}
 
 function createData(
   name: string,
@@ -213,7 +218,7 @@ function Row(props: {
 export default function Measurement({
   contractors,
 }: {
-  contractors: Contractor[];
+  contractors: contractors[];
 }) {
   // const [contractors, setContractors] = React.useState<Contractor[]>([]);
   const [open, setOpen] = React.useState(false);
@@ -232,6 +237,17 @@ export default function Measurement({
   //   setContractors(res.data);
   //   setContractor(res.data[0]?.id);
   // };
+
+  const contractor1 = contractors.find((v) => v.contractorId === contractor);
+  const workorder =
+    contractor1 && contractor1?.workorders.length > 0
+      ? contractor1?.workorders[0]
+      : undefined;
+  const info = [
+    { value: contractor1?.contractorname, label: "Name of Contractor" },
+    { value: workorder?.nature, label: "Nature of Work" },
+    { value: workorder?.location, label: "Location" },
+  ];
 
   const fetchBarBending = async () => {
     const res = await axios.get("/api/barbending?contractorid=" + contractor);
@@ -260,7 +276,7 @@ export default function Measurement({
             alignItems: "center",
           }}
         >
-          <Stack direction="row" spacing={3} alignItems="center">
+          <Stack direction="column" spacing={3}>
             <FormSelect
               handleChange={(v) => setContractor(v as string)}
               options={contractors.map((v) => ({
@@ -273,6 +289,24 @@ export default function Measurement({
                 (contractors.length > 0 ? contractors[0].contractorId : "")
               }
             />
+            {contractor1 && contractor1?.workorders.length > 0 && (
+              <Stack direction="column" spacing={2}>
+                {info.map((v) => (
+                  <Stack direction="row" spacing={2}>
+                    <Typography
+                      sx={{
+                        fontWeight: "700",
+                        fontSize: "1rem",
+                        minWidth: "12rem",
+                      }}
+                    >
+                      {v.label}:
+                    </Typography>
+                    <Typography sx={{ fontSize: "1rem" }}>{v.value}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            )}
           </Stack>
           <Button
             onClick={() => router.push("/civil/barbending/add")}
@@ -327,6 +361,13 @@ export default function Measurement({
                     }}
                   />
                 ))
+              ) : contractors.find((v) => v.contractorId === contractor)
+                  ?.workorders.length === 0 ? (
+                <TableRow>
+                  <TableCell align="left" colSpan={6}>
+                    No Work Orders
+                  </TableCell>
+                </TableRow>
               ) : (
                 <TableRow>
                   <TableCell align="left" colSpan={6}>
@@ -363,7 +404,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    include: {
+      workorders: true,
+    },
+  });
 
   return {
     props: {

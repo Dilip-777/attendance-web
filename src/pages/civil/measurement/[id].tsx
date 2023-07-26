@@ -13,7 +13,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { FieldArray, Formik } from "formik";
 import * as Yup from "yup";
 import FormInput from "@/components/FormikComponents/FormInput";
-import { Contractor, WorkItem, Works } from "@prisma/client";
+import { Contractor, WorkItem, Workorder, Works } from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -36,6 +36,7 @@ const workItemSchema = Yup.object().shape({
 const validationSchema = Yup.object().shape({
   description: Yup.string().required("Required"),
   contractorid: Yup.string().required("Required"),
+  workorderId: Yup.string().required("Required"),
   workItems: Yup.array().of(workItemSchema).required("Required"),
 });
 
@@ -48,10 +49,12 @@ const Addworkitem = ({
   work,
   contractors,
   works,
+  workorders,
 }: {
   work: worktypes;
   contractors: Contractor[];
   works: Works[];
+  workorders: Workorder[];
 }) => {
   const router = useRouter();
   //   const validationSchema = Yup.object().shape({
@@ -79,6 +82,7 @@ const Addworkitem = ({
   const initialValues = {
     description: work?.description || "",
     contractorid: work?.contractorid || "",
+    workorderId: work?.workorderId || "",
     workItems: work
       ? work?.workItems.map((w) => ({
           unit: w.unit,
@@ -179,10 +183,40 @@ const Addworkitem = ({
           router.push("/civil/measurement");
         }}
       >
-        {({ errors, touched, isSubmitting, handleSubmit, values }) => {
+        {({
+          errors,
+          touched,
+          isSubmitting,
+          handleSubmit,
+          values,
+          setFieldError,
+          setFieldValue,
+        }) => {
+          if (
+            workorders.filter((w) => w.contractorId === values.contractorid)
+              .length === 0 &&
+            !errors.workorderId
+          ) {
+            // errors.workorderId = "No Work Order for this Contractor";
+            setFieldError("workorderId", "No Work Order for this Contractor");
+          }
+
+          // if (
+          //   workorders.find(
+          //     (w) =>
+          //       w.id === values.workorderId &&
+          //       w.contractorId === values.contractorid
+          //   ) &&
+          //   !values.workorderId
+          // ) {
+          //   setFieldValue("workorderId", "");
+          // }
+
+          console.log(values);
+
           return (
             <form noValidate onSubmit={handleSubmit}>
-              <Box sx={{ padding: "2rem" }}>
+              <Box sx={{ px: "2rem" }}>
                 <Stack direction="row" columnGap={5}>
                   <FormSelect
                     name="contractorid"
@@ -193,6 +227,15 @@ const Addworkitem = ({
                       value: work.contractorId,
                       label: work.contractorname,
                     }))}
+                  />
+                  <FormSelect
+                    name="workorderId"
+                    label="Select Work Order"
+                    placeHolder="Work Order"
+                    sx={{ width: "100%", maxWidth: "100%" }}
+                    options={workorders
+                      .filter((w) => w.contractorId === values.contractorid)
+                      .map((work) => ({ value: work.id, label: work.nature }))}
                   />
                   <FormInput
                     name="description"
@@ -383,10 +426,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
   const { id } = context.query;
-  const work = await prisma.works.findUnique({
-    where: { id: id as string },
-    include: { workItems: true, contractor: true },
-  });
+  let work = null;
+  if (id !== "add") {
+    work = await prisma.works.findUnique({
+      where: { id: id as string },
+      include: { workItems: true, contractor: true },
+    });
+  }
   const works = await prisma.works.findMany({
     where: {
       NOT: {
@@ -395,11 +441,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
   const contractors = await prisma.contractor.findMany();
+  const workorders = await prisma.workorder.findMany();
   return {
     props: {
       work,
       contractors,
       works,
+      workorders,
     },
   };
 };
