@@ -205,7 +205,7 @@ model Employee {
   designation               String
   department                String
   gender                    String
-  phone                     String
+  phone                     String?
   emailid                   String?
   basicsalary_in_duration   String
   basicsalary               Int

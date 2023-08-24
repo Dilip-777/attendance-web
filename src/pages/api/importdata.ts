@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 
 
-export default async function test (req: NextApiRequest, res: NextApiResponse) {
+export default async function importdata(req: NextApiRequest, res: NextApiResponse) {
     if(req.method === "GET") {
         res.status(200).json(process.env.DATABASE_URL)
     }
@@ -80,3 +80,12 @@ export default async function test (req: NextApiRequest, res: NextApiResponse) {
         res.status(200).json({ success: true })
     }
 }
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '5mb'
+    }
+  }
+}
+

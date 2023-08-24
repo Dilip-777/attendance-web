@@ -171,9 +171,9 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
     };
 
     const getAttendance = (attendance: string) => {
-      if (attendance === "Present") {
+      if (attendance === "Present" || attendance === "P") {
         return "1";
-      } else if (attendance === "1/2Present") {
+      } else if (attendance === "1/2Present" || attendance === "1/2P") {
         return "0.5";
       } else {
         return "0";

@@ -100,6 +100,7 @@ function ImportData() {
         "employeeId",
         "designation",
         "department",
+        "phone",
       ].forEach((key) => {
         if (!d[key]) {
           if (keys.indexOf(key) === -1) {
