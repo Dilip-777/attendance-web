@@ -34,6 +34,7 @@ import { Department, Designations, User } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import EditDesignation from "@/components/Admin/EditDesignation";
+import _ from "lodash";
 
 const style = {
   position: "absolute",
@@ -70,7 +71,7 @@ const createHeadCells = (
 
 const headCells = [
   createHeadCells("id", "Id", false, false),
-  createHeadCells("department", "Department", false, false),
+  createHeadCells("departmentname", "Department", false, false),
   createHeadCells("designation", "Designation", false, false),
   createHeadCells("gender", "Gender", false, false),
   createHeadCells("basicsalary", "Basic Salary", false, false),
@@ -129,7 +130,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         <StyledSearch
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Search department..."
+          placeholder="Search designations..."
           startAdornment={
             <InputAdornment position="start">
               <Search />
@@ -165,6 +166,7 @@ export default function TimeKeeper({
 }: {
   departments: Department[];
 }) {
+  const [orderby, setOrderby] = React.useState("id");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -275,11 +277,16 @@ export default function TimeKeeper({
               onSelectAllClick={handleSelectAllClick}
               rowCount={designations.length}
               headCells={headCells}
+              orderby={orderby}
+              setOrderby={setOrderby}
             />
             <TableBody>
               {designations
-                .filter((user) =>
-                  user.designation.toLowerCase().includes(filter.toLowerCase())
+                .filter((designation) =>
+                  _.get(designation, orderby, "designation")
+                    .toString()
+                    .toLowerCase()
+                    .includes(filter.toLowerCase())
                 )
                 ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index: number) => {
