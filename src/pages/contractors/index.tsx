@@ -220,8 +220,10 @@ export default function Contractors({
   return (
     <Box sx={{ width: "100%" }}>
       <CustomTable
-        rows={contractors.filter((c) =>
-          c.contractorname.toLowerCase().includes(filterName.toLowerCase())
+        rows={contractors.filter(
+          (c) =>
+            c.contractorname.toLowerCase().includes(filterName.toLowerCase()) ||
+            c.contractorId.toLowerCase().includes(filterName.toLowerCase())
         )}
         editLink="/contractors"
         filterName={filterName}

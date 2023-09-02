@@ -54,8 +54,12 @@ export default function Employees({ employees }: { employees: Employee[] }) {
   return (
     <CustomTable
       headcells={headCells1}
-      rows={employees.filter((employee) =>
-        employee.employeename.toLowerCase().includes(filterName.toLowerCase())
+      rows={employees.filter(
+        (employee) =>
+          employee.employeename
+            .toLowerCase()
+            .includes(filterName.toLowerCase()) ||
+          employee.employeeId.toLowerCase().includes(filterName.toLowerCase())
       )}
       filterName={filterName}
       setFilterName={setFilterName}

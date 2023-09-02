@@ -49,6 +49,12 @@ export default async function importdata(req: NextApiRequest, res: NextApiRespon
     }
     else {
 
+        // await prisma.timeKeeper.deleteMany({
+        //     where: {
+        //         contractorid: "8123"
+        //     }
+        // })
+
         const timekeepers = await prisma.timeKeeper.createMany({
             data: data,
             skipDuplicates: true
