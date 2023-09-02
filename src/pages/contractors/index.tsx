@@ -11,6 +11,7 @@ const ImportData = dynamic(() => import("@/components/importContractors"));
 const ContractorModal = dynamic(() => import("@/components/contractors/modal"));
 // import ImportData from "@/components/importContractors";
 import axios from "axios";
+import _ from "lodash";
 // import ContractorModal from "@/components/contractors/modal";
 
 const createHeadCells = (
@@ -60,6 +61,7 @@ export default function Contractors({
   departments: Department[];
 }) {
   const [filterName, setFilterName] = React.useState("");
+  const [orderby, setOrderby] = React.useState("contractorId");
   const router = useRouter();
   const { data: session } = useSession();
   const [contractorId, setContractorId] = React.useState("");
@@ -220,10 +222,11 @@ export default function Contractors({
   return (
     <Box sx={{ width: "100%" }}>
       <CustomTable
-        rows={contractors.filter(
-          (c) =>
-            c.contractorname.toLowerCase().includes(filterName.toLowerCase()) ||
-            c.contractorId.toLowerCase().includes(filterName.toLowerCase())
+        rows={contractors.filter((contractor) =>
+          _.get(contractor, orderby, "contractorname")
+            .toString()
+            .toLowerCase()
+            .includes(filterName.toLowerCase())
         )}
         editLink="/contractors"
         filterName={filterName}
@@ -234,6 +237,8 @@ export default function Contractors({
         type="contractor"
         handleClickReport={handleClickReport}
         upload={<ImportData />}
+        orderby={orderby}
+        setOrderby={setOrderby}
       />
 
       <ContractorModal

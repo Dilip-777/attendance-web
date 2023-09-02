@@ -1,4 +1,12 @@
-import { TableHead, TableRow, TableCell, Checkbox } from "@mui/material";
+import {
+  TableHead,
+  TableRow,
+  TableCell,
+  Checkbox,
+  TableSortLabel,
+  Box,
+} from "@mui/material";
+import { visuallyHidden } from "@mui/utils";
 
 interface HeadCell {
   id: string;
@@ -15,6 +23,8 @@ interface EnhancedTableProps {
   rowCount: number;
   headCells: HeadCell[];
   align?: "left" | "right" | "center";
+  orderby?: string;
+  setOrderby?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function EnhancedTableHead(props: EnhancedTableProps) {
@@ -25,6 +35,8 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
     headCells,
     nocheckbox,
     align,
+    orderby,
+    setOrderby,
   } = props;
 
   return (
@@ -50,7 +62,23 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
             padding={"normal"}
             sx={{ fontWeight: "600", minWidth: "5rem", bgcolor: "#eeeeee" }}
           >
-            {headCell.label}
+            {setOrderby ? (
+              <TableSortLabel
+                active={orderby === headCell.id}
+                direction={orderby === headCell.id ? "asc" : "desc"}
+                onClick={() => setOrderby && setOrderby(headCell.id)}
+              >
+                {headCell.label}
+                {orderby === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    sorted ascending
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              headCell.label
+            )}
+            {/* {headCell.label} */}
           </TableCell>
         ))}
       </TableRow>

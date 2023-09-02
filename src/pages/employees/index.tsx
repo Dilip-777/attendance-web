@@ -51,20 +51,22 @@ const headCells1 = [
 
 export default function Employees({ employees }: { employees: Employee[] }) {
   const [filterName, setFilterName] = React.useState("");
+  const [orderby, setOrderby] = React.useState("contractorname");
   return (
     <CustomTable
       headcells={headCells1}
-      rows={employees.filter(
-        (employee) =>
-          employee.employeename
-            .toLowerCase()
-            .includes(filterName.toLowerCase()) ||
-          employee.employeeId.toLowerCase().includes(filterName.toLowerCase())
+      rows={employees.filter((employee) =>
+        _.get(employee, orderby, "contractorname")
+          .toString()
+          .toLowerCase()
+          .includes(filterName.toLowerCase())
       )}
       filterName={filterName}
       setFilterName={setFilterName}
       editLink="/employees"
       upload={<ImportData />}
+      orderby={orderby}
+      setOrderby={setOrderby}
     />
   );
 }

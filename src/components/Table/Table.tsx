@@ -38,6 +38,8 @@ interface Props {
   type?: string;
   handleClickReport?: () => void;
   upload?: React.ReactNode;
+  orderby?: string;
+  setOrderby?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const CustomTable = (props: Props) => {
@@ -133,6 +135,8 @@ const CustomTable = (props: Props) => {
               onSelectAllClick={handleSelectAllClick}
               rowCount={props.rows.length}
               headCells={props.headcells}
+              orderby={props.orderby}
+              setOrderby={props.setOrderby}
             />
             <TableBody>
               {props.rows
