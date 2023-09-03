@@ -151,6 +151,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     contractorlist,
   } = props;
 
+  const { data: session } = useSession();
+
   return (
     <Toolbar
       sx={{
@@ -209,8 +211,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         <Stack direction="row" spacing={2}>
           <ImportData contractors={contractorlist} />
           {value.month() < dayjs().month() &&
-            showApprove &&
-            contractorName !== "all" && (
+            session?.user?.role === "TimeKeeper" && (
               <Button sx={{ mr: 3 }} onClick={handleApprove}>
                 Approve
               </Button>
