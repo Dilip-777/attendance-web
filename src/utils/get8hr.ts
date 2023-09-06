@@ -1,9 +1,14 @@
 import { Department, Designations, TimeKeeper } from "@prisma/client";
+import dayjs from "dayjs";
 import _ from "lodash";
 
 
 const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number, designations?: Designations[], department?: Department | undefined) => {
 console.log(timekeeper, "timekeeper", month, year, designations, department);
+const m = dayjs(month).daysInMonth()
+
+console.log(m, "days in month");
+
 
     const rate: Record<string, string | number>  = {
     date: "Rate",
@@ -130,11 +135,11 @@ if(designations) {
       
     const id = designation.designationid
     attendancecount[id] = filtered.length + filtered1.length / 2
-    attendancecount["total"] = attendancecount.total as number + Number(_.get(attendancecount, id, 0))
+    attendancecount["total"] = attendancecount.total as number + (Number(_.get(attendancecount, id, 0)) || 0)
     
-    rate[id] = designation.basicsalary
+    rate[id] = designation.basicsalary || 0
     if(designation.basicsalary_in_duration === "Monthly") {
-      totalamount1[id] = Math.floor(_.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0)) / 30)
+      totalamount1[id] = Math.floor(_.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0)) / m)
     }
     else totalamount1[id] = _.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0))
 
@@ -143,12 +148,12 @@ if(designations) {
     totalovertime1["total"] = totalovertime1.total as number + Number(_.get(totalovertime1, id, 0))
     let otRate = 0
     if(designation.basicsalary_in_duration === "Monthly") {
-       otRate = Math.floor( designation.basicsalary / designation.allowed_wrking_hr_per_day / 30)
+       otRate =  designation.basicsalary / designation.allowed_wrking_hr_per_day / m
     }
     else {
-      otRate = Math.floor(designation.basicsalary / designation.allowed_wrking_hr_per_day)
+      otRate = designation.basicsalary / designation.allowed_wrking_hr_per_day
     }
-    otamount[id] = Number(_.get(totalovertime1, id, 0)) * otRate
+    otamount[id] =  parseFloat((Number(_.get(totalovertime1, id, 0)) * otRate).toFixed(2));
     otamount["total"] = otamount.total as number + Number(_.get(otamount, id, 0))
     totalnetamount[id] = Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0))   
     cprate[id] = designation.servicecharge as number
@@ -202,7 +207,7 @@ console.log(rows2, timekeeper);
 
 
 
-    return { rows,  total1: total.total, rows1: rows2, totalnetPayable: netPayable1.total};
+    return { rows,  total1: totalnetamount.total, rows1: rows2, totalnetPayable: netPayable1.total};
   }
 
   export default getTotalAmountAndRows
