@@ -227,7 +227,7 @@ export default function TimeKeeperTable({}: // contractors,
   // contractors: Contractor[];
 }) {
   const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof TimeKeeper>("employeeid");
+  const [orderBy, setOrderBy] = React.useState<string>("employeeid");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -472,6 +472,8 @@ export default function TimeKeeperTable({}: // contractors,
                   ).length
                 }
                 headCells={extraHeadCells}
+                orderby={orderBy}
+                setOrderby={setOrderBy}
               />
 
               <TableBody>
