@@ -36,6 +36,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import dynamic from "next/dynamic";
 import { InputAdornment, OutlinedInput, styled } from "@mui/material";
+import _ from "lodash";
 const ImportData = dynamic(() => import("@/components/import"));
 const CustomModal = dynamic(
   () => import("@/components/Timekeeper/ViewCommentsDocuments")
@@ -516,6 +517,12 @@ export default function TimeKeeperTable({}: // contractors,
                   getComparator(order, orderBy)
                 )
                   .filter((t) => t.status !== "Pending")
+                  .filter((t) =>
+                    _.get(t, orderBy, "employeeid")
+                      .toString()
+                      .toLowerCase()
+                      .includes(filter.toLowerCase())
+                  )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const isItemSelected = isSelected(row.employeeid as string);
