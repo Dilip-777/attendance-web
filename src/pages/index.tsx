@@ -23,6 +23,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Edit from "@mui/icons-material/Edit";
 import Close from "@mui/icons-material/Close";
 import Done from "@mui/icons-material/Done";
+import Search from "@mui/icons-material/Search";
 
 import { useRouter } from "next/router";
 import { Comment, Contractor, TimeKeeper, Upload } from "@prisma/client";
@@ -34,6 +35,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import dynamic from "next/dynamic";
+import { InputAdornment, OutlinedInput, styled } from "@mui/material";
 const ImportData = dynamic(() => import("@/components/import"));
 const CustomModal = dynamic(
   () => import("@/components/Timekeeper/ViewCommentsDocuments")
@@ -42,6 +44,17 @@ const FormSelect = dynamic(() => import("@/ui-component/FormSelect"));
 // import ImportData from "@/components/import";
 // import FormSelect from "@/ui-component/FormSelect";
 // import CustomModal from "@/components/Timekeeper/ViewCommentsDocuments";
+
+const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
+  width: 300,
+  height: 40,
+  marginRight: 30,
+
+  "& fieldset": {
+    borderWidth: `1px !important`,
+    borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
+  },
+}));
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -136,6 +149,8 @@ interface EnhancedTableToolbarProps {
   handleApprove: () => void;
   showApprove: boolean;
   contractorlist: Contractor[];
+  filter: string;
+  setFilter: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -149,6 +164,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     handleApprove,
     showApprove,
     contractorlist,
+    setFilter,
+    filter,
   } = props;
 
   const { data: session } = useSession();
@@ -180,6 +197,16 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Typography>
       ) : (
         <Stack spacing={2} direction="row" alignItems="center">
+          <StyledSearch
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Search ..."
+            startAdornment={
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            }
+          />
           <Box sx={{ minWidth: 240 }}>
             <FormSelect
               options={[
@@ -228,6 +255,7 @@ export default function TimeKeeperTable({}: // contractors,
 }) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<string>("employeeid");
+  const [filter, setFilter] = React.useState("");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -438,6 +466,8 @@ export default function TimeKeeperTable({}: // contractors,
               });
               fetchTimeKeeper();
             }}
+            filter={filter}
+            setFilter={setFilter}
           />
 
           <TableContainer
