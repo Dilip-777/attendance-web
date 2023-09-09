@@ -13,11 +13,13 @@ import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
+import UploadIcon from "@mui/icons-material/Upload";
 import { Contractor } from "@prisma/client";
 import axios from "axios";
 import _ from "lodash";
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
+import { Typography } from "@mui/material";
 
 const style = {
   position: "absolute" as "absolute",
@@ -144,32 +146,6 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
       return;
     }
 
-    const convertTime = (time: number) => {
-      const fractionalDay = time; // Example fractional day value
-      if (fractionalDay === 0) return "00:00";
-      const date = new Date();
-      date.setHours(fractionalDay * 24);
-      date.setMinutes((fractionalDay * 24 - date.getHours()) * 60);
-      const timeString = date.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      if (timeString === "Invalid Date") {
-        return fractionalDay.toString();
-      }
-
-      const decimalValue = time;
-
-      const hours = Math.floor(decimalValue * 24);
-      const minutes = Math.round((decimalValue * 24 - hours) * 60);
-
-      const timeValue = `${hours.toString().padStart(2, "0")}:${minutes
-        .toString()
-        .padStart(2, "0")}`;
-
-      return timeValue;
-    };
-
     const getAttendance = (attendance: string) => {
       if (attendance === "Present" || attendance === "P") {
         return "1";
@@ -235,7 +211,7 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
-      <Button disabled={loading} variant="contained" component="label">
+      <Typography sx={{ cursor: "pointer" }} component="label">
         Upload
         {loading && (
           <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
@@ -248,7 +224,7 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
           onChange={handleFile}
           required
         />
-      </Button>
+      </Typography>
       <Snackbar
         open={open}
         autoHideDuration={6000}
