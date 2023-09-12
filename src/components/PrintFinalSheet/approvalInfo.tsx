@@ -33,7 +33,7 @@ export default function ApprovalInformation() {
   const approvalheader = [
     { id: "id", label: "Prepared & Checked By" },
     { id: "nature", label: "C-DARC V/s Biomax Checked By:" },
-    { id: "location", label: "Statutory Complaince" },
+    { id: "location", label: "Statutory Compliance" },
     { id: "startDate", label: "Department Leader's Approval" },
     { id: "endDate", label: "Top Management Approval" },
   ];

@@ -96,7 +96,7 @@ export function BankDetails({
     { id: "bankaccountnumber", label: "Account Number" },
     { id: "ifscno", label: "IFSC Code" },
     { id: "paymentdate", label: "Date of Payment" },
-    { id: "referenceno", label: "Payment Refrence No:" },
+    { id: "referenceno", label: "Payment Reference No:" },
     { id: "paid", label: "Paid Amount" },
   ];
   const table = new Table({

@@ -160,21 +160,21 @@ if(designations) {
     cpamount[id] = Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0))
     cpamount["total"] = cpamount.total as number + Number(_.get(cpamount, id, 0))
     total[id] = Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
-    gst1[id] = Math.floor(_.get(total, id, 0) as number * 0.18)
+    gst1[id] = parseFloat(Number(_.get(total, id, 0) as number * 0.18).toFixed(2))
     billAmount1[id] = Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
-    tds1[id] = Math.floor(_.get(total, id, 0) as number * 0.01)
+    tds1[id] = parseFloat(Number(_.get(total, id, 0) as number * 0.01).toFixed(2))
     netPayable1[id] = Number(_.get(billAmount1, id, 0)) + Number(_.get(tds1, id, 0))
  })
 }
 
 // attendancecount["total"] = timekeeper.length
 rate["total"] = 0
-totalnetamount["total"] = parseInt(totalamount1.total as string) + parseInt(otamount.total as string)
-total["total"] = totalnetamount.total + parseInt(cpamount.total as string)
-gst1["total"] = Math.floor(total.total * 0.18)
-billAmount1["total"] = total.total + gst1.total
-tds1["total"] = Math.floor(total.total * 0.01)
-netPayable1["total"] = billAmount1.total + tds1.total
+totalnetamount["total"] = parseFloat(totalamount1.total as string) + parseFloat(otamount.total as string)
+total["total"] = totalnetamount.total + parseFloat(cpamount.total as string)
+gst1["total"] = parseFloat(Number(total.total * 0.18).toFixed(2))
+billAmount1["total"] = parseFloat(Number(total.total + gst1.total).toFixed(2))
+tds1["total"] = parseFloat(Number(total.total * 0.01).toFixed(2))
+netPayable1["total"] = parseFloat(Number(billAmount1.total + tds1.total).toFixed(2))
 rows2.push(attendancecount)
 rows.push(attendancecount)
 

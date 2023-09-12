@@ -116,6 +116,8 @@ export default function DocTable({
   const sidebar = designations
     .filter((d) => d.departmentname === department?.department)
     .map((d) => {
+      if (d.basicsalary_in_duration === "Monthly")
+        return { main: d.designation, id: d.designationid };
       if (d.gender === "Male")
         return { main: d.designation, sub: "M", id: d.designationid };
       else if (d.gender === "Female")
@@ -164,7 +166,7 @@ export default function DocTable({
       ),
       tableRow("Net Amount Payable", 5, colspan, total),
       tableRow("GST Hold", 5, colspan, 0),
-      tableRow("Safety Violation Penality", 5, colspan, safetypenality),
+      tableRow("Safety Violation Penalty", 5, colspan, safetypenality),
       tableRow("Adjustment of Advance Amount", 5, colspan, 0),
       tableRow("Any Other Deductions", 5, colspan, deduction),
       tableRow("Final Payable", 5, colspan, total - safetypenality - deduction),

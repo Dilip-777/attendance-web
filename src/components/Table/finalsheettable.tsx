@@ -160,7 +160,11 @@ export default function FinalSheetTable({
               <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                 Net Amount Payable
               </TableCell>
-              <TableCell align="center">{total}</TableCell>
+              <TableCell align="center">
+                {total.toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                })}
+              </TableCell>
             </TableRow>
             <TableRow>
               <TableCell />
@@ -174,7 +178,7 @@ export default function FinalSheetTable({
               <TableCell />
               <TableCell colSpan={colspan}></TableCell>
               <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                Safety Voilation's Penality
+                Safety Voilation's Penalty
               </TableCell>
               <TableCell align="center">{safetydeduction}</TableCell>
             </TableRow>
@@ -209,7 +213,12 @@ export default function FinalSheetTable({
                 Final Payable
               </TableCell>
               <TableCell align="center">
-                {total > 0 ? total - storededuction - safetydeduction : 0}
+                {(total > 0
+                  ? total - storededuction - safetydeduction
+                  : 0
+                ).toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                })}
               </TableCell>
             </TableRow>
           </TableBody>

@@ -394,6 +394,8 @@ export default function PrintExcel({
     const sidebar = designations
       .filter((d) => d.departmentname === department?.department)
       .map((d) => {
+        if (d.basicsalary_in_duration === "Monthly")
+          return { main: d.designation, id: d.designationid };
         if (d.gender === "Male")
           return { main: d.designation, sub: "M", id: d.designationid };
         else if (d.gender === "Female")
@@ -562,7 +564,7 @@ export default function PrintExcel({
     ]);
 
     createDetails([
-      "Payment Refrence No:",
+      "Payment Reference No:",
       "",
       payouttracker?.id || "-",
       "",

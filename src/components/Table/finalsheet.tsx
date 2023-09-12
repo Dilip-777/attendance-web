@@ -17,9 +17,13 @@ export default function FinalSheetta({
   safetydeduction: number;
   designations: Designations[];
 }) {
+  console.log(designations, "designations");
+
   const sidebar = designations
     .filter((d) => d.departmentname === department?.department)
     .map((d) => {
+      if (d.basicsalary_in_duration === "Monthly")
+        return { main: d.designation, id: d.designationid };
       if (d.gender === "Male")
         return { main: d.designation, sub: "M", id: d.designationid };
       else if (d.gender === "Female")
@@ -36,7 +40,7 @@ export default function FinalSheetta({
   return (
     <FinalSheetTable
       rows={rows}
-      total={Math.floor(total || 0)}
+      total={total || 0}
       department={department}
       sides={sidebar}
       storededuction={storededuction}

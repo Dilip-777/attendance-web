@@ -255,6 +255,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Tooltip>
       ) : (
         <Stack direction="row" spacing={2}>
+          {/* <ImportData contractors={contractorlist} /> */}
           <div>
             <IconButton onClick={handleClick}>
               <MoreVertIcon />
@@ -283,7 +284,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 "aria-labelledby": "basic-button",
               }}
             >
-              <MenuItem sx={{ cursor: "pointer" }} onClick={handleClose}>
+              <MenuItem sx={{ cursor: "pointer" }}>
                 <ImportData contractors={contractorlist} />
               </MenuItem>
               <MenuItem
