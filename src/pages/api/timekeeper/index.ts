@@ -9,9 +9,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== "PUT") {
-    res.status(405).json({ name: "Method Not Allowed" });
-  } else {
+  if (req.method === "PUT") {
+  
     const { comment, uploadDocument, id, userId, userName, role, ...body } =
       req.body;
 
@@ -105,5 +104,8 @@ export default async function handler(
           });
     }
     res.status(200).json({ success: true });
+  } else if (req.method === "DELETE") {
+     await prisma.timeKeeper.deleteMany();
+     res.status(200).json({ success: true });
   }
 }

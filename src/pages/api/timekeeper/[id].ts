@@ -24,6 +24,8 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
     }
     else if(req.method === "PUT") {
 
+        const { status } = req.body
+
         const savedTimekeeper = await prisma.saveTimekeeper.findUnique({
             where : {
                 id: id as string
@@ -33,15 +35,26 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
         
 
         if(savedTimekeeper) {
+            if(status === "Approved") {
             await prisma.timeKeeper.update({
                 where: {
                   id: id as string,
                 }, 
                 data: {
                     ...savedTimekeeper,
-                    status: "Approved"
+                    status: status
                 }
             })
+        } else if(status === "Rejected") {
+             await prisma.timeKeeper.update({
+            where: {
+                id: id as string
+            }, 
+            data: {
+                status: 'Rejected'
+            }
+        })
+        }
        await prisma.saveTimekeeper.delete({
         where: {
             id: id as string
@@ -51,20 +64,12 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
     res.status(200).json({success: "true", message: "Timekeeper Approved"})
 }
     else if( req.method === "DELETE") {
-        await prisma.saveTimekeeper.delete({
+        await prisma.timeKeeper.delete({
             where: {
                 id: id as string
             }
         })
-        await prisma.timeKeeper.update({
-            where: {
-                id: id as string
-            }, 
-            data: {
-                status: 'Rejected'
-            }
-        })
-        res.status(200).json({success: "true", message: "Timekeeper Rejected"})
+        res.status(200).json({success: "true", message: "Timekeeper Deleted Succuessfully"})
     }
     else {
         res.status(405).json({ name: "Method Not Allowed" });

@@ -22,6 +22,7 @@ import Search from "@mui/icons-material/Search";
 import Settings from "@mui/icons-material/Settings";
 import VerifiedUser from "@mui/icons-material/VerifiedUser";
 import MainCard from "@/ui-component/cards/MainCard";
+import BackspaceIcon from "@mui/icons-material/Backspace";
 
 // assets
 import { useRouter } from "next/router";
@@ -32,6 +33,7 @@ import dynamic from "next/dynamic";
 const FormSelect = dynamic(() => import("@/ui-component/FormSelect"));
 
 import axios from "axios";
+import { CircularProgress } from "@mui/material";
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -44,9 +46,16 @@ const ProfileSection = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<string | undefined>(
     session?.user?.role || ""
   );
+
+  const handleDelete = async () => {
+    setLoading(true);
+    await axios.delete("/api/timekeeper");
+    setLoading(false);
+  };
 
   useEffect(() => {
     setRole(session?.user?.role || "");
@@ -270,6 +279,7 @@ const ProfileSection = () => {
                       }
                     />
                   </ListItemButton>
+
                   <ListItemButton
                     sx={{
                       borderRadius: `${customization.borderRadius}px`,
@@ -303,6 +313,40 @@ const ProfileSection = () => {
                     />
                   </ListItemButton>
 
+                  {session?.user?.role === "Admin" && (
+                    <ListItemButton
+                      sx={{
+                        borderRadius: `${customization.borderRadius}px`,
+                      }}
+                      selected={selectedIndex === 2}
+                      onClick={(event) => handleDelete()}
+                    >
+                      <ListItemIcon>
+                        {loading ? (
+                          <CircularProgress
+                            size={21}
+                            // color="#5e35b1"
+                            sx={{
+                              fontSize: "0.7rem",
+                              stroke: 1.5,
+                              color: "#5e35b1",
+                            }}
+                          />
+                        ) : (
+                          <BackspaceIcon
+                            sx={{ fontSize: "1.3rem", stroke: 1.5 }}
+                          />
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2">
+                            Clear TimeKeeper
+                          </Typography>
+                        }
+                      />
+                    </ListItemButton>
+                  )}
                   <ListItemButton
                     sx={{
                       borderRadius: `${customization.borderRadius}px`,

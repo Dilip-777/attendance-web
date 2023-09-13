@@ -160,6 +160,7 @@ interface EnhancedTableToolbarProps {
   filter: string;
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   handledownload: () => void;
+  fetchTimeKeeper: () => void;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -176,6 +177,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     setFilter,
     filter,
     handledownload,
+    fetchTimeKeeper,
   } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -185,6 +187,17 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const router = useRouter();
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const deleteTimeKeeper = async (id: string) => {
+    await axios
+      .delete(`/api/timekeeper/${id}`)
+      .then((res) => {
+        fetchTimeKeeper();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const { data: session } = useSession();
@@ -248,11 +261,22 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Stack>
       )}
       {selected ? (
-        <Tooltip title="Edit">
-          <IconButton onClick={() => router.push(`/details/${selected.id}`)}>
-            <Edit />
-          </IconButton>
-        </Tooltip>
+        <Stack direction="row" spacing={2}>
+          <Tooltip title="Edit">
+            <IconButton onClick={() => router.push(`/details/${selected.id}`)}>
+              <Edit />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton
+              onClick={() => {
+                deleteTimeKeeper(selected.id);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       ) : (
         <Stack direction="row" spacing={2}>
           {/* <ImportData contractors={contractorlist} /> */}
@@ -360,7 +384,9 @@ export default function TimeKeeperTable({}: // contractors,
   const handleApprove = async (id: string) => {
     setLoading(true);
     await axios
-      .put(`/api/timekeeper/${id}`)
+      .put(`/api/timekeeper/${id}`, {
+        status: "Approved",
+      })
       .then((res) => {
         fetchTimeKeeper();
         setLoading(false);
@@ -374,7 +400,9 @@ export default function TimeKeeperTable({}: // contractors,
   const handleReject = async (id: string) => {
     setLoading(true);
     await axios
-      .delete(`/api/timekeeper/${id}`)
+      .put(`/api/timekeeper/${id}`, {
+        status: "Rejected",
+      })
       .then((res) => {
         fetchTimeKeeper();
         setLoading(false);
@@ -383,6 +411,16 @@ export default function TimeKeeperTable({}: // contractors,
         console.log(err);
         setLoading(false);
       });
+    // await axios
+    //   .delete(`/api/timekeeper/${id}`)
+    //   .then((res) => {
+    //     fetchTimeKeeper();
+    //     setLoading(false);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //     setLoading(false);
+    //   });
   };
 
   console.log(selected, "selected");
@@ -566,6 +604,7 @@ export default function TimeKeeperTable({}: // contractors,
             filter={filter}
             setFilter={setFilter}
             handledownload={handleClickReport}
+            fetchTimeKeeper={fetchTimeKeeper}
           />
 
           <TableContainer
