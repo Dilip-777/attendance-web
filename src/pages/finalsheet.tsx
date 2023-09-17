@@ -28,9 +28,20 @@ import { print } from "@/components/PrintFinalSheet";
 import Details from "@/components/Table/details";
 // import PrintModal from "@/components/PrintFinalSheet/PrintModal";
 import dynamic from "next/dynamic";
+import {
+  Autocomplete,
+  Chip,
+  FormControl,
+  FormLabel,
+  TextField,
+} from "@mui/material";
 const PrintModal = dynamic(
   () => import("@/components/PrintFinalSheet/PrintModal")
 );
+
+interface d extends Department {
+  designations: Designations[];
+}
 
 export default function FinalSheet({
   contractors,
@@ -40,7 +51,7 @@ export default function FinalSheet({
 }: {
   contractors: Contractor[];
   workorders: Workorder[];
-  departments: Department[];
+  departments: d[];
   designations: Designations[];
 }) {
   const [value, setValue] = useState<string>(dayjs().format("MM/YYYY"));
@@ -49,17 +60,20 @@ export default function FinalSheet({
       ? contractors[0]?.contractorId
       : ""
   );
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<any>([]);
   const [timekeepers, setTimekeepers] = useState<TimeKeeper[]>([]);
   const [totalPayable, setTotalPayable] = useState<number>(0);
   const [department, setDepartment] = useState<string>(
     departments?.length > 0 ? departments[0].department : ""
   );
+  const [selectedDepartments, setSelectedDepartments] = useState<d[]>([]);
+  const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const [store, setStore] = useState<Stores | null>(null);
   const [safety, setSafety] = useState<Safety | null>(null);
   const [details, setDetails] = useState<any>(null);
   const [open, setOpen] = useState<boolean>(false);
+  const [totalsRows, setTotalsRows] = useState<any>([]);
   const f = contractors.find((c) => c.contractorId === selectedContractor);
 
   const handleClose = () => {
@@ -82,19 +96,99 @@ export default function FinalSheet({
   const fetchTimekeepers = async () => {
     setLoading(true);
     const res = await axios.get(
-      `/api/gettimekeeper?contractor=${selectedContractor}&month=${value}&department=${department}`
+      `/api/gettimekeeper?contractor=${selectedContractor}&month=${value}&department=${selectedDepartments.map(
+        (d) => d.department
+      )}`
     );
 
-    const { rows1, totalnetPayable } = getTotalAmountAndRows(
-      res.data,
-      dayjs(value, "MM/YYYY").month() + 1,
-      dayjs(value, "MM/YYYY").year(),
-      designations.filter((d) => d.departmentname === department),
-      departments.find((d) => d.department === department)
-    );
-    setRows(rows1);
+    console.log(selectedDepartments);
 
-    setTotalPayable(totalnetPayable);
+    let totalrows: any[] = [];
+
+    const totals: any = {};
+
+    setTotalPayable(0);
+
+    selectedDepartments.forEach((d) => {
+      const { rows1, totalnetPayable } = getTotalAmountAndRows(
+        res.data.filter((t: TimeKeeper) => t.department === d.department),
+        dayjs(value, "MM/YYYY").month() + 1,
+        dayjs(value, "MM/YYYY").year(),
+        d.designations,
+        d
+      );
+
+      // rows1.forEach((item) => {
+      //   const { date, ...values } = item;
+      //   if (!totals[date]) {
+      //     totals[date] = { date, total: 0 };
+      //     // Initialize department-specific properties
+      //     selectedDepartments.forEach((department) => {
+      //       totals[date][department.department] = 0;
+      //     });
+      //   }
+      //   for (const key in values) {
+      //     if (key !== "date") {
+      //       // Accumulate values for the corresponding department
+      //       totals[date][key] += values[key];
+      //       // Accumulate values for the overall total
+      //       totals[date].total += values[key];
+      //     }
+      //   }
+      // });
+
+      rows1.forEach((item) => {
+        const { date, ...values } = item;
+        if (!totals[date]) {
+          totals[date] = { date, total: 0 };
+        }
+        totals[date][d.department] = item.total;
+        totals[date].total += item.total;
+      });
+
+      // rows1.forEach((item) => {
+      //   const { date, ...values } = item;
+      //   console.log(item, "item");
+
+      //   if (!totals[date]) {
+      //     totals[date] = { date, total: 0 };
+      //     // Initialize department-specific properties
+      //     selectedDepartments.forEach((department) => {
+      //       totals[date][department.department] = item.total;
+      //     });
+      //   }
+      //   for (const key in values) {
+      //     if (key !== "date") {
+      //       // Accumulate values for the overall total
+      //       totals[date].total += values[key];
+      //     }
+      //   }
+      // });
+
+      console.log(rows1, "rows1");
+
+      totalrows.push({ date: d.department, ...rows1[rows1.length - 1] });
+
+      setRows({ ...rows, [d.department]: rows1 });
+
+      setTotalPayable((prev) => prev + totalnetPayable);
+    });
+
+    console.log(Object.values(totals), "totals");
+    setTotalsRows(totals);
+
+    // setRows({ ...rows, total: totalrows });
+
+    // const { rows1, totalnetPayable } = getTotalAmountAndRows(
+    //   res.data,
+    //   dayjs(value, "MM/YYYY").month() + 1,
+    //   dayjs(value, "MM/YYYY").year(),
+    //   designations.filter((d) => d.departmentname === department),
+    //   departments.find((d) => d.department === department)
+    // );
+    // setRows(rows1);
+
+    // setTotalPayable(totalnetPayable);
     setTimekeepers(res.data);
     setLoading(false);
   };
@@ -117,7 +211,7 @@ export default function FinalSheet({
 
   useEffect(() => {
     fetchAll();
-  }, [selectedContractor, value, department]);
+  }, [selectedContractor, value, selectedDepartments]);
 
   // console.log(timekeepers, rows, totalPayable, loading);
 
@@ -178,15 +272,40 @@ export default function FinalSheet({
               value={dayjs(value, "MM/YYYY")}
               onChange={onChange}
             />
-            <FormSelect
-              value={department}
-              handleChange={(value) => setDepartment(value as string)}
-              options={departments.map((d) => ({
-                value: d.department,
-                label: d.department,
-              }))}
-              label="Department"
-            />
+            <FormControl sx={{ minWidth: "15rem" }}>
+              <FormLabel sx={{ fontWeight: "700" }}>Department</FormLabel>
+
+              <Autocomplete
+                onChange={(event: any, newValue: string | null) => {
+                  if (
+                    !selectedDepartments.find((d) => d.department === newValue)
+                  ) {
+                    console.log(newValue);
+
+                    const d = departments.find(
+                      (d) => d.department === newValue
+                    );
+                    console.log(d, departments);
+
+                    if (d) {
+                      setSelectedDepartments([...selectedDepartments, d as d]);
+                    }
+                  }
+                  setInputValue("");
+                }}
+                value={inputValue}
+                inputValue={inputValue}
+                onInputChange={(event, newInputValue) => {
+                  setInputValue(newInputValue);
+                }}
+                id="controllable-states-demo"
+                options={[...departments.map((d) => d.department)]}
+                renderInput={(params) => (
+                  <TextField {...params} placeholder="Select a Department" />
+                )}
+                clearIcon={null}
+              />
+            </FormControl>
           </Stack>
 
           <Button
@@ -215,6 +334,21 @@ export default function FinalSheet({
           /> */}
         </Box>
         <Divider sx={{ my: 2 }} />
+        <Stack direction="row" spacing={2}>
+          {selectedDepartments.map((d) => (
+            <Chip
+              key={d.department}
+              label={d.department}
+              onDelete={() =>
+                setSelectedDepartments(
+                  selectedDepartments.filter(
+                    (department) => department.department !== d.department
+                  )
+                )
+              }
+            />
+          ))}
+        </Stack>
         <Typography variant="h4" sx={{ mb: 4, my: 2 }}>
           Contractor Details :
         </Typography>
@@ -265,6 +399,8 @@ export default function FinalSheet({
           storededuction={store?.totalAmount || 0}
           safetydeduction={safety?.totalAmount || 0}
           designations={designations}
+          departments={selectedDepartments}
+          totals={totalsRows}
         />
       )}
       <Divider sx={{ my: 2 }} />
@@ -359,7 +495,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const contractors = await prisma.contractor.findMany();
   const workorders = await prisma.workorder.findMany();
-  const departments = await prisma.department.findMany();
+  const departments = await prisma.department.findMany({
+    include: { designations: true },
+  });
   const designations = await prisma.designations.findMany();
 
   return {

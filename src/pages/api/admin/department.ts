@@ -17,11 +17,14 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
       break;
     case 'POST':
       // try {
+        
         const isExist = await prisma.department.findUnique({
           where: {
             id: req.body.id || "",
           }
         })
+
+
         
         if (isExist) {
           await prisma.department.update({
@@ -34,6 +37,15 @@ export default async function department(req: NextApiRequest, res: NextApiRespon
             }
           })
           res.status(200).json({ success: true });
+          return;
+        }
+        const d = await prisma.department.findUnique({
+          where: {
+            department: req.body.department
+          }
+        })
+        if(d) {
+          res.status(400).json({success: "false", message: "Department Already Exists"})
           return;
         }
         const department1 = await prisma.department.create({

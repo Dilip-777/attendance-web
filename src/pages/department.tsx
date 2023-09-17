@@ -31,6 +31,7 @@ import {
   Chip,
   CircularProgress,
   FormControl,
+  FormHelperText,
   TextField,
   styled,
 } from "@mui/material/";
@@ -44,6 +45,7 @@ import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import FormSelect from "@/ui-component/FormSelect";
 import { set } from "lodash";
+import ImportDepartments from "@/components/importDepartment";
 
 const style = {
   position: "absolute",
@@ -90,6 +92,7 @@ interface EnhancedTableToolbarProps {
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   filter: string;
   handleOpen: () => void;
+  fetchDepartments: () => void;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -139,23 +142,26 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </IconButton>
         </Tooltip>
       ) : (
-        <Button
-          variant="contained"
-          sx={{
-            backgroundColor: "rgb(103, 58, 183)",
-            ":hover": { backgroundColor: "rgb(103, 58, 183)" },
-          }}
-          onClick={handleOpen}
-        >
-          {" "}
-          + Add Department
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <ImportDepartments fetchDepartments={props.fetchDepartments} />
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "rgb(103, 58, 183)",
+              ":hover": { backgroundColor: "rgb(103, 58, 183)" },
+            }}
+            onClick={handleOpen}
+          >
+            {" "}
+            + Add Department
+          </Button>
+        </Stack>
       )}
     </Toolbar>
   );
 }
 
-export default function TimeKeeper({
+export default function Departments({
   designations,
 }: {
   designations: Designations[];
@@ -179,6 +185,7 @@ export default function TimeKeeper({
   const [departments, setDepartments] = React.useState<Department[]>([]);
   const matches = useMediaQuery("(min-width:600px)");
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   const handleClose = () => {
     setOpen(false);
@@ -189,6 +196,7 @@ export default function TimeKeeper({
   };
 
   const handleAddDepartment = async () => {
+    setError("");
     setLoading(true);
     if (selectedDepartment) {
       await axios
@@ -202,7 +210,8 @@ export default function TimeKeeper({
           fetchDepartments();
         })
         .catch((err) => {
-          console.log(err);
+          console.log(err.response.data.message, "Error Message");
+          setError(err.message);
         });
       setLoading(false);
       return;
@@ -218,7 +227,8 @@ export default function TimeKeeper({
         fetchDepartments();
       })
       .catch((err) => {
-        console.log(err);
+        console.log(err.response.data.message, "Error Message");
+        setError(err.response.data.message);
       });
 
     setDepartment("");
@@ -293,6 +303,7 @@ export default function TimeKeeper({
             setSelectedDepartment(null);
             setDepartment("");
           }}
+          fetchDepartments={fetchDepartments}
         />
         <TableContainer
           sx={{
@@ -483,17 +494,26 @@ export default function TimeKeeper({
                       label="Department"
                       variant="outlined"
                       value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
+                      onChange={(e) => {
+                        setDepartment(e.target.value);
+                        setError("");
+                      }}
                     />
                     <FormSelect
                       label="Basic Salary In Duration"
                       value={salaryduration}
-                      handleChange={(e) => setSalaryDuration(e as string)}
+                      handleChange={(e) => {
+                        setSalaryDuration(e as string);
+                        setError("");
+                      }}
                       options={[
                         { label: "Hourly", value: "Hourly" },
                         { label: "Monthly", value: "Monthly" },
                       ]}
                     />
+                    {error && (
+                      <FormHelperText error={true}>{error}</FormHelperText>
+                    )}
                     <Button
                       variant="contained"
                       fullWidth

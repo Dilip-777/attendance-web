@@ -4,7 +4,6 @@ import _ from "lodash";
 
 
 const getTotalAmountAndRows = (timekeeper: TimeKeeper[], month: number, year: number, designations?: Designations[], department?: Department | undefined) => {
-console.log(timekeeper, "timekeeper", month, year, designations, department);
 const m = dayjs(month).daysInMonth()
 
 console.log(m, "days in month");
@@ -19,7 +18,7 @@ const  totalovertime1: Record<string, string | number>  = {
     total: 0
 }
 const attendancecount: Record<string, string | number> = {
-  date: "Attendance Count",
+  date: "Total Man days",
   total: 0,
 }
 const totalamount1: Record<string, string | number> = {
@@ -85,6 +84,10 @@ const netPayable1 : Record<string, string | number> = {
     return obj
   };
 
+  const getRoundOff = (num: number) => {
+    return Math.ceil(num )
+  }
+
 
 
 const rows2: any[] = []
@@ -132,6 +135,8 @@ if(designations) {
           return item.designation.toLowerCase() === designation.designation.toLowerCase()
         }
       })
+
+    
       
     const id = designation.designationid
     attendancecount[id] = filtered.length + filtered1.length / 2
@@ -139,30 +144,34 @@ if(designations) {
     
     rate[id] = designation.basicsalary || 0
     if(designation.basicsalary_in_duration === "Monthly") {
-      totalamount1[id] = Math.floor(_.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0)) / m)
+      totalamount1[id] = getRoundOff(_.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0)) / m)
     }
-    else totalamount1[id] = _.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0))
+    else totalamount1[id] = getRoundOff(_.get(attendancecount, id, 0) as number * Number(_.get(rate, id, 0)))
 
-    totalamount1["total"] = totalamount1.total as number + Number(_.get(totalamount1, id, 0))
-    totalovertime1[id] = filtered.reduce((acc, curr) => acc + parseInt(curr.manualovertime || curr.overtime), 0);
-    totalovertime1["total"] = totalovertime1.total as number + Number(_.get(totalovertime1, id, 0))
+    totalamount1["total"] = getRoundOff(totalamount1.total as number + Number(_.get(totalamount1, id, 0)))
+    if(designation.designation === "FOREMAN") {
+      console.log(filtered, "filtered");
+      
+    }
+    totalovertime1[id] = filtered.reduce((acc, curr) => acc + parseInt(parseInt(curr.manualovertime as string) === 0 ?  "0": (curr.manualovertime || curr.overtime)), 0);
+    totalovertime1["total"] = getRoundOff(totalovertime1.total as number + Number(_.get(totalovertime1, id, 0)))
     let otRate = 0
     if(designation.basicsalary_in_duration === "Monthly") {
-       otRate =  designation.basicsalary / designation.allowed_wrking_hr_per_day / m
+       otRate =  getRoundOff(designation.basicsalary / designation.allowed_wrking_hr_per_day / m)
     }
     else {
-      otRate = designation.basicsalary / designation.allowed_wrking_hr_per_day
+      otRate = getRoundOff(designation.basicsalary / designation.allowed_wrking_hr_per_day)
     }
-    otamount[id] =  parseFloat((Number(_.get(totalovertime1, id, 0)) * otRate).toFixed(2));
-    otamount["total"] = otamount.total as number + Number(_.get(otamount, id, 0))
-    totalnetamount[id] = Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0))   
+    otamount[id] =  getRoundOff((Number(_.get(totalovertime1, id, 0)) * otRate));
+    otamount["total"] = getRoundOff(otamount.total as number + Number(_.get(otamount, id, 0)))
+    totalnetamount[id] = getRoundOff(Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0)) )  
     cprate[id] = designation.servicecharge as number
-    cpamount[id] = Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0))
-    cpamount["total"] = cpamount.total as number + Number(_.get(cpamount, id, 0))
-    total[id] = Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
-    gst1[id] = parseFloat(Number(_.get(total, id, 0) as number * 0.18).toFixed(2))
-    billAmount1[id] = Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
-    tds1[id] = parseFloat(Number(_.get(total, id, 0) as number * 0.01).toFixed(2))
+    cpamount[id] = getRoundOff(Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0)))
+    cpamount["total"] = getRoundOff(cpamount.total as number + Number(_.get(cpamount, id, 0)))
+    total[id] = getRoundOff(Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0)))
+    gst1[id] = getRoundOff(Number(_.get(total, id, 0) as number * 0.18))
+    billAmount1[id] = getRoundOff((Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))))
+    tds1[id] = getRoundOff(Number(_.get(total, id, 0) as number * 0.01))
     netPayable1[id] = Number(_.get(billAmount1, id, 0)) + Number(_.get(tds1, id, 0))
  })
 }
@@ -171,10 +180,10 @@ if(designations) {
 rate["total"] = 0
 totalnetamount["total"] = parseFloat(totalamount1.total as string) + parseFloat(otamount.total as string)
 total["total"] = totalnetamount.total + parseFloat(cpamount.total as string)
-gst1["total"] = parseFloat(Number(total.total * 0.18).toFixed(2))
-billAmount1["total"] = parseFloat(Number(total.total + gst1.total).toFixed(2))
-tds1["total"] = parseFloat(Number(total.total * 0.01).toFixed(2))
-netPayable1["total"] = parseFloat(Number(billAmount1.total + tds1.total).toFixed(2))
+gst1["total"] = getRoundOff(Number(total.total * 0.18))
+billAmount1["total"] = getRoundOff(Number(total.total + gst1.total))
+tds1["total"] = getRoundOff(Number(total.total * 0.01))
+netPayable1["total"] = getRoundOff(Number(billAmount1.total + tds1.total))
 rows2.push(attendancecount)
 rows.push(attendancecount)
 
@@ -202,9 +211,6 @@ rows2.push(gst1)
 rows2.push(billAmount1)
 rows2.push(tds1)
 rows2.push(netPayable1) 
-
-console.log(rows2, timekeeper);
-
 
 
     return { rows,  total1: totalnetamount.total, rows1: rows2, totalnetPayable: netPayable1.total};

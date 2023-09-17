@@ -7,7 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import _ from "lodash";
-import { Department } from "@prisma/client";
+import { Department, Designations } from "@prisma/client";
 
 interface Data {
   date: string;
@@ -36,18 +36,35 @@ interface side {
 export default function FinalSheetTable({
   rows,
   total,
-  sides,
   department,
   storededuction,
   safetydeduction,
+  designations,
 }: {
   rows: Data[];
   total: number;
-  sides: side[];
   department: Department | undefined;
   storededuction: number;
   safetydeduction: number;
+  designations: Designations[];
 }) {
+  const sidebar = designations
+    .filter((d) => d.departmentname === department?.department)
+    .map((d) => {
+      if (d.basicsalary_in_duration === "Monthly")
+        return { main: d.designation, id: d.designationid };
+      if (d.gender === "Male")
+        return { main: d.designation, sub: "M", id: d.designationid };
+      else if (d.gender === "Female")
+        return { main: d.designation, sub: "F", id: d.designationid };
+      else return { main: d.designation, id: d.designationid };
+    });
+
+  if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
+    sidebar.push({ main: "Total", sub: " ", id: "total" });
+  } else {
+    sidebar.push({ main: "Total", id: "total" });
+  }
   const headers = [
     "Total Man days",
     "Rate",
@@ -141,7 +158,7 @@ export default function FinalSheetTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {sides.map((item) => (
+            {sidebar.map((item) => (
               <TableRow hover role="checkbox" tabIndex={-1} key={item.id}>
                 <TableCell align="center" sx={{ fontWeight: "600" }}>
                   {item.main}
@@ -155,7 +172,7 @@ export default function FinalSheetTable({
               </TableRow>
             ))}
 
-            <TableRow>
+            {/* <TableRow>
               <TableCell colSpan={colspan + 1}></TableCell>
               <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                 Net Amount Payable
@@ -220,7 +237,7 @@ export default function FinalSheetTable({
                   maximumFractionDigits: 2,
                 })}
               </TableCell>
-            </TableRow>
+            </TableRow> */}
           </TableBody>
         </Table>
       </TableContainer>

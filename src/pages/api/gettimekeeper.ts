@@ -22,6 +22,12 @@ export default async function gettimekeeper (req: NextApiRequest, res: NextApiRe
         res.status(200).json(timekeepers)
         return
     }
+
+    // const departments = (department as string)?.split(",")
+
+    // console.log(departments, "departments");
+    
+    
     
     const timekeepers = await prisma.timeKeeper.findMany({
         where: {
@@ -29,9 +35,9 @@ export default async function gettimekeeper (req: NextApiRequest, res: NextApiRe
                 endsWith: month as string
             },
             contractorid: contractor as string,
-            department: {
-                contains: department as string
-            },
+            // department: {
+            //     in: departments
+            // },
             attendance: {
                 not: "0"
                 },

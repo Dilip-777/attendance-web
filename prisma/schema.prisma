@@ -290,7 +290,7 @@ model Workorder {
 
 model Department {
   id                      String         @id @default(cuid())
-  department              String
+  department              String         @unique
   basicsalary_in_duration String?
   designations            Designations[]
 }

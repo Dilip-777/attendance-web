@@ -24,7 +24,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Modal from "@mui/material/Modal";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
-import { styled } from "@mui/material/";
+import { Stack, styled } from "@mui/material/";
 import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
@@ -35,6 +35,7 @@ import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import EditDesignation from "@/components/Admin/EditDesignation";
 import _ from "lodash";
+import ImportDesignations from "@/components/importDesignations";
 
 const style = {
   position: "absolute",
@@ -95,6 +96,7 @@ interface EnhancedTableToolbarProps {
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   filter: string;
   handleOpen: () => void;
+  fetchDesignations: () => void;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -145,17 +147,20 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </IconButton>
         </Tooltip>
       ) : (
-        <Button
-          variant="contained"
-          sx={{
-            backgroundColor: "rgb(103, 58, 183)",
-            ":hover": { backgroundColor: "rgb(103, 58, 183)" },
-          }}
-          onClick={handleOpen}
-        >
-          {" "}
-          + Add Designation
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <ImportDesignations fetchDesignations={props.fetchDesignations} />
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "rgb(103, 58, 183)",
+              ":hover": { backgroundColor: "rgb(103, 58, 183)" },
+            }}
+            onClick={handleOpen}
+          >
+            {" "}
+            + Add Designation
+          </Button>
+        </Stack>
       )}
     </Toolbar>
   );
@@ -251,6 +256,7 @@ export default function TimeKeeper({
             setOpen(true);
             setDesignation(undefined);
           }}
+          fetchDesignations={fetchDesignations}
         />
         <TableContainer
           sx={{

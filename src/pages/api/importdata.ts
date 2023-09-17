@@ -47,6 +47,47 @@ export default async function importdata(req: NextApiRequest, res: NextApiRespon
         })
         res.status(200).json({ success: true })
     }
+    else if(type === "department") {
+        await prisma.department.createMany({
+            data: data,
+            skipDuplicates: true
+        })
+        res.status(200).json({success: true})
+    }
+    else if(type === "designation") {
+        const names = data.map((designation: any) => ({name: designation.departmentname, id: designation.departmentId}))
+        // let d: string[] = []
+        // names.forEach(async ({id, name}: {id: string, name: string}) => {
+        //     const department = await prisma.department.findUnique({
+        //         where: {
+        //             id: id
+        //         }
+        //     })
+        //     const d2 = await prisma.department.findUnique({
+        //         where: {
+        //             department: name
+        //         }
+        //     })
+        //     if(!(department && d2)) {
+        //         if(!d.includes(name)) {
+        //             d.push(name)
+        //         }
+        //     }
+
+        // })
+        // if(d.length > 0) {
+        //     res.status(400).json({success: false, message: `Department ${d.join(",")} does not exist`})
+        //     return
+        // }
+
+        await prisma.designations.createMany({
+            data: data,
+            skipDuplicates: true
+        })
+        res.status(200).json({success: true})
+
+         
+    }
     else {
 
         // await prisma.timeKeeper.deleteMany({
@@ -55,10 +96,16 @@ export default async function importdata(req: NextApiRequest, res: NextApiRespon
         //     }
         // })
 
+        console.log(data[0]);
+        
+
         const timekeepers = await prisma.timeKeeper.createMany({
             data: data,
             skipDuplicates: true
         })
+
+        console.log(timekeepers);
+        
 
         const employees = await prisma.employee.findMany({
             where: {
