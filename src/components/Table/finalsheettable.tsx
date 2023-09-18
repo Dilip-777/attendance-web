@@ -60,6 +60,10 @@ export default function FinalSheetTable({
       else return { main: d.designation, id: d.designationid };
     });
 
+  const getRoundOff = (value: number) => {
+    return Math.ceil(value);
+  };
+
   if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
     sidebar.push({ main: "Total", sub: " ", id: "total" });
   } else {
@@ -166,7 +170,7 @@ export default function FinalSheetTable({
                 {item.sub && <TableCell align="center">{item.sub}</TableCell>}
                 {rows.map((row, index) => (
                   <TableCell key={index} align="center">
-                    {_.get(row, item.id) || 0}
+                    {getRoundOff(_.get(row, item.id) || 0)}
                   </TableCell>
                 ))}
               </TableRow>

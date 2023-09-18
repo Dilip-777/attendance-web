@@ -411,16 +411,19 @@ export default function FinalSheet({
         rows={[
           {
             label: "Cost of Previous Month",
-            value: (details?.prevMonthAmount || 0)?.toString(),
+            value: Math.ceil(details?.prevMonthAmount || 0)?.toString(),
           },
           {
             label: "Cost of the Month",
-            value: (details?.prevprevMonthAmount || 0)?.toString(),
+            value: Math.ceil(details?.prevprevMonthAmount || 0)?.toString(),
           },
-          { label: "Cost Upto This Month", value: totalPayable?.toString() },
+          {
+            label: "Cost Upto This Month",
+            value: Math.ceil(totalPayable).toString(),
+          },
           {
             label: "Cost Of the Previous Year",
-            value: (details?.prevYearAmount || 0)?.toString(),
+            value: Math.ceil(details?.prevYearAmount || 0)?.toString(),
           },
         ]}
       />
@@ -444,15 +447,16 @@ export default function FinalSheet({
           },
           {
             label: "Paid Amount",
-            value: details?.payoutracker?.actualpaidoutmoney || "-",
+            value: Math.ceil(details?.payoutracker?.actualpaidoutmoney) || "-",
           },
         ]}
       />
       <PrintModal
         designations={designations}
-        department={departments.find((d) => d.department === department)}
+        departments={selectedDepartments}
         total={totalPayable}
         rows={rows}
+        totals={totalsRows}
         safety={safety}
         // details={details}
         store={store}
@@ -461,9 +465,9 @@ export default function FinalSheet({
         workorder={w}
         month={value}
         payouttracker={details?.payoutracker}
-        prevMonthAmount={details?.prevMonthAmount}
-        prevprevMonthAmount={details?.prevprevMonthAmount}
-        prevYearAmount={details?.prevYearAmount}
+        prevMonthAmount={Math.ceil(details?.prevMonthAmount)}
+        prevprevMonthAmount={Math.ceil(details?.prevprevMonthAmount)}
+        prevYearAmount={Math.ceil(details?.prevYearAmount)}
         open={open}
         // setOpen={setOpen}
         handleClose={handleClose}

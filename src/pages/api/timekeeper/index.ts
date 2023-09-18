@@ -105,7 +105,18 @@ export default async function handler(
     }
     res.status(200).json({ success: true });
   } else if (req.method === "DELETE") {
-     await prisma.timeKeeper.deleteMany();
+      const { ids } = req.body;
+      if(ids) {
+        await prisma.timeKeeper.deleteMany({   
+          where: {
+            id: {
+              in: ids
+            }
+          }
+        })
+      } else {
+        await prisma.timeKeeper.deleteMany();
+      }
      res.status(200).json({ success: true });
   }
 }

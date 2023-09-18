@@ -64,11 +64,16 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
     res.status(200).json({success: "true", message: "Timekeeper Approved"})
 }
     else if( req.method === "DELETE") {
-        await prisma.timeKeeper.delete({
-            where: {
-                id: id as string
-            }
-        })
+        const { ids } = req.body
+        // await prisma.timeKeeper.deleteMany({
+        //     where: {
+        //         id: {
+        //             in: ids
+        //         }
+        //     }
+        // })
+        console.log(ids, "ids");
+        
         res.status(200).json({success: "true", message: "Timekeeper Deleted Succuessfully"})
     }
     else {

@@ -72,6 +72,10 @@ export default function FinalSheetta({
     "Net Payable",
   ];
 
+  const getRoundOff = (num: number) => {
+    return Math.ceil(num);
+  };
+
   console.log(rows, "Rows");
   console.log(totals, "totals");
 
@@ -163,7 +167,7 @@ export default function FinalSheetta({
                   </TableCell>
                   {headers.map((header, index) => (
                     <TableCell key={index} align="center">
-                      {_.get(totals, [header, d.department]) || 0}
+                      {getRoundOff(_.get(totals, [header, d.department]) || 0)}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -181,7 +185,7 @@ export default function FinalSheetta({
                 </TableCell>
                 <TableCell align="center">
                   {total.toLocaleString("en-IN", {
-                    maximumFractionDigits: 2,
+                    maximumFractionDigits: 0,
                   })}
                 </TableCell>
               </TableRow>

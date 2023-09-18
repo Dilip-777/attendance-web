@@ -85,7 +85,7 @@ const netPayable1 : Record<string, string | number> = {
   };
 
   const getRoundOff = (num: number) => {
-    return Math.ceil(num )
+    return num
   }
 
 

@@ -38,12 +38,17 @@ const style = {
   p: 4,
 };
 
+interface d extends Department {
+  designations: Designations[];
+}
+
 interface Props {
   open: boolean;
   handleClose: () => void;
-  rows: any[];
+  rows: any;
+  totals: any;
   total: number;
-  department: Department | undefined;
+  departments: d[];
   contractor: Contractor;
   workorder: Workorder | undefined;
   date: string;
@@ -60,9 +65,10 @@ interface Props {
 export default function PrintModal({
   open,
   handleClose,
+  totals,
   rows,
   total,
-  department,
+  departments,
   contractor,
   workorder,
   date,
@@ -77,21 +83,22 @@ export default function PrintModal({
 }: Props) {
   const router = useRouter();
   const handlePrint = async () => {
-    print(
-      rows,
-      total,
-      department,
-      contractor,
-      workorder as Workorder,
-      month,
-      store,
-      safety,
-      payouttracker,
-      prevMonthAmount,
-      prevprevMonthAmount,
-      prevYearAmount,
-      designations
-    );
+    // print(
+    //   rows,
+    //   totals,
+    //   total,
+    //   departments,
+    //   contractor,
+    //   workorder as Workorder,
+    //   month,
+    //   store,
+    //   safety,
+    //   payouttracker,
+    //   prevMonthAmount,
+    //   prevprevMonthAmount,
+    //   prevYearAmount,
+    //   designations
+    // );
   };
   return (
     <Modal
@@ -127,7 +134,7 @@ export default function PrintModal({
               </Button>
               <PrintExcel
                 designations={designations}
-                department={department}
+                departments={departments}
                 total={total}
                 rows={rows}
                 safety={safety}
@@ -141,6 +148,7 @@ export default function PrintModal({
                 prevMonthAmount={prevMonthAmount}
                 prevprevMonthAmount={prevprevMonthAmount}
                 prevYearAmount={prevYearAmount}
+                totals={totals}
               />
             </Stack>
           </Stack>

@@ -13,10 +13,25 @@ import _ from "lodash";
 import React, { useEffect, useState } from "react";
 const ExcelJS = require("exceljs");
 
+const border = {
+  top: { style: "thick", color: { argb: "black" } },
+  left: { style: "thick", color: { argb: "black" } },
+  bottom: { style: "thick", color: { argb: "black" } },
+  right: { style: "thick", color: { argb: "black" } },
+};
+
+const getRoundOff = (num: number) => {
+  return Math.ceil(num);
+};
+
+interface d extends Department {
+  designations: Designations[];
+}
+
 export default function PrintExcel({
   rows,
   total,
-  department,
+  departments,
   contractor,
   workorder,
   date,
@@ -28,10 +43,11 @@ export default function PrintExcel({
   prevYearAmount,
   designations,
   month,
+  totals,
 }: {
-  rows: any[];
+  rows: any;
   total: number;
-  department: Department | undefined;
+  departments: d[];
   contractor: Contractor;
   workorder: Workorder | undefined;
   date: string;
@@ -43,6 +59,7 @@ export default function PrintExcel({
   prevYearAmount: number;
   designations: Designations[];
   month: string;
+  totals: any;
 }) {
   const handleExport = () => {
     const workbook = new ExcelJS.Workbook();
@@ -318,126 +335,135 @@ export default function PrintExcel({
       height: 40,
     });
 
-    createHeading({
-      header: [""],
-      height: 30,
+    departments?.forEach((department) => {
+      table({
+        createHeading,
+        worksheet,
+        department,
+        rows: rows[department.department],
+      });
     });
 
-    const hourlyheader = [
-      "Category",
-      "Type",
-      "Shift Hours",
-      "Total Man days",
-      "Rate",
-      "Total Amount",
-      "Total Overtime",
-      "OT Amount",
-      "Total Amount",
-      "Service Charge",
-      "Service Charge Amount",
-      "Taxable",
-      "GST",
-      "Bill Amount",
-      "TDS",
-      "Net Payable",
-    ];
-
-    const monthlyheader = [
-      "Category",
-      "",
-      "Shift Hours",
-      "Total Man days",
-
-      "Rate",
-      "Total Amount",
-      "Total Overtime",
-
-      "OT Amount",
-      "Taxable",
-      "GST",
-      "Bill Amount",
-      "TDS",
-      "Net Payable",
-      "",
-    ];
-
-    const tableheader = worksheet.addRow(
-      department?.basicsalary_in_duration === "Monthly"
-        ? monthlyheader
-        : hourlyheader
-    );
-
-    if (department?.basicsalary_in_duration === "Monthly") {
-      worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
-      //   worksheet.mergeCells(`D${tableheader.number}:E${tableheader.number}`);
-      //   worksheet.mergeCells(`H${tableheader.number}:I${tableheader.number}`);
-      worksheet.mergeCells(`M${tableheader.number}:P${tableheader.number}`);
-    }
-
-    tableheader.eachCell((cell: any) => {
-      cell.alignment = {
-        wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
-      };
-      cell.font = { bold: true, size: 11, wrapText: true };
-      cell.border = border;
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
-      };
+    totalstable({
+      createHeading,
+      worksheet,
+      departments,
+      totals: totals,
     });
 
-    // worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
+    // const hourlyheader = [
+    //   "Category",
+    //   "Type",
+    //   "Shift Hours",
+    //   "Total Man days",
+    //   "Rate",
+    //   "Total Amount",
+    //   "Total Overtime",
+    //   "OT Amount",
+    //   "Total Amount",
+    //   "Service Charge",
+    //   "Service Charge Amount",
+    //   "Taxable",
+    //   "GST",
+    //   "Bill Amount",
+    //   "TDS",
+    //   "Net Payable",
+    // ];
 
-    const sidebar = designations
-      .filter((d) => d.departmentname === department?.department)
-      .map((d) => {
-        if (d.basicsalary_in_duration === "Monthly")
-          return { main: d.designation, id: d.designationid };
-        if (d.gender === "Male")
-          return { main: d.designation, sub: "M", id: d.designationid };
-        else if (d.gender === "Female")
-          return { main: d.designation, sub: "F", id: d.designationid };
-        else return { main: d.designation, id: d.designationid };
-      });
+    // const monthlyheader = [
+    //   "Category",
+    //   "",
+    //   "Shift Hours",
+    //   "Total Man days",
 
-    if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
-      sidebar.push({ main: "Total", sub: " ", id: "total" });
-    } else {
-      sidebar.push({ main: "Total", id: "total" });
-    }
+    //   "Rate",
+    //   "Total Amount",
+    //   "Total Overtime",
 
-    sidebar.forEach((s) => {
-      const data: any[] = [s.main];
-      data.push(s.sub || "-");
-      data.push(
-        designations.find((d) => d.designationid === s.id)
-          ?.allowed_wrking_hr_per_day || "-"
-      );
-      const restdata = rows.map((r) => {
-        return _.get(r, s.id, "-");
-      });
+    //   "OT Amount",
+    //   "Taxable",
+    //   "GST",
+    //   "Bill Amount",
+    //   "TDS",
+    //   "Net Payable",
+    //   "",
+    // ];
 
-      const datarow = worksheet.addRow([...data, ...restdata]);
-      datarow.eachCell((cell: any) => {
-        cell.alignment = {
-          wrapText: true,
-          vertical: "middle",
-          horizontal: "center",
-        };
-        cell.border = border;
-        cell.font = { size: 12, wrapText: true };
-      });
-      datarow.height = 36;
-      if (department?.basicsalary_in_duration === "Monthly") {
-        worksheet.mergeCells(`A${datarow.number}:B${datarow.number}`);
-        //   worksheet.mergeCells(`D${datarow.number}:E${datarow.number}`);
-        //   worksheet.mergeCells(`H${datarow.number}:I${datarow.number}`);
-        worksheet.mergeCells(`M${datarow.number}:P${datarow.number}`);
-      }
-    });
+    // const tableheader = worksheet.addRow(
+    //   department?.basicsalary_in_duration === "Monthly"
+    //     ? monthlyheader
+    //     : hourlyheader
+    // );
+
+    // if (department?.basicsalary_in_duration === "Monthly") {
+    //   worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
+    //   //   worksheet.mergeCells(`D${tableheader.number}:E${tableheader.number}`);
+    //   //   worksheet.mergeCells(`H${tableheader.number}:I${tableheader.number}`);
+    //   worksheet.mergeCells(`M${tableheader.number}:P${tableheader.number}`);
+    // }
+
+    // tableheader.eachCell((cell: any) => {
+    //   cell.alignment = {
+    //     wrapText: true,
+    //     vertical: "middle",
+    //     horizontal: "center",
+    //   };
+    //   cell.font = { bold: true, size: 11, wrapText: true };
+    //   cell.border = border;
+    //   cell.fill = {
+    //     type: "pattern",
+    //     pattern: "solid",
+    //     fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
+    //   };
+    // });
+
+    // const sidebar = designations
+    //   .filter((d) => d.departmentname === department?.department)
+    //   .map((d) => {
+    //     if (d.basicsalary_in_duration === "Monthly")
+    //       return { main: d.designation, id: d.designationid };
+    //     if (d.gender === "Male")
+    //       return { main: d.designation, sub: "M", id: d.designationid };
+    //     else if (d.gender === "Female")
+    //       return { main: d.designation, sub: "F", id: d.designationid };
+    //     else return { main: d.designation, id: d.designationid };
+    //   });
+
+    // if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
+    //   sidebar.push({ main: "Total", sub: " ", id: "total" });
+    // } else {
+    //   sidebar.push({ main: "Total", id: "total" });
+    // }
+
+    // sidebar.forEach((s) => {
+    //   const data: any[] = [s.main];
+    //   data.push(s.sub || "-");
+    //   data.push(
+    //     designations.find((d) => d.designationid === s.id)
+    //       ?.allowed_wrking_hr_per_day || "-"
+    //   );
+    //   const restdata = rows.map((r) => {
+    //     return getRoundOff(_.get(r, s.id, "-"));
+    //   });
+
+    //   const datarow = worksheet.addRow([...data, ...restdata]);
+    //   datarow.eachCell((cell: any) => {
+    //     cell.alignment = {
+    //       wrapText: true,
+    //       vertical: "middle",
+    //       horizontal: "center",
+    //     };
+    //     cell.border = border;
+    //     cell.font = { size: 12, wrapText: true };
+    //   });
+    //   datarow.height = 36;
+    //   if (department?.basicsalary_in_duration === "Monthly") {
+    //     worksheet.mergeCells(`A${datarow.number}:B${datarow.number}`);
+    //     //   worksheet.mergeCells(`D${datarow.number}:E${datarow.number}`);
+    //     //   worksheet.mergeCells(`H${datarow.number}:I${datarow.number}`);
+    //     worksheet.mergeCells(`M${datarow.number}:P${datarow.number}`);
+    //   }
+    // });
 
     createHeading({
       header: [""],
@@ -453,15 +479,17 @@ export default function PrintExcel({
     });
 
     const finalinfo = [
-      ["NET AMOUNT PAYABLE", `${total}`],
+      ["NET AMOUNT PAYABLE", `${getRoundOff(total)}`],
       ["GST Hold (if any)", 0],
-      ["SAFETY VIOLATION 'S PENALTY", safety?.totalAmount || 0],
-      ["CONSUMABLES/ CHARGABLE ITEMS", store?.totalAmount || 0],
+      ["SAFETY VIOLATION 'S PENALTY", getRoundOff(safety?.totalAmount || 0)],
+      ["CONSUMABLES/ CHARGABLE ITEMS", getRoundOff(store?.totalAmount || 0)],
       ["ADJUSTMENT OF ADVANCE AMOUNT", 0],
       ["ANY OTHER DEDUCTIONS (IF ANY)", 0],
       [
         "FINAL PAYABLE",
-        total - (safety?.totalAmount || 0) - (store?.totalAmount || 0),
+        getRoundOff(
+          total - (safety?.totalAmount || 0) - (store?.totalAmount || 0)
+        ),
       ],
     ];
 
@@ -742,3 +770,263 @@ export default function PrintExcel({
     </div>
   );
 }
+
+const table = ({
+  createHeading,
+  worksheet,
+  department,
+  rows,
+}: {
+  createHeading: ({
+    header,
+    colSpan,
+    bgcolor,
+    font,
+    height,
+  }: {
+    header: string[];
+    colSpan?: number;
+    bgcolor?: string;
+    font?: any;
+    height: number;
+  }) => void;
+  worksheet: any;
+  department: any;
+  rows: any;
+}) => {
+  createHeading({
+    header: [""],
+    height: 30,
+  });
+
+  createHeading({
+    header: [department.department],
+    colSpan: 10,
+    bgcolor: "fafafa",
+    font: { size: 14, bold: true },
+    height: 40,
+  });
+
+  const hourlyheader = [
+    "Category",
+    "Type",
+    "Shift Hours",
+    "Total Man days",
+    "Rate",
+    "Total Amount",
+    "Total Overtime",
+    "OT Amount",
+    "Total Amount",
+    "Service Charge",
+    "Service Charge Amount",
+    "Taxable",
+    "GST",
+    "Bill Amount",
+    "TDS",
+    "Net Payable",
+  ];
+
+  const monthlyheader = [
+    "Category",
+    "",
+    "Shift Hours",
+    "Total Man days",
+
+    "Rate",
+    "Total Amount",
+    "Total Overtime",
+
+    "OT Amount",
+    "Taxable",
+    "GST",
+    "Bill Amount",
+    "TDS",
+    "Net Payable",
+    "",
+  ];
+
+  const tableheader = worksheet.addRow(
+    department?.basicsalary_in_duration === "Monthly"
+      ? monthlyheader
+      : hourlyheader
+  );
+
+  if (department?.basicsalary_in_duration === "Monthly") {
+    worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
+    //   worksheet.mergeCells(`D${tableheader.number}:E${tableheader.number}`);
+    //   worksheet.mergeCells(`H${tableheader.number}:I${tableheader.number}`);
+    worksheet.mergeCells(`M${tableheader.number}:P${tableheader.number}`);
+  }
+
+  tableheader.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: "middle",
+      horizontal: "center",
+    };
+    cell.font = { bold: true, size: 11, wrapText: true };
+    cell.border = border;
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
+    };
+  });
+
+  // worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
+
+  const sidebar = department.designations
+    .filter((d: any) => d.departmentname === department?.department)
+    .map((d: any) => {
+      if (d.basicsalary_in_duration === "Monthly")
+        return { main: d.designation, id: d.designationid };
+      if (d.gender === "Male")
+        return { main: d.designation, sub: "M", id: d.designationid };
+      else if (d.gender === "Female")
+        return { main: d.designation, sub: "F", id: d.designationid };
+      else return { main: d.designation, id: d.designationid };
+    });
+
+  if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
+    sidebar.push({ main: "Total", sub: " ", id: "total" });
+  } else {
+    sidebar.push({ main: "Total", id: "total" });
+  }
+
+  sidebar.forEach((s: any) => {
+    const data: any[] = [s.main];
+    data.push(s.sub || "-");
+    data.push(
+      department.designations.find((d: any) => d.designationid === s.id)
+        ?.allowed_wrking_hr_per_day || "-"
+    );
+    const restdata = rows.map((r: any) => {
+      return getRoundOff(_.get(r, s.id, "-"));
+    });
+
+    const datarow = worksheet.addRow([...data, ...restdata]);
+    datarow.eachCell((cell: any) => {
+      cell.alignment = {
+        wrapText: true,
+        vertical: "middle",
+        horizontal: "center",
+      };
+      cell.border = border;
+      cell.font = { size: 12, wrapText: true };
+    });
+    datarow.height = 36;
+    if (department?.basicsalary_in_duration === "Monthly") {
+      worksheet.mergeCells(`A${datarow.number}:B${datarow.number}`);
+      //   worksheet.mergeCells(`D${datarow.number}:E${datarow.number}`);
+      //   worksheet.mergeCells(`H${datarow.number}:I${datarow.number}`);
+      worksheet.mergeCells(`M${datarow.number}:P${datarow.number}`);
+    }
+  });
+};
+
+const totalstable = ({
+  createHeading,
+  worksheet,
+  totals,
+  departments,
+}: {
+  createHeading: ({
+    header,
+    colSpan,
+    bgcolor,
+    font,
+    height,
+  }: {
+    header: string[];
+    colSpan?: number;
+    bgcolor?: string;
+    font?: any;
+    height: number;
+  }) => void;
+  worksheet: any;
+  totals: any;
+  departments: d[];
+}) => {
+  createHeading({
+    header: [""],
+    height: 30,
+  });
+  createHeading({
+    header: ["Total"],
+    colSpan: 10,
+    bgcolor: "fafafa",
+    font: { size: 14, bold: true },
+    height: 40,
+  });
+
+  const headers = [
+    "Total Man days",
+    "Total Amount",
+    "Total Overtime",
+    "OT Amount",
+    "Total Amount",
+    "Service Charge",
+    "Service Charge Amount",
+    "Taxable",
+    "GST",
+    "Bill Amount",
+    "TDS",
+    "Net Payable",
+  ];
+
+  const tableheader = worksheet.addRow(["Department", "", "", "", ...headers]);
+
+  tableheader.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: "middle",
+      horizontal: "center",
+    };
+    cell.font = { bold: true, size: 11, wrapText: true };
+    cell.border = border;
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
+    };
+  });
+
+  // worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
+
+  departments.forEach((s) => {
+    const data: any[] = [s.department, "", "", ""];
+    // const data: any[] = [s.main];
+    // data.push(s.sub || "-");
+    headers.forEach((h) => {
+      data.push(getRoundOff(_.get(totals, [h, s.department]) || 0));
+    });
+
+    // data.push(
+    //   department.designations.find((d: any) => d.designationid === s.id)
+    //     ?.allowed_wrking_hr_per_day || "-"
+    // );
+    // const restdata = totals.map((r: any) => {
+    //   return getRoundOff(_.get(r, s.id, "-"));
+    // });
+
+    const datarow = worksheet.addRow(data);
+    datarow.eachCell((cell: any) => {
+      cell.alignment = {
+        wrapText: true,
+        vertical: "middle",
+        horizontal: "center",
+      };
+      cell.border = border;
+      cell.font = { size: 12, wrapText: true };
+    });
+    datarow.height = 36;
+    worksheet.mergeCells(`A${datarow.number}:D${datarow.number}`);
+    // if (department?.basicsalary_in_duration === "Monthly") {
+    //   worksheet.mergeCells(`A${datarow.number}:B${datarow.number}`);
+    //   //   worksheet.mergeCells(`D${datarow.number}:E${datarow.number}`);
+    //   //   worksheet.mergeCells(`H${datarow.number}:I${datarow.number}`);
+    //   worksheet.mergeCells(`M${datarow.number}:P${datarow.number}`);
+    // }
+  });
+  worksheet.mergeCells(`A${tableheader.number}:D${tableheader.number}`);
+};

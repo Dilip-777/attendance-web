@@ -15,19 +15,6 @@ import dayjs from "dayjs";
 import ApprovalInformation from "./approvalInfo";
 // import { saveAs } from "file-saver";
 
-interface Headcell {
-  id: string;
-  label: string;
-  colspan?: number;
-}
-
-const createHeadcell = (id: string, label: string, colspan?: number) => {
-  return {
-    id,
-    label,
-    colspan,
-  };
-};
 
 const getPreviousMonth = (month: string) => {
 const date = dayjs(month, 'MM/YYYY');
@@ -36,7 +23,7 @@ const prevMonthString = prevMonth.format('MM/YYYY');
 return prevMonthString;
 }
 
-export function print(rows: any[], total: number,department: Department | undefined, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number , designations: Designations[]) {
+export function print(rows: any,totals: any, total: number,department: Department | undefined, contractor: Contractor, workorder: Workorder, date: string, store: Stores | null, safety : Safety | null,payouttracker: payoutTracker, prevMonthAmount: number, prevprevMonthAmount: number, prevYearAmount: number , designations: Designations[]) {
 
   const previousMonth = getPreviousMonth(date)
   const beforemonth = getPreviousMonth(previousMonth)

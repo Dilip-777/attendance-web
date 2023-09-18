@@ -148,7 +148,8 @@ const headCells = [
 ];
 
 interface EnhancedTableToolbarProps {
-  selected: TimeKeeper | undefined;
+  selected: string[];
+  setSelected: React.Dispatch<React.SetStateAction<string[]>>;
   contractorName: string;
   value: Dayjs;
   setValue: React.Dispatch<React.SetStateAction<Dayjs>>;
@@ -166,6 +167,7 @@ interface EnhancedTableToolbarProps {
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const {
     selected,
+    setSelected,
     contractorName,
     setContractorName,
     contractors,
@@ -189,11 +191,16 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     setAnchorEl(null);
   };
 
-  const deleteTimeKeeper = async (id: string) => {
+  const deleteTimeKeeper = async (ids: string[]) => {
     await axios
-      .delete(`/api/timekeeper/${id}`)
+      .delete(`/api/timekeeper`, {
+        data: {
+          ids: ids,
+        },
+      })
       .then((res) => {
         fetchTimeKeeper();
+        setSelected([]);
       })
       .catch((err) => {
         console.log(err);
@@ -209,7 +216,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         pr: { xs: 1, sm: 1 },
         display: "flex",
         justifyContent: "space-between",
-        ...(selected && {
+        ...(selected.length > 0 && {
           bgcolor: (theme) =>
             alpha(
               theme.palette.primary.main,
@@ -218,14 +225,14 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         }),
       }}
     >
-      {selected ? (
+      {selected.length > 0 ? (
         <Typography
           sx={{ flex: "1 1 100%" }}
           color="inherit"
           variant="subtitle1"
           component="div"
         >
-          1 selected
+          {selected.length} selected
         </Typography>
       ) : (
         <Stack spacing={2} direction="row" alignItems="center">
@@ -260,17 +267,21 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </LocalizationProvider>
         </Stack>
       )}
-      {selected ? (
+      {selected.length > 0 ? (
         <Stack direction="row" spacing={2}>
-          <Tooltip title="Edit">
-            <IconButton onClick={() => router.push(`/details/${selected.id}`)}>
-              <Edit />
-            </IconButton>
-          </Tooltip>
+          {selected.length === 1 && (
+            <Tooltip title="Edit">
+              <IconButton
+                onClick={() => router.push(`/details/${selected[0]}`)}
+              >
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Delete">
             <IconButton
               onClick={() => {
-                deleteTimeKeeper(selected.id);
+                deleteTimeKeeper(selected);
               }}
             >
               <DeleteIcon />
@@ -335,9 +346,7 @@ export default function TimeKeeperTable({}: // contractors,
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<string>("employeeid");
   const [filter, setFilter] = React.useState("");
-  const [selected, setSelected] = React.useState<TimeKeeper | undefined>(
-    undefined
-  );
+  const [selected, setSelected] = React.useState<string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const router = useRouter();
@@ -467,12 +476,24 @@ export default function TimeKeeperTable({}: // contractors,
     fetchContrators();
   }, []);
 
-  const handleClick = (event: React.MouseEvent<unknown>, row: any) => {
-    if (selected && selected.id === row.id) {
-      setSelected(undefined);
-    } else {
-      setSelected(row);
+  const handleClick = (event: React.MouseEvent<unknown>, row: string) => {
+    const selectedIndex = selected.indexOf(row);
+    let newSelected: string[] = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, row);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
     }
+
+    setSelected(newSelected);
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -486,7 +507,7 @@ export default function TimeKeeperTable({}: // contractors,
     setPage(0);
   };
 
-  const isSelected = (row: any) => selected && selected.id === row.id;
+  const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
   const showApprove = () => {
     const timekeeper1 = timekeeper.filter(
@@ -583,6 +604,7 @@ export default function TimeKeeperTable({}: // contractors,
           <EnhancedTableToolbar
             contractorlist={contractors}
             selected={selected}
+            setSelected={setSelected}
             contractorName={contractorName}
             setContractorName={setContractorName}
             contractors={
@@ -661,7 +683,7 @@ export default function TimeKeeperTable({}: // contractors,
                   )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
-                    const isItemSelected = !!isSelected(row);
+                    const isItemSelected = !!isSelected(row.id as string);
                     console.log(
                       isItemSelected,
                       "isItemSelected",
@@ -684,8 +706,10 @@ export default function TimeKeeperTable({}: // contractors,
                         <TableCell padding="checkbox">
                           <Checkbox
                             color="primary"
-                            onClick={(event) => handleClick(event, row)}
-                            checked={!!isSelected(row)}
+                            onClick={(event) =>
+                              handleClick(event, row.id as string)
+                            }
+                            checked={!!isSelected(row.id as string)}
                             inputProps={{
                               "aria-labelledby": labelId,
                             }}
