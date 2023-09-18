@@ -184,9 +184,7 @@ export default function FinalSheetta({
                   Net Amount Payable
                 </TableCell>
                 <TableCell align="center">
-                  {total.toLocaleString("en-IN", {
-                    maximumFractionDigits: 0,
-                  })}
+                  {Math.ceil(total).toLocaleString("en-IN")}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -236,12 +234,9 @@ export default function FinalSheetta({
                   Final Payable
                 </TableCell>
                 <TableCell align="center">
-                  {(total > 0
-                    ? total - storededuction - safetydeduction
-                    : 0
-                  ).toLocaleString("en-IN", {
-                    maximumFractionDigits: 2,
-                  })}
+                  {Math.ceil(
+                    total > 0 ? total - storededuction - safetydeduction : 0
+                  ).toLocaleString("en-IN")}
                 </TableCell>
               </TableRow>
             </TableBody>
