@@ -813,11 +813,11 @@ const table = ({
     "Shift Hours",
     "Total Man days",
     "Rate",
-    "Total Amount",
-    "Total Overtime",
+    "Man Days Amount",
+    "Overtime Hrs.",
     "OT Amount",
     "Total Amount",
-    "Service Charge",
+    "Service Charge Rate",
     "Service Charge Amount",
     "Taxable",
     "GST",
@@ -845,18 +845,14 @@ const table = ({
     "",
   ];
 
-  const tableheader = worksheet.addRow(
-    department?.basicsalary_in_duration === "Monthly"
-      ? monthlyheader
-      : hourlyheader
-  );
+  const tableheader = worksheet.addRow(hourlyheader);
 
-  if (department?.basicsalary_in_duration === "Monthly") {
-    worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
-    //   worksheet.mergeCells(`D${tableheader.number}:E${tableheader.number}`);
-    //   worksheet.mergeCells(`H${tableheader.number}:I${tableheader.number}`);
-    worksheet.mergeCells(`M${tableheader.number}:P${tableheader.number}`);
-  }
+  // if (department?.basicsalary_in_duration === "Monthly") {
+  //   worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
+  //   //   worksheet.mergeCells(`D${tableheader.number}:E${tableheader.number}`);
+  //   //   worksheet.mergeCells(`H${tableheader.number}:I${tableheader.number}`);
+  //   worksheet.mergeCells(`M${tableheader.number}:P${tableheader.number}`);
+  // }
 
   tableheader.eachCell((cell: any) => {
     cell.alignment = {
@@ -915,12 +911,12 @@ const table = ({
       cell.font = { size: 12, wrapText: true };
     });
     datarow.height = 36;
-    if (department?.basicsalary_in_duration === "Monthly") {
-      worksheet.mergeCells(`A${datarow.number}:B${datarow.number}`);
-      //   worksheet.mergeCells(`D${datarow.number}:E${datarow.number}`);
-      //   worksheet.mergeCells(`H${datarow.number}:I${datarow.number}`);
-      worksheet.mergeCells(`M${datarow.number}:P${datarow.number}`);
-    }
+    // if (department?.basicsalary_in_duration === "Monthly") {
+    //   worksheet.mergeCells(`A${datarow.number}:B${datarow.number}`);
+    //   //   worksheet.mergeCells(`D${datarow.number}:E${datarow.number}`);
+    //   //   worksheet.mergeCells(`H${datarow.number}:I${datarow.number}`);
+    //   worksheet.mergeCells(`M${datarow.number}:P${datarow.number}`);
+    // }
   });
 };
 
@@ -961,11 +957,11 @@ const totalstable = ({
 
   const headers = [
     "Total Man days",
-    "Total Amount",
-    "Total Overtime",
+    "Man Days Amount",
+    "Overtime Hrs.",
     "OT Amount",
     "Total Amount",
-    "Service Charge",
+    "Service Charge Rate",
     "Service Charge Amount",
     "Taxable",
     "GST",

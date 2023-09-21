@@ -14,7 +14,7 @@ console.log(m, "days in month");
 }
 
 const  totalovertime1: Record<string, string | number>  = {
-    date: "Total Overtime",
+    date: "Overtime Hrs.",
     total: 0
 }
 const attendancecount: Record<string, string | number> = {
@@ -22,7 +22,7 @@ const attendancecount: Record<string, string | number> = {
   total: 0,
 }
 const totalamount1: Record<string, string | number> = {
-  date: "Total Amount",
+  date: "Man Days Amount",
   total: 0
 }
 
@@ -36,12 +36,12 @@ const totalnetamount : Record<string, string | number> = {
 }
 
 const cprate: Record<string, string | number> = {
-  date: "CP",
+  date: "Service Charge Rate",
   total: 0
 }
 
 const cpamount: Record<string, string | number> = {
-  date: "CP Amount",
+  date: "Service Charge Amount",
   total: 0
 }
 
@@ -166,13 +166,21 @@ if(designations) {
     otamount["total"] = getRoundOff(otamount.total as number + Number(_.get(otamount, id, 0)))
     totalnetamount[id] = getRoundOff(Number(_.get(totalamount1, id, 0)) + Number(_.get(otamount, id, 0)) )  
     cprate[id] = designation.servicecharge as number
-    cpamount[id] = getRoundOff(Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0)))
+
+    console.log(_.get(totalamount1, id, 0), "totalamount1[id]");
+    console.log(_.get(cprate, id, 0), "cprate[id]");
+    console.log(Number(_.get(totalamount1, id, 0)) * Number(_.get(cprate, id, 0)) / 100, "cpamount[id]");
+    
+    
+    
+    
+    cpamount[id] = getRoundOff(Number(_.get(totalamount1, id, 0)) * Number(_.get(cprate, id, 0)) / 100)
     cpamount["total"] = getRoundOff(cpamount.total as number + Number(_.get(cpamount, id, 0)))
     total[id] = getRoundOff(Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0)))
     gst1[id] = getRoundOff(Number(_.get(total, id, 0) as number * 0.18))
     billAmount1[id] = getRoundOff((Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))))
     tds1[id] = getRoundOff(Number(_.get(total, id, 0) as number * 0.01))
-    netPayable1[id] = Number(_.get(billAmount1, id, 0)) + Number(_.get(tds1, id, 0))
+    netPayable1[id] = Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0))
  })
 }
 
@@ -183,7 +191,7 @@ total["total"] = totalnetamount.total + parseFloat(cpamount.total as string)
 gst1["total"] = getRoundOff(Number(total.total * 0.18))
 billAmount1["total"] = getRoundOff(Number(total.total + gst1.total))
 tds1["total"] = getRoundOff(Number(total.total * 0.01))
-netPayable1["total"] = getRoundOff(Number(billAmount1.total + tds1.total))
+netPayable1["total"] = getRoundOff(Number(billAmount1.total - tds1.total))
 rows2.push(attendancecount)
 rows.push(attendancecount)
 
@@ -198,14 +206,14 @@ rows2.push(otamount)
 rows.push(otamount)
 rows2.push(totalnetamount)
 rows.push(totalnetamount)
-if(department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
+// if(department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
   rows2.push(cprate)
   rows.push(cprate)
   rows2.push(cpamount)
   rows.push(cpamount)
   rows2.push(total)
   rows.push(total)
-} 
+// } 
 rows2.push(gst1)
 
 rows2.push(billAmount1)
@@ -213,7 +221,7 @@ rows2.push(tds1)
 rows2.push(netPayable1) 
 
 
-    return { rows,  total1: totalnetamount.total, rows1: rows2, totalnetPayable: netPayable1.total};
+    return { rows,  total1: total.total, rows1: rows2, totalnetPayable: netPayable1.total};
   }
 
   export default getTotalAmountAndRows

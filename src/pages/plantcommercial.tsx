@@ -87,7 +87,7 @@ export default function PlantCommercial({
   const colspan = designations.length > 2 ? 3 : 1;
   const { department } = router.query;
 
-  const sgst = Math.floor(total * 0.09);
+  const sgst = Math.ceil(total * 0.09);
 
   const columns = [{ id: "date", label: "Date", minWidth: 80 }];
 
@@ -317,7 +317,9 @@ export default function PlantCommercial({
                       const value = _.get(row, column.id, "-");
                       return (
                         <TableCell key={column.id} align={"center"}>
-                          {value}
+                          {column.id === "date"
+                            ? value
+                            : Math.ceil(value as number)}
                         </TableCell>
                       );
                     })}
@@ -341,7 +343,7 @@ export default function PlantCommercial({
               >
                 Total
               </TableCell>
-              <TableCell align="center">{total}</TableCell>
+              <TableCell align="center">{Math.ceil(total)}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell
@@ -385,7 +387,9 @@ export default function PlantCommercial({
                 Total Net Amount
               </TableCell>
               <TableCell align="center">
-                {total + sgst + sgst + (contractor.servicecharge || 0)}
+                {Math.ceil(
+                  total + sgst + sgst + (contractor.servicecharge || 0)
+                )}
               </TableCell>
             </TableRow>
           </TableBody>

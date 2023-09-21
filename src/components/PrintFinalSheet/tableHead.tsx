@@ -24,11 +24,11 @@ export default function TableHead({
     "Type",
     "Total Man days",
     "Rate",
-    "Total Amount",
-    "Total Overtime",
+    "Man Days Amount",
+    "Overtime Hrs.",
     "OT Amount",
     "Total Amount",
-    "Service Charge",
+    "Service Charge Rate",
     "Service Charge Amount",
     "Taxable",
     "GST",
@@ -50,11 +50,11 @@ export default function TableHead({
     "TDS",
     "Net Payable",
   ];
-  const headcells =
-    department?.basicsalary_in_duration?.toLowerCase() === "hourly"
-      ? headers
-      : ccmheader;
-  return headcells.map(
+  // const headers =
+  //   department?.basicsalary_in_duration?.toLowerCase() === "hourly"
+  //     ? headers
+  //     : ccmheader;
+  return headers.map(
     (headcell) =>
       new TableCell({
         children: [

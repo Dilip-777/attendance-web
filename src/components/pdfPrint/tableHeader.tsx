@@ -48,11 +48,11 @@ const InvoiceTableHeader = ({
     "Type",
     "Total Man days",
     "Rate",
-    "Total Amount",
-    "Total Overtime",
+    "Man Days Amount",
+    "Overtime Hrs.",
     "OT Amount",
     "Total Amount",
-    "Service Charge",
+    "Service Charge Rate",
     "Service Charge Amount",
     "Taxable",
     "GST",
@@ -80,7 +80,7 @@ const InvoiceTableHeader = ({
       : ccmheader;
   return (
     <View style={styles.container}>
-      {headcells.map((headcell) => (
+      {headers.map((headcell) => (
         <Text style={styles.qty}>{headcell}</Text>
       ))}
       {/* <Text style={styles.description}>Item Description</Text>

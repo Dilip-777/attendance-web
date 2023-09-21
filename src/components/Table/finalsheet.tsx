@@ -59,11 +59,11 @@ export default function FinalSheetta({
 
   const headers = [
     "Total Man days",
-    "Total Amount",
-    "Total Overtime",
+    "Man Days Amount",
+    "Overtime Hrs.",
     "OT Amount",
     "Total Amount",
-    "Service Charge",
+    "Service Charge Rate",
     "Service Charge Amount",
     "Taxable",
     "GST",

@@ -72,11 +72,11 @@ export default function FinalSheetTable({
   const headers = [
     "Total Man days",
     "Rate",
-    "Total Amount",
-    "Total Overtime",
+    "Man Days Amount",
+    "Overtime Hrs.",
     "OT Amount",
     "Total Amount",
-    "Service Charge",
+    "Service Charge Rate",
     "Service Charge Amount",
     "Taxable",
     "GST",
@@ -88,8 +88,8 @@ export default function FinalSheetTable({
   const ccmheader = [
     "Total Man days",
     "Rate",
-    "Total Amount",
-    "Total Overtime",
+    "Man Days Amount",
+    "Overtime Hrs.",
     "OT Amount",
     "Taxable",
     "GST",
@@ -99,7 +99,7 @@ export default function FinalSheetTable({
   ];
 
   const colspan =
-    department?.basicsalary_in_duration?.toLowerCase() === "hourly" ? 8 : 4;
+    department?.basicsalary_in_duration?.toLowerCase() === "hourly" ? 8 : 8;
 
   return (
     <Paper
@@ -146,10 +146,7 @@ export default function FinalSheetTable({
                   Type
                 </TableCell>
               )}
-              {(department?.basicsalary_in_duration?.toLowerCase() === "hourly"
-                ? headers
-                : ccmheader
-              ).map((header, index) => (
+              {headers.map((header, index) => (
                 <TableCell
                   align="center"
                   sx={{ fontWeight: "700" }}
