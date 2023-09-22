@@ -32,7 +32,7 @@ const otamount: Record<string, string | number> = {
 }
 
 const totalnetamount : Record<string, string | number> = {
-  date: "Total Net Amount",
+  date: "Total Amount",
 }
 
 const cprate: Record<string, string | number> = {
@@ -46,7 +46,7 @@ const cpamount: Record<string, string | number> = {
 }
 
 const total : Record<string, string | number> = {
-  date: "Total"
+  date: "Taxable"
 }
 
 const gst1 : Record<string, string | number> = {
@@ -172,9 +172,15 @@ if(designations) {
     console.log(Number(_.get(totalamount1, id, 0)) * Number(_.get(cprate, id, 0)) / 100, "cpamount[id]");
     
     
+    let camount = 0;
+    if(designation.basicsalary_in_duration === "Monthly") {
+     camount = getRoundOff(Number(_.get(totalamount1, id, 0)) * Number(_.get(cprate, id, 0)) / 100)
+    } 
+    else {
+        camount = getRoundOff(Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0)))
+    }
     
-    
-    cpamount[id] = getRoundOff(Number(_.get(totalamount1, id, 0)) * Number(_.get(cprate, id, 0)) / 100)
+    cpamount[id] = camount;
     cpamount["total"] = getRoundOff(cpamount.total as number + Number(_.get(cpamount, id, 0)))
     total[id] = getRoundOff(Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0)))
     gst1[id] = getRoundOff(Number(_.get(total, id, 0) as number * 0.18))
