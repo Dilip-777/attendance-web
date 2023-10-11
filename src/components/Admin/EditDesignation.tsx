@@ -9,12 +9,14 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { Department, Designations, User } from "@prisma/client";
 import axios from "axios";
 import { useState } from "react";
+import { Divider, Typography } from "@mui/material";
 
 const validationSchema = Yup.object().shape({
   departmentname: Yup.string().required("Required"),
   designation: Yup.string().required("Required"),
   gender: Yup.string().required("Required"),
   basicsalary: Yup.number().required("Required"),
+  basicsalaryfor12hr: Yup.number().required("Required"),
   allowed_wrking_hr_per_day: Yup.number().required("Required"),
   servicecharge: Yup.number().required("Required"),
   basicsalary_in_duration: Yup.string().required("Required"),
@@ -38,6 +40,7 @@ export default function EditDesignation({
     designation: selectedDesignation?.designation || "",
     gender: selectedDesignation?.gender || "",
     basicsalary: selectedDesignation?.basicsalary || 0,
+    basicsalaryfor12hr: selectedDesignation?.basicsalaryfor12hr || 0,
     allowed_wrking_hr_per_day:
       selectedDesignation?.allowed_wrking_hr_per_day || 0,
     servicecharge: selectedDesignation?.servicecharge || 0,
@@ -61,6 +64,10 @@ export default function EditDesignation({
           },
         }}
       >
+        <Typography variant="h3" sx={{ mb: 1 }}>
+          {selectedDesignation ? "Edit Designation" : "Add Designation"}
+        </Typography>
+        <Divider />
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -136,6 +143,12 @@ export default function EditDesignation({
                 <FormInput
                   name="basicsalary"
                   label="Basic Salary"
+                  type="number"
+                  placeHolder="Enter the Basic Salary"
+                />
+                <FormInput
+                  name="basicsalaryfor12hr"
+                  label="Basic Salary for 12 Hours"
                   type="number"
                   placeHolder="Enter the Basic Salary"
                 />

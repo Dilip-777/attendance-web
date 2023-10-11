@@ -2,10 +2,10 @@ import AssignmentInd from '@mui/icons-material/AssignmentInd';
 import Person from '@mui/icons-material/Person';
 import TripOriginIcon from '@mui/icons-material/TripOrigin';
 import Dashboard from '@mui/icons-material/Dashboard';
-
+import FilterTiltShiftIcon from '@mui/icons-material/FilterTiltShift';
 // constant
 const icons = {
-      AssignmentInd, Person, TripOriginIcon, Dashboard
+      AssignmentInd, Person, TripOriginIcon, Dashboard, FilterTiltShiftIcon
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -75,6 +75,14 @@ const hr = {
             type: 'item',
             url: '/designations',
             icon: icons.Dashboard,
+            breadcrumbs: false
+        },
+        {
+            id: '/shifts',
+            title: 'Shifts',
+            type: 'item',
+            url: '/shifts',
+            icon: icons.FilterTiltShiftIcon,
             breadcrumbs: false
         },
     ]

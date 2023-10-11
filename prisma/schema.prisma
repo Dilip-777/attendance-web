@@ -97,6 +97,7 @@ model TimeKeeper {
   department           String?
   gender               String?
   status               Status    @default(NoChanges)
+  hrdatetime           String?
   comment              Comment[]
   approvedByTimekeeper Boolean   @default(false)
   UploadDocument       Upload[]
@@ -302,11 +303,18 @@ model Designations {
   departmentname            String
   designation               String
   basicsalary               Int
+  basicsalaryfor12hr        Int        @default(0)
   gender                    String
   allowed_wrking_hr_per_day Int
   servicecharge             Float?
   basicsalary_in_duration   String     @default("Hourly")
   department                Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+}
+
+model Shifts {
+  id         String @id @default(cuid())
+  shift      String @unique
+  totalhours Int
 }
 
 model Comment {

@@ -78,7 +78,7 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             <Delete />
           </IconButton>
         </Tooltip>
-      ) : type === "contractor" && props.upload ? (
+      ) : handleClickReport && props.upload ? (
         <Stack direction="row" spacing={2}>
           {" "}
           <Tooltip title="Print">

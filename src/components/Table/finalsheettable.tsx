@@ -167,7 +167,10 @@ export default function FinalSheetTable({
                 {item.sub && <TableCell align="center">{item.sub}</TableCell>}
                 {rows.map((row, index) => (
                   <TableCell key={index} align="center">
-                    {getRoundOff(_.get(row, item.id) || 0)}
+                    {row.date === "Service Charge Rate"
+                      ? _.get(row, item.id)
+                      : getRoundOff(_.get(row, item.id) || 0)}
+                    {/* {getRoundOff(_.get(row, item.id) || 0)} */}
                   </TableCell>
                 ))}
               </TableRow>

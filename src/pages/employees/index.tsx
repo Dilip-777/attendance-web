@@ -52,6 +52,66 @@ const headCells1 = [
 export default function Employees({ employees }: { employees: Employee[] }) {
   const [filterName, setFilterName] = React.useState("");
   const [orderby, setOrderby] = React.useState("contractorname");
+  const handleClickReport = () => {
+    const tableRows = [
+      [
+        "Employee ID",
+        "Employee Name",
+        "Contractor ID",
+        "Contractor Name",
+        "Designation",
+        "Department",
+        "Gender",
+        "Email",
+        "Phone Number",
+        "Basic Salary In Duration",
+        "basic Salary",
+        "Allowed Working Hours Per Day",
+        "Service Charge",
+        "GST",
+        "TDS",
+      ],
+    ];
+    employees
+      .filter((employee) =>
+        _.get(employee, orderby, "contractorname")
+          .toString()
+          .toLowerCase()
+          .includes(filterName.toLowerCase())
+      )
+      .forEach((item) => {
+        tableRows.push([
+          item.employeeId.toString(),
+          item.employeename,
+          item.contractorId,
+          item.contractorname,
+          item.designation,
+          item.department || "-",
+          item?.gender || "-",
+          item.emailid || "-",
+          item.phone?.toString() || "-",
+          item.basicsalary_in_duration || "-",
+          item.basicsalary?.toString() || "-",
+          item.allowed_wrking_hr_per_day?.toString() || "-",
+          item.servicecharge?.toString() || "-",
+          item.gst?.toString() || "-",
+          item.tds?.toString() || "-",
+        ]);
+      });
+    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Employees.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <CustomTable
       headcells={headCells1}
@@ -67,6 +127,7 @@ export default function Employees({ employees }: { employees: Employee[] }) {
       upload={<ImportData />}
       orderby={orderby}
       setOrderby={setOrderby}
+      handleClickReport={handleClickReport}
     />
   );
 }

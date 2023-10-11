@@ -13,6 +13,7 @@ interface HeadCell {
   label: string;
   numeric: boolean;
   included: boolean;
+  colspan?: number;
 }
 
 interface EnhancedTableProps {
@@ -60,6 +61,7 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
             key={headCell.id}
             align={align || "left"}
             padding={"normal"}
+            colSpan={headCell.colspan || 1}
             sx={{ fontWeight: "600", minWidth: "5rem", bgcolor: "#eeeeee" }}
           >
             {setOrderby ? (
