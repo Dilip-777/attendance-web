@@ -1,18 +1,11 @@
-import {
-  TableHead,
-  TableRow,
-  TableCell,
-  Checkbox,
-  TableSortLabel,
-  Box,
-} from "@mui/material";
-import { visuallyHidden } from "@mui/utils";
+import { TableHead, TableRow, TableCell, Checkbox, TableSortLabel, Box } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 
-interface HeadCell {
+export interface HeadCell {
   id: string;
   label: string;
-  numeric: boolean;
-  included: boolean;
+  numeric?: boolean;
+  align?: 'left' | 'right' | 'center';
   colspan?: number;
 }
 
@@ -23,27 +16,20 @@ interface EnhancedTableProps {
   onSelectAllClick?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   rowCount: number;
   headCells: HeadCell[];
-  align?: "left" | "right" | "center";
+  align?: 'left' | 'right' | 'center';
   orderby?: string;
   setOrderby?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function EnhancedTableHead(props: EnhancedTableProps) {
-  const {
-    onSelectAllClick,
-    numSelected,
-    rowCount,
-    headCells,
-    nocheckbox,
-    align,
-    orderby,
-    setOrderby,
-  } = props;
+  const { onSelectAllClick, numSelected, rowCount, headCells, nocheckbox, align, orderby, setOrderby } = props;
+
+  console.log(headCells);
 
   return (
-    <TableHead sx={{ bgcolor: "#eeeeee" }}>
-      <TableRow sx={{ bgcolor: "#eeeeee" }}>
-        <TableCell sx={{ bgcolor: "#eeeeee" }} padding="checkbox">
+    <TableHead sx={{ bgcolor: '#eeeeee' }}>
+      <TableRow sx={{ bgcolor: '#eeeeee' }}>
+        <TableCell sx={{ bgcolor: '#eeeeee' }} padding="checkbox">
           {onSelectAllClick && !nocheckbox && (
             <Checkbox
               color="primary"
@@ -51,7 +37,7 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
               checked={rowCount > 0 && numSelected === rowCount}
               onChange={onSelectAllClick}
               inputProps={{
-                "aria-label": "select all desserts",
+                'aria-label': 'select all desserts',
               }}
             />
           )}
@@ -59,15 +45,15 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={align || "left"}
-            padding={"normal"}
+            align={headCell.align || align || 'left'}
+            padding={'normal'}
             colSpan={headCell.colspan || 1}
-            sx={{ fontWeight: "600", minWidth: "5rem", bgcolor: "#eeeeee" }}
+            sx={{ fontWeight: '600', minWidth: '5rem', bgcolor: '#eeeeee' }}
           >
             {setOrderby ? (
               <TableSortLabel
                 active={orderby === headCell.id}
-                direction={orderby === headCell.id ? "asc" : "desc"}
+                direction={orderby === headCell.id ? 'asc' : 'desc'}
                 onClick={() => setOrderby && setOrderby(headCell.id)}
               >
                 {headCell.label}

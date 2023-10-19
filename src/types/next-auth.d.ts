@@ -1,7 +1,7 @@
-import { DefaultUser } from "next-auth";
-import { type DefaultSession } from "next-auth";
+import { DefaultUser } from 'next-auth';
+import { type DefaultSession } from 'next-auth';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   /**
    * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
    */
@@ -10,13 +10,13 @@ declare module "next-auth" {
       id: string;
       role: string;
       specialRole: boolean;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
 
   interface User extends DefaultUser {
-        role: string;
-        specialRole: boolean;
-    }
+    role: string;
+    specialRole: boolean;
+  }
 }
 
-declare module "@react-pdf/renderer/lib/react-pdf.browser.es.js"
+declare module '@react-pdf/renderer/lib/react-pdf.browser.es.js';

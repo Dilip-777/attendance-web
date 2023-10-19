@@ -186,6 +186,8 @@ model Contractor {
   works                       Works[]
   barBending                  BarBending[]
   workorders                  Workorder[]
+  seperateSalary              SeperateSalary[]
+  departments                 Department[]
 }
 
 model bills {
@@ -294,6 +296,7 @@ model Department {
   department              String         @unique
   basicsalary_in_duration String?
   designations            Designations[]
+  contractors             Contractor[]
 }
 
 model Designations {
@@ -309,6 +312,16 @@ model Designations {
   servicecharge             Float?
   basicsalary_in_duration   String     @default("Hourly")
   department                Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  seperateSalary            SeperateSalary[]
+}
+
+model SeperateSalary {
+  id              String  @id @default(cuid())
+  contractorId    String
+  designationId   String
+  salary         Int
+  contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  designation    Designations @relation(fields: [designationId], references: [id], onDelete: Cascade)
 }
 
 model Shifts {

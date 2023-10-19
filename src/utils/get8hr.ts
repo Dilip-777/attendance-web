@@ -1,11 +1,15 @@
-import { Department, Designations, Shifts, TimeKeeper } from '@prisma/client';
+import { Department, Designations, SeperateSalary, Shifts, TimeKeeper } from '@prisma/client';
 import dayjs from 'dayjs';
 import _ from 'lodash';
+
+interface DesignationwithSalary extends Designations {
+  seperateSalary: SeperateSalary[];
+}
 
 // Filter By Designation and Attendance
 const filter = (
   item: TimeKeeper,
-  designation: Designations,
+  designation: DesignationwithSalary,
   attendance: string,
   wrkhrs?: number,
   shifts?: Shifts[]
@@ -32,7 +36,12 @@ const filter = (
 };
 
 // Get Count of 8HR and 12HR Shifts
-const getCountofShifts = (timekeeper: TimeKeeper[], shifts: Shifts[], designation: Designations, wrkhrs: number) => {
+const getCountofShifts = (
+  timekeeper: TimeKeeper[],
+  shifts: Shifts[],
+  designation: DesignationwithSalary,
+  wrkhrs: number
+) => {
   const fullpresentcount = timekeeper.filter((item) => filter(item, designation, '0.5')).length;
   const halfpresentcount = timekeeper.filter((item) => filter(item, designation, '1')).length;
 
@@ -44,7 +53,8 @@ const getTotalAmountAndRows = (
   month: number,
   year: number,
   shifts: Shifts[],
-  designations?: Designations[],
+  contractorId: string,
+  designations?: DesignationwithSalary[],
   department?: Department | undefined,
   wrkhrs?: number
 ) => {
@@ -56,14 +66,6 @@ const getTotalAmountAndRows = (
 
   const rate: Record<string, string | number> = {
     date: 'Rate',
-  };
-
-  const countFor8HR: Record<string, string | number> = {
-    date: '8 HR',
-  };
-
-  const countFor12HR: Record<string, string | number> = {
-    date: '12 HR',
   };
 
   const totalovertime: Record<string, string | number> = {
@@ -180,7 +182,12 @@ const getTotalAmountAndRows = (
         attendancecount[id] = ((attendancecount[id] as number) || 0) + (Number(_.get(r, id, 0)) || 0);
       });
       attendancecount['total'] = (attendancecount.total as number) + (Number(_.get(attendancecount, id, 0)) || 0);
-      if (designation.basicsalary_in_duration === 'Monthly' || !wrkhrs) {
+      console.log(designation, 'designation');
+
+      const s = designation.seperateSalary?.find((s) => s.contractorId === contractorId);
+      if (s) {
+        rate[id] = s.salary;
+      } else if (designation.basicsalary_in_duration === 'Monthly' || !wrkhrs) {
         rate[id] = designation.basicsalary || 0;
       } else {
         rate[id] = wrkhrs === 8 ? designation.basicsalary : designation.basicsalaryfor12hr;
@@ -231,14 +238,8 @@ const getTotalAmountAndRows = (
       totalnetamount[id] = getRoundOff(Number(_.get(totalManDayAmount, id, 0)) + Number(_.get(otamount, id, 0)));
       cprate[id] = designation.servicecharge as number;
 
-      let camount = 0;
-      if (designation.basicsalary_in_duration === 'Monthly') {
-        camount = getRoundOff((Number(_.get(totalManDayAmount, id, 0)) * Number(_.get(cprate, id, 0))) / 100);
-      } else {
-        camount = getRoundOff(Number(_.get(attendancecount, id, 0)) * Number(_.get(cprate, id, 0)));
-      }
+      cpamount[id] = getRoundOff((Number(_.get(totalManDayAmount, id, 0)) * Number(_.get(cprate, id, 0))) / 100);
 
-      cpamount[id] = camount;
       cpamount['total'] = getRoundOff((cpamount.total as number) + Number(_.get(cpamount, id, 0)));
       total[id] = getRoundOff(Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0)));
       gst1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.18));

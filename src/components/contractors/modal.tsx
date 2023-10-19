@@ -9,16 +9,21 @@ import {
   Select,
   MenuItem,
   Button,
-} from "@mui/material";
-import { useRouter } from "next/router";
+  Autocomplete,
+  TextField,
+  Chip,
+} from '@mui/material';
+import { Department } from '@prisma/client';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
 
 const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
   width: 400,
-  bgcolor: "background.paper",
+  bgcolor: 'background.paper',
   boxShadow: 24,
   p: 4,
 };
@@ -26,21 +31,16 @@ const style = {
 interface Props {
   open: boolean;
   handleClose: () => void;
-  options: { link: string; label: string }[];
+  options: Department[];
   value: any;
   setValue: any;
   contractorId: any;
 }
 
-export default function ContractorModal({
-  open,
-  handleClose,
-  options,
-  value,
-  setValue,
-  contractorId,
-}: Props) {
+export default function ContractorModal({ open, handleClose, options, value, setValue, contractorId }: Props) {
   const router = useRouter();
+  const [selectedDepartments, setSelectedDepartments] = useState<Department[]>([]);
+  const [inputValue, setInputValue] = useState('');
   return (
     <Modal
       aria-labelledby="transition-modal-title"
@@ -60,22 +60,55 @@ export default function ContractorModal({
           <Stack spacing={3}>
             <FormControl>
               <FormLabel>Select the Department</FormLabel>
-              <Select
-                placeholder="Select the Department"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-              >
-                {options?.map((option) => (
-                  <MenuItem value={option.label}>{option.label}</MenuItem>
+              <Autocomplete
+                onChange={(event: any, newValue: string | null) => {
+                  if (!selectedDepartments.find((d) => d.department === newValue)) {
+                    console.log(newValue);
+
+                    const d = options.find((d) => d.department === newValue);
+                    console.log(d, options);
+
+                    if (d) {
+                      setSelectedDepartments([...selectedDepartments, d]);
+                    }
+                  }
+                  setInputValue('');
+                }}
+                value={inputValue}
+                inputValue={inputValue}
+                onInputChange={(event, newInputValue) => {
+                  setInputValue(newInputValue);
+                }}
+                id="controllable-states-demo"
+                options={[...options.map((d: any) => d.department)]}
+                renderInput={(params) => <TextField {...params} placeholder="Select a Department" />}
+                clearIcon={null}
+              />
+              <Stack direction="row" spacing={2} mt={2}>
+                {selectedDepartments.map((d) => (
+                  <Chip
+                    key={d.department}
+                    label={d.department}
+                    onDelete={() =>
+                      setSelectedDepartments(
+                        selectedDepartments.filter((department) => department.department !== d.department)
+                      )
+                    }
+                  />
                 ))}
-              </Select>
+              </Stack>
+              {/* <Select placeholder="Select the Department" value={value} onChange={(e) => setValue(e.target.value)}>
+                {options?.map((option) => <MenuItem value={option.label}>{option.label}</MenuItem>)}
+              </Select> */}
             </FormControl>
             <Button
               variant="contained"
-              disabled={Boolean(!value)}
+              disabled={selectedDepartments.length === 0}
               onClick={() =>
                 router.push(
-                  `plantcommercial?department=${value}&contractorid=${contractorId}`
+                  `/plantcommercial?department=${selectedDepartments.map(
+                    (d) => d.department
+                  )}&contractorid=${contractorId}`
                 )
               }
             >

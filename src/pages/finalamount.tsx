@@ -10,7 +10,16 @@ import TableRow from '@mui/material/TableRow';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import prisma from '@/lib/prisma';
-import { Contractor, Department, Designations, Shifts, TimeKeeper, Workorder, payoutTracker } from '@prisma/client';
+import {
+  Contractor,
+  Department,
+  Designations,
+  SeperateSalary,
+  Shifts,
+  TimeKeeper,
+  Workorder,
+  payoutTracker,
+} from '@prisma/client';
 import { Box, Divider, FormControl, MenuItem, Select } from '@mui/material';
 import getTotalAmountAndRows from '@/utils/get8hr';
 import MonthSelect from '@/ui-component/MonthSelect';
@@ -62,6 +71,10 @@ export const FormSelect = ({
   );
 };
 
+interface DesignationsWtihSalary extends Designations {
+  seperateSalary: SeperateSalary[];
+}
+
 export default function PlantCommercial({
   workorders,
   designations,
@@ -69,7 +82,7 @@ export default function PlantCommercial({
   shifts,
 }: {
   workorders: Workorder[];
-  designations: Designations[];
+  designations: DesignationsWtihSalary[];
   departments: Department[];
   shifts: Shifts[];
 }) {
@@ -95,7 +108,7 @@ export default function PlantCommercial({
     setLoading(false);
   };
 
-  const getAttendance = (contractorname: string) => {
+  const getAttendance = (contractorname: string, contractorId: string) => {
     console.log(timekeepers.filter((t) => t.contractorname === contractorname));
 
     let total = 0;
@@ -107,6 +120,7 @@ export default function PlantCommercial({
         dayjs(value, 'MM/YYYY').month() + 1,
         dayjs(value, 'MM/YYYY').year(),
         shifts,
+        contractorId,
         designations.filter((da) => da.departmentname === d.department),
         departments.find((de) => de.department === d.department)
       );
@@ -210,7 +224,7 @@ export default function PlantCommercial({
                       <TableCell align="center" colSpan={1}>
                         {dayjs(row.startDate, 'DD/MM/YYYY').format('MM/YYYY')}
                       </TableCell>
-                      {getAttendance(row.contractorName).map((a) => (
+                      {getAttendance(row.contractorName, row.contractorId).map((a) => (
                         <TableCell align="center" colSpan={1}>
                           {a}
                         </TableCell>
@@ -220,7 +234,7 @@ export default function PlantCommercial({
                         colSpan={1}
                         onClick={() =>
                           handleAddRecord(
-                            getAttendance(row.contractorName)[5],
+                            getAttendance(row.contractorName, row.contractorId)[5],
                             row.contractorName,
                             parseInt(row.contractorId)
                           )
@@ -278,7 +292,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const designations = await prisma.designations.findMany();
+  const designations = await prisma.designations.findMany({
+    include: {
+      seperateSalary: true,
+    },
+  });
   const departments = await prisma.department.findMany();
   const workorders = await prisma.workorder.findMany();
   const shifts = await prisma.shifts.findMany();

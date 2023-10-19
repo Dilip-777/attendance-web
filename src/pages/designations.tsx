@@ -1,47 +1,49 @@
-import Head from "next/head";
-import * as React from "react";
-import { alpha } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Delete from "@mui/icons-material/Delete";
-import Edit from "@mui/icons-material/Edit";
-import Search from "@mui/icons-material/Search";
-import Backdrop from "@mui/material/Backdrop";
-import Button from "@mui/material/Button";
-import InputAdornment from "@mui/material/InputAdornment";
-import Modal from "@mui/material/Modal";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import Slide from "@mui/material/Slide";
-import { Stack, styled } from "@mui/material/";
-import { useMediaQuery } from "@mui/material";
-import { useRouter } from "next/router";
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import prisma from "@/lib/prisma";
-import { Department, Designations, User } from "@prisma/client";
-import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
-import axios from "axios";
-import EditDesignation from "@/components/Admin/EditDesignation";
-import _ from "lodash";
-import ImportDesignations from "@/components/importDesignations";
+import Head from 'next/head';
+import * as React from 'react';
+import { alpha } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Delete from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Edit';
+import Search from '@mui/icons-material/Search';
+import Backdrop from '@mui/material/Backdrop';
+import Button from '@mui/material/Button';
+import InputAdornment from '@mui/material/InputAdornment';
+import Modal from '@mui/material/Modal';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import Slide from '@mui/material/Slide';
+import { Stack, styled } from '@mui/material/';
+import { useMediaQuery } from '@mui/material';
+import { useRouter } from 'next/router';
+import { GetServerSideProps } from 'next';
+import { getSession } from 'next-auth/react';
+import prisma from '@/lib/prisma';
+import { Contractor, Department, Designations, User } from '@prisma/client';
+import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
+import axios from 'axios';
+import EditDesignation from '@/components/Admin/EditDesignation';
+import _, { size } from 'lodash';
+import ImportDesignations from '@/components/importDesignations';
+import Add from '@mui/icons-material/Add';
+import AddSalary from '@/components/Admin/AddSalary';
 
 const style = {
-  position: "absolute",
-  overflowY: "auto",
-  borderRadius: "15px",
-  bgcolor: "background.paper",
+  position: 'absolute',
+  overflowY: 'auto',
+  borderRadius: '15px',
+  bgcolor: 'background.paper',
   boxShadow: 24,
 };
 
@@ -50,45 +52,33 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   height: 40,
   marginRight: 30,
 
-  "& fieldset": {
+  '& fieldset': {
     borderWidth: `1px !important`,
     borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
   },
 }));
 
-const createHeadCells = (
-  id: string,
-  label: string,
-  numeric: boolean,
-  included: boolean
-) => {
+const createHeadCells = (id: string, label: string, numeric: boolean, included: boolean, colspan?: number) => {
   return {
     id: id,
     label: label,
     numeric: numeric,
     included: included,
+    colspan: colspan,
   };
 };
 
 const headCells = [
-  createHeadCells("id", "Id", false, false),
-  createHeadCells("departmentname", "Department", false, false),
-  createHeadCells("designation", "Designation", false, false),
-  createHeadCells("gender", "Gender", false, false),
-  createHeadCells("basicsalary", "Basic Salary", false, false),
-  createHeadCells(
-    "allowed_wrking_hr_per_day",
-    "Allowed Working Hours",
-    false,
-    false
-  ),
-  createHeadCells(
-    "basicsalary_in_duration",
-    "Basic Salary In Duration",
-    false,
-    false
-  ),
-  createHeadCells("servicecharge", "Service Charge", false, false),
+  createHeadCells('id', 'Id', false, false),
+  createHeadCells('departmentname', 'Department', false, false),
+  createHeadCells('designation', 'Designation', false, false),
+  createHeadCells('gender', 'Gender', false, false),
+  createHeadCells('basicsalary', 'Basic Salary', false, false),
+  createHeadCells('allowed_wrking_hr_per_day', 'Allowed Working Hours', false, false),
+  createHeadCells('basicsalary_in_duration', 'Basic Salary In Duration', false, false),
+  createHeadCells('servicecharge', 'Service Charge', false, false),
+  createHeadCells('contractorsalary', 'Contractor Salary', false, false),
+  createHeadCells('action', 'Action', false, false, 2),
 ];
 
 interface EnhancedTableToolbarProps {
@@ -108,24 +98,15 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       sx={{
         pl: { sm: 2 },
         pr: { xs: 1, sm: 1 },
-        display: "flex",
-        justifyContent: "space-between",
+        display: 'flex',
+        justifyContent: 'space-between',
         ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.primary.main,
-              theme.palette.action.activatedOpacity
-            ),
+          bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
         }),
       }}
     >
       {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
+        <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
           {numSelected} selected
         </Typography>
       ) : (
@@ -152,12 +133,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: "rgb(103, 58, 183)",
-              ":hover": { backgroundColor: "rgb(103, 58, 183)" },
+              backgroundColor: 'rgb(103, 58, 183)',
+              ':hover': { backgroundColor: 'rgb(103, 58, 183)' },
             }}
             onClick={handleOpen}
           >
-            {" "}
+            {' '}
             + Add Designation
           </Button>
         </Stack>
@@ -168,25 +149,27 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
 export default function TimeKeeper({
   departments,
+  contractors,
 }: {
   departments: Department[];
+  contractors: Contractor[];
 }) {
-  const [orderby, setOrderby] = React.useState("id");
+  const [orderby, setOrderby] = React.useState('id');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
-  const [filter, setFilter] = React.useState("");
+  const [filter, setFilter] = React.useState('');
   const [designations, setDesignations] = React.useState<Designations[]>([]);
-  const [designation, setDesignation] = React.useState<
-    Designations | undefined
-  >();
-  const matches = useMediaQuery("(min-width:600px)");
+  const [designation, setDesignation] = React.useState<Designations | undefined>();
+  const matches = useMediaQuery('(min-width:600px)');
   const [loading, setLoading] = React.useState(false);
+  const [type, setType] = React.useState('');
 
   const handleClose = () => {
     setOpen(false);
     setDesignation(undefined);
+    setType('');
   };
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,10 +192,7 @@ export default function TimeKeeper({
     } else if (selectedIndex === selected.length - 1) {
       newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
+      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
     }
 
     setSelected(newSelected);
@@ -222,15 +202,13 @@ export default function TimeKeeper({
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
   const fetchDesignations = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/designations");
+    const res = await fetch('/api/admin/designations');
     const data = await res.json();
     setDesignations(data);
     setLoading(false);
@@ -242,12 +220,11 @@ export default function TimeKeeper({
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - designations.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - designations.length) : 0;
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
+    <Box sx={{ width: '100%' }}>
+      <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar
           numSelected={selected.length}
           filter={filter}
@@ -260,24 +237,20 @@ export default function TimeKeeper({
         />
         <TableContainer
           sx={{
-            maxHeight: "calc(100vh - 16rem)",
-            overflow: "auto",
-            scrollBehavior: "smooth",
-            "&::-webkit-scrollbar": {
+            maxHeight: 'calc(100vh - 16rem)',
+            overflow: 'auto',
+            scrollBehavior: 'smooth',
+            '&::-webkit-scrollbar': {
               height: 10,
               width: 10,
             },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "#bdbdbd",
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#bdbdbd',
               borderRadius: 2,
             },
           }}
         >
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size="medium"
-          >
+          <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size="medium">
             <EnhancedTableHead
               numSelected={selected.length}
               onSelectAllClick={handleSelectAllClick}
@@ -285,14 +258,12 @@ export default function TimeKeeper({
               headCells={headCells}
               orderby={orderby}
               setOrderby={setOrderby}
+              align="center"
             />
             <TableBody>
               {designations
                 .filter((designation) =>
-                  _.get(designation, orderby, "designation")
-                    .toString()
-                    .toLowerCase()
-                    .includes(filter.toLowerCase())
+                  _.get(designation, orderby, 'designation').toString().toLowerCase().includes(filter.toLowerCase())
                 )
                 ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index: number) => {
@@ -307,17 +278,15 @@ export default function TimeKeeper({
                       tabIndex={-1}
                       key={row.id}
                       selected={isItemSelected}
-                      sx={{ cursor: "pointer" }}
+                      sx={{ cursor: 'pointer' }}
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
-                          onClick={(event) =>
-                            handleClick(event, row.id as string)
-                          }
+                          onClick={(event) => handleClick(event, row.id as string)}
                           color="primary"
                           checked={isItemSelected}
                           inputProps={{
-                            "aria-labelledby": labelId,
+                            'aria-labelledby': labelId,
                           }}
                         />
                       </TableCell>
@@ -331,11 +300,25 @@ export default function TimeKeeper({
                       <TableCell>{row.allowed_wrking_hr_per_day}</TableCell>
                       <TableCell>{row.basicsalary_in_duration}</TableCell>
                       <TableCell>{row.servicecharge}</TableCell>
+                      <TableCell align="center" sx={{ fontSize: '5px' }}>
+                        <Button
+                          onClick={() => {
+                            setOpen(true);
+                            setType('salary');
+                            setDesignation(row);
+                          }}
+                          sx={{ width: '100%', whiteSpace: 'nowrap', fontSize: '13px' }}
+                        >
+                          <Add fontSize="small" />
+                          Add Salary
+                        </Button>
+                      </TableCell>
 
-                      <TableCell size="small" align="center">
+                      <TableCell size="small" align="left">
                         <IconButton
                           onClick={() => {
                             setOpen(true);
+                            setType('designation');
                             setDesignation(row);
                           }}
                           sx={{ m: 0 }}
@@ -344,10 +327,10 @@ export default function TimeKeeper({
                         </IconButton>
                       </TableCell>
 
-                      <TableCell size="small" align="center">
+                      <TableCell size="small" align="left">
                         <IconButton
                           onClick={async () => {
-                            await axios.delete("/api/admin/designations", {
+                            await axios.delete('/api/admin/designations', {
                               data: { id: row.id },
                             });
                             fetchDesignations();
@@ -392,28 +375,32 @@ export default function TimeKeeper({
         BackdropProps={{
           timeout: 500,
         }}
-        sx={{ display: "flex", justifyContent: " flex-end" }}
+        sx={{ display: 'flex', justifyContent: ' flex-end' }}
       >
-        <Slide
-          direction={matches ? "left" : "up"}
-          timeout={500}
-          in={open}
-          mountOnEnter
-          unmountOnExit
-        >
+        <Slide direction={matches ? 'left' : 'up'} timeout={500} in={open} mountOnEnter unmountOnExit>
           <Box
             p={{ xs: 0, sm: 2 }}
-            width={{ xs: "100%", sm: 400 }}
-            height={{ xs: "70%", sm: "100%" }}
-            top={{ xs: "30%", sm: "0" }}
+            width={{ xs: '100%', sm: 400 }}
+            height={{ xs: '70%', sm: '100%' }}
+            top={{ xs: '30%', sm: '0' }}
             sx={style}
           >
-            <EditDesignation
-              handleClose={handleClose}
-              selectedDesignation={designation}
-              departments={departments}
-              fetchDesignations={fetchDesignations}
-            />
+            {type === 'salary' && (
+              <AddSalary
+                handleClose={handleClose}
+                contractors={contractors}
+                designation={designation?.id || ''}
+                fetchDesignations={fetchDesignations}
+              />
+            )}
+            {type === 'designation' && (
+              <EditDesignation
+                handleClose={handleClose}
+                selectedDesignation={designation}
+                departments={departments}
+                fetchDesignations={fetchDesignations}
+              />
+            )}
           </Box>
         </Slide>
       </Modal>
@@ -424,12 +411,14 @@ export default function TimeKeeper({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
+  const contractors = await prisma.contractor.findMany();
+
   const departments = await prisma.department.findMany();
 
-  if (!(session?.user?.role === "Admin" || session?.user?.role === "HR")) {
+  if (!(session?.user?.role === 'Admin' || session?.user?.role === 'HR')) {
     return {
       redirect: {
-        destination: "/",
+        destination: '/',
         permanent: false,
       },
     };
@@ -437,6 +426,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       props: {
         departments,
+        contractors,
       },
     };
   }

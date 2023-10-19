@@ -9,7 +9,17 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Contractor, Department, Designations, Safety, Shifts, Stores, TimeKeeper, Workorder } from '@prisma/client';
+import {
+  Contractor,
+  Department,
+  Designations,
+  Safety,
+  SeperateSalary,
+  Shifts,
+  Stores,
+  TimeKeeper,
+  Workorder,
+} from '@prisma/client';
 import axios from 'axios';
 import dayjs, { Dayjs } from 'dayjs';
 import { GetServerSideProps } from 'next';
@@ -27,23 +37,32 @@ interface d extends Department {
   designations: Designations[];
 }
 
+interface DesignationwithSalary extends Designations {
+  seperateSalary: SeperateSalary[];
+}
+
+interface ContractorwithDepartment extends Contractor {
+  departments: d[];
+}
+
 export default function FinalSheet({
   contractors,
   workorders,
-  departments,
+  // departments,
   designations,
   shifts,
 }: {
-  contractors: Contractor[];
+  contractors: ContractorwithDepartment[];
   workorders: Workorder[];
-  departments: d[];
-  designations: Designations[];
+  // departments: d[];
+  designations: DesignationwithSalary[];
   shifts: Shifts[];
 }) {
   const [value, setValue] = useState<string>(dayjs().format('MM/YYYY'));
   const [selectedContractor, setSelectedContractor] = useState<string>(
     contractors.length > 0 && contractors[0].contractorId ? contractors[0]?.contractorId : ''
   );
+  const [departments, setDepartments] = useState<d[]>([]);
   const [rows, setRows] = useState<any>([]);
   const [timekeepers, setTimekeepers] = useState<TimeKeeper[]>([]);
   const [totalPayable, setTotalPayable] = useState<number>(0);
@@ -61,6 +80,12 @@ export default function FinalSheet({
   const handleClose = () => {
     setOpen(false);
   };
+
+  useEffect(() => {
+    if (f?.departments) {
+      setDepartments(f.departments);
+    }
+  }, [selectedContractor]);
 
   const fetchStoreAndSafety = async () => {
     setLoading(true);
@@ -89,7 +114,8 @@ export default function FinalSheet({
         dayjs(value, 'MM/YYYY').month() + 1,
         dayjs(value, 'MM/YYYY').year(),
         shifts,
-        d.designations,
+        selectedContractor,
+        designations.filter((d) => d.departmentname === d.departmentname),
         d
       );
 
@@ -439,16 +465,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const contractors = await prisma.contractor.findMany({
     orderBy: { contractorname: 'asc' },
+    include: {
+      departments: {
+        include: {
+          designations: true,
+        },
+      },
+    },
   });
 
   const workorders = await prisma.workorder.findMany();
-  const departments = await prisma.department.findMany({
-    include: { designations: true },
+  const designations = await prisma.designations.findMany({
+    include: {
+      seperateSalary: true,
+    },
   });
-  const designations = await prisma.designations.findMany();
 
   const shifts = await prisma.shifts.findMany();
   return {
-    props: { contractors, workorders, departments, designations, shifts },
+    props: { contractors, workorders, designations, shifts },
   };
 };
