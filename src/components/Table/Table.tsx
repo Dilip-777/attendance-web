@@ -59,6 +59,22 @@ const CustomTable = (props: Props) => {
     setSelected([]);
   };
 
+  const getValue = (row: any, id: string) => {
+    const idParts = id.split('.');
+
+    let propertyValue = row;
+
+    for (const part of idParts) {
+      if (propertyValue) {
+        propertyValue = propertyValue[part];
+      } else {
+        console.log(propertyValue, row, id, idParts, part);
+      }
+    }
+
+    return propertyValue || '';
+  };
+
   const handleClick = (event: React.MouseEvent<unknown>, contractorname: string) => {
     const selectedIndex = selected.indexOf(contractorname);
     let newSelected: readonly string[] = [];
@@ -151,10 +167,10 @@ const CustomTable = (props: Props) => {
                     {props.headcells
                       .filter((h) => !h.included)
                       .map((headCell) => (
-                        <TableCell align={headCell.numeric ? 'left' : 'center'} sx={{ minWidth: '10rem' }}>
+                        <TableCell sx={{ minWidth: '10rem' }}>
                           {_.get(row, headCell.id) === true && 'Yes'}
                           {_.get(row, headCell.id) === false && 'No'}
-                          {(typeof _.get(row, headCell.id) !== 'boolean' && _.get(row, headCell.id, '-')) || '-'}
+                          {(typeof _.get(row, headCell.id) !== 'boolean' && getValue(row, headCell.id)) || '-'}
                         </TableCell>
                       ))}
                     {props.setContractorId && props.handleOpen && (

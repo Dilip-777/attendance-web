@@ -21,7 +21,7 @@ import {
   payoutTracker,
 } from '@prisma/client';
 import { Box, Divider, FormControl, MenuItem, Select } from '@mui/material';
-import getTotalAmountAndRows from '@/utils/get8hr';
+import getTotalAmountAndRows from '@/utils/getmonthlycount';
 import MonthSelect from '@/ui-component/MonthSelect';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';

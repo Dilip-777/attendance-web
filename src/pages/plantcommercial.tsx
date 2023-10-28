@@ -15,8 +15,8 @@ import Typography from '@mui/material/Typography';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import prisma from '@/lib/prisma';
-import { Contractor, Department, Designations, SeperateSalary, Shifts } from '@prisma/client';
-import getTotalAmountAndRows from '@/utils/get8hr';
+import { Contractor, Department, Designations, Employee, SeperateSalary, Shifts, TimeKeeper } from '@prisma/client';
+import getTotalAmountAndRows from '@/utils/getmonthlycount';
 import MonthSelect from '@/ui-component/MonthSelect';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
@@ -34,6 +34,9 @@ import {
   Tooltip,
 } from '@mui/material';
 import Close from '@mui/icons-material/Close';
+import getHourlyCount from '@/utils/gethourlycount';
+import MonthlyPlantCommercialTable from '@/components/PlantCommercial/MonthlyTable';
+import HourlyTable from '@/components/PlantCommercial/HourlyTable';
 
 export const FormSelect = ({
   value,
@@ -68,11 +71,16 @@ interface DesignationwithSalary extends Designations {
 }
 
 interface DepartmentDesignation extends Department {
-  designations: Designations[];
+  designations: DesignationwithSalary[];
 }
 
 interface ContractorwithDepartment extends Contractor {
   departments: DepartmentDesignation[];
+}
+
+interface EmployeeDepartmentDesignation extends Employee {
+  department: DepartmentDesignation;
+  designation: DesignationwithSalary;
 }
 
 export default function PlantCommercial({
@@ -104,6 +112,10 @@ export default function PlantCommercial({
   const [selectedDepartments, setSelectedDepartments] = React.useState<DepartmentDesignation[]>(
     selectedDepartment || []
   );
+  const [employees, setEmployees] = React.useState<EmployeeDepartmentDesignation[]>([]);
+  const [hourlyCount, setHourlyCount] = React.useState<Record<string, string | number>[]>([]);
+
+  const [timekeepers, setTimekeepers] = React.useState<TimeKeeper[]>([]);
   const [departments, setDepartments] = React.useState<DepartmentDesignation[]>([]);
   const [inputValue, setInputValue] = React.useState('');
 
@@ -111,8 +123,41 @@ export default function PlantCommercial({
     setOpen(false);
   };
 
-  const router = useRouter();
-  // const { department } = router.query;
+  const fetchEmployees = async () => {
+    const res = await axios.get(
+      `/api/hr/employee?contractor=${contractor1}&departments=${selectedDepartments.map((d) => d.id).join(',')}`
+    );
+    setEmployees(res.data);
+  };
+
+  const fetchRows = async () => {
+    const res = await axios.get(
+      `/api/gettimekeeper?contractor=${contractor1}&month=${value}&departments=${selectedDepartments
+        .map((d) => d.department)
+        .join(',')}`
+    );
+
+    setTimekeepers(res.data);
+    const { rows, total1 } = getHourlyCount(
+      res.data,
+      dayjs(value, 'MM/YYYY').month() + 1,
+      dayjs(value, 'MM/YYYY').year(),
+      shifts,
+      contractor1,
+      selectedDepartments.filter((d) => d.basicsalary_in_duration === 'Hourly'),
+      wrkhrs
+    );
+    // const {}  = getHourlyCount(res.data, dayjs(value, 'MM/YYYY').month() + 1, dayjs(value, 'MM/YYYY').year(), shifts, contractor, designations.filter((d) => d.departmentname === department.department), department, wrkhrs);
+    console.log(rows, total1);
+  };
+
+  React.useEffect(() => {
+    fetchRows();
+  }, [value, contractor1, selectedDepartments, wrkhrs]);
+
+  React.useEffect(() => {
+    fetchEmployees();
+  }, [contractor1, selectedDepartments]);
 
   const sgst = Math.ceil(total * 0.09);
 
@@ -189,7 +234,6 @@ export default function PlantCommercial({
   return (
     <Paper
       sx={{
-        // maxHeight: 500,
         maxHeight: 'calc(100vh - 100px)',
         width: '100%',
         scrollBehavior: 'smooth',
@@ -293,17 +337,18 @@ export default function PlantCommercial({
               renderInput={(params) => <TextField {...params} placeholder="Select a Department" />}
               clearIcon={null}
             />
-            {departments.find((d) => d.department === department)?.basicsalary_in_duration?.toLowerCase() ===
-              'hourly' && (
-              <FormSelect
-                value={wrkhrs}
-                setValue={setWrkhrs}
-                options={[
-                  { value: 8, label: '8 Hrs' },
-                  { value: 12, label: '12 Hrs' },
-                ]}
-              />
-            )}
+            {/* {selectedDepartments.find((d) => d.department === department)?.basicsalary_in_duration?.toLowerCase() ===
+              'hourly' && ( */}
+            <FormSelect
+              value={wrkhrs}
+              setValue={setWrkhrs}
+              options={[
+                { value: 8, label: '8 Hrs' },
+                { value: 12, label: '12 Hrs' },
+                { value: 0, label: '8 Hrs and 12 Hrs' },
+              ]}
+            />
+            {/* )} */}
           </Stack>
           <Tooltip title="Upload Bills">
             <Button
@@ -341,17 +386,34 @@ export default function PlantCommercial({
       </Stack>
 
       <Stack spacing={3}>
-        {selectedDepartments.map((d) => (
-          <PlantCommercialTable
-            designations={designations.filter((de) => de.departmentname === d.department)}
-            department={d}
-            contractor={contractor1}
+        {selectedDepartments.find((d) => d.basicsalary_in_duration === 'Hourly') && (
+          <HourlyTable
+            departments={selectedDepartments.filter((d) => d.basicsalary_in_duration === 'Hourly')}
+            contractor={contractor.contractorname}
             shifts={shifts}
             value={value}
             wrkhrs={wrkhrs}
             servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
+            timekeepers={timekeepers.filter((t) =>
+              selectedDepartment
+                .filter((d) => d.basicsalary_in_duration === 'Hourly')
+                .map((d) => d.department)
+                .includes(t.department || '')
+            )}
           />
-        ))}
+        )}
+        {employees.length > 0 && (
+          <MonthlyPlantCommercialTable
+            contractor={contractor.contractorname}
+            shifts={shifts}
+            value={value}
+            wrkhrs={wrkhrs}
+            servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
+            timekeepers={timekeepers.filter((t) => t.department === department)}
+            employees={employees}
+            departments={departments}
+          />
+        )}
       </Stack>
     </Paper>
   );
@@ -365,6 +427,7 @@ interface TableProps {
   value: string;
   wrkhrs: number;
   servicecharge?: number;
+  timekeepers: TimeKeeper[];
 }
 
 const PlantCommercialTable = ({
@@ -375,6 +438,7 @@ const PlantCommercialTable = ({
   value,
   wrkhrs,
   servicecharge,
+  timekeepers,
 }: TableProps) => {
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
@@ -387,7 +451,7 @@ const PlantCommercialTable = ({
       `/api/gettimekeeper?contractor=${contractor}&month=${value}&department=${department.department}`
     );
     const { rows, total1 } = getTotalAmountAndRows(
-      res.data,
+      timekeepers,
       dayjs(value, 'MM/YYYY').month() + 1,
       dayjs(value, 'MM/YYYY').year(),
       shifts,
@@ -587,7 +651,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     include: {
       departments: {
         include: {
-          designations: true,
+          designations: {
+            include: {
+              seperateSalary: true,
+            },
+          },
         },
       },
     },
@@ -607,7 +675,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     },
     include: {
-      designations: true,
+      designations: {
+        include: {
+          seperateSalary: true,
+        },
+      },
     },
   });
 

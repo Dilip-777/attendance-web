@@ -1,21 +1,16 @@
-import FormSelect from "@/ui-component/FormSelect";
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { Contractor, Department, Employee } from "@prisma/client";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import FormSelect from '@/ui-component/FormSelect';
+import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
+import { Contractor, Department, Designations, Employee } from '@prisma/client';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
-export default function DesignationReport({
-  designations,
-}: {
-  designations: string[];
-}) {
-  const [designation, setDesignation] = useState("8MW");
+interface EmployeeDepartmentDesignation extends Employee {
+  designation: Designations;
+  department: Department;
+}
+
+export default function DesignationReport({ designations }: { designations: string[] }) {
+  const [designation, setDesignation] = useState('8MW');
   const [loading, setLoading] = useState(false);
 
   // const departments = [
@@ -50,44 +45,33 @@ export default function DesignationReport({
 
   const handleSubmit = async () => {
     setLoading(true);
-    const res = await axios.get(
-      `/api/report?type=designation&designation=${designation}`
-    );
+    const res = await axios.get(`/api/report?type=designation&designation=${designation}`);
     console.log(res);
 
     const tableRows = [
-      [
-        "employeeid",
-        "Employee",
-        "Contractor Name",
-        "Department",
-        "Designation",
-        "Gender",
-        "Basic Salary",
-        "Email",
-      ],
+      ['employeeid', 'Employee', 'Contractor Name', 'Department', 'Designation', 'Gender', 'Basic Salary', 'Email'],
     ];
-    res.data.forEach((item: Employee) => {
+    res.data.forEach((item: EmployeeDepartmentDesignation) => {
       tableRows.push([
         item.employeeId.toString(),
         item.employeename,
         item.contractorname,
-        item.department,
-        item.designation,
+        item.department.department,
+        item.designation.designation,
         item.gender,
         item.basicsalary.toString(),
         item?.emailid as string,
       ]);
     });
-    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+    const csvContent = `${tableRows.map((row) => row.join(',')).join('\n')}`;
 
     // Download CSV file
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "DesignationReport.csv");
-    link.style.visibility = "hidden";
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'DesignationReport.csv');
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -96,7 +80,7 @@ export default function DesignationReport({
   return (
     <Stack spacing={3}>
       <Typography variant="h4">Man Power Report</Typography>
-      <Stack sx={{ maxWidth: "7rem" }} spacing={3}>
+      <Stack sx={{ maxWidth: '7rem' }} spacing={3}>
         <FormSelect
           value={designation}
           handleChange={(v) => setDesignation(v as string)}
@@ -111,9 +95,7 @@ export default function DesignationReport({
         /> */}
         <Button onClick={handleSubmit} variant="contained" disabled={loading}>
           Print
-          {loading && (
-            <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
-          )}
+          {loading && <CircularProgress size={15} sx={{ ml: 1, color: '#364152' }} />}
         </Button>
       </Stack>
     </Stack>

@@ -232,6 +232,7 @@ export default function TimeKeeper({
           handleOpen={() => {
             setOpen(true);
             setDesignation(undefined);
+            setType('designation');
           }}
           fetchDesignations={fetchDesignations}
         />
