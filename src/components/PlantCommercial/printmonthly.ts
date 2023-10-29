@@ -195,6 +195,42 @@ const handleprint = ({
     worksheet.mergeCells(`${datarow.getCell(count - 4).address}:${datarow.getCell(count - 1).address}`);
   });
 
+  createHeading({
+    header: [''],
+    height: 30,
+  });
+
+  const row = worksheet.addRow([
+    'Checked By',
+    '',
+    'Verified By   8HR',
+    '',
+    'Verified By   COMM',
+    '',
+    'Passed By    ED',
+    '',
+    '',
+  ]);
+  row.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: 'middle',
+      horizontal: 'center',
+    };
+    cell.font = { bold: true, size: 11, wrapText: true };
+    cell.border = border;
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+    };
+  });
+
+  worksheet.mergeCells(`A${row.number}:B${row.number}`);
+  worksheet.mergeCells(`C${row.number}:D${row.number}`);
+  worksheet.mergeCells(`E${row.number}:F${row.number}`);
+  worksheet.mergeCells(`G${row.number}:H${row.number}`);
+
   workbook.xlsx.writeBuffer().then((buffer: any) => {
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

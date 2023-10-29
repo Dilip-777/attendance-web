@@ -84,7 +84,7 @@ export default function ContractorModal({ open, handleClose, options, value, set
                 renderInput={(params) => <TextField {...params} placeholder="Select a Department" />}
                 clearIcon={null}
               />
-              <Stack direction="row" spacing={2} mt={2}>
+              <Stack direction="row" spacing={2} mt={2} rowGap={2} flexWrap="wrap">
                 {selectedDepartments.map((d) => (
                   <Chip
                     key={d.department}

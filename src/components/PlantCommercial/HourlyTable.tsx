@@ -128,24 +128,29 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
 
   return (
     <Stack spacing={3} p={3} pt={0}>
-      <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
-        <IconButton
-          onClick={() =>
-            handleprint({
-              rows,
-              departments,
-              contractor,
-              month: dayjs(value, 'MM/YYYY').month() + 1,
-              year: dayjs(value, 'MM/YYYY').year(),
-              allcounts,
-              total,
-              netTotal,
-            })
-          }
-        >
-          <LocalPrintshopIcon />
-        </IconButton>
-      </Tooltip>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Attendance of {contractor} ({wrkhrs}HR)<span style={{ marginLeft: '2rem' }}>Month - Sept 2023</span>
+        </Typography>
+        <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
+          <IconButton
+            onClick={() =>
+              handleprint({
+                rows,
+                departments,
+                contractor,
+                month: dayjs(value, 'MM/YYYY').month() + 1,
+                year: dayjs(value, 'MM/YYYY').year(),
+                allcounts,
+                total,
+                netTotal,
+              })
+            }
+          >
+            <LocalPrintshopIcon />
+          </IconButton>
+        </Tooltip>
+      </Stack>
       <TableContainer
         sx={{
           scrollBehavior: 'smooth',
@@ -281,6 +286,21 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
           </TableBody>
         </Table>
       </TableContainer>
+      <Stack direction="row" justifyContent="space-between" pt="4rem">
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Checked By
+        </Typography>
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Verified By <br></br> <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>8HR</span>
+        </Typography>
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Verified By <br></br>{' '}
+          <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>(Comm .)</span>
+        </Typography>
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Passed By <br></br> <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>ED</span>
+        </Typography>
+      </Stack>
     </Stack>
   );
 };

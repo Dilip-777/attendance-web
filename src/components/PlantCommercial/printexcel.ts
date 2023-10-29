@@ -62,10 +62,10 @@ const handleprint = ({
   headcells.push({ id: 'total', label: 'Total', colspan: 1 });
 
   const border = {
-    top: { style: 'thick', color: { argb: 'black' } },
-    left: { style: 'thick', color: { argb: 'black' } },
-    bottom: { style: 'thick', color: { argb: 'black' } },
-    right: { style: 'thick', color: { argb: 'black' } },
+    top: { style: 'thin', color: { argb: 'black' } },
+    left: { style: 'thin', color: { argb: 'black' } },
+    bottom: { style: 'thin', color: { argb: 'black' } },
+    right: { style: 'thin', color: { argb: 'black' } },
   };
 
   const headings = [
@@ -271,10 +271,41 @@ const handleprint = ({
     });
   });
 
-  //   createHeading({
-  //     header: [''],
-  //     height: 30,
-  //   });
+  createHeading({
+    header: [''],
+    height: 30,
+  });
+
+  const row = worksheet.addRow([
+    'Checked By',
+    '',
+    'Verified By   8HR',
+    '',
+    'Verified By   COMM',
+    '',
+    'Passed By    ED',
+    '',
+    '',
+  ]);
+  row.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: 'middle',
+      horizontal: 'center',
+    };
+    cell.font = { bold: true, size: 11, wrapText: true };
+    cell.border = border;
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+    };
+  });
+
+  worksheet.mergeCells(`A${row.number}:B${row.number}`);
+  worksheet.mergeCells(`C${row.number}:D${row.number}`);
+  worksheet.mergeCells(`E${row.number}:F${row.number}`);
+  worksheet.mergeCells(`G${row.number}:H${row.number}`);
 
   //   createHeading({
   //     header: ['FINAL PAYOUT INFORMATION'],

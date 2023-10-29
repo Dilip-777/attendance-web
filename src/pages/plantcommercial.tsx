@@ -231,6 +231,8 @@ export default function PlantCommercial({
   const filteredDesignations = designations.filter((d) => d.departmentname === department);
   const colspan = filteredDesignations.length > 2 ? 3 : 1;
 
+  const hrs = wrkhrs ? [wrkhrs] : [8, 12];
+
   return (
     <Paper
       sx={{
@@ -386,22 +388,24 @@ export default function PlantCommercial({
       </Stack>
 
       <Stack spacing={3}>
-        {selectedDepartments.find((d) => d.basicsalary_in_duration === 'Hourly') && (
-          <HourlyTable
-            departments={selectedDepartments.filter((d) => d.basicsalary_in_duration === 'Hourly')}
-            contractor={contractor.contractorname}
-            shifts={shifts}
-            value={value}
-            wrkhrs={wrkhrs}
-            servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
-            timekeepers={timekeepers.filter((t) =>
-              selectedDepartment
-                .filter((d) => d.basicsalary_in_duration === 'Hourly')
-                .map((d) => d.department)
-                .includes(t.department || '')
-            )}
-          />
-        )}
+        {selectedDepartments.find((d) => d.basicsalary_in_duration === 'Hourly') &&
+          // {wrkhrs === 0 ? }
+          hrs.map((hr) => (
+            <HourlyTable
+              departments={selectedDepartments.filter((d) => d.basicsalary_in_duration === 'Hourly')}
+              contractor={contractor.contractorname}
+              shifts={shifts}
+              value={value}
+              wrkhrs={hr}
+              servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
+              timekeepers={timekeepers.filter((t) =>
+                selectedDepartment
+                  .filter((d) => d.basicsalary_in_duration === 'Hourly')
+                  .map((d) => d.department)
+                  .includes(t.department || '')
+              )}
+            />
+          ))}
         {employees.length > 0 && (
           <MonthlyPlantCommercialTable
             contractor={contractor.contractorname}

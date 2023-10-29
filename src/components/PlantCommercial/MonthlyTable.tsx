@@ -123,24 +123,29 @@ const MonthlyPlantCommercialTable = ({
 
   return (
     <Stack spacing={3} p={3}>
-      <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
-        <IconButton
-          onClick={() =>
-            handleprint({
-              rows,
-              departments,
-              month,
-              contractor,
-              year,
-              allcounts: [],
-              total,
-              netTotal: nettotal,
-            })
-          }
-        >
-          <LocalPrintshopIcon />
-        </IconButton>
-      </Tooltip>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Attendance of {contractor} <span style={{ marginLeft: '5rem' }}>Month - Sept 2023</span>
+        </Typography>
+        <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
+          <IconButton
+            onClick={() =>
+              handleprint({
+                rows,
+                departments,
+                month,
+                contractor,
+                year,
+                allcounts: [],
+                total,
+                netTotal: nettotal,
+              })
+            }
+          >
+            <LocalPrintshopIcon />
+          </IconButton>
+        </Tooltip>
+      </Stack>
       <TableContainer
         sx={{
           scrollBehavior: 'smooth',
@@ -232,6 +237,21 @@ const MonthlyPlantCommercialTable = ({
           </TableBody>
         </Table>
       </TableContainer>
+      <Stack direction="row" justifyContent="space-between" pt="4rem">
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Checked By
+        </Typography>
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Verified By <br></br> <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>8HR</span>
+        </Typography>
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Verified By <br></br>{' '}
+          <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>(Comm .)</span>
+        </Typography>
+        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+          Passed By <br></br> <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>ED</span>
+        </Typography>
+      </Stack>
     </Stack>
   );
 };
