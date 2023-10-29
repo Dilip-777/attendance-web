@@ -244,6 +244,8 @@ const handleprint = ({
         return row.date;
       } else if (h.id === 'total') {
         return row.total;
+      } else if (h.id === '') {
+        return '';
       } else {
         return row[h.id] || 0;
       }
