@@ -39,7 +39,15 @@ interface EmployeeDesignationDepartment extends Employee {
   department: Department;
 }
 
-export default function Employees({ employees }: { employees: EmployeeDesignationDepartment[] }) {
+export default function Employees({
+  employees,
+  departments,
+  designations,
+}: {
+  employees: EmployeeDesignationDepartment[];
+  departments: Department[];
+  designations: Designations[];
+}) {
   const [filterName, setFilterName] = React.useState('');
   const [orderby, setOrderby] = React.useState('contractorname');
   const handleClickReport = () => {
@@ -108,7 +116,7 @@ export default function Employees({ employees }: { employees: EmployeeDesignatio
       filterName={filterName}
       setFilterName={setFilterName}
       editLink="/employees"
-      upload={<ImportData />}
+      upload={<ImportData departments={departments} designations={designations} />}
       orderby={orderby}
       setOrderby={setOrderby}
       handleClickReport={handleClickReport}
@@ -142,9 +150,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       department: true,
     },
   });
+  const departments = await prisma.department.findMany();
+  const designations = await prisma.designations.findMany();
   return {
     props: {
       employees,
+      departments,
+      designations,
     },
   };
 };
