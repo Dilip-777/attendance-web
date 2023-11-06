@@ -99,7 +99,7 @@ function ImportData({ departments, designations }: { departments: Department[]; 
       setMessage(`Please check the following keys: ${keys.join(', ')} at rows: ${indices.join(', ')}`);
       setError(true);
       handleClick();
-      // return;
+      return;
     }
 
     const body = data.map((data: any) => {

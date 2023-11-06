@@ -15,6 +15,7 @@ import _ from 'lodash';
 import getEmployeesCalculation from '@/utils/getEmployeeacount';
 import { Tooltip, IconButton } from '@mui/material';
 import handleprint from './printmonthly';
+import axios from 'axios';
 
 interface HeadCell {
   id: string;
@@ -38,7 +39,7 @@ interface EmployeeDepartmentDesignation extends Employee {
 }
 
 interface TableProps {
-  contractor: string;
+  contractor: Contractor;
   shifts: Shifts[];
   value: string;
   wrkhrs: number;
@@ -58,13 +59,12 @@ const MonthlyPlantCommercialTable = ({
   employees,
   departments,
 }: TableProps) => {
+  console.log(departments);
+
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
   const [total, setTotal] = React.useState(0);
   const [nettotal, setNettotal] = React.useState(0);
-  const sgst = Math.ceil(total * 0.09);
-
-  console.log(employees);
 
   const headcells: HeadCell[] = [
     { id: 'employeeId', label: 'ID' },
@@ -95,8 +95,15 @@ const MonthlyPlantCommercialTable = ({
   headcells.push(...extraheadcells);
   const fetchTimekeepers = async () => {
     setLoading(true);
+    const res = await axios.get(
+      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}&departments=${departments
+        .filter((f) => f.basicsalary_in_duration === 'Monthly')
+        .map((d) => d.department)
+        .join(',')}`
+    );
+
     const { rows, total, nettotal } = getEmployeesCalculation(
-      timekeepers,
+      res.data,
       dayjs(value, 'MM/YYYY').month() + 1,
       dayjs(value, 'MM/YYYY').year(),
       employees
@@ -125,7 +132,7 @@ const MonthlyPlantCommercialTable = ({
     <Stack spacing={3} p={3}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
         <Typography variant="h4" sx={{ fontWeight: '700' }}>
-          Attendance of {contractor} <span style={{ marginLeft: '5rem' }}>Month - Sept 2023</span>
+          Attendance of {contractor.contractorname} <span style={{ marginLeft: '5rem' }}>Month - Sept 2023</span>
         </Typography>
         <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
           <IconButton
@@ -134,7 +141,7 @@ const MonthlyPlantCommercialTable = ({
                 rows,
                 departments,
                 month,
-                contractor,
+                contractor: contractor.contractorname,
                 year,
                 allcounts: [],
                 total,
@@ -189,7 +196,7 @@ const MonthlyPlantCommercialTable = ({
             )}
 
             <TableRow>
-              <TableCell colSpan={m + 5}></TableCell>
+              <TableCell colSpan={m + 4}></TableCell>
               <TableCell
                 colSpan={3}
                 // align="left"
@@ -200,7 +207,7 @@ const MonthlyPlantCommercialTable = ({
               <TableCell align="center">{Math.ceil(total * 0.1)}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={m + 5}></TableCell>
+              <TableCell colSpan={m + 4}></TableCell>
               <TableCell
                 colSpan={3}
                 // align="left"
@@ -211,7 +218,7 @@ const MonthlyPlantCommercialTable = ({
               <TableCell align="center">{Math.ceil(total * 0.1 + nettotal)}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={m + 5}></TableCell>
+              <TableCell colSpan={m + 4}></TableCell>
               <TableCell
                 colSpan={3}
                 // align="left"
@@ -222,7 +229,7 @@ const MonthlyPlantCommercialTable = ({
               <TableCell align="center">{Math.ceil((total * 0.1 + nettotal) * 0.18)}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={m + 5}></TableCell>
+              <TableCell colSpan={m + 4}></TableCell>
               <TableCell
                 colSpan={3}
                 // align="left"

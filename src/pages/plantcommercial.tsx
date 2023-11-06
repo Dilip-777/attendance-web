@@ -123,6 +123,8 @@ export default function PlantCommercial({
     setOpen(false);
   };
 
+  console.log(timekeepers, 'timeekeepers');
+
   const fetchEmployees = async () => {
     const res = await axios.get(
       `/api/hr/employee?contractor=${contractor1}&departments=${selectedDepartments.map((d) => d.id).join(',')}`
@@ -133,6 +135,7 @@ export default function PlantCommercial({
   const fetchRows = async () => {
     const res = await axios.get(
       `/api/gettimekeeper?contractor=${contractor1}&month=${value}&departments=${selectedDepartments
+        .filter((f) => f.basicsalary_in_duration === 'Hourly')
         .map((d) => d.department)
         .join(',')}`
     );
@@ -398,24 +401,19 @@ export default function PlantCommercial({
               value={value}
               wrkhrs={hr}
               servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
-              timekeepers={timekeepers.filter((t) =>
-                selectedDepartment
-                  .filter((d) => d.basicsalary_in_duration === 'Hourly')
-                  .map((d) => d.department)
-                  .includes(t.department || '')
-              )}
+              timekeepers={timekeepers}
             />
           ))}
         {employees.length > 0 && (
           <MonthlyPlantCommercialTable
-            contractor={contractor.contractorname}
+            contractor={contractors.find((c) => c.contractorId === contractor1) as any}
             shifts={shifts}
             value={value}
             wrkhrs={wrkhrs}
             servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
             timekeepers={timekeepers.filter((t) => t.department === department)}
             employees={employees}
-            departments={departments}
+            departments={selectedDepartment}
           />
         )}
       </Stack>

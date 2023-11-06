@@ -2,12 +2,20 @@ import { Department, Designations, Employee, TimeKeeper } from '@prisma/client';
 import dayjs from 'dayjs';
 import _ from 'lodash';
 
-const filterByDate = (item: TimeKeeper, attendance: string, department: string, date?: string, gender?: string) => {
+const filterByDate = ({
+  item,
+  attendance,
+  date,
+  employeeId,
+}: {
+  item: TimeKeeper;
+  attendance: string;
+  date?: string;
+  employeeId: string;
+}) => {
   //   console.log(item, department, gender, attendance);
-
-  if (department !== item.department) return false;
+  if (employeeId !== item.employeeid) return false;
   if (attendance !== item.attendance) return false;
-  if (gender && item.gender && item.gender[0].toLowerCase() !== gender[0].toLowerCase()) return false;
   if (date) {
     return item.attendancedate === date;
   }
@@ -41,8 +49,8 @@ const getEmployeesCalculation = (
 
   employees.forEach((employee) => {
     const id = employee.employeeId;
-    const f = timekeeper.filter((f) => filterByDate(f, '1', id));
-    const hf = timekeeper.filter((f) => filterByDate(f, '0.5', id));
+    const f = timekeeper.filter((f) => filterByDate({ item: f, attendance: '1', employeeId: id }));
+    const hf = timekeeper.filter((f) => filterByDate({ item: f, attendance: '0.5', employeeId: id }));
 
     const obj: Record<string, string | number> = {
       employeeId: id,
@@ -57,8 +65,8 @@ const getEmployeesCalculation = (
 
     for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
       const date = `${i.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
-      const f = timekeeper.filter((f) => filterByDate(f, '1', id, date));
-      const hf = timekeeper.filter((f) => filterByDate(f, '0.5', id, date));
+      const f = timekeeper.filter((f) => filterByDate({ item: f, attendance: '1', employeeId: id, date }));
+      const hf = timekeeper.filter((f) => filterByDate({ item: f, attendance: '0.5', employeeId: id, date }));
       obj[date] = f.length + hf.length / 2;
       totalobj[date] = ((totalobj[date] as number) || 0) + (f.length + hf.length / 2);
     }
