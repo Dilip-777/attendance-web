@@ -33,7 +33,7 @@ const getEmployeesCalculation = (
   year: number,
   employees: EmployeeDepartmentDesignation[]
 ) => {
-  const m = dayjs(month).daysInMonth();
+  const m = dayjs(`${year}-${month}`).daysInMonth();
 
   const getRoundOff = (num: number) => {
     return num;
@@ -96,7 +96,7 @@ const getEmployeesCalculation = (
 
   rows.push(totalobj);
 
-  return { rows, total: totalobj.total || 0, nettotal: totalobj.totalamount || 0 };
+  return { rows, total: totalobj.amount || 0, nettotal: totalobj.totalamount || 0 };
 };
 
 export default getEmployeesCalculation;
