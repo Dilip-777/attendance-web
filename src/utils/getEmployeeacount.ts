@@ -91,7 +91,7 @@ const getEmployeesCalculation = (
     );
     totalobj['otamount'] = (((totalobj['otamount'] as number) || 0) + obj['otamount']) as number;
 
-    obj['totalamount'] = getRoundOff(obj['amount'] + obj['othrs']);
+    obj['totalamount'] = getRoundOff(obj['amount'] + obj['otamount']);
     totalobj['totalamount'] = (((totalobj['totalamount'] as number) || 0) + obj['totalamount']) as number;
     rows.push(obj);
   });
