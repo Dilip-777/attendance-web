@@ -73,10 +73,10 @@ const getEmployeesCalculation = (
 
     obj['total'] = count;
     totalobj['total'] = ((totalobj['total'] as number) || 0) + count;
-    obj['rate'] = employee.basicsalary;
+    obj['rate'] = employee.designation.basicsalary;
     totalobj['rate'] = '';
 
-    obj['amount'] = getRoundOff((count * employee.basicsalary) / m);
+    obj['amount'] = getRoundOff((count * employee.designation.basicsalary) / m);
     totalobj['amount'] = (((totalobj['amount'] as number) || 0) + obj['amount']) as number;
 
     obj['othrs'] = f.reduce(
@@ -86,7 +86,9 @@ const getEmployeesCalculation = (
     );
     totalobj['othrs'] = (((totalobj['othrs'] as number) || 0) + obj['othrs']) as number;
 
-    obj['otamount'] = getRoundOff((obj['othrs'] * employee.basicsalary) / (m * employee.allowed_wrking_hr_per_day));
+    obj['otamount'] = getRoundOff(
+      (obj['othrs'] * employee.designation.basicsalary) / (m * employee.designation.allowed_wrking_hr_per_day)
+    );
     totalobj['otamount'] = (((totalobj['otamount'] as number) || 0) + obj['otamount']) as number;
 
     obj['totalamount'] = getRoundOff(obj['amount'] + obj['othrs']);
