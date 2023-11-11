@@ -40,25 +40,13 @@ interface EmployeeDepartmentDesignation extends Employee {
 
 interface TableProps {
   contractor: Contractor;
-  shifts: Shifts[];
   value: string;
-  wrkhrs: number;
-  servicecharge?: number;
-  timekeepers: TimeKeeper[];
   employees: EmployeeDepartmentDesignation[];
   departments: DepartmentDesignation[];
+  ot: boolean;
 }
 
-const MonthlyPlantCommercialTable = ({
-  contractor,
-  shifts,
-  value,
-  wrkhrs,
-  servicecharge,
-  timekeepers,
-  employees,
-  departments,
-}: TableProps) => {
+const MonthlyPlantCommercialTable = ({ contractor, value, employees, departments, ot }: TableProps) => {
   console.log(departments);
 
   const [loading, setLoading] = React.useState(false);
@@ -85,14 +73,14 @@ const MonthlyPlantCommercialTable = ({
   }
 
   const extraheadcells = [
-    { id: 'total', label: 'Total' },
     { id: 'rate', label: 'Rate' },
     { id: 'amount', label: 'Amount', ceil: true },
     { id: 'othrs', label: 'OT' },
     { id: 'otamount', label: 'OT Amount', ceil: true },
     { id: 'totalamount', label: 'Total Amount', ceil: true },
   ];
-  headcells.push(...extraheadcells);
+  headcells.push({ id: 'total', label: 'Total' });
+  if (!ot) headcells.push(...extraheadcells);
   const fetchTimekeepers = async () => {
     setLoading(true);
     const res = await axios.get(
@@ -106,7 +94,8 @@ const MonthlyPlantCommercialTable = ({
       res.data,
       dayjs(value, 'MM/YYYY').month() + 1,
       dayjs(value, 'MM/YYYY').year(),
-      employees
+      employees,
+      ot
     );
     // const { rows, total1 } = getTotalAmountAndRows(
     //   timekeepers,
@@ -132,7 +121,8 @@ const MonthlyPlantCommercialTable = ({
     <Stack spacing={3} p={3}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
         <Typography variant="h4" sx={{ fontWeight: '700' }}>
-          Attendance of {contractor.contractorname} <span style={{ marginLeft: '5rem' }}>Month - Sept 2023</span>
+          {ot ? 'OT Hrs' : 'Attendance'} of {contractor.contractorname}{' '}
+          <span style={{ marginLeft: '5rem' }}>Month - Sept 2023</span>
         </Typography>
         <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
           <IconButton
@@ -146,6 +136,7 @@ const MonthlyPlantCommercialTable = ({
                 allcounts: [],
                 total,
                 netTotal: nettotal,
+                ot,
               })
             }
           >
@@ -195,52 +186,60 @@ const MonthlyPlantCommercialTable = ({
               </TableRow>
             )}
 
-            <TableRow>
-              <TableCell colSpan={m + 4}></TableCell>
-              <TableCell
-                colSpan={3}
-                // align="left"
-                sx={{ fontWeight: '600' }}
-              >
-                Add 10%
-              </TableCell>
-              <TableCell align="center">{Math.ceil(total * 0.1)}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={m + 4}></TableCell>
-              <TableCell
-                colSpan={3}
-                // align="left"
-                sx={{ fontWeight: '600' }}
-              >
-                Taxable Amount
-              </TableCell>
-              <TableCell align="center">{Math.ceil(total * 0.1 + nettotal)}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={m + 4}></TableCell>
-              <TableCell
-                colSpan={3}
-                // align="left"
-                sx={{ fontWeight: '600' }}
-              >
-                IGST 18%
-              </TableCell>
-              <TableCell align="center">{Math.ceil((total * 0.1 + nettotal) * 0.18)}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell colSpan={m + 4}></TableCell>
-              <TableCell
-                colSpan={3}
-                // align="left"
-                sx={{ fontWeight: '600' }}
-              >
-                Total
-              </TableCell>
-              <TableCell align="center">
-                {Math.ceil((total * 0.1 + nettotal) * 0.18 + (total * 0.1 + nettotal))}
-              </TableCell>
-            </TableRow>
+            {!ot && (
+              <TableRow>
+                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell
+                  colSpan={3}
+                  // align="left"
+                  sx={{ fontWeight: '600' }}
+                >
+                  Add 10%
+                </TableCell>
+                <TableCell align="center">{Math.ceil(total * 0.1)}</TableCell>
+              </TableRow>
+            )}
+            {!ot && (
+              <TableRow>
+                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell
+                  colSpan={3}
+                  // align="left"
+                  sx={{ fontWeight: '600' }}
+                >
+                  Taxable Amount
+                </TableCell>
+                <TableCell align="center">{Math.ceil(total * 0.1 + nettotal)}</TableCell>
+              </TableRow>
+            )}
+            {!ot && (
+              <TableRow>
+                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell
+                  colSpan={3}
+                  // align="left"
+                  sx={{ fontWeight: '600' }}
+                >
+                  IGST 18%
+                </TableCell>
+                <TableCell align="center">{Math.ceil((total * 0.1 + nettotal) * 0.18)}</TableCell>
+              </TableRow>
+            )}
+            {!ot && (
+              <TableRow>
+                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell
+                  colSpan={3}
+                  // align="left"
+                  sx={{ fontWeight: '600' }}
+                >
+                  Total
+                </TableCell>
+                <TableCell align="center">
+                  {Math.ceil((total * 0.1 + nettotal) * 0.18 + (total * 0.1 + nettotal))}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

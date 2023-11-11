@@ -35,15 +35,25 @@ interface TableProps {
   wrkhrs: number;
   servicecharge?: number;
   timekeepers: TimeKeeper[];
+  ot: boolean;
 }
 
-const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicecharge, timekeepers }: TableProps) => {
+const HourlyTable = ({
+  departments,
+  contractor,
+  shifts,
+  value,
+  wrkhrs,
+  servicecharge,
+  timekeepers,
+  ot,
+}: TableProps) => {
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
   const [total, setTotal] = React.useState(0);
   const [allcounts, setAllCounts] = React.useState<Record<string, string | number>[]>([]);
   const [colspan, setColspan] = React.useState(0);
-  const [multiplier, setMultiplier] = React.useState(0);
+  const [colspan1, setColspan1] = React.useState(0);
   const [netTotal, setNetTotal] = React.useState(0);
   const sgst = Math.ceil(total * 0.09);
 
@@ -56,7 +66,8 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
       shifts,
       contractor,
       departments,
-      wrkhrs
+      wrkhrs,
+      ot
     );
 
     setAllCounts(allcounts);
@@ -71,9 +82,27 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
   }, [value, contractor, departments, wrkhrs]);
 
   React.useEffect(() => {
-    updatecolspan();
-    updateMultiplier();
+    updateColspans();
   }, [departments]);
+
+  const updateColspans = () => {
+    let count = 0;
+    departments
+      .filter((d) => d.basicsalary_in_duration === 'Hourly')
+      .forEach((department) => {
+        count += department.designations.length;
+      });
+
+    if (count < 7) {
+      setColspan1(7 - count);
+    } else {
+      setColspan1(0);
+    }
+
+    if (count >= 6) {
+      setColspan(count - 6);
+    } else setColspan(0);
+  };
 
   const headcells = [
     { label: '', id: 'date' },
@@ -83,54 +112,13 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
     { label: 'OT Amt', id: 'otamount' },
     { label: 'Total', id: 'totalnetamount' },
   ];
-  // const colspan = departments.length > 2 ? 3 : 1;
-  const updatecolspan = () => {
-    let count = 0;
-    departments
-      .filter((d) => d.basicsalary_in_duration === 'Hourly')
-      .forEach((department) => {
-        count += department.designations.length;
-      });
-    console.log(count, 'count');
-
-    if (count >= 7) {
-      setColspan(count - 6);
-    } else if (count * 2 >= 7) {
-      setColspan(count * 2 - 6);
-    } else if (count * 3 >= 7) {
-      setColspan(count * 3 - 6);
-    } else if (count * 4 >= 7) {
-      setColspan(count * 4 - 6);
-    } else {
-      setColspan(0);
-    }
-  };
-
-  const updateMultiplier = () => {
-    let count = 0;
-    departments
-      .filter((d) => d.basicsalary_in_duration === 'Hourly')
-      .forEach((department) => {
-        count += department.designations.length;
-      });
-    console.log(count, 'count');
-
-    if (count >= 7) {
-      setMultiplier(1);
-    } else if (count > 2) {
-      setMultiplier(7 - count);
-    } else if (count <= 2) {
-      setMultiplier(4);
-    } else {
-      setMultiplier(0);
-    }
-  };
 
   return (
     <Stack spacing={3} p={3} pt={0}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
         <Typography variant="h4" sx={{ fontWeight: '700' }}>
-          Attendance of {contractor} ({wrkhrs}HR)<span style={{ marginLeft: '2rem' }}>Month - Sept 2023</span>
+          {ot ? 'OT Hrs' : 'Attendance'} of {contractor} ({wrkhrs}HR)
+          <span style={{ marginLeft: '2rem' }}>Month - Sept 2023</span>
         </Typography>
         <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
           <IconButton
@@ -144,6 +132,7 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
                 allcounts,
                 total,
                 netTotal,
+                ot,
               })
             }
           >
@@ -178,12 +167,15 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
                     key={department.id}
                     align="center"
                     sx={{ fontWeight: '700', bgcolor: '#e0e0e0' }}
-                    colSpan={department.designations.length * multiplier}
+                    colSpan={department.designations.length * 1}
                   >
                     {department.department}
                   </TableCell>
                 );
               })}
+              {colspan1 !== 0 && (
+                <TableCell align="center" sx={{ fontWeight: '700', bgcolor: '#e0e0e0' }} colSpan={colspan1}></TableCell>
+              )}
               <TableCell align="center" sx={{ fontWeight: '700', bgcolor: '#e0e0e0' }} colSpan={1}>
                 TOTAL
               </TableCell>
@@ -196,11 +188,12 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
                 .filter((d) => d.designations.length !== 0)
                 .map((department) =>
                   department.designations.map((designation) => (
-                    <TableCell key={designation.id} align="center" sx={{ fontWeight: '700' }} colSpan={multiplier}>
+                    <TableCell key={designation.id} align="center" sx={{ fontWeight: '700' }} colSpan={1}>
                       {designation.designation}
                     </TableCell>
                   ))
                 )}
+              {colspan1 !== 0 && <TableCell colSpan={colspan1}></TableCell>}
               <TableCell align="center" sx={{ fontWeight: '700' }} colSpan={1}>
                 -
               </TableCell>
@@ -228,7 +221,7 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
                     </TableCell>
                     {departments.map((department) =>
                       department.designations.map((designation) => (
-                        <TableCell key={designation.id} align={'center'} colSpan={multiplier}>
+                        <TableCell key={designation.id} align={'center'} colSpan={1}>
                           {[
                             'Man Days Amount',
                             'OT Amount',
@@ -243,7 +236,8 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
                         </TableCell>
                       ))
                     )}
-                    <TableCell key={row.total} align={'center'}>
+                    {colspan1 !== 0 && <TableCell colSpan={colspan1}></TableCell>}
+                    <TableCell key={row.total} align={'center'} colSpan={1}>
                       {Math.ceil(row.total as number)}
                     </TableCell>
                   </TableRow>
@@ -254,35 +248,39 @@ const HourlyTable = ({ departments, contractor, shifts, value, wrkhrs, servicech
                 <TableCell>Loading...</TableCell>
               </TableRow>
             )}
-            <TableRow>
-              {headcells.map((headcell) => (
-                <TableCell align="center" sx={{ fontWeight: '700' }} colSpan={1}>
-                  {headcell.label}
-                </TableCell>
-              ))}
-              <TableCell colSpan={colspan}></TableCell>
-              <TableCell sx={{ fontWeight: '700' }}>ADD 10%</TableCell>
-              <TableCell sx={{ fontWeight: '700' }} align="center">
-                {Math.ceil(total * 0.1)}
-              </TableCell>
-            </TableRow>
-            {allcounts.map((a) => (
-              <TableRow key={a.date}>
+            {!ot && (
+              <TableRow>
                 {headcells.map((headcell) => (
-                  <TableCell align="center" colSpan={1}>
-                    {!(headcell.id === 'attendancecount' || headcell.id === 'date')
-                      ? Math.ceil(a[headcell.id] as number) || 0
-                      : a[headcell.id] || 0}
+                  <TableCell align="center" sx={{ fontWeight: '700' }} colSpan={1}>
+                    {headcell.label}
                   </TableCell>
                 ))}
                 <TableCell colSpan={colspan}></TableCell>
-                {/* {getColspan() && <TableCell colSpan={getColspan()}></TableCell>} */}
-                <TableCell sx={{ fontWeight: '700' }}>{a.label}</TableCell>
+                <TableCell sx={{ fontWeight: '700' }}>ADD 10%</TableCell>
                 <TableCell sx={{ fontWeight: '700' }} align="center">
-                  {Math.ceil(a.value as number)}
+                  {Math.ceil(total * 0.1)}
                 </TableCell>
               </TableRow>
-            ))}
+            )}
+
+            {!ot &&
+              allcounts.map((a) => (
+                <TableRow key={a.date}>
+                  {headcells.map((headcell) => (
+                    <TableCell align="center" colSpan={1}>
+                      {!(headcell.id === 'attendancecount' || headcell.id === 'date')
+                        ? Math.ceil(a[headcell.id] as number) || 0
+                        : a[headcell.id] || 0}
+                    </TableCell>
+                  ))}
+                  <TableCell colSpan={colspan}></TableCell>
+                  {/* {getColspan() && <TableCell colSpan={getColspan()}></TableCell>} */}
+                  <TableCell sx={{ fontWeight: '700' }}>{a.label}</TableCell>
+                  <TableCell sx={{ fontWeight: '700' }} align="center">
+                    {Math.ceil(a.value as number)}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>

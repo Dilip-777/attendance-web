@@ -27,6 +27,7 @@ const handleprint = ({
   total,
   netTotal,
   year,
+  ot,
 }: {
   rows: any;
   departments: d[];
@@ -36,6 +37,7 @@ const handleprint = ({
   allcounts: any[];
   total: number;
   netTotal: number;
+  ot: boolean;
 }) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Sheet 1');
@@ -184,15 +186,6 @@ const handleprint = ({
     };
   });
 
-  const headcells3 = [
-    { label: '', id: 'date' },
-    { label: 'Att Count', id: 'attendancecount' },
-    { label: 'Amt', id: 'mandaysamount' },
-    { label: 'OT Hrs', id: 'othrs' },
-    { label: 'OT Amt', id: 'otamount' },
-    { label: 'Total', id: 'totalnetamount' },
-  ];
-
   rows.forEach((row: any) => {
     const data = headcells2.map((h) => {
       if (h.id === 'date') {
@@ -216,46 +209,47 @@ const handleprint = ({
     datarow.height = 36;
   });
 
-  let c = count;
-  while (c >= 9) {
-    headcells3.push({ label: '', id: '' });
-    c--;
-  }
+  if (!ot) {
+    const headcells3 = [
+      { label: '', id: 'date' },
+      { label: 'Att Count', id: 'attendancecount' },
+      { label: 'Amt', id: 'mandaysamount' },
+      { label: 'OT Hrs', id: 'othrs' },
+      { label: 'OT Amt', id: 'otamount' },
+      { label: 'Total', id: 'totalnetamount' },
+    ];
 
-  const tableheader3 = worksheet.addRow([...headcells3.map((h) => h.label), 'ADD 10%', total * 0.1]);
-  tableheader3.eachCell((cell: any) => {
-    cell.alignment = {
-      wrapText: true,
-      vertical: 'middle',
-      horizontal: 'center',
-    };
-    cell.font = { bold: true, size: 11, wrapText: true };
-    cell.border = border;
-    cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
-    };
-  });
-
-  allcounts.forEach((row: any) => {
-    const data = headcells3.map((h) => {
-      if (h.id === 'date') {
-        return row.date;
-      } else if (h.id === 'total') {
-        return row.total;
-      } else if (h.id === '') {
-        return '';
-      } else {
-        return row[h.id] || 0;
-      }
+    rows.forEach((row: any) => {
+      const data = headcells2.map((h) => {
+        if (h.id === 'date') {
+          return row.date;
+        } else if (h.id === 'total') {
+          return row.total;
+        } else {
+          return row[h.id];
+        }
+      });
+      const datarow = worksheet.addRow(data);
+      datarow.eachCell((cell: any) => {
+        cell.alignment = {
+          wrapText: true,
+          vertical: 'middle',
+          horizontal: 'center',
+        };
+        cell.border = border;
+        cell.font = { size: 9, wrapText: true };
+      });
+      datarow.height = 36;
     });
 
-    data.push(row.label);
-    data.push(row.value);
-    const datarow = worksheet.addRow(data);
+    let c = count;
+    while (c >= 9) {
+      headcells3.push({ label: '', id: '' });
+      c--;
+    }
 
-    datarow.eachCell((cell: any) => {
+    const tableheader3 = worksheet.addRow([...headcells3.map((h) => h.label), 'ADD 10%', total * 0.1]);
+    tableheader3.eachCell((cell: any) => {
       cell.alignment = {
         wrapText: true,
         vertical: 'middle',
@@ -269,8 +263,40 @@ const handleprint = ({
         fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
       };
     });
-  });
 
+    allcounts.forEach((row: any) => {
+      const data = headcells3.map((h) => {
+        if (h.id === 'date') {
+          return row.date;
+        } else if (h.id === 'total') {
+          return row.total;
+        } else if (h.id === '') {
+          return '';
+        } else {
+          return row[h.id] || 0;
+        }
+      });
+
+      data.push(row.label);
+      data.push(row.value);
+      const datarow = worksheet.addRow(data);
+
+      datarow.eachCell((cell: any) => {
+        cell.alignment = {
+          wrapText: true,
+          vertical: 'middle',
+          horizontal: 'center',
+        };
+        cell.font = { bold: true, size: 11, wrapText: true };
+        cell.border = border;
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+        };
+      });
+    });
+  }
   createHeading({
     header: [''],
     height: 30,

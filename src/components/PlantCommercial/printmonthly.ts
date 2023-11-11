@@ -30,6 +30,7 @@ const handleprint = ({
   total,
   netTotal,
   year,
+  ot,
 }: {
   rows: any;
   departments: d[];
@@ -39,19 +40,18 @@ const handleprint = ({
   total: number;
   netTotal: number;
   year: number;
+  ot: boolean;
 }) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Sheet 1');
 
-  let count = 9;
+  let count = ot ? 4 : 9;
 
   const headcells = [
     { id: 'employeeId', label: 'ID' },
     { id: 'name', label: 'Name' },
     { id: 'designation', label: 'Designation', ceil: false },
   ];
-
-  const m = dayjs(month).daysInMonth();
 
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
@@ -63,14 +63,14 @@ const handleprint = ({
   }
 
   const extraheadcells = [
-    { id: 'total', label: 'Total' },
     { id: 'rate', label: 'Rate' },
     { id: 'amount', label: 'Amount', ceil: true },
     { id: 'othrs', label: 'OT' },
     { id: 'otamount', label: 'OT Amount', ceil: true },
     { id: 'totalamount', label: 'Total Amount', ceil: true },
   ];
-  headcells.push(...extraheadcells);
+  headcells.push({ id: 'total', label: 'Total' });
+  if (!ot) headcells.push(...extraheadcells);
 
   const border = {
     top: { style: 'thick', color: { argb: 'black' } },
@@ -164,37 +164,38 @@ const handleprint = ({
     datarow.height = 36;
   });
 
-  const txamount = total * 0.1 + netTotal;
+  if (!ot) {
+    const txamount = total * 0.1 + netTotal;
 
-  const finaldata = [
-    { label: 'ADD 10%', value: getRoundOff(total * 0.1) },
-    { label: 'Taxable Amount', value: getRoundOff(txamount) },
-    { label: 'IGST 18%', value: getRoundOff(txamount * 0.18) },
-    { label: 'Total Amount', value: getRoundOff(txamount * 1.18) },
-  ];
+    const finaldata = [
+      { label: 'ADD 10%', value: getRoundOff(total * 0.1) },
+      { label: 'Taxable Amount', value: getRoundOff(txamount) },
+      { label: 'IGST 18%', value: getRoundOff(txamount * 0.18) },
+      { label: 'Total Amount', value: getRoundOff(txamount * 1.18) },
+    ];
 
-  finaldata.forEach((row: any) => {
-    let data = [];
-    while (data.length < count - 5) {
-      data.push('');
-    }
-    // data.push(row.label);
-    data.push(...[row.label, '', '', '', row.value]);
-    // data.push(row.value);
-    const datarow = worksheet.addRow(data);
-    datarow.eachCell((cell: any) => {
-      cell.alignment = {
-        wrapText: true,
-        vertical: 'middle',
-        horizontal: 'center',
-      };
-      cell.border = border;
-      cell.font = { size: 9, wrapText: true };
+    finaldata.forEach((row: any) => {
+      let data = [];
+      while (data.length < count - 5) {
+        data.push('');
+      }
+      // data.push(row.label);
+      data.push(...[row.label, '', '', '', row.value]);
+      // data.push(row.value);
+      const datarow = worksheet.addRow(data);
+      datarow.eachCell((cell: any) => {
+        cell.alignment = {
+          wrapText: true,
+          vertical: 'middle',
+          horizontal: 'center',
+        };
+        cell.border = border;
+        cell.font = { size: 9, wrapText: true };
+      });
+      datarow.height = 36;
+      worksheet.mergeCells(`${datarow.getCell(count - 4).address}:${datarow.getCell(count - 1).address}`);
     });
-    datarow.height = 36;
-    worksheet.mergeCells(`${datarow.getCell(count - 4).address}:${datarow.getCell(count - 1).address}`);
-  });
-
+  }
   createHeading({
     header: [''],
     height: 30,

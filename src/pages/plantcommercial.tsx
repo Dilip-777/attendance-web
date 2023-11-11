@@ -6,6 +6,8 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
@@ -37,6 +39,39 @@ import Close from '@mui/icons-material/Close';
 import getHourlyCount from '@/utils/gethourlycount';
 import MonthlyPlantCommercialTable from '@/components/PlantCommercial/MonthlyTable';
 import HourlyTable from '@/components/PlantCommercial/HourlyTable';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function CustomTabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
 
 export const FormSelect = ({
   value,
@@ -118,6 +153,11 @@ export default function PlantCommercial({
   const [timekeepers, setTimekeepers] = React.useState<TimeKeeper[]>([]);
   const [departments, setDepartments] = React.useState<DepartmentDesignation[]>([]);
   const [inputValue, setInputValue] = React.useState('');
+  const [tabvalue, setTabValue] = React.useState(0);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   const handleClose = () => {
     setOpen(false);
@@ -361,6 +401,7 @@ export default function PlantCommercial({
               variant="contained"
               component="label"
               disabled={loadingbill}
+              sx={{ bgcolor: '#5e35b1' }}
             >
               Upload
               {loadingbill && <CircularProgress size={15} sx={{ ml: 1, color: '#364152' }} />}
@@ -390,7 +431,84 @@ export default function PlantCommercial({
         ))}
       </Stack>
 
-      <Stack spacing={3}>
+      <Box sx={{ width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={value} onChange={handleTabChange}>
+            <Tab
+              label="Attendance Calculation"
+              {...a11yProps(0)}
+              sx={{
+                borderBottom: tabvalue === 0 ? '3px solid #5e35b1' : '0',
+                color: tabvalue === 0 ? '#5e35b1' : '',
+              }}
+            />
+            <Tab
+              label="OT hrs Calculation"
+              {...a11yProps(1)}
+              sx={{
+                borderBottom: tabvalue === 1 ? '3px solid #5e35b1' : '0',
+                color: tabvalue === 1 ? '#5e35b1' : '',
+              }}
+            />
+          </Tabs>
+        </Box>
+        <CustomTabPanel value={tabvalue} index={0}>
+          <Stack spacing={3}>
+            {selectedDepartments.find((d) => d.basicsalary_in_duration === 'Hourly') &&
+              // {wrkhrs === 0 ? }
+              hrs.map((hr) => (
+                <HourlyTable
+                  departments={selectedDepartments.filter((d) => d.basicsalary_in_duration === 'Hourly')}
+                  contractor={contractor.contractorname}
+                  shifts={shifts}
+                  value={value}
+                  wrkhrs={hr}
+                  servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
+                  timekeepers={timekeepers}
+                  ot={false}
+                />
+              ))}
+            {employees.length > 0 && (
+              <MonthlyPlantCommercialTable
+                contractor={contractors.find((c) => c.contractorId === contractor1) as any}
+                value={value}
+                employees={employees}
+                departments={selectedDepartment}
+                ot={false}
+              />
+            )}
+          </Stack>
+        </CustomTabPanel>
+        <CustomTabPanel value={tabvalue} index={1}>
+          <Stack spacing={3}>
+            {selectedDepartments.find((d) => d.basicsalary_in_duration === 'Hourly') &&
+              // {wrkhrs === 0 ? }
+              hrs.map((hr) => (
+                <HourlyTable
+                  departments={selectedDepartments.filter((d) => d.basicsalary_in_duration === 'Hourly')}
+                  contractor={contractor.contractorname}
+                  shifts={shifts}
+                  value={value}
+                  wrkhrs={hr}
+                  servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
+                  timekeepers={timekeepers}
+                  ot={true}
+                />
+              ))}
+            {employees.length > 0 && (
+              <MonthlyPlantCommercialTable
+                contractor={contractors.find((c) => c.contractorId === contractor1) as any}
+                value={value}
+                employees={employees}
+                departments={selectedDepartment}
+                ot={true}
+              />
+            )}
+          </Stack>
+        </CustomTabPanel>
+      </Box>
+
+      {/* <Stack spacing={3}>
         {selectedDepartments.find((d) => d.basicsalary_in_duration === 'Hourly') &&
           // {wrkhrs === 0 ? }
           hrs.map((hr) => (
@@ -402,6 +520,7 @@ export default function PlantCommercial({
               wrkhrs={hr}
               servicecharge={contractors.find((c) => c.contractorId === contractor1)?.servicecharge as number}
               timekeepers={timekeepers}
+              ot={false}
             />
           ))}
         {employees.length > 0 && (
@@ -416,7 +535,7 @@ export default function PlantCommercial({
             departments={selectedDepartment}
           />
         )}
-      </Stack>
+      </Stack> */}
     </Paper>
   );
 }

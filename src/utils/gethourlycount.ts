@@ -29,7 +29,9 @@ const getHourlyCount = (
   shifts: Shifts[],
   contractorId: string,
   departments: DepartmentDesignation[] = [],
-  wrkhrs?: number
+
+  wrkhrs?: number,
+  calot?: boolean
 ) => {
   const m = dayjs(month).daysInMonth();
 
@@ -127,6 +129,11 @@ const getHourlyCount = (
     date: 'Net Payable',
   };
 
+  const othrs: Record<string, string | number> = {
+    date: 'Total',
+    total: 0,
+  };
+
   const getDataOfDate = (date: string) => {
     const obj: Record<string, string | number> = {
       date: date,
@@ -142,9 +149,13 @@ const getHourlyCount = (
         const ff = f.filter((f) => f.gender === des.gender);
         const fhf = hf.filter((f) => f.gender === des.gender);
         // console.log(ff, fhf, 'ff, fhf', des.designation, des.gender[0].toLowerCase());
-
-        obj[id] = ff.length + fhf.length / 2;
-        obj['total'] = (obj.total as number) + (ff.length + fhf.length / 2);
+        const othrs = ff.reduce(
+          (acc, curr) =>
+            acc + parseInt(parseInt(curr.manualovertime as string) === 0 ? '0' : curr.manualovertime || curr.overtime),
+          0
+        );
+        obj[id] = calot ? othrs : ff.length + fhf.length / 2;
+        obj['total'] = (obj.total as number) + (Number(obj[id]) || 0);
       });
     });
     return obj;
@@ -186,6 +197,9 @@ const getHourlyCount = (
 
       const id = des.id;
       const count = rows.reduce((acc, curr) => acc + Number(curr[id] || 0), 0);
+      othrs[id] = count;
+      othrs['total'] = (othrs.total as number) + (Number(othrs[id]) || 0);
+      if (calot) return;
       attendancecount[id] = count;
 
       assignCounts('attendancecount', des, count);
@@ -257,6 +271,22 @@ const getHourlyCount = (
   tds1['total'] = getRoundOff(Number(total.total * 0.01));
   netPayable1['total'] = getRoundOff(Number(billAmount1.total - tds1.total));
 
+  const allcounts = [malecount, femalecount, svrcount, totalall];
+
+  if (calot) {
+    rows.push(othrs);
+    rows2.push(othrs);
+    return {
+      rows,
+      total1: total.total,
+      netTotal: totalnetamount.total,
+      rows1: rows2,
+      totalnetPayable: netPayable1.total,
+      allcounts,
+      total: totalManDayAmount.total,
+    };
+  }
+
   rows.push(...[attendancecount, rate, totalManDayAmount, totalovertime, otamount, totalnetamount]);
   rows2.push(
     ...[
@@ -286,8 +316,6 @@ const getHourlyCount = (
   svrcount['value'] = t * 0.09;
   totalall['label'] = 'Total';
   totalall['value'] = t + t * 0.18;
-
-  const allcounts = [malecount, femalecount, svrcount, totalall];
 
   return {
     rows,

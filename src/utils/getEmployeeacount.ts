@@ -31,7 +31,8 @@ const getEmployeesCalculation = (
   timekeeper: TimeKeeper[],
   month: number,
   year: number,
-  employees: EmployeeDepartmentDesignation[]
+  employees: EmployeeDepartmentDesignation[],
+  ot: boolean
 ) => {
   const m = dayjs(`${year}-${month}`).daysInMonth();
 
@@ -67,12 +68,34 @@ const getEmployeesCalculation = (
       const date = `${i.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
       const f = timekeeper.filter((f) => filterByDate({ item: f, attendance: '1', employeeId: id, date }));
       const hf = timekeeper.filter((f) => filterByDate({ item: f, attendance: '0.5', employeeId: id, date }));
+      if (ot) {
+        const othrs = f.reduce(
+          (acc, curr) =>
+            acc + parseInt(parseInt(curr.manualovertime as string) === 0 ? '0' : curr.manualovertime || curr.overtime),
+          0
+        );
+        obj[date] = othrs;
+
+        totalobj[date] = ((totalobj[date] as number) || 0) + othrs;
+        continue;
+      }
       obj[date] = f.length + hf.length / 2;
       totalobj[date] = ((totalobj[date] as number) || 0) + (f.length + hf.length / 2);
     }
 
+    console.log(totalobj);
+
     obj['total'] = count;
-    totalobj['total'] = ((totalobj['total'] as number) || 0) + count;
+    if (ot) {
+      const othrs = f.reduce(
+        (acc, curr) =>
+          acc + parseInt(parseInt(curr.manualovertime as string) === 0 ? '0' : curr.manualovertime || curr.overtime),
+        0
+      );
+      obj['total'] = othrs;
+    }
+
+    totalobj['total'] = ((totalobj['total'] as number) || 0) + obj['total'];
     obj['rate'] = employee.designation.basicsalary;
     totalobj['rate'] = '';
 
