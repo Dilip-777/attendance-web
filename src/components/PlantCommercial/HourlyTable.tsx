@@ -1,23 +1,26 @@
-import * as React from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
-import FormControl from '@mui/material/FormControl';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { Contractor, Department, Designations, SeperateSalary, Shifts, TimeKeeper } from '@prisma/client';
-import getTotalAmountAndRows from '@/utils/getmonthlycount';
-import dayjs from 'dayjs';
-import _, { set } from 'lodash';
-import getHourlyCount from '@/utils/gethourlycount';
-import { IconButton, Tooltip } from '@mui/material';
-import handleprint from './printexcel';
+import * as React from "react";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import {
+  Contractor,
+  Department,
+  Designations,
+  SeperateSalary,
+  Shifts,
+  TimeKeeper,
+} from "@prisma/client";
+import dayjs from "dayjs";
+import _ from "lodash";
+import getHourlyCount from "@/utils/gethourlycount";
+import { IconButton, Tooltip } from "@mui/material";
+import handleprint from "./printexcel";
 
 interface DesignationwithSalary extends Designations {
   seperateSalary: SeperateSalary[];
@@ -29,7 +32,7 @@ interface DepartmentDesignation extends Department {
 
 interface TableProps {
   departments: DepartmentDesignation[];
-  contractor: string;
+  contractor: Contractor;
   shifts: Shifts[];
   value: string;
   wrkhrs: number;
@@ -51,7 +54,9 @@ const HourlyTable = ({
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
   const [total, setTotal] = React.useState(0);
-  const [allcounts, setAllCounts] = React.useState<Record<string, string | number>[]>([]);
+  const [allcounts, setAllCounts] = React.useState<
+    Record<string, string | number>[]
+  >([]);
   const [colspan, setColspan] = React.useState(0);
   const [colspan1, setColspan1] = React.useState(0);
   const [netTotal, setNetTotal] = React.useState(0);
@@ -61,8 +66,8 @@ const HourlyTable = ({
     setLoading(true);
     const { rows, total, allcounts, netTotal } = getHourlyCount(
       timekeepers,
-      dayjs(value, 'MM/YYYY').month() + 1,
-      dayjs(value, 'MM/YYYY').year(),
+      dayjs(value, "MM/YYYY").month() + 1,
+      dayjs(value, "MM/YYYY").year(),
       shifts,
       contractor,
       departments,
@@ -88,7 +93,7 @@ const HourlyTable = ({
   const updateColspans = () => {
     let count = 0;
     departments
-      .filter((d) => d.basicsalary_in_duration === 'Hourly')
+      .filter((d) => d.basicsalary_in_duration === "Hourly")
       .forEach((department) => {
         count += department.designations.length;
       });
@@ -105,30 +110,35 @@ const HourlyTable = ({
   };
 
   const headcells = [
-    { label: '', id: 'date' },
-    { label: 'Att Count', id: 'attendancecount' },
-    { label: 'Amt', id: 'mandaysamount' },
-    { label: 'OT Hrs', id: 'othrs' },
-    { label: 'OT Amt', id: 'otamount' },
-    { label: 'Total', id: 'totalnetamount' },
+    { label: "", id: "date" },
+    { label: "Att Count", id: "attendancecount" },
+    { label: "Amt", id: "mandaysamount" },
+    { label: "OT Hrs", id: "othrs" },
+    { label: "OT Amt", id: "otamount" },
+    { label: "Total", id: "totalnetamount" },
   ];
 
   return (
     <Stack spacing={3} p={3} pt={0}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
-        <Typography variant="h4" sx={{ fontWeight: '700' }}>
-          {ot ? 'OT Hrs' : 'Attendance'} of {contractor} ({wrkhrs}HR)
-          <span style={{ marginLeft: '2rem' }}>Month - Sept 2023</span>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="flex-end"
+      >
+        <Typography variant="h4" sx={{ fontWeight: "700" }}>
+          {ot ? "OT Hrs" : "Attendance"} of {contractor.contractorname} (
+          {wrkhrs}HR)
+          <span style={{ marginLeft: "2rem" }}>Month - Sept 2023</span>
         </Typography>
-        <Tooltip title="Print" sx={{ alignSelf: 'flex-end', mr: 3 }}>
+        <Tooltip title="Print" sx={{ alignSelf: "flex-end", mr: 3 }}>
           <IconButton
             onClick={() =>
               handleprint({
                 rows,
                 departments,
-                contractor,
-                month: dayjs(value, 'MM/YYYY').month() + 1,
-                year: dayjs(value, 'MM/YYYY').year(),
+                contractor: contractor.contractorname,
+                month: dayjs(value, "MM/YYYY").month() + 1,
+                year: dayjs(value, "MM/YYYY").year(),
                 allcounts,
                 total,
                 netTotal,
@@ -142,23 +152,27 @@ const HourlyTable = ({
       </Stack>
       <TableContainer
         sx={{
-          scrollBehavior: 'smooth',
-          '&::-webkit-scrollbar': {
+          scrollBehavior: "smooth",
+          "&::-webkit-scrollbar": {
             // width: 7,
             height: 9,
           },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#bdbdbd',
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#bdbdbd",
             borderRadius: 2,
           },
-          border: '1px solid #e0e0e0',
+          border: "1px solid #e0e0e0",
           borderRadius: 2,
         }}
       >
         <Table sx={{}} aria-label="sticky table">
           <TableHead>
-            <TableRow sx={{ bgcolor: '#e0e0e0' }}>
-              <TableCell align="center" sx={{ fontWeight: '700', bgcolor: '#e0e0e0' }} colSpan={1}>
+            <TableRow sx={{ bgcolor: "#e0e0e0" }}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                colSpan={1}
+              >
                 Date
               </TableCell>
               {departments.map((department) => {
@@ -166,7 +180,7 @@ const HourlyTable = ({
                   <TableCell
                     key={department.id}
                     align="center"
-                    sx={{ fontWeight: '700', bgcolor: '#e0e0e0' }}
+                    sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
                     colSpan={department.designations.length * 1}
                   >
                     {department.department}
@@ -174,27 +188,40 @@ const HourlyTable = ({
                 );
               })}
               {colspan1 !== 0 && (
-                <TableCell align="center" sx={{ fontWeight: '700', bgcolor: '#e0e0e0' }} colSpan={colspan1}></TableCell>
+                <TableCell
+                  align="center"
+                  sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                  colSpan={colspan1}
+                ></TableCell>
               )}
-              <TableCell align="center" sx={{ fontWeight: '700', bgcolor: '#e0e0e0' }} colSpan={1}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                colSpan={1}
+              >
                 TOTAL
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell align="center" sx={{ fontWeight: '700' }} colSpan={1}>
+              <TableCell align="center" sx={{ fontWeight: "700" }} colSpan={1}>
                 -
               </TableCell>
               {departments
                 .filter((d) => d.designations.length !== 0)
                 .map((department) =>
                   department.designations.map((designation) => (
-                    <TableCell key={designation.id} align="center" sx={{ fontWeight: '700' }} colSpan={1}>
+                    <TableCell
+                      key={designation.id}
+                      align="center"
+                      sx={{ fontWeight: "700" }}
+                      colSpan={1}
+                    >
                       {designation.designation}
                     </TableCell>
                   ))
                 )}
               {colspan1 !== 0 && <TableCell colSpan={colspan1}></TableCell>}
-              <TableCell align="center" sx={{ fontWeight: '700' }} colSpan={1}>
+              <TableCell align="center" sx={{ fontWeight: "700" }} colSpan={1}>
                 -
               </TableCell>
             </TableRow>
@@ -216,18 +243,22 @@ const HourlyTable = ({
                         </TableCell>
                       );
                     })} */}
-                    <TableCell key={row.date} align={'center'}>
+                    <TableCell key={row.date} align={"center"}>
                       {row.date}
                     </TableCell>
                     {departments.map((department) =>
                       department.designations.map((designation) => (
-                        <TableCell key={designation.id} align={'center'} colSpan={1}>
+                        <TableCell
+                          key={designation.id}
+                          align={"center"}
+                          colSpan={1}
+                        >
                           {[
-                            'Man Days Amount',
-                            'OT Amount',
-                            'Total Amount',
-                            'Service Charge Amount',
-                            'Taxable',
+                            "Man Days Amount",
+                            "OT Amount",
+                            "Total Amount",
+                            "Service Charge Amount",
+                            "Taxable",
                           ].includes(row.date as string)
                             ? Math.ceil(row[designation.id] as number)
                             : row[designation.id]}
@@ -236,8 +267,10 @@ const HourlyTable = ({
                         </TableCell>
                       ))
                     )}
-                    {colspan1 !== 0 && <TableCell colSpan={colspan1}></TableCell>}
-                    <TableCell key={row.total} align={'center'} colSpan={1}>
+                    {colspan1 !== 0 && (
+                      <TableCell colSpan={colspan1}></TableCell>
+                    )}
+                    <TableCell key={row.total} align={"center"} colSpan={1}>
                       {Math.ceil(row.total as number)}
                     </TableCell>
                   </TableRow>
@@ -251,13 +284,17 @@ const HourlyTable = ({
             {!ot && (
               <TableRow>
                 {headcells.map((headcell) => (
-                  <TableCell align="center" sx={{ fontWeight: '700' }} colSpan={1}>
+                  <TableCell
+                    align="center"
+                    sx={{ fontWeight: "700" }}
+                    colSpan={1}
+                  >
                     {headcell.label}
                   </TableCell>
                 ))}
                 <TableCell colSpan={colspan}></TableCell>
-                <TableCell sx={{ fontWeight: '700' }}>ADD 10%</TableCell>
-                <TableCell sx={{ fontWeight: '700' }} align="center">
+                <TableCell sx={{ fontWeight: "700" }}>ADD 10%</TableCell>
+                <TableCell sx={{ fontWeight: "700" }} align="center">
                   {Math.ceil(total * 0.1)}
                 </TableCell>
               </TableRow>
@@ -268,15 +305,18 @@ const HourlyTable = ({
                 <TableRow key={a.date}>
                   {headcells.map((headcell) => (
                     <TableCell align="center" colSpan={1}>
-                      {!(headcell.id === 'attendancecount' || headcell.id === 'date')
+                      {!(
+                        headcell.id === "attendancecount" ||
+                        headcell.id === "date"
+                      )
                         ? Math.ceil(a[headcell.id] as number) || 0
                         : a[headcell.id] || 0}
                     </TableCell>
                   ))}
                   <TableCell colSpan={colspan}></TableCell>
                   {/* {getColspan() && <TableCell colSpan={getColspan()}></TableCell>} */}
-                  <TableCell sx={{ fontWeight: '700' }}>{a.label}</TableCell>
-                  <TableCell sx={{ fontWeight: '700' }} align="center">
+                  <TableCell sx={{ fontWeight: "700" }}>{a.label}</TableCell>
+                  <TableCell sx={{ fontWeight: "700" }} align="center">
                     {Math.ceil(a.value as number)}
                   </TableCell>
                 </TableRow>
@@ -285,18 +325,44 @@ const HourlyTable = ({
         </Table>
       </TableContainer>
       <Stack direction="row" justifyContent="space-between" pt="4rem">
-        <Typography variant="h4" sx={{ fontWeight: '700' }}>
+        <Typography variant="h4" sx={{ fontWeight: "700" }}>
           Checked By
         </Typography>
-        <Typography variant="h4" sx={{ fontWeight: '700' }}>
-          Verified By <br></br> <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>8HR</span>
+        <Typography variant="h4" sx={{ fontWeight: "700" }}>
+          Verified By <br></br>{" "}
+          <span
+            style={{
+              fontWeight: "500",
+              marginLeft: "auto",
+              textAlign: "right",
+            }}
+          >
+            8HR
+          </span>
         </Typography>
-        <Typography variant="h4" sx={{ fontWeight: '700' }}>
-          Verified By <br></br>{' '}
-          <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>(Comm .)</span>
+        <Typography variant="h4" sx={{ fontWeight: "700" }}>
+          Verified By <br></br>{" "}
+          <span
+            style={{
+              fontWeight: "500",
+              marginLeft: "auto",
+              textAlign: "right",
+            }}
+          >
+            (Comm .)
+          </span>
         </Typography>
-        <Typography variant="h4" sx={{ fontWeight: '700' }}>
-          Passed By <br></br> <span style={{ fontWeight: '500', marginLeft: 'auto', textAlign: 'right' }}>ED</span>
+        <Typography variant="h4" sx={{ fontWeight: "700" }}>
+          Passed By <br></br>{" "}
+          <span
+            style={{
+              fontWeight: "500",
+              marginLeft: "auto",
+              textAlign: "right",
+            }}
+          >
+            ED
+          </span>
         </Typography>
       </Stack>
     </Stack>

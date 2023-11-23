@@ -1,12 +1,3 @@
-// import {
-//   Box,
-//   Button,
-//   Divider,
-//   Grid,
-//   Paper,
-//   Stack,
-//   Typography,
-// } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
@@ -17,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import { useRouter } from "next/router";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
-import { Formik } from "formik";
+import { Form, Formik } from "formik";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import FileUpload from "@/components/FormikComponents/FileUpload";
 import axios from "axios";
@@ -28,6 +19,7 @@ import { Contractor } from "@prisma/client";
 import { CircularProgress } from "@mui/material";
 import FormDate from "@/components/FormikComponents/FormDate";
 import dayjs from "dayjs";
+import { G } from "@react-pdf/renderer";
 // import { Contractor } from "@prisma/client"
 
 const fileType = Yup.string().optional();
@@ -124,6 +116,11 @@ const validationSchema = Yup.object().shape({
   upload_certificate_services: fileType,
   upload_doc1: fileType,
   upload_doc2: fileType,
+  salarymen8hr: numberType.nullable().optional(),
+  salarywomen8hr: numberType.nullable().optional(),
+  salarymen12hr: numberType.nullable().optional(),
+  salarysvr8hr: numberType.nullable().optional(),
+  salarysvr12hr: numberType.nullable().optional(),
 });
 
 export default function EditContractor({
@@ -212,6 +209,11 @@ export default function EditContractor({
     upload_certificate_services: undefined,
     upload_doc1: undefined,
     upload_doc2: undefined,
+    salarymen8hr: contractor?.salarymen8hr || 0,
+    salarywomen8hr: contractor?.salarywomen8hr || 0,
+    salarymen12hr: contractor?.salarymen12hr || 0,
+    salarysvr8hr: contractor?.salarysvr8hr || 0,
+    salarysvr12hr: contractor?.salarysvr12hr || 0,
   };
 
   return (
@@ -302,6 +304,8 @@ export default function EditContractor({
           }}
         >
           {({ handleSubmit, errors, values, isSubmitting }) => {
+            console.log(values);
+
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Stack spacing={0}>
@@ -484,6 +488,51 @@ export default function EditContractor({
                         label="Strategic Business Unit*"
                         placeHolder="Enter Strategic Business Unit"
                         disabled={false}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="salarymen8hr"
+                        label="Salary For Men 8HR"
+                        placeHolder="Enter Salary For Men 8HR"
+                        disabled={false}
+                        type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="salarywomen8hr"
+                        label="Salary For Women 8HR"
+                        placeHolder="Enter Salary For Women 8HR"
+                        disabled={false}
+                        type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="salarysvr8hr"
+                        label="Salary For SVR 8HR"
+                        placeHolder="Enter Salary For SVR 8HR"
+                        disabled={false}
+                        type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="salarymen12hr"
+                        label="Salary For Men 12HR"
+                        placeHolder="Enter Salary For Men 12HR"
+                        disabled={false}
+                        type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="salarysvr12hr"
+                        label="Salary For SVR 12HR"
+                        placeHolder="Enter Salary For SVR 12HR"
+                        disabled={false}
+                        type="number"
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} lg={4}>

@@ -67,10 +67,10 @@ const InvoiceTableRow = ({
     .filter((d) => d.departmentname === department?.department)
     .map((d) => {
       if (d.gender === "Male")
-        return { main: d.designation, sub: "M", id: d.designationid };
+        return { main: d.designation, sub: "M", id: d.id };
       else if (d.gender === "Female")
-        return { main: d.designation, sub: "F", id: d.designationid };
-      else return { main: d.designation, id: d.designationid };
+        return { main: d.designation, sub: "F", id: d.id };
+      else return { main: d.designation, id: d.id };
     });
 
   if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {

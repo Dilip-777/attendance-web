@@ -6,100 +6,39 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import _ from "lodash";
-import { Department, Designations } from "@prisma/client";
-
-interface Data {
-  date: string;
-  m8: number;
-  f8: number;
-  m20: number;
-  f20: number;
-  dm: number;
-  qc: number;
-  store: number;
-  k7m: number;
-  k7f: number;
-  rmhs: number;
-  ps: number;
-  hk: number;
-  svr: number;
-  total: number;
-}
-
-interface side {
-  main: string;
-  sub?: string;
-  id: string;
-}
+import { IconButton, Tooltip } from "@mui/material";
 
 export default function FinalSheetTable({
-  rows,
-  total,
-  department,
   storededuction,
   safetydeduction,
-  designations,
+  hourlyrows,
+  hourlytotals,
+  handleHourlyPrint,
 }: {
-  rows: Data[];
-  total: number;
-  department: Department | undefined;
   storededuction: number;
   safetydeduction: number;
-  designations: Designations[];
+  hourlyrows: any[];
+  hourlytotals: any;
+  handleHourlyPrint: () => void;
 }) {
-  const sidebar = designations
-    .filter((d) => d.departmentname === department?.department)
-    .map((d) => {
-      if (d.basicsalary_in_duration === "Monthly")
-        return { main: d.designation, id: d.designationid };
-      if (d.gender === "Male")
-        return { main: d.designation, sub: "M", id: d.designationid };
-      else if (d.gender === "Female")
-        return { main: d.designation, sub: "F", id: d.designationid };
-      else return { main: d.designation, id: d.designationid };
-    });
-
-  const getRoundOff = (value: number) => {
-    return Math.ceil(value);
-  };
-
-  if (department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
-    sidebar.push({ main: "Total", sub: " ", id: "total" });
-  } else {
-    sidebar.push({ main: "Total", id: "total" });
-  }
   const headers = [
-    "Total Man days",
-    "Rate",
-    "Man Days Amount",
-    "Overtime Hrs.",
-    "OT Amount",
-    "Total Amount",
-    "Service Charge Rate",
-    "Service Charge Amount",
-    "Taxable",
-    "GST",
-    "Bill Amount",
-    "TDS",
-    "Net Payable",
+    { id: "date", label: "Type" },
+    { id: "shifthrs", label: "Shift Hrs." },
+    { id: "mandays", label: "Man Days" },
+    { id: "rate", label: "Rate" },
+    { id: "mandaysamount", label: "Man Days Amount" },
+    { id: "othrs", label: "OT Hrs." },
+    { id: "otamount", label: "OT Amount" },
+    { id: "servicechargerate", label: "Service Charge Rate" },
+    { id: "servicechargeamount", label: "Service Charge Amount" },
+    { id: "taxable", label: "Taxable" },
+    { id: "gst", label: "GST" },
+    { id: "billamount", label: "Bill Amount" },
+    { id: "tds", label: "TDS" },
+    { id: "netpayable", label: "Net Payable" },
   ];
-
-  const ccmheader = [
-    "Total Man days",
-    "Rate",
-    "Man Days Amount",
-    "Overtime Hrs.",
-    "OT Amount",
-    "Taxable",
-    "GST",
-    "Bill Amount",
-    "TDS",
-    "Net Payable",
-  ];
-
-  const colspan =
-    department?.basicsalary_in_duration?.toLowerCase() === "hourly" ? 8 : 8;
 
   return (
     <Paper
@@ -116,135 +55,173 @@ export default function FinalSheetTable({
         },
       }}
     >
-      <TableContainer
-        sx={{
-          maxWidth: "100%",
-          scrollBehavior: "smooth",
-          "&::-webkit-scrollbar": {
-            width: 9,
-            height: 10,
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#bdbdbd",
-            borderRadius: 2,
-          },
-        }}
-      >
-        <Table aria-label="sticky table">
-          <TableHead>
-            <TableRow sx={{ bgcolor: "#eeeeee" }}>
-              <TableCell align="center" sx={{ fontWeight: "700" }} colSpan={1}>
-                Designation
-              </TableCell>
-              {department?.basicsalary_in_duration?.toLowerCase() ===
-                "hourly" && (
+      <Tooltip title="Print" sx={{ float: "right", m: 1 }}>
+        <IconButton onClick={() => handleHourlyPrint()}>
+          <LocalPrintshopIcon />
+        </IconButton>
+      </Tooltip>
+      {hourlyrows.map((row, index) => (
+        <TableContainer
+          key={index}
+          sx={{
+            maxWidth: "100%",
+            scrollBehavior: "smooth",
+            "&::-webkit-scrollbar": {
+              width: 9,
+              height: 10,
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#bdbdbd",
+              borderRadius: 2,
+            },
+            my: 2,
+          }}
+        >
+          <Table aria-label="sticky table">
+            <TableHead>
+              <TableRow sx={{ bgcolor: "#eeeeee" }}>
                 <TableCell
                   align="center"
                   sx={{ fontWeight: "700" }}
                   colSpan={1}
                 >
-                  Type
+                  S No
                 </TableCell>
-              )}
-              {headers.map((header, index) => (
-                <TableCell
-                  align="center"
-                  sx={{ fontWeight: "700" }}
-                  colSpan={1}
-                  key={index}
-                >
-                  {header}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sidebar.map((item) => (
-              <TableRow hover role="checkbox" tabIndex={-1} key={item.id}>
-                <TableCell align="center" sx={{ fontWeight: "600" }}>
-                  {item.main}
-                </TableCell>
-                {item.sub && <TableCell align="center">{item.sub}</TableCell>}
-                {rows.map((row, index) => (
-                  <TableCell key={index} align="center">
-                    {row.date === "Service Charge Rate"
-                      ? _.get(row, item.id)
-                      : getRoundOff(_.get(row, item.id) || 0)}
-                    {/* {getRoundOff(_.get(row, item.id) || 0)} */}
+                {index === 2 && (
+                  <TableCell
+                    align="center"
+                    sx={{ fontWeight: "700" }}
+                    colSpan={1}
+                  >
+                    Department
+                  </TableCell>
+                )}
+                {headers.map((header, index) => (
+                  <TableCell
+                    align="center"
+                    sx={{ fontWeight: "700" }}
+                    colSpan={1}
+                    key={index}
+                  >
+                    {header.label}
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
-
-            {/* <TableRow>
-              <TableCell colSpan={colspan + 1}></TableCell>
-              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                Net Amount Payable
-              </TableCell>
-              <TableCell align="center">
-                {total.toLocaleString("en-IN", {
-                  maximumFractionDigits: 2,
-                })}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell />
-              <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                GST Hold
-              </TableCell>
-              <TableCell align="center">{0}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell />
-              <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                Safety Voilation's Penalty
-              </TableCell>
-              <TableCell align="center">{safetydeduction}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell />
-              <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                Consumables / Rechargeable Items
-              </TableCell>
-              <TableCell align="center">{storededuction}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell />
-              <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                Adjustment Of Advance Amount
-              </TableCell>
-              <TableCell align="center">0</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell />
-              <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                Any Other Deductions
-              </TableCell>
-              <TableCell align="center">{0}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell />
-              <TableCell colSpan={colspan}></TableCell>
-              <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                Final Payable
-              </TableCell>
-              <TableCell align="center">
-                {(total > 0
-                  ? total - storededuction - safetydeduction
-                  : 0
-                ).toLocaleString("en-IN", {
-                  maximumFractionDigits: 2,
-                })}
-              </TableCell>
-            </TableRow> */}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {row.map((d: any, i: number) => (
+                <TableRow key={index}>
+                  <TableCell align="center" sx={{ fontWeight: "600" }}>
+                    {i + 1}
+                  </TableCell>
+                  {index === 2 && (
+                    <TableCell align="center" sx={{ fontWeight: "600" }}>
+                      {d.department}
+                    </TableCell>
+                  )}
+                  {headers.map((header, index) => (
+                    <TableCell
+                      key={`${i} ${index} ${header} ${d.department}`}
+                      align="center"
+                      sx={{
+                        fontWeight: i === row.length - 1 ? "600" : "500",
+                      }}
+                    >
+                      {header.id === "mandays" ||
+                      header.id === "othrs" ||
+                      header.id === "shifthrs" ||
+                      header.id === "rate" ||
+                      header.id === "date" ||
+                      header.id === "servicechargerate"
+                        ? d[header.id]
+                        : Math.round(d[header.id])}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+              {index === 1 && (
+                <TableRow sx={{ fontWeight: "700" }}>
+                  <TableCell
+                    colSpan={3}
+                    align="center"
+                    sx={{ fontWeight: "600" }}
+                  >
+                    Total (8hr + 12HR)
+                  </TableCell>
+                  {headers.slice(2).map((header, i) => (
+                    <TableCell
+                      key={`${i} ${index} ${header}`}
+                      align="center"
+                      sx={{ fontWeight: "600" }}
+                    >
+                      {header.id === "mandays" ||
+                      header.id === "othrs" ||
+                      header.id === "servicechargerate"
+                        ? hourlytotals[header.id]
+                        : Math.round(hourlytotals[header.id])}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )}
+              {index === 2 && (
+                <>
+                  <TableRow>
+                    <TableCell
+                      colSpan={16}
+                      align="center"
+                      sx={{ fontWeight: "700" }}
+                    >
+                      Final Payout Information
+                    </TableCell>
+                  </TableRow>
+                  {[
+                    {
+                      label: "NET AMOUNT PAYABLE",
+                      value: hourlytotals.netpayable,
+                    },
+                    { label: "GST HOLD (IF ANY)", value: 0 },
+                    {
+                      label: "SAFETY PENALTY / EXTRA PPE / EXTRA HELMET",
+                      value: safetydeduction,
+                    },
+                    {
+                      label: "CONSUMABLES / CHARGABLE ITEMS",
+                      value: storededuction,
+                    },
+                    { label: "ADJUSTMENT OF ADVANCE AMOUNT", value: 0 },
+                    { label: "ANY OTHER DEDUCTIONS (IF ANY)", value: 0 },
+                    {
+                      label: "FINAL PAYABLE",
+                      value:
+                        hourlytotals.netpayable -
+                        safetydeduction -
+                        storededuction,
+                    },
+                  ].map((d) => (
+                    <TableRow>
+                      <TableCell colSpan={9} align="center"></TableCell>
+                      <TableCell
+                        colSpan={4}
+                        align="center"
+                        sx={{ fontWeight: "600" }}
+                      >
+                        {d.label}
+                      </TableCell>
+                      <TableCell
+                        colSpan={3}
+                        align="right"
+                        sx={{ fontWeight: "600" }}
+                      >
+                        {Math.round(d.value).toLocaleString("en-IN")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ))}
     </Paper>
   );
 }

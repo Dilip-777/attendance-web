@@ -179,6 +179,11 @@ model Contractor {
   upload_certificate_services String?
   upload_doc1                 String?
   upload_doc2                 String?
+  salarymen8hr                Int          @default(0)
+  salarywomen8hr              Int          @default(0)
+  salarymen12hr               Int          @default(0)
+  salarysvr8hr                Int          @default(0)
+  salarysvr12hr               Int          @default(0)
   employee                    Employee[]
   safety                      Safety[]
   bills                       bills[]
