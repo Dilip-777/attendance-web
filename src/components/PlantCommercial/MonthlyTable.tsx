@@ -99,12 +99,7 @@ const MonthlyPlantCommercialTable = ({
   const fetchTimekeepers = async () => {
     setLoading(true);
     const res = await axios.get(
-      `/api/gettimekeeper?contractor=${
-        contractor.contractorId
-      }&month=${value}&departments=${departments
-        .filter((f) => f.basicsalary_in_duration === "Monthly")
-        .map((d) => d.department)
-        .join(",")}`
+      `/api/gettimekeeper?contractor=${contractor.contractorId}&month=${value}`
     );
 
     const { rows, total, nettotal } = getEmployeesCalculation(
