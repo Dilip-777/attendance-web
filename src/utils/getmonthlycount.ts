@@ -74,7 +74,7 @@ const getTotalAmountAndRows = (
   department?: Department | undefined,
   wrkhrs?: number
 ) => {
-  const m = dayjs(month).daysInMonth();
+  const m = dayjs(`${year}-${month}`).daysInMonth();
 
   let filtered: TimeKeeper[] = [];
 
