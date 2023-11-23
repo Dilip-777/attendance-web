@@ -181,6 +181,19 @@ export default function PlantCommercial({
     setOpen(false);
   };
 
+  const fetchTimekeepers = async () => {
+    setLoading(true);
+    const res = await axios.get(
+      `/api/gettimekeeper?contractor=${contractor1}&month=${value}`
+    );
+    setTimekeepers(res.data);
+    setLoading(false);
+  };
+
+  React.useEffect(() => {
+    fetchTimekeepers();
+  }, [value, contractor1]);
+
   const fetchEmployees = async () => {
     const res = await axios.get(
       `/api/hr/employee?contractor=${contractor1}&departments=${selectedDepartments
