@@ -337,7 +337,7 @@ const HourlyTable = ({
               textAlign: "right",
             }}
           >
-            8HR
+            HR
           </span>
         </Typography>
         <Typography variant="h4" sx={{ fontWeight: "700" }}>

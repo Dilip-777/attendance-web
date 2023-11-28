@@ -43,7 +43,7 @@ import {
   OutlinedInput,
   styled,
 } from "@mui/material";
-import _ from "lodash";
+import _, { set } from "lodash";
 const ImportData = dynamic(() => import("@/components/import"));
 const CustomModal = dynamic(
   () => import("@/components/Timekeeper/ViewCommentsDocuments")
@@ -162,6 +162,8 @@ interface EnhancedTableToolbarProps {
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   handledownload: () => void;
   fetchTimeKeeper: () => void;
+  attendanceDate: Dayjs | null;
+  setAttendancedate: React.Dispatch<React.SetStateAction<Dayjs | null>>;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -180,6 +182,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     filter,
     handledownload,
     fetchTimeKeeper,
+    attendanceDate,
+    setAttendancedate,
   } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -256,6 +260,18 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               handleChange={(e) => setContractorName(e as string)}
             />
           </Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              views={["day", "month", "year"]}
+              format="DD/MM/YYYY"
+              value={attendanceDate}
+              onChange={(newValue) => setAttendancedate(newValue as Dayjs)}
+              // value={value}
+              // onChange={(newValue) => {
+              //   if (newValue) setValue(newValue);
+              // }}
+            />
+          </LocalizationProvider>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               views={["month", "year"]}
@@ -359,6 +375,9 @@ export default function TimeKeeperTable({}: // contractors,
   const matches = useMediaQuery("(min-width:600px)");
   const [contractorName, setContractorName] = React.useState("all");
   const [value, setValue] = React.useState<Dayjs>(dayjs());
+  const [attendancedate, setAttendancedate] = React.useState<Dayjs | null>(
+    null
+  );
   const { data: session } = useSession();
 
   const headcell1 = createHeadCells("status", "Status", false, true);
@@ -431,8 +450,6 @@ export default function TimeKeeperTable({}: // contractors,
     //     setLoading(false);
     //   });
   };
-
-  console.log(selected, "selected");
 
   const fetchContrators = async () => {
     await axios
@@ -627,6 +644,8 @@ export default function TimeKeeperTable({}: // contractors,
             setFilter={setFilter}
             handledownload={handleClickReport}
             fetchTimeKeeper={fetchTimeKeeper}
+            attendanceDate={attendancedate}
+            setAttendancedate={setAttendancedate}
           />
 
           <TableContainer
@@ -675,11 +694,17 @@ export default function TimeKeeperTable({}: // contractors,
                   getComparator(order, orderBy)
                 )
                   .filter((t) => t.status !== "Pending")
+                  .filter(
+                    (t) =>
+                      _.get(t, orderBy, "employeeid")
+                        ?.toString()
+                        ?.toLowerCase()
+                        ?.includes(filter.toLowerCase())
+                  )
                   .filter((t) =>
-                    _.get(t, orderBy, "employeeid")
-                      ?.toString()
-                      ?.toLowerCase()
-                      ?.includes(filter.toLowerCase())
+                    attendancedate
+                      ? t.attendancedate === attendancedate.format("DD/MM/YYYY")
+                      : true
                   )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
@@ -840,18 +865,26 @@ export default function TimeKeeperTable({}: // contractors,
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             component="div"
             count={
-              timekeeper
+              stableSort(
+                timekeeper.filter(
+                  (t) =>
+                    t.contractorname === contractorName ||
+                    contractorName === "all"
+                ) as any,
+                getComparator(order, orderBy)
+              )
+                .filter((t) => t.status !== "Pending")
                 .filter(
                   (t) =>
-                    (t.contractorname === contractorName ||
-                      contractorName === "all") &&
-                    t.status !== "Pending"
+                    _.get(t, orderBy, "employeeid")
+                      ?.toString()
+                      ?.toLowerCase()
+                      ?.includes(filter.toLowerCase())
                 )
                 .filter((t) =>
-                  _.get(t, orderBy, "employeeid")
-                    ?.toString()
-                    ?.toLowerCase()
-                    ?.includes(filter.toLowerCase())
+                  attendancedate
+                    ? t.attendancedate === attendancedate.format("DD/MM/YYYY")
+                    : true
                 ).length
             }
             rowsPerPage={rowsPerPage}

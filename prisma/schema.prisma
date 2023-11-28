@@ -210,6 +210,7 @@ model Employee {
   contractorname            String
   employeeId                String     @unique
   employeename              String
+  employeecode             String   @default("")  
   designationId             String
   departmentId              String
   gender                    String
@@ -495,6 +496,23 @@ model BarBending {
   barbendingItems BarBendingItem[]
   workorder       Workorder        @relation(fields: [workorderId], references: [id], onDelete: Cascade)
   contractor      Contractor       @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+
+model Attendance_Log {
+  employeeid   Int
+  attendancedate DateTime
+  intime       String
+  outtime      String
+  present      Float
+  absent       Float
+  begintime    String
+  endtime      String
+  durationhhmm String
+  overtimehhmm String
+  shiftid      Int
+  LastUpdatedOn DateTime
+  @@id([employeeid, attendancedate])
 }
 
 model BarBendingItem {

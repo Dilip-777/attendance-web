@@ -30,15 +30,10 @@ const numberType = Yup.number().transform((value, originalValue) => {
   return originalValue !== "" ? null : value;
 });
 
-const mobilenumbertype = Yup.string().matches(
-  /^(?:\+91[1-9]\d{9}|0[1-9]\d{9}|[1-9]\d{9})$/,
-  "Please enter a valid mobile number"
-);
+const mobilenumbertype = Yup.string();
 
 const validationSchema = Yup.object().shape({
-  contractorname: Yup.string()
-    .required("Required")
-    .matches(/^[A-Za-z .]+$/, "Please enter only letters and spaces"),
+  contractorname: Yup.string().required("Required"),
   contractorId: Yup.string().required("Required"),
   servicedetail: Yup.string().required("Required"),
   supplierdetail: Yup.string().required("Required"),
@@ -68,10 +63,7 @@ const validationSchema = Yup.object().shape({
   memorandam_of_associate: fileType,
   listofdirector: fileType,
   profileofkeyperson: fileType,
-  competitorname: stringtype.matches(
-    /^[A-Za-z ]+$/,
-    "Please enter only letters and spaces"
-  ),
+  competitorname: stringtype,
   isocertified: stringtype,
   turnoverlastyear: stringtype,
   turnover2yearback: stringtype,
@@ -379,7 +371,6 @@ export default function EditContractor({
                         label="Telephone Number"
                         placeHolder="Enter Telephone Number"
                         disabled={false}
-                        type="number"
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} lg={4}>
