@@ -95,6 +95,7 @@ function ImportData({
       }
       [
         "Contractor Name",
+        "Employee Code",
         "Contractor ID",
         "Employee Name",
         "Employee ID",
@@ -139,6 +140,7 @@ function ImportData({
       return {
         employeeId: data["Employee ID"].toString(),
         employeename: data["Employee Name"],
+        employeecode: data["Employee Code"].toString(),
         contractorname: data["Contractor Name"],
         contractorId: data["Contractor ID"].toString(),
         designationId: designation?.id,

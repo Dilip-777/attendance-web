@@ -25,6 +25,7 @@ const headCells1 = [
   createHeadCells("contractorname", "Contractor Name", false, false),
   createHeadCells("contractorId", "Contractor ID", false, false),
   createHeadCells("employeeId", "Employee ID", false, false),
+  createHeadCells("employeecode", "Employee Code", false, false),
   createHeadCells("employeename", "Employee Name", false, false),
   createHeadCells("designation.designation", "Designation", false, false),
   createHeadCells("department.department", "Department", false, false),
