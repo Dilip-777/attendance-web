@@ -176,7 +176,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     value,
     setValue,
     handleApprove,
-    showApprove,
     contractorlist,
     setFilter,
     filter,
@@ -378,6 +377,9 @@ export default function TimeKeeperTable({}: // contractors,
   const [attendancedate, setAttendancedate] = React.useState<Dayjs | null>(
     null
   );
+  const [debouncedFilter, setDebouncedFilter] = React.useState("");
+
+  const [count, setCount] = React.useState(0);
   const { data: session } = useSession();
 
   const headcell1 = createHeadCells("status", "Status", false, true);
@@ -463,31 +465,48 @@ export default function TimeKeeperTable({}: // contractors,
       });
   };
 
-  const fetchTimeKeeper = async () => {
-    if (timekeeper.length === 0) {
-      setLoading(true);
-    }
+  React.useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      setDebouncedFilter(filter);
+    }, 500); // Adjust the delay time as needed (e.g., 500 milliseconds)
 
+    return () => clearTimeout(debounceTimeout);
+  }, [filter]);
+
+  const fetchTimeKeeper = async () => {
+    if (!debouncedFilter) setLoading(true);
+    else setLoading(false);
     await axios
       .get(
         `/api/timekeeper/gettimekeepers?month=${value?.format(
           "MM/YYYY"
-        )}&role=${session?.user?.role}`
+        )}&role=${session?.user
+          ?.role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${contractorName}&attendancedate=${
+          attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
+        }&orderBy=${orderBy}&filter=${debouncedFilter}`
       )
       .then((res) => {
-        const timekeepers = res.data;
-        setTimeKepeer(timekeepers);
-        setLoading(false);
+        setTimeKepeer(res.data.data);
+        setCount(res.data.count);
       })
       .catch((err) => {
         console.log(err);
-        setLoading(false);
       });
+    setLoading(false);
   };
 
   React.useEffect(() => {
     fetchTimeKeeper();
-  }, [value, session]);
+  }, [
+    value,
+    session,
+    rowsPerPage,
+    page,
+    contractorName,
+    attendancedate,
+    orderBy,
+    debouncedFilter,
+  ]);
 
   React.useEffect(() => {
     fetchContrators();
@@ -685,36 +704,10 @@ export default function TimeKeeperTable({}: // contractors,
               />
 
               <TableBody>
-                {stableSort(
-                  timekeeper.filter(
-                    (t) =>
-                      t.contractorname === contractorName ||
-                      contractorName === "all"
-                  ) as any,
-                  getComparator(order, orderBy)
-                )
+                {stableSort(timekeeper as any, getComparator(order, orderBy))
                   .filter((t) => t.status !== "Pending")
-                  .filter(
-                    (t) =>
-                      _.get(t, orderBy, "employeeid")
-                        ?.toString()
-                        ?.toLowerCase()
-                        ?.includes(filter.toLowerCase())
-                  )
-                  .filter((t) =>
-                    attendancedate
-                      ? t.attendancedate === attendancedate.format("DD/MM/YYYY")
-                      : true
-                  )
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const isItemSelected = !!isSelected(row.id as string);
-                    console.log(
-                      isItemSelected,
-                      "isItemSelected",
-                      selected,
-                      row
-                    );
 
                     const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -741,69 +734,39 @@ export default function TimeKeeperTable({}: // contractors,
                           />
                         </TableCell>
 
-                        <TableCell align="left">{row.employeeid}</TableCell>
-                        <TableCell align="left">{row.employeename}</TableCell>
-                        <TableCell align="left">{row.machineInTime}</TableCell>
-                        <TableCell align="left">{row.machineOutTime}</TableCell>
-                        <TableCell align="left">
-                          {row.machineduration || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.machineshift || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.attendance || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.attendancedate || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.overtime || "-"}
-                        </TableCell>
-                        <TableCell align="left">{row.eleave || "-"}</TableCell>
-                        <TableCell align="left">
-                          {row.manualintime || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.manualouttime || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.manualduration || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.manualshift || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.manualovertime || "-"}
-                        </TableCell>
-                        <TableCell align="left">{row.mleave || "-"}</TableCell>
-                        <TableCell align="left">
-                          {row.department || "-"}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.designation || "-"}
-                        </TableCell>
-                        <TableCell align="left">{row.gender || "-"}</TableCell>
-                        <TableCell align="left">{row.status || "-"}</TableCell>
+                        <TableCell>{row.employeeid}</TableCell>
+                        <TableCell>{row.employeename}</TableCell>
+                        <TableCell>{row.machineInTime}</TableCell>
+                        <TableCell>{row.machineOutTime}</TableCell>
+                        <TableCell>{row.machineduration || "-"}</TableCell>
+                        <TableCell>{row.machineshift || "-"}</TableCell>
+                        <TableCell>{row.attendance || "-"}</TableCell>
+                        <TableCell>{row.attendancedate || "-"}</TableCell>
+                        <TableCell>{row.overtime || "-"}</TableCell>
+                        <TableCell>{row.eleave || "-"}</TableCell>
+                        <TableCell>{row.manualintime || "-"}</TableCell>
+                        <TableCell>{row.manualouttime || "-"}</TableCell>
+                        <TableCell>{row.manualduration || "-"}</TableCell>
+                        <TableCell>{row.manualshift || "-"}</TableCell>
+                        <TableCell>{row.manualovertime || "-"}</TableCell>
+                        <TableCell>{row.mleave || "-"}</TableCell>
+                        <TableCell>{row.department || "-"}</TableCell>
+                        <TableCell>{row.designation || "-"}</TableCell>
+                        <TableCell>{row.gender || "-"}</TableCell>
+                        <TableCell>{row.status || "-"}</TableCell>
 
                         <TableCell
-                          align="left"
                           onClick={() => handleOpen1(row.id as string)}
                         >
                           View
                         </TableCell>
-                        <TableCell
-                          align="left"
-                          onClick={() => handleOpen(row.id as string)}
-                        >
+                        <TableCell onClick={() => handleOpen(row.id as string)}>
                           View
                         </TableCell>
                         {session?.user?.role === "HR" && (
                           <>
-                            <TableCell align="left">
-                              {row.status || "Pending"}
-                            </TableCell>
-                            <TableCell align="left">
+                            <TableCell>{row.status || "Pending"}</TableCell>
+                            <TableCell>
                               {!row.status ? (
                                 <Box
                                   display="flex"
@@ -831,7 +794,7 @@ export default function TimeKeeperTable({}: // contractors,
                             </TableCell>
                           </>
                         )}
-                        <TableCell size="small" align="left">
+                        <TableCell size="small">
                           <IconButton
                             onClick={() => router.push(`/details/${row.id}`)}
                             sx={{ m: 0 }}
@@ -864,29 +827,7 @@ export default function TimeKeeperTable({}: // contractors,
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             component="div"
-            count={
-              stableSort(
-                timekeeper.filter(
-                  (t) =>
-                    t.contractorname === contractorName ||
-                    contractorName === "all"
-                ) as any,
-                getComparator(order, orderBy)
-              )
-                .filter((t) => t.status !== "Pending")
-                .filter(
-                  (t) =>
-                    _.get(t, orderBy, "employeeid")
-                      ?.toString()
-                      ?.toLowerCase()
-                      ?.includes(filter.toLowerCase())
-                )
-                .filter((t) =>
-                  attendancedate
-                    ? t.attendancedate === attendancedate.format("DD/MM/YYYY")
-                    : true
-                ).length
-            }
+            count={count}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

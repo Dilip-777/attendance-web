@@ -510,7 +510,7 @@ model Attendance_Log {
   endtime      String
   durationhhmm String
   overtimehhmm String
-  shiftid      Int
+  shiftid      String
   LastUpdatedOn DateTime
   @@id([employeeid, attendancedate])
 }

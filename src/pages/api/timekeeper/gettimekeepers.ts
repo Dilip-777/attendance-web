@@ -1,7 +1,5 @@
 import prisma from "@/lib/prisma";
-import { SaveTimekeeper, TimeKeeper } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
-import { number } from "yup";
 
 export default async function getTimeKeeper(
   req: NextApiRequest,
@@ -10,48 +8,73 @@ export default async function getTimeKeeper(
   if (req.method !== "GET") {
     res.status(405).json({ name: "Method Not Allowed" });
   } else {
-    const { month, role } = req.query;
+    const {
+      month,
+      role,
+      page,
+      rowsPerPage,
+      contractorname,
+      attendancedate,
+      orderBy,
+      filter,
+    } = req.query;
     // await prisma.timeKeeper.deleteMany();
-    const timekeepers = await prisma.timeKeeper.findMany({
-      where: {
-        attendancedate: {
-          contains: month as string,
-        },
-      },
-    });
-    //        const data: TimeKeeper[] = await prisma.$queryRaw`
-    //   SELECT * FROM "public"."TimeKeeper" WHERE DATE_PART('month', TO_DATE(attendancedate, 'DD/MM/YYYY')) = ${parseInt(month as string)}
-    // `;
-    // const timekeepers = data?.filter((t) => t.status !== "Pending")
 
-    //   const savedTimekeeper: SaveTimekeeper[] = await prisma.$queryRaw`
-    //   SELECT * FROM "public"."SaveTimekeeper" WHERE DATE_PART('month', TO_DATE(attendancedate, 'DD/MM/YYYY')) = ${parseInt(month as string)}
-    // `;
-    const savedTimekeeper = await prisma.saveTimekeeper.findMany({
-      where: {
-        attendancedate: {
-          contains: month as string,
-        },
-      },
+    const wh: any = {};
+
+    wh.attendancedate = {
+      contains: month as string,
+    };
+
+    if (contractorname !== "all") {
+      wh.contractorname = contractorname;
+    }
+
+    if (attendancedate) {
+      wh.attendancedate = attendancedate;
+    }
+
+    if (role !== "HR" && role !== "TimeKeeper") {
+      wh.approvedByTimekeeper = true;
+    }
+
+    if (orderBy && filter) {
+      wh[orderBy as string] = {
+        contains: filter,
+        mode: "insensitive",
+      };
+    }
+
+    const count = await prisma.timeKeeper.count({
+      where: wh,
     });
 
+    console.log(wh);
 
     if (role === "HR") {
-      res.status(200).json([...savedTimekeeper, ...timekeepers]);
-    }
-     else if(role === "TimeKeeper") {
-       res.status(200).json(timekeepers);
-     }
-    else {
-      const approved  = await prisma.timeKeeper.findMany({
-        where: {
-          approvedByTimekeeper: true,
-          attendancedate: {
-          contains: month as string,
-        },
-        }
-      })
-      res.status(200).json(approved)
+      const savedTimekeeper = await prisma.saveTimekeeper.findMany({
+        where: wh,
+        take: Number(rowsPerPage),
+        skip: Number(page) * Number(rowsPerPage),
+      });
+      const timekeepers =
+        savedTimekeeper.length >= Number(rowsPerPage)
+          ? await prisma.timeKeeper.findMany({
+              where: wh,
+              take: Number(rowsPerPage) - savedTimekeeper.length,
+              skip: Number(page) * Number(rowsPerPage),
+            })
+          : [];
+      res
+        .status(200)
+        .json({ data: [...savedTimekeeper, ...timekeepers], count });
+    } else {
+      const timekeepers = await prisma.timeKeeper.findMany({
+        where: wh,
+        take: Number(rowsPerPage),
+        skip: Number(page) * Number(rowsPerPage),
+      });
+      res.status(200).json({ data: timekeepers, count });
     }
   }
 }
