@@ -556,7 +556,7 @@ export default function TimeKeeperTable({}: // contractors,
     } else return false;
   };
 
-  const handleClickReport = () => {
+  const handleClickReport = async () => {
     const tableRows = [
       [
         "Contractor ID",
@@ -583,44 +583,58 @@ export default function TimeKeeperTable({}: // contractors,
         "Status",
       ],
     ];
-    timekeeper.forEach((item) => {
-      tableRows.push([
-        item.contractorid || "-",
-        item.contractorname || "-",
-        item.employeeid.toString(),
-        item.employeename || "-",
-        item.machineInTime,
-        item.machineOutTime || "-",
-        item.machineduration || "-",
-        item.machineshift || "-",
-        item?.attendance,
-        item.attendancedate || "-",
-        item.overtime?.toString() || "-",
-        item.mleave || "-",
-        item.manualintime?.toString() || "-",
-        item.manualouttime?.toString() || "-",
-        item.manualduration || "-",
-        item.manualshift || "-",
-        item.manualovertime || "-",
-        item.mleave || "-",
-        item.department?.toString() || "-",
-        item.designation?.toString() || "-",
-        item?.gender || "-",
-        item.status || "-",
-      ]);
-    });
-    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
 
-    // Download CSV file
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "TimeKeeper.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const res = await axios.get(
+        `/api/timekeeper/gettimekeepers?month=${value?.format(
+          "MM/YYYY"
+        )}&role=${session?.user
+          ?.role}&contractorname=${contractorName}&attendancedate=${
+          attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
+        }&orderBy=${orderBy}&filter=${debouncedFilter}`
+      );
+      res.data.data.forEach((item: TimeKeeper) => {
+        tableRows.push([
+          item.contractorid || "-",
+          item.contractorname || "-",
+          item.employeeid.toString(),
+          item.employeename || "-",
+          item.machineInTime,
+          item.machineOutTime || "-",
+          item.machineduration || "-",
+          item.machineshift || "-",
+          item?.attendance,
+          item.attendancedate || "-",
+          item.overtime?.toString() || "-",
+          item.mleave || "-",
+          item.manualintime?.toString() || "-",
+          item.manualouttime?.toString() || "-",
+          item.manualduration || "-",
+          item.manualshift || "-",
+          item.manualovertime || "-",
+          item.mleave || "-",
+          item.department?.toString() || "-",
+          item.designation?.toString() || "-",
+          item?.gender || "-",
+          item.status || "-",
+        ]);
+      });
+
+      const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+
+      // Download CSV file
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "TimeKeeper.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -753,7 +767,6 @@ export default function TimeKeeperTable({}: // contractors,
                         <TableCell>{row.department || "-"}</TableCell>
                         <TableCell>{row.designation || "-"}</TableCell>
                         <TableCell>{row.gender || "-"}</TableCell>
-                        <TableCell>{row.status || "-"}</TableCell>
 
                         <TableCell
                           onClick={() => handleOpen1(row.id as string)}

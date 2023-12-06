@@ -34,9 +34,9 @@ export default async function getTimeKeeper(
       wh.attendancedate = attendancedate;
     }
 
-    if (role !== "HR" && role !== "TimeKeeper") {
-      wh.approvedByTimekeeper = true;
-    }
+    // if (role !== "HR" && role !== "TimeKeeper") {
+    //   wh.approvedByTimekeeper = true;
+    // }
 
     if (orderBy && filter) {
       wh[orderBy as string] = {
@@ -49,31 +49,35 @@ export default async function getTimeKeeper(
       where: wh,
     });
 
+    const obj: any = {
+      where: wh,
+    };
+
+    if (Number(rowsPerPage) && (Number(page) || Number(page) === 0)) {
+      obj["take"] = Number(rowsPerPage);
+      obj["skip"] = Number(page) * Number(rowsPerPage);
+    }
+
     console.log(wh);
 
     if (role === "HR") {
-      const savedTimekeeper = await prisma.saveTimekeeper.findMany({
-        where: wh,
-        take: Number(rowsPerPage),
-        skip: Number(page) * Number(rowsPerPage),
-      });
+      console.log(obj);
+
+      const savedTimekeeper = await prisma.saveTimekeeper.findMany(obj);
       const timekeepers =
-        savedTimekeeper.length >= Number(rowsPerPage)
-          ? await prisma.timeKeeper.findMany({
-              where: wh,
-              take: Number(rowsPerPage) - savedTimekeeper.length,
-              skip: Number(page) * Number(rowsPerPage),
-            })
+        savedTimekeeper.length < Number(rowsPerPage) || !rowsPerPage
+          ? await prisma.timeKeeper.findMany(obj)
           : [];
       res
         .status(200)
         .json({ data: [...savedTimekeeper, ...timekeepers], count });
     } else {
-      const timekeepers = await prisma.timeKeeper.findMany({
-        where: wh,
-        take: Number(rowsPerPage),
-        skip: Number(page) * Number(rowsPerPage),
-      });
+      if (role !== "HR" && role !== "TimeKeeper") {
+        wh.approvedByTimekeeper = true;
+        obj["where"] = wh;
+      }
+
+      const timekeepers = await prisma.timeKeeper.findMany(obj);
       res.status(200).json({ data: timekeepers, count });
     }
   }
