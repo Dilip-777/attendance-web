@@ -85,12 +85,14 @@ function ImportData({
       const designation = designations.find(
         (desc) => desc.designation === d["Designation"]
       );
-      if (!department || !designation) {
-        if (!indices.includes(index + 1)) {
-          indices.push(index + 1);
-        }
-        if (!keys.includes("department or designation")) {
-          keys.push("department or designation");
+      if (!(department?.basicsalary_in_duration === "Hourly")) {
+        if (!department || !designation) {
+          if (!indices.includes(index + 1)) {
+            indices.push(index + 1);
+          }
+          if (!keys.includes("department or designation")) {
+            keys.push("department or designation");
+          }
         }
       }
       [
@@ -134,6 +136,7 @@ function ImportData({
           d.designation === data["Designation"] &&
           d.departmentId === department?.id
       );
+
       // if (!department || !designation) {
       //   return null;
       // }

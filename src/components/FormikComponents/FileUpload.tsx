@@ -51,10 +51,19 @@ const FileUpload: React.FC<Props> = ({
   const isError = Boolean(meta.touched && meta.error);
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   console.log(process.env);
 
   const handleChange = async (e: any) => {
     const file1 = e.target.files[0];
+    setError("");
+
+    if (file1) {
+      if (file1.size > 1000000) {
+        setError("File size should be less than 1MB");
+        return;
+      }
+    }
 
     try {
       setLoading(true);
@@ -168,7 +177,9 @@ const FileUpload: React.FC<Props> = ({
           </Typography>
         </Box>
       </StyledCard>
-      {isError && <FormHelperText error>{meta.error}</FormHelperText>}
+      {(isError || error) && (
+        <FormHelperText error>{meta.error || error}</FormHelperText>
+      )}
     </Box>
   );
 };

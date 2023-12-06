@@ -197,6 +197,7 @@ export default function PlantCommercial({
   const fetchEmployees = async () => {
     const res = await axios.get(
       `/api/hr/employee?contractor=${contractor1}&departments=${selectedDepartments
+        .filter((d) => d.basicsalary_in_duration === "Monthly")
         .map((d) => d.id)
         .join(",")}`
     );
