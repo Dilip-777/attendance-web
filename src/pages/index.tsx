@@ -319,12 +319,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             >
               Dashboard
             </Button> */}
-            {value.month() < dayjs().month() &&
+            {/* {value.month() < dayjs().month() &&
               session?.user?.role === "TimeKeeper" && (
                 <Button sx={{ mr: 3 }} onClick={handleApprove}>
                   Approve
                 </Button>
-              )}
+              )} */}
             <Menu
               id="basic-menu"
               anchorEl={anchorEl}
@@ -345,6 +345,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               >
                 Download
               </MenuItem>
+              {value.month() < dayjs().month() &&
+                session?.user?.role === "TimeKeeper" && (
+                  <MenuItem sx={{ mr: 3 }} onClick={handleApprove}>
+                    Approve
+                  </MenuItem>
+                )}
               {/* <MenuItem onClick={handleClose}>Logout</MenuItem> */}
             </Menu>
           </div>
