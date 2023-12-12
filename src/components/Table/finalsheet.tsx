@@ -5,6 +5,7 @@ import {
   Contractor,
   Department,
   Designations,
+  Employee,
   TimeKeeper,
 } from "@prisma/client";
 import {
@@ -24,7 +25,11 @@ import _ from "lodash";
 import MonthlyTable from "./MonthlyTable";
 
 interface d extends Department {
-  designations: Designations[];
+  designations: DesignationsWithEmployees[];
+}
+
+interface DesignationsWithEmployees extends Designations {
+  employees: Employee[];
 }
 
 export default function FinalSheetta({

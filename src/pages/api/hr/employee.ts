@@ -1,15 +1,18 @@
-import prisma from '@/lib/prisma';
-import { NextApiRequest, NextApiResponse } from 'next';
-import shortid from 'shortid';
+import prisma from "@/lib/prisma";
+import { NextApiRequest, NextApiResponse } from "next";
+import shortid from "shortid";
 
-export default async function employee(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
+export default async function employee(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method === "GET") {
     const { contractor, departments } = req.query;
     const employees = await prisma.employee.findMany({
       where: {
         contractorId: contractor as string,
         departmentId: {
-          in: (departments as any).split(','),
+          in: (departments as any).split(","),
         },
       },
       include: {
@@ -18,7 +21,7 @@ export default async function employee(req: NextApiRequest, res: NextApiResponse
       },
     });
     res.status(200).json(employees);
-  } else if (req.method === 'POST') {
+  } else if (req.method === "POST") {
     const { id, contractorId, ...data } = req.body;
     const isExist = await prisma.employee.findFirst({
       where: {
@@ -26,7 +29,9 @@ export default async function employee(req: NextApiRequest, res: NextApiResponse
       },
     });
     if (isExist && !id) {
-      res.status(409).json({ message: 'Employee Id already exists', error: 'employeeId' });
+      res
+        .status(409)
+        .json({ message: "Employee Id already exists", error: "employeeId" });
       return;
     }
     if (id) {
@@ -45,7 +50,9 @@ export default async function employee(req: NextApiRequest, res: NextApiResponse
       });
 
       if (!contractor) {
-        res.status(404).json({ message: 'Contractor not found', error: 'contractorId' });
+        res
+          .status(404)
+          .json({ message: "Contractor not found", error: "contractorId" });
         return;
       }
 

@@ -9,7 +9,7 @@ export default async function importdata(
     res.status(200).json(process.env.DATABASE_URL);
   }
   const data = req.body;
-  const { type } = req.query;
+  const { type, update } = req.query;
   if (type === "employee") {
     try {
       const ids = data.map((employee: any) => employee.employeeId);
@@ -89,14 +89,46 @@ export default async function importdata(
     //     }
     // })
 
-    console.log(data[0]);
+    if (update === "true") {
+      await Promise.all(
+        await data.map(async (timekeeper: any) => {
+          const timeKeeper = await prisma.timeKeeper.findUnique({
+            where: {
+              attendancedate_employeeid: {
+                attendancedate: timekeeper.attendancedate,
+                employeeid: timekeeper.employeeid,
+              },
+            },
+          });
+          if (timeKeeper) {
+            await prisma.timeKeeper.update({
+              where: {
+                attendancedate_employeeid: {
+                  attendancedate: timekeeper.attendancedate,
+                  employeeid: timekeeper.employeeid,
+                },
+              },
+              data: {
+                ...timekeeper,
+              },
+            });
+          } else {
+            await prisma.timeKeeper.create({
+              data: {
+                ...timekeeper,
+              },
+            });
+          }
+        })
+      );
+    }
+
+    // console.log(data[0]);
 
     const timekeepers = await prisma.timeKeeper.createMany({
       data: data,
       skipDuplicates: true,
     });
-
-    console.log(timekeepers);
 
     const employees = await prisma.employee.findMany({
       where: {

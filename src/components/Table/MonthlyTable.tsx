@@ -7,8 +7,12 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import _ from "lodash";
-import { Department, Designations } from "@prisma/client";
+import { Department, Designations, Employee } from "@prisma/client";
 import { Divider, Typography } from "@mui/material";
+
+interface DesignationsWithEmployees extends Designations {
+  employees: Employee[];
+}
 
 export default function MonthlyTable({
   rows,
@@ -17,10 +21,11 @@ export default function MonthlyTable({
 }: {
   rows: any[];
   department: Department | undefined;
-  designations: Designations[];
+  designations: DesignationsWithEmployees[];
 }) {
   const sidebar = designations
     .filter((d) => d.departmentname === department?.department)
+    .filter((d) => d.employees.length > 0)
     .map((d) => {
       if (d.basicsalary_in_duration === "Monthly")
         return { main: d.designation, id: d.id };
@@ -55,22 +60,6 @@ export default function MonthlyTable({
     "TDS",
     "Net Payable",
   ];
-
-  const ccmheader = [
-    "Total Man days",
-    "Rate",
-    "Man Days Amount",
-    "Overtime Hrs.",
-    "OT Amount",
-    "Taxable",
-    "GST",
-    "Bill Amount",
-    "TDS",
-    "Net Payable",
-  ];
-
-  const colspan =
-    department?.basicsalary_in_duration?.toLowerCase() === "hourly" ? 8 : 8;
 
   return (
     <Paper
@@ -153,7 +142,7 @@ export default function MonthlyTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <Divider />
+      <Divider sx={{ my: 2 }} />
     </Paper>
   );
 }

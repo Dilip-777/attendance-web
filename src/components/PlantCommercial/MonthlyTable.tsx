@@ -51,6 +51,7 @@ interface TableProps {
   employees: EmployeeDepartmentDesignation[];
   departments: DepartmentDesignation[];
   ot: boolean;
+  seperateSalarys: SeperateSalary[];
 }
 
 const MonthlyPlantCommercialTable = ({
@@ -59,6 +60,7 @@ const MonthlyPlantCommercialTable = ({
   employees,
   departments,
   ot,
+  seperateSalarys,
 }: TableProps) => {
   console.log(departments);
 
@@ -75,7 +77,7 @@ const MonthlyPlantCommercialTable = ({
 
   const year = dayjs(value, "MM/YYYY").year();
   const month = dayjs(value, "MM/YYYY").month() + 1;
-  const m = dayjs(month).daysInMonth();
+  const m = dayjs(`${year}-${month}`).daysInMonth();
 
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
@@ -107,7 +109,8 @@ const MonthlyPlantCommercialTable = ({
       dayjs(value, "MM/YYYY").month() + 1,
       dayjs(value, "MM/YYYY").year(),
       employees,
-      ot
+      ot,
+      seperateSalarys
     );
     // const { rows, total1 } = getTotalAmountAndRows(
     //   timekeepers,
@@ -210,7 +213,7 @@ const MonthlyPlantCommercialTable = ({
 
             {!ot && (
               <TableRow>
-                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell colSpan={m + 5}></TableCell>
                 <TableCell
                   colSpan={3}
                   // align="left"
@@ -223,7 +226,7 @@ const MonthlyPlantCommercialTable = ({
             )}
             {!ot && (
               <TableRow>
-                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell colSpan={m + 5}></TableCell>
                 <TableCell
                   colSpan={3}
                   // align="left"
@@ -238,7 +241,7 @@ const MonthlyPlantCommercialTable = ({
             )}
             {!ot && (
               <TableRow>
-                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell colSpan={m + 5}></TableCell>
                 <TableCell
                   colSpan={3}
                   // align="left"
@@ -253,7 +256,7 @@ const MonthlyPlantCommercialTable = ({
             )}
             {!ot && (
               <TableRow>
-                <TableCell colSpan={m + 4}></TableCell>
+                <TableCell colSpan={m + 5}></TableCell>
                 <TableCell
                   colSpan={3}
                   // align="left"

@@ -337,6 +337,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               <MenuItem sx={{ cursor: "pointer" }}>
                 <ImportData contractors={contractorlist} />
               </MenuItem>
+              <MenuItem sx={{ cursor: "pointer" }}>
+                <ImportData contractors={contractorlist} type="update" />
+              </MenuItem>
               <MenuItem
                 onClick={() => {
                   handleClose();
@@ -345,12 +348,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               >
                 Download
               </MenuItem>
-              {value.month() < dayjs().month() &&
-                session?.user?.role === "TimeKeeper" && (
-                  <MenuItem sx={{ mr: 3 }} onClick={handleApprove}>
-                    Approve
-                  </MenuItem>
-                )}
+              {session?.user?.role === "TimeKeeper" && (
+                <MenuItem sx={{ mr: 3 }} onClick={handleApprove}>
+                  Approve
+                </MenuItem>
+              )}
               {/* <MenuItem onClick={handleClose}>Logout</MenuItem> */}
             </Menu>
           </div>

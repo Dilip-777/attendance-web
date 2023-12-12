@@ -137,6 +137,7 @@ export default function PlantCommercial({
   contractors,
   // departments,
   shifts,
+  seperateSalarys,
 }: {
   contractor: ContractorwithDepartment;
   designations: DesignationwithSalary[];
@@ -144,6 +145,7 @@ export default function PlantCommercial({
   contractors: ContractorwithDepartment[];
   // departments: DepartmentDesignation[];
   shifts: Shifts[];
+  seperateSalarys: SeperateSalary[];
 }) {
   const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [loading, setLoading] = React.useState(false);
@@ -522,6 +524,7 @@ export default function PlantCommercial({
                 employees={employees}
                 departments={selectedDepartment}
                 ot={false}
+                seperateSalarys={seperateSalarys}
               />
             )}
           </Stack>
@@ -558,6 +561,7 @@ export default function PlantCommercial({
                 employees={employees}
                 departments={selectedDepartment}
                 ot={true}
+                seperateSalarys={seperateSalarys}
               />
             )}
           </Stack>
@@ -682,6 +686,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   const shifts = await prisma.shifts.findMany();
+  const seperateSalarys = await prisma.seperateSalary.findMany();
 
   return {
     props: {
@@ -690,6 +695,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       selectedDepartment,
       contractors: contractors,
       shifts,
+      seperateSalarys,
     },
   };
 };

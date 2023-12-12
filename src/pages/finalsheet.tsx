@@ -13,6 +13,7 @@ import {
   Contractor,
   Department,
   Designations,
+  Employee,
   Safety,
   SeperateSalary,
   Shifts,
@@ -45,11 +46,12 @@ const PrintModal = dynamic(
 );
 
 interface d extends Department {
-  designations: Designations[];
+  designations: DesignationwithSalary[];
 }
 
 interface DesignationwithSalary extends Designations {
   seperateSalary: SeperateSalary[];
+  employees: Employee[];
 }
 
 interface ContractorwithDepartment extends Contractor {
@@ -153,8 +155,10 @@ export default function FinalSheet({
           dayjs(value, "MM/YYYY").year(),
           shifts,
           selectedContractor,
-          designations.filter((de) =>
-            d.designations.find((des) => des.id === de.id)
+          designations.filter(
+            (de) =>
+              d.designations.find((des) => des.id === de.id) &&
+              de.employees.length > 0
           ),
           d
         );
@@ -542,7 +546,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     include: {
       departments: {
         include: {
-          designations: true,
+          designations: {
+            include: {
+              employees: {
+                take: 1,
+              },
+            },
+          },
         },
       },
     },
@@ -552,6 +562,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const designations = await prisma.designations.findMany({
     include: {
       seperateSalary: true,
+      employees: {
+        take: 1,
+      },
     },
   });
 

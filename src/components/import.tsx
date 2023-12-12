@@ -32,7 +32,13 @@ const style = {
   p: 4,
 };
 
-function ImportData({ contractors }: { contractors: Contractor[] }) {
+function ImportData({
+  contractors,
+  type,
+}: {
+  contractors: Contractor[];
+  type?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [message, setMessage] = useState("");
@@ -173,37 +179,39 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
         attendancedate: getDate(_.get(data, "Attendance Date"))?.toString(),
         overtime: _.get(data, "Over Time", "00:00")?.slice(0, 2),
         machineduration: _.get(data, "Duration", "00:00"),
-        // machineduration: _.get(data, "Duration")
-        //   ? _.get(data, "Duration") === 0
-        //     ? "00:00"
-        //     : new Date(_.get(data, "Duration") * 24 * 60 * 60 * 1000)
-        //         .toLocaleTimeString("en-US", {
-        //           hour: "2-digit",
-        //           minute: "2-digit",
-        //           second: "2-digit",
-        //           hour12: false,
-        //           timeZone: "UTC", // or specify the time zone you want to display
-        //         })
-        //         ?.toString()
-        //   : "-",
         eleave: data.e_leave || "0",
         gender: data.gender || "Male",
       };
     });
 
     setLoading(true);
-    const res = await axios
-      .post("/api/importdata?type=timekeeper", body)
-      .then((res) => {
-        setError(false);
-        handleClick();
-        // set
-      })
-      .catch((err) => {
-        setMessage("Please Provide Valid Data");
-        setError(true);
-        handleClick();
-      });
+    if (type === "update") {
+      const res = await axios
+        .post("/api/importdata?type=timekeeper&update=true", body)
+        .then((res) => {
+          setError(false);
+          handleClick();
+          // set
+        })
+        .catch((err) => {
+          setMessage("Please Provide Valid Data");
+          setError(true);
+          handleClick();
+        });
+    } else {
+      const res = await axios
+        .post("/api/importdata?type=timekeeper", body)
+        .then((res) => {
+          setError(false);
+          handleClick();
+          // set
+        })
+        .catch((err) => {
+          setMessage("Please Provide Valid Data");
+          setError(true);
+          handleClick();
+        });
+    }
     // console.log(body);
 
     setLoading(false);
@@ -212,7 +220,7 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
       <Typography sx={{ cursor: "pointer" }} component="label">
-        Upload
+        {type === "update" ? "Update" : "Upload"}
         {loading && (
           <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
         )}
@@ -284,7 +292,7 @@ function ImportData({ contractors }: { contractors: Contractor[] }) {
                   setContractor(null);
                 }}
               >
-                Upload
+                {type === "update" ? "Update" : "Upload"}
               </Button>
             </Stack>
           </Box>

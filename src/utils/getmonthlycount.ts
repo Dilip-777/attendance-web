@@ -76,6 +76,8 @@ const getTotalAmountAndRows = (
 ) => {
   const m = dayjs(`${year}-${month}`).daysInMonth();
 
+  console.log(designations, "designations");
+
   let filtered: TimeKeeper[] = [];
 
   const rate: Record<string, string | number> = {
