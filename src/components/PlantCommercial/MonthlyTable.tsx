@@ -210,67 +210,34 @@ const MonthlyPlantCommercialTable = ({
                 <TableCell>Loading...</TableCell>
               </TableRow>
             )}
-
-            {!ot && (
-              <TableRow>
-                <TableCell colSpan={m + 5}></TableCell>
-                <TableCell
-                  colSpan={3}
-                  // align="left"
-                  sx={{ fontWeight: "600" }}
-                >
-                  Add 10%
-                </TableCell>
-                <TableCell align="center">{Math.ceil(total * 0.1)}</TableCell>
-              </TableRow>
-            )}
-            {!ot && (
-              <TableRow>
-                <TableCell colSpan={m + 5}></TableCell>
-                <TableCell
-                  colSpan={3}
-                  // align="left"
-                  sx={{ fontWeight: "600" }}
-                >
-                  Taxable Amount
-                </TableCell>
-                <TableCell align="center">
-                  {Math.ceil(total * 0.1 + nettotal)}
-                </TableCell>
-              </TableRow>
-            )}
-            {!ot && (
-              <TableRow>
-                <TableCell colSpan={m + 5}></TableCell>
-                <TableCell
-                  colSpan={3}
-                  // align="left"
-                  sx={{ fontWeight: "600" }}
-                >
-                  IGST 18%
-                </TableCell>
-                <TableCell align="center">
-                  {Math.ceil((total * 0.1 + nettotal) * 0.18)}
-                </TableCell>
-              </TableRow>
-            )}
-            {!ot && (
-              <TableRow>
-                <TableCell colSpan={m + 5}></TableCell>
-                <TableCell
-                  colSpan={3}
-                  // align="left"
-                  sx={{ fontWeight: "600" }}
-                >
-                  Total
-                </TableCell>
-                <TableCell align="center">
-                  {Math.ceil(
-                    (total * 0.1 + nettotal) * 0.18 + (total * 0.1 + nettotal)
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
+            {!ot &&
+              [
+                { label: "Add 10%", value: Math.ceil(total * 0.1) },
+                {
+                  label: "Taxable Amount",
+                  value: Math.ceil(total * 0.1 + nettotal),
+                },
+                {
+                  label: "IGST 18%",
+                  value: Math.ceil((total * 0.1 + nettotal) * 0.18),
+                },
+                {
+                  label: "Total",
+                  value: Math.ceil((total * 0.1 + nettotal) * 1.18),
+                },
+              ].map((item) => (
+                <TableRow>
+                  <TableCell colSpan={m + 5}></TableCell>
+                  <TableCell
+                    colSpan={3}
+                    // align="left"
+                    sx={{ fontWeight: "600" }}
+                  >
+                    {item.label}
+                  </TableCell>
+                  <TableCell align="center">{item.value}</TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
