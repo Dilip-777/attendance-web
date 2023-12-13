@@ -5,7 +5,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
-import { Department, Designations } from "@prisma/client";
+import { Contractor, Department, Designations } from "@prisma/client";
 import axios from "axios";
 import React, { useState } from "react";
 import shortid from "shortid";
@@ -14,9 +14,11 @@ import * as XLSX from "xlsx";
 function ImportData({
   departments,
   designations,
+  contractors,
 }: {
   departments: Department[];
   designations: Designations[];
+  contractors: Contractor[];
 }) {
   // on change states
   const [open, setOpen] = useState(false);
@@ -97,13 +99,11 @@ function ImportData({
       }
       [
         "Contractor Name",
-        "Employee Code",
-        "Contractor ID",
         "Employee Name",
         "Employee ID",
         "Designation",
         "Department",
-        "Phone Number",
+        // "Phone Number",
       ].forEach((key) => {
         if (!d[key]) {
           if (keys.indexOf(key) === -1) {
@@ -137,15 +137,20 @@ function ImportData({
           d.departmentId === department?.id
       );
 
+      const c = contractors.find(
+        (c) => c.contractorname === data["Contractor Name"]
+      );
+
       // if (!department || !designation) {
       //   return null;
       // }
       return {
         employeeId: data["Employee ID"].toString(),
         employeename: data["Employee Name"],
-        employeecode: data["Employee Code"].toString(),
+        employeecode: data["Employee Code"]?.toString() || "",
         contractorname: data["Contractor Name"],
-        contractorId: data["Contractor ID"].toString(),
+        contractorId:
+          data["Contractor ID"]?.toString() || c?.contractorId || "",
         designationId: designation?.id,
         departmentId: department?.id,
         gender: data["Gender"] || "Male",

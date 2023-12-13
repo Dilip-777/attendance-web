@@ -25,10 +25,6 @@ function ImportDepartments({
   const [key, setKey] = useState(0);
   const [message, setMessage] = useState("");
 
-  // submit
-  const [excelData, setExcelData] = useState(null);
-  // it will contain array of objects
-
   // handle File
   const fileType = ["application/vnd.xlsx", "application/vnd.ms-excel"];
   const handleFile = (e: any) => {

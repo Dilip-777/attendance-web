@@ -110,8 +110,6 @@ const getEmployeesCalculation = (
         ((totalobj[date] as number) || 0) + (f.length + hf.length / 2);
     }
 
-    console.log(totalobj);
-
     obj["total"] = count;
     if (ot) {
       const othrs = f.reduce(
@@ -133,7 +131,6 @@ const getEmployeesCalculation = (
         f.contractorId === employee.contractorId &&
         f.designationId === employee.designationId
     );
-    console.log(seperateSalary, "seperateSalary", employee.designationId);
 
     if (seperateSalary) {
       obj["rate"] = seperateSalary.salary;

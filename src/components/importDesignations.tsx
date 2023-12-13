@@ -5,6 +5,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
+import { Department } from "@prisma/client";
 
 import axios from "axios";
 import React, { useState } from "react";
@@ -13,8 +14,10 @@ import * as XLSX from "xlsx";
 
 function ImportDesignations({
   fetchDesignations,
+  departments,
 }: {
   fetchDesignations: () => void;
+  departments: Department[];
 }) {
   // on change states
   const [excelFile, setExcelFile] = useState<string | ArrayBuffer | null>(null);
@@ -107,6 +110,18 @@ function ImportDesignations({
             if (!indices.includes(index + 1)) {
               indices.push(index + 1);
             }
+          } else {
+            const department = departments.find(
+              (de) => de.department === d["Department Name"]
+            );
+            if (!department) {
+              if (keys.indexOf("Department Id") === -1) {
+                keys.push("Department Id");
+              }
+              if (!indices.includes(index + 1)) {
+                indices.push(index + 1);
+              }
+            }
           }
         }
       );
@@ -124,6 +139,9 @@ function ImportDesignations({
     }
 
     const body = data.map((data: any) => {
+      const department = departments.find(
+        (de) => de.department === data["Department Name"]
+      );
       let id = data["Designation"];
       id = id.replace(/\s+/g, "").toLowerCase();
       if (data["Gender"] === "Male") {
@@ -131,7 +149,7 @@ function ImportDesignations({
       } else if (data["Gender"] === "Female") id = "f" + id;
       return {
         id: shortid.generate(),
-        departmentId: data["Department Id"],
+        departmentId: department?.id,
         designationid: id,
         departmentname: data["Department Name"],
         designation: data["Designation"],

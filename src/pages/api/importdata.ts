@@ -26,6 +26,7 @@ export default async function importdata(
       });
       res.status(200).json({ success: true });
     } catch (error) {
+      console.log(error);
       res.status(400).json({ success: false, error: error });
     }
   } else if (type === "contractor") {

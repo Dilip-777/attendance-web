@@ -2,7 +2,7 @@ import * as React from "react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Department, Designations, Employee } from "@prisma/client";
+import { Contractor, Department, Designations, Employee } from "@prisma/client";
 import _ from "lodash";
 import CustomTable from "@/components/Table/Table";
 import ImportData from "@/components/employeeImport";
@@ -59,10 +59,12 @@ export default function Employees({
   employees,
   departments,
   designations,
+  contractors,
 }: {
   employees: EmployeeDesignationDepartment[];
   departments: Department[];
   designations: Designations[];
+  contractors: Contractor[];
 }) {
   const [filterName, setFilterName] = React.useState("");
   const [orderby, setOrderby] = React.useState("contractorname");
@@ -139,7 +141,11 @@ export default function Employees({
       setFilterName={setFilterName}
       editLink="/employees"
       upload={
-        <ImportData departments={departments} designations={designations} />
+        <ImportData
+          departments={departments}
+          designations={designations}
+          contractors={contractors}
+        />
       }
       orderby={orderby}
       setOrderby={setOrderby}
@@ -176,11 +182,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   });
   const departments = await prisma.department.findMany();
   const designations = await prisma.designations.findMany();
+  const contractors = await prisma.contractor.findMany();
   return {
     props: {
       employees,
       departments,
       designations,
+      contractors,
     },
   };
 };
