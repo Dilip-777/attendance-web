@@ -53,7 +53,7 @@ model SaveTimekeeper {
    contractorid         String?
   contractorname       String?
   employeeid           String
-  employeename         String?
+  employeename         String? 
   designation          String
   attendancedate       String
   machineInTime        String
@@ -101,7 +101,6 @@ model TimeKeeper {
   comment              Comment[]
   approvedByTimekeeper Boolean   @default(false)
   UploadDocument       Upload[]
-
   @@unique([attendancedate, employeeid])
 }
 
@@ -344,11 +343,13 @@ model Shifts {
 
 model Comment {
   id           String     @id @default(cuid())
-  comment      String
+  comment      String?
   userId       String
   userName     String
+  approval     Boolean    @default(false)
   role         Role
   timekeeperId String
+  createdAt    DateTime  @updatedAt  @default(now()) 
   timekeeper   TimeKeeper @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
 }
 

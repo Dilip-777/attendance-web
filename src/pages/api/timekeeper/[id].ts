@@ -20,7 +20,7 @@ export default async function gettimekeeper(
         .json({ success: "false", message: "Something went wrong" });
     }
   } else if (req.method === "PUT") {
-    const { status } = req.body;
+    const { status, comment, userId, userName, role } = req.body;
 
     const savedTimekeeper = await prisma.saveTimekeeper.findUnique({
       where: {
@@ -28,7 +28,27 @@ export default async function gettimekeeper(
       },
     });
 
+    await prisma.timeKeeper.update({
+      where: {
+        id: id as string,
+      },
+      data: {
+        status: status,
+      },
+    });
+
     if (savedTimekeeper) {
+      if (comment) {
+        await prisma.comment.create({
+          data: {
+            comment: comment,
+            timekeeperId: id as string,
+            userId: userId,
+            userName: userName,
+            role: role,
+          },
+        });
+      }
       if (status === "Approved") {
         const formattedDate = new Date().toLocaleString("en-GB", {
           day: "2-digit",
@@ -73,7 +93,6 @@ export default async function gettimekeeper(
     //         }
     //     }
     // })
-    console.log(ids, "ids");
 
     res
       .status(200)

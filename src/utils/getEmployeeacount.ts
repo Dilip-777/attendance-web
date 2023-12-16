@@ -43,13 +43,9 @@ const getEmployeesCalculation = (
 ) => {
   const m = dayjs(`${year}-${month}`).daysInMonth();
 
-  console.log(seperateSalaries, "seperateSalaries");
-
   const getRoundOff = (num: number) => {
     return num;
   };
-
-  console.log(employees, "employees");
 
   const rows = [] as any[];
 

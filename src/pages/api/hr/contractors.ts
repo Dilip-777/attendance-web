@@ -1,18 +1,24 @@
-import prisma from '@/lib/prisma';
-import { NextApiRequest, NextApiResponse } from 'next';
-import shortid from 'shortid';
+import prisma from "@/lib/prisma";
+import { NextApiRequest, NextApiResponse } from "next";
+import shortid from "shortid";
 
-export default async function contractors(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
+export default async function contractors(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method === "GET") {
     const contractors = await prisma.contractor.findMany({
       include: {
         departments: true,
+      },
+      orderBy: {
+        contractorname: "asc",
       },
     });
     res.status(200).json(contractors);
   }
 
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const data = req.body;
     const isExist = await prisma.contractor.findUnique({
       where: {
@@ -21,7 +27,9 @@ export default async function contractors(req: NextApiRequest, res: NextApiRespo
     });
 
     if (isExist) {
-      res.status(409).json({ message: 'Contractor already exists', error: 'contractorId' });
+      res
+        .status(409)
+        .json({ message: "Contractor already exists", error: "contractorId" });
       return;
     }
 
@@ -48,7 +56,7 @@ export default async function contractors(req: NextApiRequest, res: NextApiRespo
     res.status(200).json(contractor);
   }
 
-  if (req.method === 'PUT') {
+  if (req.method === "PUT") {
     const { id, ...data } = req.body;
 
     const contractorexists = await prisma.contractor.findUnique({
@@ -57,7 +65,7 @@ export default async function contractors(req: NextApiRequest, res: NextApiRespo
       },
     });
     if (!contractorexists) {
-      res.status(404).json({ message: 'Contractor not found' });
+      res.status(404).json({ message: "Contractor not found" });
     }
 
     const contractor = await prisma.contractor.update({
@@ -69,7 +77,7 @@ export default async function contractors(req: NextApiRequest, res: NextApiRespo
     res.status(200).json(contractor);
   }
 
-  if (req.method === 'DELETE') {
+  if (req.method === "DELETE") {
     const { id } = req.body;
     const contractorexists = await prisma.contractor.findUnique({
       where: {
@@ -77,7 +85,7 @@ export default async function contractors(req: NextApiRequest, res: NextApiRespo
       },
     });
     if (!contractorexists) {
-      res.status(404).json({ message: 'Contractor not found' });
+      res.status(404).json({ message: "Contractor not found" });
     }
 
     const contractor = await prisma.contractor.delete({

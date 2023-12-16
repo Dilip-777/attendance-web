@@ -58,15 +58,18 @@ export default async function getTimeKeeper(
       obj["skip"] = Number(page) * Number(rowsPerPage);
     }
 
-    console.log(wh);
-
     if (role === "HR") {
       console.log(obj);
 
       const savedTimekeeper = await prisma.saveTimekeeper.findMany(obj);
       const timekeepers =
         savedTimekeeper.length < Number(rowsPerPage) || !rowsPerPage
-          ? await prisma.timeKeeper.findMany(obj)
+          ? await prisma.timeKeeper.findMany({
+              ...obj,
+              include: {
+                comment: true,
+              },
+            })
           : [];
       res
         .status(200)
@@ -77,7 +80,12 @@ export default async function getTimeKeeper(
         obj["where"] = wh;
       }
 
-      const timekeepers = await prisma.timeKeeper.findMany(obj);
+      const timekeepers = await prisma.timeKeeper.findMany({
+        ...obj,
+        include: {
+          comment: true,
+        },
+      });
       res.status(200).json({ data: timekeepers, count });
     }
   }

@@ -37,10 +37,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import dynamic from "next/dynamic";
 import {
+  Autocomplete,
   InputAdornment,
   Menu,
   MenuItem,
   OutlinedInput,
+  TextField,
   styled,
 } from "@mui/material";
 import _, { set } from "lodash";
@@ -142,7 +144,8 @@ const headCells = [
   ),
   createHeadCells("designation", "Designation", false, false),
   createHeadCells("gender", "Gender", false, false),
-  // createHeadCells("status", "Status", false, false),
+
+  createHeadCells("status", "Status", false, false),
   createHeadCells("comment", "Comment", false, false),
   createHeadCells("uploaddocument", "Upload Document", false, false),
 ];
@@ -250,13 +253,15 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             }
           />
           <Box sx={{ minWidth: 240 }}>
-            <FormSelect
-              options={[
-                { value: "all", label: "All Contractors" },
-                ...contractors,
-              ]}
-              value={contractorName}
-              handleChange={(e) => setContractorName(e as string)}
+            <Autocomplete
+              options={contractors}
+              value={
+                contractors.find((c) => c.label === contractorName) || null
+              }
+              onChange={(e, value) => setContractorName(value?.label as string)}
+              renderInput={(params) => (
+                <TextField {...params} label="Select Contractor" />
+              )}
             />
           </Box>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -376,6 +381,8 @@ export default function TimeKeeperTable({}: // contractors,
   const [timekeeper, setTimeKepeer] = React.useState<TimeKeeper[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [rejectModal, setRejectModal] = React.useState(false);
+  const [rejectId, setRejectId] = React.useState<string>("");
   const [open1, setOpen1] = React.useState(false);
   const [selected1, setSelected1] = React.useState<Comment[] | Upload[]>();
   const [contractors, setContractors] = React.useState<Contractor[]>([]);
@@ -385,22 +392,23 @@ export default function TimeKeeperTable({}: // contractors,
   const [attendancedate, setAttendancedate] = React.useState<Dayjs | null>(
     null
   );
+  const [statusChange, setStatusChange] = React.useState(false);
   const [debouncedFilter, setDebouncedFilter] = React.useState("");
 
   const [count, setCount] = React.useState(0);
   const { data: session } = useSession();
 
-  const headcell1 = createHeadCells("status", "Status", false, true);
   const headcell2 = createHeadCells("action", "Action", false, true);
 
   const extraHeadCells =
-    session?.user?.role === "HR"
-      ? [...headCells, headcell1, headcell2]
-      : [...headCells];
+    session?.user?.role === "HR" ? [...headCells, headcell2] : [...headCells];
   const handleClose = () => {
     setOpen(false);
     setOpen1(false);
     setSelected1(undefined);
+    setRejectModal(false);
+    setRejectId("");
+    setStatusChange(false);
   };
 
   const handleOpen1 = async (id: string) => {
@@ -435,11 +443,15 @@ export default function TimeKeeperTable({}: // contractors,
       });
   };
 
-  const handleReject = async (id: string) => {
+  const handleReject = async (id: string, comment: string) => {
     setLoading(true);
     await axios
       .put(`/api/timekeeper/${id}`, {
         status: "Rejected",
+        comment: comment,
+        userId: session?.user?.id,
+        userName: session?.user?.name,
+        role: session?.user?.role,
       })
       .then((res) => {
         fetchTimeKeeper();
@@ -459,6 +471,22 @@ export default function TimeKeeperTable({}: // contractors,
     //     console.log(err);
     //     setLoading(false);
     //   });
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    setLoading(true);
+    await axios
+      .put(`/api/timekeeper/${id}`, {
+        status: status,
+      })
+      .then((res) => {
+        fetchTimeKeeper();
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   const fetchContrators = async () => {
@@ -489,7 +517,9 @@ export default function TimeKeeperTable({}: // contractors,
         `/api/timekeeper/gettimekeepers?month=${value?.format(
           "MM/YYYY"
         )}&role=${session?.user
-          ?.role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${contractorName}&attendancedate=${
+          ?.role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${
+          contractorName || "all"
+        }&attendancedate=${
           attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
         }&orderBy=${orderBy}&filter=${debouncedFilter}`
       )
@@ -596,8 +626,9 @@ export default function TimeKeeperTable({}: // contractors,
       const res = await axios.get(
         `/api/timekeeper/gettimekeepers?month=${value?.format(
           "MM/YYYY"
-        )}&role=${session?.user
-          ?.role}&contractorname=${contractorName}&attendancedate=${
+        )}&role=${session?.user?.role}&contractorname=${
+          contractorName || "all"
+        }&attendancedate=${
           attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
         }&orderBy=${orderBy}&filter=${debouncedFilter}`
       );
@@ -643,6 +674,15 @@ export default function TimeKeeperTable({}: // contractors,
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const editOption = (comments: any[]) => {
+    const comment = comments.find(
+      (c) => c.role === "Corporate" || c.role === "HoCommercialAuditor"
+    );
+    if (comment && session?.user?.role === "PlantCommercial") return false;
+
+    return true;
   };
 
   return (
@@ -775,6 +815,16 @@ export default function TimeKeeperTable({}: // contractors,
                         <TableCell>{row.department || "-"}</TableCell>
                         <TableCell>{row.designation || "-"}</TableCell>
                         <TableCell>{row.gender || "-"}</TableCell>
+                        <TableCell
+                          onClick={() => {
+                            if (session?.user?.role === "PlantCommercial") {
+                              setStatusChange(true);
+                              setRejectId(row.id as string);
+                            }
+                          }}
+                        >
+                          {row.status || "-"}
+                        </TableCell>
 
                         <TableCell
                           onClick={() => handleOpen1(row.id as string)}
@@ -786,7 +836,6 @@ export default function TimeKeeperTable({}: // contractors,
                         </TableCell>
                         {session?.user?.role === "HR" && (
                           <>
-                            <TableCell>{row.status || "Pending"}</TableCell>
                             <TableCell>
                               {!row.status ? (
                                 <Box
@@ -802,9 +851,10 @@ export default function TimeKeeperTable({}: // contractors,
                                     <Done sx={{ color: "#673AB7" }} />
                                   </Button>
                                   <Button
-                                    onClick={() =>
-                                      handleReject(row.id as string)
-                                    }
+                                    onClick={() => {
+                                      setRejectId(row.id as string);
+                                      setRejectModal(true);
+                                    }}
                                   >
                                     <Close sx={{ color: "#673AB7" }} />
                                   </Button>
@@ -815,14 +865,21 @@ export default function TimeKeeperTable({}: // contractors,
                             </TableCell>
                           </>
                         )}
-                        <TableCell size="small">
-                          <IconButton
-                            onClick={() => router.push(`/details/${row.id}`)}
-                            sx={{ m: 0 }}
-                          >
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </TableCell>
+                        {(row.status === "NoChanges" ||
+                          session?.user?.role !== "TimeKeeper") &&
+                          session?.user?.role !== "HR" &&
+                          editOption(row.comment as any) && (
+                            <TableCell size="small">
+                              <IconButton
+                                onClick={() =>
+                                  router.push(`/details/${row.id}`)
+                                }
+                                sx={{ m: 0 }}
+                              >
+                                <Edit fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          )}
                       </TableRow>
                     );
                   })}
@@ -861,6 +918,13 @@ export default function TimeKeeperTable({}: // contractors,
         open1={open1}
         handleClose={handleClose}
         selected1={selected1}
+        rejectModal={rejectModal}
+        handleReject={(comment) => handleReject(rejectId, comment)}
+        handleStatusChange={(status) => handleStatusChange(rejectId, status)}
+        statusChange={statusChange}
+        currentstatus={
+          timekeeper.find((t) => t.id === rejectId)?.status as string
+        }
       />
     </Box>
   );

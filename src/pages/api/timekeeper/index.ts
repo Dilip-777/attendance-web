@@ -10,20 +10,8 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "PUT") {
-  
     const { comment, uploadDocument, id, userId, userName, role, ...body } =
       req.body;
-
-    //   const timekeeper = await prisma.timeKeeper.update({
-    //     where: {
-    //       id: id,
-    //     },
-    //     data: {
-    //       ...body,
-    //     }
-    // })
-
-    
 
     if (role !== "TimeKeeper") {
       const timekeeper = await prisma.timeKeeper.update({
@@ -41,7 +29,7 @@ export default async function handler(
           status: "Pending",
         },
       });
-      const savedTimekeeper = await prisma.saveTimekeeper.create({
+      await prisma.saveTimekeeper.create({
         data: {
           id: id,
           contractorid: timekeeper.contractorid,
@@ -105,18 +93,18 @@ export default async function handler(
     }
     res.status(200).json({ success: true });
   } else if (req.method === "DELETE") {
-      const { ids } = req.body;
-      if(ids) {
-        await prisma.timeKeeper.deleteMany({   
-          where: {
-            id: {
-              in: ids
-            }
-          }
-        })
-      } else {
-        await prisma.timeKeeper.deleteMany();
-      }
-     res.status(200).json({ success: true });
+    const { ids } = req.body;
+    if (ids) {
+      await prisma.timeKeeper.deleteMany({
+        where: {
+          id: {
+            in: ids,
+          },
+        },
+      });
+    } else {
+      await prisma.timeKeeper.deleteMany();
+    }
+    res.status(200).json({ success: true });
   }
 }
