@@ -4,7 +4,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 
 interface props {
-  value: Dayjs;
+  value: Dayjs | null;
   onChange: (value: Dayjs | null) => void;
   label?: string;
 }
@@ -14,13 +14,23 @@ export default function MonthSelect({ value, onChange, label }: props) {
     <Box display="flex" flexDirection="column">
       {label && <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>}
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DatePicker
-          sx={{ minWidth: "15rem" }}
-          views={["month", "year"]}
-          value={value}
-          onChange={(newValue) => onChange(newValue)}
-          maxDate={dayjs()}
-        />
+        {value ? (
+          <DatePicker
+            sx={{ minWidth: "15rem" }}
+            views={["month", "year"]}
+            value={value}
+            onChange={(newValue) => onChange(newValue)}
+            maxDate={dayjs()}
+          />
+        ) : (
+          <DatePicker
+            sx={{ minWidth: "15rem" }}
+            views={["month", "year"]}
+            // value={value}
+            onChange={(newValue) => onChange(newValue)}
+            maxDate={dayjs()}
+          />
+        )}
       </LocalizationProvider>
     </Box>
   );

@@ -192,6 +192,7 @@ model Contractor {
   workorders                  Workorder[]
   seperateSalary              SeperateSalary[]
   departments                 Department[]
+  deductions                  Deductions[]
 }
 
 model bills {
@@ -404,6 +405,18 @@ model SafetyItem {
   penalty              Int
   netchargeableamount  Int
   safety               Safety @relation(fields: [safetyId], references: [id], onDelete: Cascade)
+}
+
+model Deductions {
+  id             String       @id @default(cuid())
+  month          String
+  contractorId   String
+  contractorName String?
+  gsthold       Int        @default(0)
+  gstrelease    Int        @default(0)
+  advance       Int        @default(0)
+  anyother      Int        @default(0)
+  contractor     Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
 model Automobile {

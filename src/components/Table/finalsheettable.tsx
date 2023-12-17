@@ -9,6 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import _ from "lodash";
 import { IconButton, Tooltip } from "@mui/material";
+import { Deductions } from "@prisma/client";
 
 export default function FinalSheetTable({
   storededuction,
@@ -16,12 +17,14 @@ export default function FinalSheetTable({
   hourlyrows,
   hourlytotals,
   handleHourlyPrint,
+  deduction,
 }: {
   storededuction: number;
   safetydeduction: number;
   hourlyrows: any[];
   hourlytotals: any;
   handleHourlyPrint: () => void;
+  deduction: Deductions | null;
 }) {
   const headers = [
     { id: "date", label: "Type" },
@@ -179,7 +182,12 @@ export default function FinalSheetTable({
                       label: "NET AMOUNT PAYABLE",
                       value: hourlytotals.netpayable,
                     },
-                    { label: "GST HOLD (IF ANY)", value: 0 },
+                    {
+                      label: "GST HOLD (IF ANY)",
+                      value:
+                        (deduction?.gstrelease || 0) -
+                          (deduction?.gsthold || 0) || 0,
+                    },
                     {
                       label: "SAFETY PENALTY / EXTRA PPE / EXTRA HELMET",
                       value: safetydeduction,
@@ -188,14 +196,24 @@ export default function FinalSheetTable({
                       label: "CONSUMABLES / CHARGABLE ITEMS",
                       value: storededuction,
                     },
-                    { label: "ADJUSTMENT OF ADVANCE AMOUNT", value: 0 },
-                    { label: "ANY OTHER DEDUCTIONS (IF ANY)", value: 0 },
+                    {
+                      label: "ADJUSTMENT OF ADVANCE AMOUNT",
+                      value: deduction?.advance || 0,
+                    },
+                    {
+                      label: "ANY OTHER DEDUCTIONS (IF ANY)",
+                      value: deduction?.anyother || 0,
+                    },
                     {
                       label: "FINAL PAYABLE",
                       value:
                         hourlytotals.netpayable -
                         safetydeduction -
-                        storededuction,
+                        storededuction +
+                        ((deduction?.gstrelease || 0) -
+                          (deduction?.gsthold || 0) || 0) -
+                        (deduction?.advance || 0) -
+                        (deduction?.anyother || 0),
                     },
                   ].map((d) => (
                     <TableRow>

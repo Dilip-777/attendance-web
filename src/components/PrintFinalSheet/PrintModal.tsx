@@ -12,9 +12,12 @@ import {
   IconButton,
   Typography,
   ButtonGroup,
+  TextField,
+  Grid,
 } from "@mui/material";
 import {
   Contractor,
+  Deductions,
   Department,
   Designations,
   Safety,
@@ -26,16 +29,24 @@ import Close from "@mui/icons-material/Close";
 import { useRouter } from "next/router";
 import { print } from "@/components/PrintFinalSheet";
 import PrintExcel from "./Printexceel";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 350,
+  width: {
+    xs: 350,
+    sm: 400,
+    md: 500,
+    lg: 600,
+  },
   bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
+  borderRadius: 2,
 };
 
 interface d extends Department {
@@ -45,61 +56,65 @@ interface d extends Department {
 interface Props {
   open: boolean;
   handleClose: () => void;
-  rows: any;
-  totals: any;
-  total: number;
-  departments: d[];
   contractor: Contractor;
-  workorder: Workorder | undefined;
   date: string;
-  store: Stores | null;
-  safety: Safety | null;
-  payouttracker: payoutTracker;
-  prevMonthAmount: number;
-  prevprevMonthAmount: number;
-  prevYearAmount: number;
-  designations: Designations[];
-  month: string;
 }
 
 export default function PrintModal({
   open,
   handleClose,
-  totals,
-  rows,
-  total,
-  departments,
   contractor,
-  workorder,
   date,
-  store,
-  safety,
-  payouttracker,
-  prevMonthAmount,
-  prevprevMonthAmount,
-  prevYearAmount,
-  designations,
-  month,
 }: Props) {
-  const router = useRouter();
-  const handlePrint = async () => {
-    // print(
-    //   rows,
-    //   totals,
-    //   total,
-    //   departments,
-    //   contractor,
-    //   workorder as Workorder,
-    //   month,
-    //   store,
-    //   safety,
-    //   payouttracker,
-    //   prevMonthAmount,
-    //   prevprevMonthAmount,
-    //   prevYearAmount,
-    //   designations
-    // );
+  const [deducations, setDeducations] = useState<Deductions | undefined>(
+    undefined
+  );
+  const [gsthold, setGsthold] = useState<number>(0);
+  const [gstrelease, setGstrelease] = useState<number>(0);
+  const [advance, setAdvance] = useState<number>(0);
+  const [anyother, setAnyother] = useState<number>(0);
+
+  const fetchDeducations = async () => {
+    // try {
+    //   const res = await axios.get(
+    //     `/api/deductions?contractorId=${contractor.id}&date=${date}`
+    //   );
+    //   const data = await res.data;
+    //   setDeducations(data);
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
+
+  const handleSubmit = async () => {
+    try {
+      const res = await axios.post("/api/deductions", {
+        contractorId: contractor.contractorId,
+        month: date,
+        gsthold: gsthold,
+        gstrelease: gstrelease,
+        advance: advance,
+        anyother: anyother,
+      });
+      const data = await res.data;
+      setDeducations(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeducations();
+  }, [contractor, date]);
+
+  useEffect(() => {
+    if (deducations) {
+      setGsthold(deducations.gsthold);
+      setGstrelease(deducations.gstrelease);
+      setAdvance(deducations.advance);
+      setAnyother(deducations.anyother);
+    }
+  }, [deducations]);
   return (
     <Modal
       aria-labelledby="transition-modal-title"
@@ -123,34 +138,48 @@ export default function PrintModal({
             <Close />
           </IconButton>
           <Stack spacing={3}>
-            <Typography variant="h3">Print Final Sheet</Typography>
-            <Stack spacing={2} direction="column" width="100%">
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() => handlePrint()}
-              >
-                Print Doc
-              </Button>
-              <PrintExcel
-                designations={designations}
-                departments={departments}
-                total={total}
-                rows={rows}
-                safety={safety}
-                // details={details}
-                store={store}
-                contractor={contractor}
-                date={date}
-                workorder={workorder}
-                month={month}
-                payouttracker={payouttracker}
-                prevMonthAmount={prevMonthAmount}
-                prevprevMonthAmount={prevprevMonthAmount}
-                prevYearAmount={prevYearAmount}
-                totals={totals}
-              />
-            </Stack>
+            <Typography variant="h3">Deductions</Typography>
+            <FormControl fullWidth>
+              <Grid spacing={2} container>
+                <Grid item xs={12} md={6}>
+                  <FormLabel>GST Hold</FormLabel>
+                  <TextField
+                    value={gsthold}
+                    onChange={(e) => setGsthold(Number(e.target.value))}
+                    type="number"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormLabel>GST Release</FormLabel>
+                  <TextField
+                    value={gstrelease}
+                    onChange={(e) => setGstrelease(Number(e.target.value))}
+                    type="number"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormLabel>Advance</FormLabel>
+                  <TextField
+                    value={advance}
+                    onChange={(e) => setAdvance(Number(e.target.value))}
+                    type="number"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormLabel>Any Other</FormLabel>
+                  <TextField
+                    value={anyother}
+                    onChange={(e) => setAnyother(Number(e.target.value))}
+                    type="number"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Button variant="contained" onClick={() => handleSubmit()}>
+                    Submit
+                  </Button>
+                </Grid>
+              </Grid>
+            </FormControl>
           </Stack>
         </Box>
       </Fade>

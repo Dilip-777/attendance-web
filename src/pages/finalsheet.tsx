@@ -11,6 +11,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
   Contractor,
+  Deductions,
   Department,
   Designations,
   Employee,
@@ -94,6 +95,7 @@ export default function FinalSheet({
   const [totalsRows, setTotalsRows] = useState<any>([]);
   const [hourlyrows, setHourlyRows] = useState<any>([]);
   const [hourlytotals, setHourlyTotals] = useState<any>();
+  const [deduction, setDeduction] = useState<Deductions | null>(null);
   const f = contractors.find((c) => c.contractorId === selectedContractor);
 
   const fetchHourlyRows = () => {
@@ -106,6 +108,17 @@ export default function FinalSheet({
     setHourlyRows(rows);
     setHourlyTotals(total);
   };
+
+  const fetchDeductions = async () => {
+    const res = await axios.get(
+      `/api/deductions?contractorId=${selectedContractor}&date=${value}`
+    );
+    setDeduction(res.data);
+  };
+
+  useEffect(() => {
+    fetchDeductions();
+  }, [selectedContractor, value]);
 
   useEffect(() => {
     fetchHourlyRows();
@@ -220,6 +233,7 @@ export default function FinalSheet({
       workorder: workorders.find(
         (c) => c.contractorId === f?.contractorId && c.startDate.includes(value)
       ),
+      deduction: deduction,
     });
   };
 
@@ -242,6 +256,7 @@ export default function FinalSheet({
       prevprevMonthAmount: Math.ceil(details?.prevprevMonthAmount),
       prevYearAmount: Math.ceil(details?.prevYearAmount),
       totals: totalsRows,
+      deduction: deduction,
     });
   };
 
@@ -445,6 +460,7 @@ export default function FinalSheet({
           hourlytotals={hourlytotals}
           handleHourlyPrint={handleHourlyPrint}
           handleMonthlyPrint={handleMonthlyPrint}
+          deduction={deduction}
         />
       )}
       <Divider sx={{ my: 2 }} />
@@ -496,22 +512,8 @@ export default function FinalSheet({
         ]}
       />
       <PrintModal
-        designations={designations}
-        departments={selectedDepartments}
-        total={totalPayable}
-        rows={rows}
-        totals={totalsRows}
-        safety={safety}
-        // details={details}
-        store={store}
         contractor={f as Contractor}
         date={value}
-        workorder={w}
-        month={value}
-        payouttracker={details?.payoutracker}
-        prevMonthAmount={Math.ceil(details?.prevMonthAmount)}
-        prevprevMonthAmount={Math.ceil(details?.prevprevMonthAmount)}
-        prevYearAmount={Math.ceil(details?.prevYearAmount)}
         open={open}
         // setOpen={setOpen}
         handleClose={handleClose}

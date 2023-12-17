@@ -2,6 +2,7 @@ import { plantname } from "@/constants";
 import { Button } from "@mui/material";
 import {
   Contractor,
+  Deductions,
   Department,
   Designations,
   Safety,
@@ -44,6 +45,7 @@ export const printMonthly = ({
   designations,
   month,
   totals,
+  deduction,
 }: {
   rows: any;
   total: number;
@@ -60,6 +62,7 @@ export const printMonthly = ({
   designations: Designations[];
   month: string;
   totals: any;
+  deduction: Deductions | null;
 }) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sheet 1");
@@ -355,15 +358,25 @@ export const printMonthly = ({
 
   const finalinfo = [
     ["NET AMOUNT PAYABLE", `${getRoundOff(total)}`],
-    ["GST Hold (if any)", 0],
+    [
+      "GST Hold (if any)",
+      getRoundOff(
+        (deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0
+      ),
+    ],
     ["SAFETY VIOLATION 'S PENALTY", getRoundOff(safety?.totalAmount || 0)],
     ["CONSUMABLES/ CHARGABLE ITEMS", getRoundOff(store?.totalAmount || 0)],
-    ["ADJUSTMENT OF ADVANCE AMOUNT", 0],
-    ["ANY OTHER DEDUCTIONS (IF ANY)", 0],
+    ["ADJUSTMENT OF ADVANCE AMOUNT", getRoundOff(deduction?.advance || 0)],
+    ["ANY OTHER DEDUCTIONS (IF ANY)", getRoundOff(deduction?.anyother || 0)],
     [
       "FINAL PAYABLE",
       getRoundOff(
-        total - (safety?.totalAmount || 0) - (store?.totalAmount || 0)
+        total -
+          (safety?.totalAmount || 0) -
+          (store?.totalAmount || 0) +
+          ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0) -
+          (deduction?.advance || 0) -
+          (deduction?.anyother || 0)
       ),
     ],
   ];
@@ -757,7 +770,7 @@ const table = ({
         ?.allowed_wrking_hr_per_day || "-"
     );
     const restdata = rows.map((r: any) => {
-      return getRoundOff(_.get(r, s.id, "-"));
+      return getRoundOff(_.get(r, s.id, "-")) || "0";
     });
 
     const datarow = worksheet.addRow([...data, ...restdata]);

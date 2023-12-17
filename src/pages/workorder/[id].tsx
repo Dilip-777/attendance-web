@@ -131,6 +131,8 @@ export default function AddWordOrder({
           }}
         >
           {({ handleSubmit, values, errors }) => {
+            console.log(values);
+
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={6} mt={2} container>
@@ -142,7 +144,7 @@ export default function AddWordOrder({
                       disabled={false}
                       options={
                         contractors?.map((contractor) => ({
-                          value: contractor.id,
+                          value: contractor.contractorId,
                           label: contractor.contractorname,
                         })) || []
                       }

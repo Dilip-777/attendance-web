@@ -141,7 +141,9 @@ const MonthlyPlantCommercialTable = ({
       >
         <Typography variant="h4" sx={{ fontWeight: "700" }}>
           {ot ? "OT Hrs" : "Attendance"} of {contractor.contractorname}{" "}
-          <span style={{ marginLeft: "5rem" }}>Month - Sept 2023</span>
+          <span style={{ marginLeft: "5rem" }}>
+            Month - {dayjs(value, "MM/YYYY").format("MMMM YYYY")}
+          </span>
         </Typography>
         <Tooltip title="Print" sx={{ alignSelf: "flex-end", mr: 3 }}>
           <IconButton

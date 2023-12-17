@@ -1,6 +1,6 @@
 import Head from "next/head";
 import * as React from "react";
-import { alpha } from "@mui/material/styles";
+import { alpha, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -307,6 +307,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
   const [selectedWorkorder, setSelectedWorkorder] = React.useState<
     string | undefined
   >(undefined);
+  const theme = useTheme();
 
   const handleClose = () => {
     setOpen(false);
@@ -341,7 +342,6 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
         selected.slice(selectedIndex + 1)
       );
     }
-
     setSelected(newSelected);
   };
 
@@ -475,34 +475,65 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                         {row.repeatOrOneTime}
                       </TableCell>
 
-                      <TableCell
-                        onClick={() => {
-                          router.push(
-                            `/uploadedFiles/${row.amendmentDocument}`
-                          );
-                        }}
-                        align="center"
-                        sx={{ minWidth: 150 }}
-                      >
-                        View Document
+                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                        {row.amendmentDocument ? (
+                          <Typography
+                            component="a"
+                            href={row.amendmentDocument}
+                            target="_blank"
+                            sx={{
+                              textDecoration: "none",
+                              color: theme.palette.secondary.dark,
+                              "&:hover": {
+                                textDecoration: "underline",
+                              },
+                            }}
+                          >
+                            View Document
+                          </Typography>
+                        ) : (
+                          <Typography>No Document</Typography>
+                        )}
                       </TableCell>
-                      <TableCell
-                        onClick={() => {
-                          router.push(`/uploadedFiles/${row.addendumDocument}`);
-                        }}
-                        align="center"
-                        sx={{ minWidth: 150 }}
-                      >
-                        View Document
+                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                        {row.addendumDocument ? (
+                          <Typography
+                            component="a"
+                            href={row.addendumDocument}
+                            target="_blank"
+                            sx={{
+                              textDecoration: "none",
+                              color: theme.palette.secondary.dark,
+                              "&:hover": {
+                                textDecoration: "underline",
+                              },
+                            }}
+                          >
+                            View Document
+                          </Typography>
+                        ) : (
+                          <Typography>No Document</Typography>
+                        )}
                       </TableCell>
-                      <TableCell
-                        onClick={() => {
-                          router.push(`/uploadedFiles/${row.uploadDocument}`);
-                        }}
-                        align="center"
-                        sx={{ minWidth: 150 }}
-                      >
-                        View Document
+                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                        {row.uploadDocument ? (
+                          <Typography
+                            component="a"
+                            href={row.uploadDocument}
+                            target="_blank"
+                            sx={{
+                              textDecoration: "none",
+                              color: theme.palette.secondary.dark,
+                              "&:hover": {
+                                textDecoration: "underline",
+                              },
+                            }}
+                          >
+                            View Document
+                          </Typography>
+                        ) : (
+                          <Typography>No Document</Typography>
+                        )}
                       </TableCell>
 
                       <TableCell size="small" align="center">

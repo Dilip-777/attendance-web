@@ -3,6 +3,7 @@ import FinalSheetTable from "./finalsheettable";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import {
   Contractor,
+  Deductions,
   Department,
   Designations,
   Employee,
@@ -45,6 +46,7 @@ export default function FinalSheetta({
   hourlytotals,
   handleHourlyPrint,
   handleMonthlyPrint,
+  deduction,
 }: {
   rows: any;
   total: number;
@@ -58,6 +60,7 @@ export default function FinalSheetta({
   hourlytotals: any;
   handleHourlyPrint: () => void;
   handleMonthlyPrint: () => void;
+  deduction: Deductions | null;
 }) {
   const sidebar = designations
     .filter((d) => d.departmentname === department?.department)
@@ -112,6 +115,7 @@ export default function FinalSheetta({
           storededuction={storededuction}
           safetydeduction={safetydeduction}
           handleHourlyPrint={handleHourlyPrint}
+          deduction={deduction}
         />
       </Box>
       {departments.filter((d) => d.basicsalary_in_duration === "Monthly")
@@ -214,7 +218,10 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     GST Hold
                   </TableCell>
-                  <TableCell align="center">{0}</TableCell>
+                  <TableCell align="center">
+                    {(deduction?.gstrelease || 0) - (deduction?.gsthold || 0) ||
+                      0}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -238,7 +245,9 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Adjustment Of Advance Amount
                   </TableCell>
-                  <TableCell align="center">0</TableCell>
+                  <TableCell align="center">
+                    {deduction?.advance || 0}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -246,7 +255,7 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Any Other Deductions
                   </TableCell>
-                  <TableCell align="center">{0}</TableCell>
+                  <TableCell align="center">{deduction?.anyother}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -256,7 +265,15 @@ export default function FinalSheetta({
                   </TableCell>
                   <TableCell align="center">
                     {Math.ceil(
-                      total > 0 ? total - storededuction - safetydeduction : 0
+                      total > 0
+                        ? total -
+                            storededuction -
+                            safetydeduction +
+                            ((deduction?.gstrelease || 0) -
+                              (deduction?.gsthold || 0) || 0) -
+                            (deduction?.advance || 0) -
+                            (deduction?.anyother || 0)
+                        : 0
                     ).toLocaleString("en-IN")}
                   </TableCell>
                 </TableRow>
