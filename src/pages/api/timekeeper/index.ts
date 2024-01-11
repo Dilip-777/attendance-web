@@ -10,8 +10,16 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "PUT") {
-    const { comment, uploadDocument, id, userId, userName, role, ...body } =
-      req.body;
+    const {
+      comment,
+      uploadDocument,
+      id,
+      userId,
+      userName,
+      role,
+      changes,
+      ...body
+    } = req.body;
 
     if (role !== "TimeKeeper") {
       const timekeeper = await prisma.timeKeeper.update({
@@ -41,30 +49,16 @@ export default async function handler(
       });
     }
 
-    const iscommented = await prisma.comment.findMany({
-      where: {
-        timekeeperId: id,
+    await prisma.comment.create({
+      data: {
+        comment: comment,
         userId: userId,
+        userName: userName,
+        changes: changes,
+        role: role,
+        timekeeperId: id,
       },
     });
-    iscommented.length > 0
-      ? await prisma.comment.update({
-          where: {
-            id: iscommented[0].id,
-          },
-          data: {
-            comment: comment,
-          },
-        })
-      : await prisma.comment.create({
-          data: {
-            comment: comment,
-            userId: userId,
-            userName: userName,
-            role: role,
-            timekeeperId: id,
-          },
-        });
     if (uploadDocument) {
       const isDocumentUploaded = await prisma.upload.findMany({
         where: {

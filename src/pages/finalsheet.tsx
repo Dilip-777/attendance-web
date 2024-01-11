@@ -363,7 +363,7 @@ export default function FinalSheet({
             </FormControl>
           </Stack>
 
-          <Button
+          {/* <Button
             variant="contained"
             sx={{
               ml: "auto",
@@ -375,7 +375,7 @@ export default function FinalSheet({
             onClick={() => setOpen(true)}
           >
             Print
-          </Button>
+          </Button> */}
           {/* <PrintPdf
             designations={designations}
             department={

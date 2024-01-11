@@ -50,7 +50,10 @@ const ImportData = dynamic(() => import("@/components/import"));
 const CustomModal = dynamic(
   () => import("@/components/Timekeeper/ViewCommentsDocuments")
 );
-const FormSelect = dynamic(() => import("@/ui-component/FormSelect"));
+
+interface TimeKeeperWithComment extends TimeKeeper {
+  comment: Comment[];
+}
 // import ImportData from "@/components/import";
 // import FormSelect from "@/ui-component/FormSelect";
 // import CustomModal from "@/components/Timekeeper/ViewCommentsDocuments";
@@ -378,7 +381,9 @@ export default function TimeKeeperTable({}: // contractors,
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const router = useRouter();
-  const [timekeeper, setTimeKepeer] = React.useState<TimeKeeper[]>([]);
+  const [timekeeper, setTimeKepeer] = React.useState<TimeKeeperWithComment[]>(
+    []
+  );
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [rejectModal, setRejectModal] = React.useState(false);
@@ -766,7 +771,7 @@ export default function TimeKeeperTable({}: // contractors,
               />
 
               <TableBody>
-                {stableSort(timekeeper as any, getComparator(order, orderBy))
+                {timekeeper
                   .filter((t) => t.status !== "Pending")
                   .map((row, index) => {
                     const isItemSelected = !!isSelected(row.id as string);
@@ -781,7 +786,20 @@ export default function TimeKeeperTable({}: // contractors,
                         tabIndex={-1}
                         key={row.id}
                         selected={isItemSelected}
-                        sx={{ cursor: "pointer", position: "relative" }}
+                        sx={{
+                          cursor: "pointer",
+                          position: "relative",
+                          bgcolor:
+                            row.comment?.length > 0 ? "#ede7f6" : "transparent",
+                          ":hover": {
+                            "& .MuiTableCell-root": {
+                              backgroundColor:
+                                row.comment?.length > 0
+                                  ? "#ede7f6"
+                                  : "rgba(0, 0, 0, 0.04)",
+                            },
+                          },
+                        }}
                       >
                         <TableCell padding="checkbox">
                           <Checkbox

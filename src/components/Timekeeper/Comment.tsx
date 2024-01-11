@@ -24,6 +24,9 @@ const Comments = ({ comments }: { comments: Comment[] }) => {
           </Stack>
           <Divider />
           <Typography>{comment.comment}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            {comment.changes || ""}
+          </Typography>
         </Stack>
       ))}
     </Stack>

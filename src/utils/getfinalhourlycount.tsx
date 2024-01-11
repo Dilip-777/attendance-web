@@ -36,7 +36,7 @@ export const gethourlycount = (
     designation: Designations,
     obj: Record<string, string | number>
   ) => {
-    if (designation.designation.toLowerCase() === "svr") {
+    if (designation.designation.toLowerCase() === "supervisor") {
       const mandaysamount =
         mandays8hr * contractor.salarysvr8hr +
         mandays12hr * contractor.salarysvr12hr;
@@ -85,7 +85,7 @@ export const gethourlycount = (
         return false;
     }
     if (gender) {
-      if (item.designation.toLowerCase() === "svr") return false;
+      if (item.designation.toLowerCase() === "supervisor") return false;
       return gender.toLowerCase() === item.gender?.toLowerCase();
     } else return true;
   };
@@ -155,14 +155,14 @@ export const gethourlycount = (
       g: [
         { gender: "male", salary: contractor.salarymen8hr },
         { gender: "female", salary: contractor.salarywomen8hr },
-        { gender: "svr", salary: contractor.salarysvr8hr },
+        { gender: "supervisor", salary: contractor.salarysvr8hr },
       ],
     },
     {
       wrkhrs: 12,
       g: [
         { gender: "male", salary: contractor.salarymen12hr },
-        { gender: "svr", salary: contractor.salarysvr12hr },
+        { gender: "supervisor", salary: contractor.salarysvr12hr },
       ],
     },
   ];
@@ -174,8 +174,8 @@ export const gethourlycount = (
         filter({
           item: d,
           attendance: "0.5",
-          designation: a.gender === "svr" ? a.gender : undefined,
-          gender: a.gender === "svr" ? undefined : a.gender,
+          designation: a.gender === "supervisor" ? a.gender : undefined,
+          gender: a.gender === "supervisor" ? undefined : a.gender,
         })
       );
 
@@ -183,8 +183,8 @@ export const gethourlycount = (
         filter({
           item: d,
           attendance: "1",
-          designation: a.gender === "svr" ? a.gender : undefined,
-          gender: a.gender === "svr" ? undefined : a.gender,
+          designation: a.gender === "supervisor" ? a.gender : undefined,
+          gender: a.gender === "supervisor" ? undefined : a.gender,
         })
       );
       const obj: Record<string, string | number> = {
@@ -274,9 +274,13 @@ export const gethourlycount = (
             item: d,
             attendance: "0.5",
             designation:
-              des.designation.toLowerCase() === "svr" ? "svr" : undefined,
+              des.designation.toLowerCase() === "supervisor"
+                ? "supervisor"
+                : undefined,
             gender:
-              des.designation.toLowerCase() === "svr" ? undefined : des.gender,
+              des.designation.toLowerCase() === "supervisor"
+                ? undefined
+                : des.gender,
           })
       );
       const halftime8hr = data.filter(
@@ -286,9 +290,13 @@ export const gethourlycount = (
             item: d,
             attendance: "1",
             designation:
-              des.designation.toLowerCase() === "svr" ? "svr" : undefined,
+              des.designation.toLowerCase() === "supervisor"
+                ? "supervisor"
+                : undefined,
             gender:
-              des.designation.toLowerCase() === "svr" ? undefined : des.gender,
+              des.designation.toLowerCase() === "supervisor"
+                ? undefined
+                : des.gender,
           })
       );
 
@@ -299,9 +307,13 @@ export const gethourlycount = (
             item: d,
             attendance: "0.5",
             designation:
-              des.designation.toLowerCase() === "svr" ? "svr" : undefined,
+              des.designation.toLowerCase() === "supervisor"
+                ? "supervisor"
+                : undefined,
             gender:
-              des.designation.toLowerCase() === "svr" ? undefined : des.gender,
+              des.designation.toLowerCase() === "supervisor"
+                ? undefined
+                : des.gender,
           })
       );
 
@@ -312,9 +324,13 @@ export const gethourlycount = (
             item: d,
             attendance: "1",
             designation:
-              des.designation.toLowerCase() === "svr" ? "svr" : undefined,
+              des.designation.toLowerCase() === "supervisor"
+                ? "supervisor"
+                : undefined,
             gender:
-              des.designation.toLowerCase() === "svr" ? undefined : des.gender,
+              des.designation.toLowerCase() === "supervisor"
+                ? undefined
+                : des.gender,
           })
       );
 
@@ -330,7 +346,7 @@ export const gethourlycount = (
         halftime12hr.length / 2;
 
       obj["rate"] =
-        des.designation === "svr"
+        des.designation === "supervisor"
           ? contractor.salarysvr8hr
           : des.gender.toLowerCase() === "male"
           ? contractor.salarymen8hr

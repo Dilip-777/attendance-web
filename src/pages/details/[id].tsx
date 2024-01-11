@@ -153,6 +153,57 @@ export default function EditTimkeeper({
             } = values;
             setSubmitting(true);
 
+            console.log(
+              values.manualduration,
+              timekeeper?.manualduration,
+              typeof values.manualduration,
+              typeof timekeeper?.manualduration,
+              values.manualduration !== timekeeper?.manualduration
+            );
+
+            let changestr = "";
+            if (values.manualduration !== timekeeper?.manualduration) {
+              changestr += `Manual Duration changed from ${
+                timekeeper?.manualduration || timekeeper?.machineduration
+              } to ${values.manualduration}, `;
+            }
+            if (values.manualintime !== timekeeper?.manualintime) {
+              changestr += `Manual In Time changed from ${
+                timekeeper?.manualintime || timekeeper?.machineInTime
+              } to ${values.manualintime}, `;
+            }
+
+            if (values.manualouttime !== timekeeper?.manualouttime) {
+              changestr += `Manual Out Time changed from ${
+                timekeeper?.manualouttime || timekeeper?.machineOutTime
+              } to ${values.manualouttime}, `;
+            }
+
+            if (values.manualshift !== timekeeper?.manualshift) {
+              changestr += `Manual Shift changed from ${
+                timekeeper?.manualshift || timekeeper?.machineshift
+              } to ${values.manualshift}, `;
+            }
+
+            if (values.manualovertime !== timekeeper?.manualovertime) {
+              changestr += `Manual Overtime changed from ${
+                timekeeper?.manualovertime || timekeeper?.overtime
+              } to ${values.manualovertime}, `;
+            }
+
+            if (values.mleave !== timekeeper?.mleave) {
+              changestr += `Manual Leave changed from ${
+                timekeeper?.mleave || timekeeper?.eleave
+              } to ${values.mleave}, `;
+            }
+
+            if (values.attendance !== timekeeper?.attendance) {
+              changestr += `Attendance changed from ${
+                timekeeper?.attendance || 0
+              } to ${values.attendance}, `;
+            }
+            console.log(changestr);
+
             if (values.attendance === "1" && values.mleave !== "0") {
               setErrors({ mleave: "Manual Leave should be 0 nmmber" });
               return;
@@ -167,6 +218,7 @@ export default function EditTimkeeper({
                 attendance: values.attendance.toString(),
                 mleave: values.mleave.toString(),
                 role: role,
+                changes: changestr,
                 ...others,
               })
               .then((res) => {

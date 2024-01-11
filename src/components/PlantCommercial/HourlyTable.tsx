@@ -21,6 +21,7 @@ import _ from "lodash";
 import getHourlyCount from "@/utils/gethourlycount";
 import { IconButton, Tooltip } from "@mui/material";
 import handleprint from "./printexcel";
+import { useSession } from "next-auth/react";
 
 interface DesignationwithSalary extends Designations {
   seperateSalary: SeperateSalary[];
@@ -60,6 +61,7 @@ const HourlyTable = ({
   const [colspan, setColspan] = React.useState(0);
   const [colspan1, setColspan1] = React.useState(0);
   const [netTotal, setNetTotal] = React.useState(0);
+  const { data: session } = useSession();
   const sgst = Math.ceil(total * 0.09);
 
   const fetchTimekeepers = async () => {
@@ -72,7 +74,8 @@ const HourlyTable = ({
       contractor,
       departments,
       wrkhrs,
-      ot
+      ot,
+      session?.user?.role
     );
 
     setAllCounts(allcounts);
@@ -283,7 +286,7 @@ const HourlyTable = ({
                 <TableCell>Loading...</TableCell>
               </TableRow>
             )}
-            {!ot && (
+            {!ot && session?.user?.role !== "HR" && (
               <TableRow>
                 {headcells.map((headcell) => (
                   <TableCell
@@ -303,6 +306,7 @@ const HourlyTable = ({
             )}
 
             {!ot &&
+              session?.user?.role !== "HR" &&
               allcounts.map((a) => (
                 <TableRow key={a.date}>
                   {headcells.map((headcell) => (

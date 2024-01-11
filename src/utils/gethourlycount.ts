@@ -49,7 +49,8 @@ const getHourlyCount = (
   departments: DepartmentDesignation[] = [],
 
   wrkhrs?: number,
-  calot?: boolean
+  calot?: boolean,
+  role?: string
 ) => {
   const m = dayjs(month).daysInMonth();
 
@@ -83,7 +84,7 @@ const getHourlyCount = (
     designation: DesignationwithSalary,
     value: number
   ) => {
-    if (designation.designation.toLowerCase() === "svr") {
+    if (designation.designation.toLowerCase() === "supervisor") {
       svrcount[id] = ((svrcount[id] as number) || 0) + value;
     } else if (designation.gender.toLowerCase() === "male") {
       malecount[id] = ((malecount[id] as number) || 0) + value;
@@ -254,110 +255,119 @@ const getHourlyCount = (
       attendancecount["total"] =
         (attendancecount.total as number) +
         (Number(_.get(attendancecount, id, 0)) || 0);
-      const s = des.seperateSalary?.find(
-        (s) => s.contractorId === contractor.contractorId
-      );
-      if (s) {
-        rate[id] = s.salary;
-      } else if (wrkhrs === 8) {
-        if (des.gender.toLowerCase() === "female") {
-          rate[id] = contractor.salarywomen8hr;
-        } else if (des.designation.toLowerCase() === "svr") {
-          rate[id] = contractor.salarysvr8hr;
+      if (role !== "HR") {
+        const s = des.seperateSalary?.find(
+          (s) => s.contractorId === contractor.contractorId
+        );
+        if (s) {
+          rate[id] = s.salary;
+        } else if (wrkhrs === 8) {
+          if (des.gender.toLowerCase() === "female") {
+            rate[id] = contractor.salarywomen8hr;
+          } else if (des.designation.toLowerCase() === "supervisor") {
+            rate[id] = contractor.salarysvr8hr;
+          } else {
+            rate[id] = contractor.salarymen8hr;
+          }
+        } else if (wrkhrs === 12) {
+          if (des.designation.toLowerCase() === "supervisor")
+            rate[id] = contractor.salarysvr12hr;
+          else {
+            rate[id] = contractor.salarymen12hr;
+          }
         } else {
-          rate[id] = contractor.salarymen8hr;
+          rate[id] = 0;
         }
-      } else if (wrkhrs === 12) {
-        if (des.designation.toLowerCase() === "svr")
-          rate[id] = contractor.salarysvr12hr;
-        else {
-          rate[id] = contractor.salarymen12hr;
-        }
-      } else {
-        rate[id] = 0;
       }
       //   totalManDayAmount[id] = getRoundOff((_.get(attendancecount, id, 0) as number) * Number(_.get(rate, id, 0)));
       //   if (!wrkhrs) {
-      const a8 = f8.length + hf8.length / 2;
-      const a12 = f12.length + hf12.length / 2;
-      totalManDayAmount[id] = getRoundOff(
-        a8 * des.basicsalary + a12 * des.basicsalaryfor12hr
-      );
-      //   }
+      if (role !== "HR") {
+        const a8 = f8.length + hf8.length / 2;
+        const a12 = f12.length + hf12.length / 2;
+        totalManDayAmount[id] = getRoundOff(
+          a8 * des.basicsalary + a12 * des.basicsalaryfor12hr
+        );
+        //   }
 
-      assignCounts(
-        "mandaysamount",
-        des,
-        Number(_.get(totalManDayAmount, id, 0))
-      );
-
-      totalManDayAmount["total"] = getRoundOff(
-        (totalManDayAmount.total as number) +
+        assignCounts(
+          "mandaysamount",
+          des,
           Number(_.get(totalManDayAmount, id, 0))
-      );
+        );
 
-      const o8 = f8.reduce(
-        (acc, curr) =>
-          acc +
-          parseInt(
-            parseInt(curr.manualovertime as string) === 0
-              ? "0"
-              : curr.manualovertime || curr.overtime
-          ),
-        0
-      );
+        totalManDayAmount["total"] = getRoundOff(
+          (totalManDayAmount.total as number) +
+            Number(_.get(totalManDayAmount, id, 0))
+        );
 
-      const o12 = f12.reduce(
-        (acc, curr) =>
-          acc +
-          parseInt(
-            parseInt(curr.manualovertime as string) === 0
-              ? "0"
-              : curr.manualovertime || curr.overtime
-          ),
-        0
-      );
+        const o8 = f8.reduce(
+          (acc, curr) =>
+            acc +
+            parseInt(
+              parseInt(curr.manualovertime as string) === 0
+                ? "0"
+                : curr.manualovertime || curr.overtime
+            ),
+          0
+        );
 
-      totalovertime[id] = getRoundOff(o8 + o12);
-      assignCounts("othrs", des, Number(_.get(totalovertime, id, 0)));
-      totalovertime["total"] = getRoundOff(
-        (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
-      );
+        const o12 = f12.reduce(
+          (acc, curr) =>
+            acc +
+            parseInt(
+              parseInt(curr.manualovertime as string) === 0
+                ? "0"
+                : curr.manualovertime || curr.overtime
+            ),
+          0
+        );
 
-      const amount8 = getRoundOff((o8 * des.basicsalary) / 8);
-      const amount12 = getRoundOff((o12 * des.basicsalaryfor12hr) / 12);
-      otamount[id] = getRoundOff(amount8 + amount12);
+        totalovertime[id] = getRoundOff(o8 + o12);
+        assignCounts("othrs", des, Number(_.get(totalovertime, id, 0)));
+        totalovertime["total"] = getRoundOff(
+          (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
+        );
 
-      assignCounts("otamount", des, Number(_.get(otamount, id, 0)));
+        const amount8 = getRoundOff((o8 * des.basicsalary) / 8);
+        const amount12 = getRoundOff((o12 * des.basicsalaryfor12hr) / 12);
+        otamount[id] = getRoundOff(amount8 + amount12);
 
-      otamount["total"] = getRoundOff(
-        (otamount.total as number) + Number(_.get(otamount, id, 0))
-      );
-      totalnetamount[id] = getRoundOff(
-        Number(_.get(totalManDayAmount, id, 0)) + Number(_.get(otamount, id, 0))
-      );
-      assignCounts("totalnetamount", des, Number(_.get(totalnetamount, id, 0)));
-      cprate[id] = des.servicecharge as number;
+        assignCounts("otamount", des, Number(_.get(otamount, id, 0)));
 
-      cpamount[id] = getRoundOff(
-        (Number(_.get(totalManDayAmount, id, 0)) *
-          Number(_.get(cprate, id, 0))) /
-          100
-      );
+        otamount["total"] = getRoundOff(
+          (otamount.total as number) + Number(_.get(otamount, id, 0))
+        );
+        totalnetamount[id] = getRoundOff(
+          Number(_.get(totalManDayAmount, id, 0)) +
+            Number(_.get(otamount, id, 0))
+        );
+        assignCounts(
+          "totalnetamount",
+          des,
+          Number(_.get(totalnetamount, id, 0))
+        );
+        cprate[id] = des.servicecharge as number;
 
-      cpamount["total"] = getRoundOff(
-        (cpamount.total as number) + Number(_.get(cpamount, id, 0))
-      );
-      total[id] = getRoundOff(
-        Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
-      );
-      gst1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.18));
-      billAmount1[id] = getRoundOff(
-        Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
-      );
-      tds1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.01));
-      netPayable1[id] =
-        Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0));
+        cpamount[id] = getRoundOff(
+          (Number(_.get(totalManDayAmount, id, 0)) *
+            Number(_.get(cprate, id, 0))) /
+            100
+        );
+
+        cpamount["total"] = getRoundOff(
+          (cpamount.total as number) + Number(_.get(cpamount, id, 0))
+        );
+        total[id] = getRoundOff(
+          Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
+        );
+        gst1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.18));
+        billAmount1[id] = getRoundOff(
+          Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
+        );
+        tds1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.01));
+        netPayable1[id] =
+          Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0));
+      }
     });
   });
 
@@ -374,9 +384,11 @@ const getHourlyCount = (
 
   const allcounts = [malecount, femalecount, svrcount, totalall];
 
-  if (calot) {
-    rows.push(othrs);
-    rows2.push(othrs);
+  if (role === "HR") {
+    if (calot) {
+      rows.push(othrs);
+      rows2.push(othrs);
+    } else rows.push(attendancecount);
     return {
       rows,
       total1: total.total,
@@ -387,6 +399,24 @@ const getHourlyCount = (
       total: totalManDayAmount.total,
     };
   }
+
+  // if (calot) {
+  //   if (role === "HR") {
+  //     rows.push(attendancecount);
+  //   } else {
+  //     rows.push(othrs);
+  //     rows2.push(othrs);
+  //   }
+  //   return {
+  //     rows,
+  //     total1: total.total,
+  //     netTotal: totalnetamount.total,
+  //     rows1: rows2,
+  //     totalnetPayable: netPayable1.total,
+  //     allcounts,
+  //     total: totalManDayAmount.total,
+  //   };
+  // }
 
   rows.push(
     ...[

@@ -242,20 +242,23 @@ export default function PlantCommercial({
     setLoadingBill(true);
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "attendance-web"); // Replace with your Cloudinary upload preset name
-    formData.append("resource_type", "raw");
+    // formData.append("file", file);
+    // formData.append("upload_preset", "attendance-web"); // Replace with your Cloudinary upload preset name
+    // formData.append("resource_type", "raw");
 
     try {
-      const response = await fetch(
-        "https://api.cloudinary.com/v1_1/dddvmk9xs/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      //   const response = await fetch(
+      //     "https://api.cloudinary.com/v1_1/dddvmk9xs/upload",
+      //     {
+      //       method: "POST",
+      //       body: formData,
+      //     }
+      //   );
 
-      const result = await response.json();
+      //   const result = await response.json();
+
+      formData.append("myFile", file);
+      const { data } = await axios.post("/api/upload", formData);
 
       const c = contractors.find((c) => c.contractorId === contractor1);
 
@@ -264,7 +267,7 @@ export default function PlantCommercial({
         contractorname: c?.contractorname,
         month: value,
         amount: total + sgst + sgst - (c?.servicecharge || 0),
-        document: result.secure_url,
+        document: data.file.newFilename,
       };
       const res = await axios.post("/api/uploadbill", body);
       setOpen(true);

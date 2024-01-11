@@ -479,7 +479,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                         {row.amendmentDocument ? (
                           <Typography
                             component="a"
-                            href={row.amendmentDocument}
+                            href={`/uploadedFiles/${row.amendmentDocument}`}
                             target="_blank"
                             sx={{
                               textDecoration: "none",
@@ -499,7 +499,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                         {row.addendumDocument ? (
                           <Typography
                             component="a"
-                            href={row.addendumDocument}
+                            href={`/uploadedFiles/${row.addendumDocument}`}
                             target="_blank"
                             sx={{
                               textDecoration: "none",
@@ -519,7 +519,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                         {row.uploadDocument ? (
                           <Typography
                             component="a"
-                            href={row.uploadDocument}
+                            href={`/uploadedFiles/${row.uploadDocument}`}
                             target="_blank"
                             sx={{
                               textDecoration: "none",

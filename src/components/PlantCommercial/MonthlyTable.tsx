@@ -23,6 +23,7 @@ import getEmployeesCalculation from "@/utils/getEmployeeacount";
 import { Tooltip, IconButton } from "@mui/material";
 import handleprint from "./printmonthly";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 interface HeadCell {
   id: string;
@@ -68,6 +69,7 @@ const MonthlyPlantCommercialTable = ({
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
   const [total, setTotal] = React.useState(0);
   const [nettotal, setNettotal] = React.useState(0);
+  const { data: session } = useSession();
 
   const headcells: HeadCell[] = [
     { id: "employeeId", label: "ID" },
@@ -97,7 +99,7 @@ const MonthlyPlantCommercialTable = ({
     { id: "totalamount", label: "Total Amount", ceil: true },
   ];
   headcells.push({ id: "total", label: "Total" });
-  if (!ot) headcells.push(...extraheadcells);
+  if (!ot && session?.user?.role !== "HR") headcells.push(...extraheadcells);
   const fetchTimekeepers = async () => {
     setLoading(true);
     const res = await axios.get(
@@ -213,6 +215,7 @@ const MonthlyPlantCommercialTable = ({
               </TableRow>
             )}
             {!ot &&
+              session?.user?.role !== "HR" &&
               [
                 { label: "Add 10%", value: Math.ceil(total * 0.1) },
                 {

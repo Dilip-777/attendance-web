@@ -14,6 +14,7 @@ import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import InsertDriveFile from "@mui/icons-material/InsertDriveFile";
 import { CLOUDINARY_URL, uploadprsetname } from "../../constants";
+import axios from "axios";
 
 const StyledCard = styled(Card)(
   ({ theme, isError }: { theme: Theme; isError: boolean }) => ({
@@ -52,7 +53,6 @@ const FileUpload: React.FC<Props> = ({
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  console.log(process.env);
 
   const handleChange = async (e: any) => {
     const file1 = e.target.files[0];
@@ -68,29 +68,28 @@ const FileUpload: React.FC<Props> = ({
     try {
       setLoading(true);
       const formData = new FormData();
-      // const formData = new FormData();
-      formData.append("file", file1);
-      formData.append("upload_preset", uploadprsetname); // Replace with your Cloudinary upload preset name
-      formData.append("resource_type", "raw");
+      // formData.append("file", file1);
+      // formData.append("upload_preset", uploadprsetname);
+      // formData.append("resource_type", "raw");
 
-      try {
-        const response = await fetch(CLOUDINARY_URL, {
-          method: "POST",
-          body: formData,
-        });
+      // try {
+      //   const response = await fetch(CLOUDINARY_URL, {
+      //     method: "POST",
+      //     body: formData,
+      //   });
 
-        const result = await response.json();
+      //   const result = await response.json();
 
-        setFieldValue(name, result.secure_url);
+      //   setFieldValue(name, result.secure_url);
 
-        // return result;
-      } catch (error) {
-        console.log(error);
-      }
-      // formData.append("myFile", file1);
-      // // const { data } = await axios.post("/api/upload", formData);
+      //   // return result;
+      // } catch (error) {
+      //   console.log(error);
+      // }
+      formData.append("myFile", file1);
+      const { data } = await axios.post("/api/upload", formData);
       // const data = Upload(file1);
-      // setFieldValue(name, data.file);
+      setFieldValue(name, data.file.newFilename);
       // console.log();
     } catch (error) {
       console.log(error);

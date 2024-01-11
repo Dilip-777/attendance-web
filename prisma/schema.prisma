@@ -350,6 +350,7 @@ model Comment {
   approval     Boolean    @default(false)
   role         Role
   timekeeperId String
+  changes      String?
   createdAt    DateTime  @updatedAt  @default(now()) 
   timekeeper   TimeKeeper @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
 }

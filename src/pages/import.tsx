@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import FormSelect from "@/ui-component/FormSelect";
+import axios from "axios";
 
 const Upload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -15,20 +16,21 @@ const Upload = () => {
     }
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "attendance-web"); // Replace with your Cloudinary upload preset name
-    formData.append("resource_type", "raw");
+    // formData.append("file", file);
+    // formData.append("upload_preset", "attendance-web"); // Replace with your Cloudinary upload preset name
+    // formData.append("resource_type", "raw");
 
-    const response = await fetch(
-      "https://api.cloudinary.com/v1_1/dddvmk9xs/upload",
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    // const response = await fetch(
+    //   "https://api.cloudinary.com/v1_1/dddvmk9xs/upload",
+    //   {
+    //     method: "POST",
+    //     body: formData,
+    //   }
+    // );
 
-    const result = await response.json();
-    console.log(result);
+    formData.append("myFile", file);
+    const { data } = await axios.post("/api/upload", formData);
+    setDocumentUrl(data.file.newFilename);
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -51,7 +53,11 @@ const Upload = () => {
       {documentUrl && (
         <div>
           <p>Document uploaded:</p>
-          <a href={documentUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            href={`/uploadedFiles/${documentUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {documentUrl.split("/").pop()}
           </a>
         </div>

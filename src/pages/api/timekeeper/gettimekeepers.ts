@@ -82,6 +82,14 @@ export default async function getTimeKeeper(
 
       const timekeepers = await prisma.timeKeeper.findMany({
         ...obj,
+        orderBy: [
+          {
+            employeeid: "asc",
+          },
+          {
+            attendancedate: "asc",
+          },
+        ],
         include: {
           comment: true,
         },
