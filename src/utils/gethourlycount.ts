@@ -179,13 +179,7 @@ const getHourlyCount = (
         const fhf = hf.filter((f) => f.gender === des.gender);
         // console.log(ff, fhf, 'ff, fhf', des.designation, des.gender[0].toLowerCase());
         const othrs = ff.reduce(
-          (acc, curr) =>
-            acc +
-            parseInt(
-              parseInt(curr.manualovertime as string) === 0
-                ? "0"
-                : curr.manualovertime || curr.overtime
-            ),
+          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
           0
         );
         obj[id] = calot ? othrs : ff.length + fhf.length / 2;
@@ -301,24 +295,12 @@ const getHourlyCount = (
         );
 
         const o8 = f8.reduce(
-          (acc, curr) =>
-            acc +
-            parseInt(
-              parseInt(curr.manualovertime as string) === 0
-                ? "0"
-                : curr.manualovertime || curr.overtime
-            ),
+          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
           0
         );
 
         const o12 = f12.reduce(
-          (acc, curr) =>
-            acc +
-            parseInt(
-              parseInt(curr.manualovertime as string) === 0
-                ? "0"
-                : curr.manualovertime || curr.overtime
-            ),
+          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
           0
         );
 

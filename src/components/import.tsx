@@ -13,7 +13,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
-import UploadIcon from "@mui/icons-material/Upload";
 import { Contractor } from "@prisma/client";
 import axios from "axios";
 import _ from "lodash";
@@ -177,7 +176,8 @@ function ImportData({
         machineshift: _.get(data, "Shift Code") || "-",
         attendance: getAttendance(_.get(data, "Att Status")) || "0",
         attendancedate: getDate(_.get(data, "Attendance Date"))?.toString(),
-        overtime: _.get(data, "Over Time", "00:00")?.slice(0, 2),
+        overtime:
+          parseFloat(_.get(data, "Over Time", "00:00")?.slice(0, 2)) || 0,
         machineduration: _.get(data, "Duration", "00:00"),
         eleave: data.e_leave || "0",
         gender: data.gender || "Male",

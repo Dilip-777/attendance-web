@@ -46,6 +46,7 @@ import {
   styled,
 } from "@mui/material";
 import _, { set } from "lodash";
+import PersonaliseColumns from "@/components/Timekeeper/PersonaliseColumn";
 const ImportData = dynamic(() => import("@/components/import"));
 const CustomModal = dynamic(
   () => import("@/components/Timekeeper/ViewCommentsDocuments")
@@ -108,49 +109,79 @@ function stableSort<T>(
   return stabilizedThis.map((el) => el[0]);
 }
 
+interface Column {
+  id: string;
+  label: string;
+  numeric: boolean;
+  included: boolean;
+  selected: boolean;
+  order: number;
+}
+
 const createHeadCells = (
   id: string,
   label: string,
   numeric: boolean,
-  included: boolean
+  included: boolean,
+  selected: boolean,
+  order: number
 ) => {
   return {
     id: id,
     label: label,
     numeric: numeric,
     included: included,
+    selected: selected,
+    order: order,
   };
 };
 
 const headCells = [
-  createHeadCells("employeeid", "Employee ID", false, false),
-  createHeadCells("employeename", "Employee Name", false, false),
-  createHeadCells("machineintime", "Machine In Time", false, false),
-  createHeadCells("machineouttime", "Machine Out Time", false, false),
-  createHeadCells("machineduration", "Machine Total Duration", false, false),
-  createHeadCells("machineshift", "Machine Shift", false, false),
-  createHeadCells("attendance", "Attendance", true, false),
-  createHeadCells("attendancedance", "Attendance Date", true, false),
-  createHeadCells("machineovertime", "Machine Over Time", true, false),
-  createHeadCells("machineleave", "Machine Leave", true, false),
-  createHeadCells("manualintime", "Manual In Time", false, false),
-  createHeadCells("manualouttime", "Manual Out Time", false, false),
-  createHeadCells("manualduration", "Manual Total Duration", false, false),
-  createHeadCells("manualshift", "Manual Shift", false, false),
-  createHeadCells("manualovertime", "Manual Over Time", true, false),
-  createHeadCells("manualleave", "Manual Leave", true, false),
+  createHeadCells("employeeid", "Employee ID", false, false, false, 0),
+  createHeadCells("employeename", "Employee Name", false, false, false, 1),
+  createHeadCells("machineInTime", "Machine In Time", false, false, false, 2),
+  createHeadCells("machineOutTime", "Machine Out Time", false, false, false, 3),
   createHeadCells(
-    "deployeeofdepartment",
+    "machineduration",
+    "Machine Total Duration",
+    false,
+    false,
+    false,
+    4
+  ),
+  createHeadCells("machineshift", "Machine Shift", false, false, false, 5),
+  createHeadCells("attendance", "Attendance", true, false, false, 6),
+  createHeadCells("attendancedate", "Attendance Date", true, false, false, 7),
+  createHeadCells("overtime", "Machine Over Time", true, false, false, 8),
+  createHeadCells("machineleave", "Machine Leave", true, false, false, 9),
+  createHeadCells("manualintime", "Manual In Time", false, false, false, 10),
+  createHeadCells("manualouttime", "Manual Out Time", false, false, false, 11),
+  createHeadCells(
+    "manualduration",
+    "Manual Total Duration",
+    false,
+    false,
+    false,
+    12
+  ),
+  createHeadCells("manualshift", "Manual Shift", false, false, false, 13),
+  createHeadCells("manualovertime", "Manual Over Time", true, false, false, 14),
+  createHeadCells("mleave", "Manual Leave", true, false, false, 15),
+  createHeadCells(
+    "department",
     "Deployee Of Department",
     false,
-    false
+    false,
+    false,
+    16
   ),
-  createHeadCells("designation", "Designation", false, false),
-  createHeadCells("gender", "Gender", false, false),
+  createHeadCells("designation", "Designation", false, false, false, 17),
+  createHeadCells("gender", "Gender", false, false, false, 18),
 
-  createHeadCells("status", "Status", false, false),
-  createHeadCells("comment", "Comment", false, false),
-  createHeadCells("uploaddocument", "Upload Document", false, false),
+  createHeadCells("status", "Status", false, false, false, 19),
+  createHeadCells("comment", "Comment", false, false, false, 20),
+  createHeadCells("uploaddocument", "Upload Document", false, false, false, 21),
+  createHeadCells("action", "Action", false, true, false, 22),
 ];
 
 interface EnhancedTableToolbarProps {
@@ -170,6 +201,7 @@ interface EnhancedTableToolbarProps {
   fetchTimeKeeper: () => void;
   attendanceDate: Dayjs | null;
   setAttendancedate: React.Dispatch<React.SetStateAction<Dayjs | null>>;
+  setOpenColumn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -189,6 +221,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     fetchTimeKeeper,
     attendanceDate,
     setAttendancedate,
+    setOpenColumn,
   } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -361,7 +394,15 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                   Approve
                 </MenuItem>
               )}
-              {/* <MenuItem onClick={handleClose}>Logout</MenuItem> */}
+
+              <MenuItem
+                onClick={() => {
+                  setOpenColumn(true);
+                  handleClose();
+                }}
+              >
+                Personalise Column
+              </MenuItem>
             </Menu>
           </div>
         </Stack>
@@ -378,12 +419,21 @@ export default function TimeKeeperTable({}: // contractors,
   const [orderBy, setOrderBy] = React.useState<string>("employeeid");
   const [filter, setFilter] = React.useState("");
   const [selected, setSelected] = React.useState<string[]>([]);
+  const [selectedColumn, setSelectedColumn] = React.useState(
+    headCells.filter((h) => h.order >= 0)
+  );
+  const [available, setAvailable] = React.useState(
+    headCells.filter((h) => h.order === -1)
+  );
+  const [openColumn, setOpenColumn] = React.useState(false);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(50);
   const router = useRouter();
   const [timekeeper, setTimeKepeer] = React.useState<TimeKeeperWithComment[]>(
     []
   );
+  const [attendance, setAttendance] = React.useState(0);
+  const [overtime, setOvertime] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [rejectModal, setRejectModal] = React.useState(false);
@@ -403,10 +453,25 @@ export default function TimeKeeperTable({}: // contractors,
   const [count, setCount] = React.useState(0);
   const { data: session } = useSession();
 
-  const headcell2 = createHeadCells("action", "Action", false, true);
+  const updateColumns = ({
+    selectedC,
+    available,
+  }: {
+    selectedC: Column[];
+    available: Column[];
+  }) => {
+    setSelectedColumn(selectedC);
+    setAvailable(available);
+    localStorage.setItem("selectedColumn", JSON.stringify(selectedC));
+  };
 
-  const extraHeadCells =
-    session?.user?.role === "HR" ? [...headCells, headcell2] : [...headCells];
+  React.useEffect(() => {
+    const selected = localStorage.getItem("selectedColumn");
+    if (selected) {
+      setSelectedColumn(JSON.parse(selected));
+    }
+  }, []);
+
   const handleClose = () => {
     setOpen(false);
     setOpen1(false);
@@ -523,7 +588,8 @@ export default function TimeKeeperTable({}: // contractors,
           "MM/YYYY"
         )}&role=${session?.user
           ?.role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${
-          contractorName || "all"
+          contractors.find((c) => c.contractorname === contractorName)
+            ?.contractorId || "all"
         }&attendancedate=${
           attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
         }&orderBy=${orderBy}&filter=${debouncedFilter}`
@@ -531,6 +597,8 @@ export default function TimeKeeperTable({}: // contractors,
       .then((res) => {
         setTimeKepeer(res.data.data);
         setCount(res.data.count);
+        setAttendance(res.data.attendance);
+        setOvertime(res.data.overtime);
       })
       .catch((err) => {
         console.log(err);
@@ -632,7 +700,8 @@ export default function TimeKeeperTable({}: // contractors,
         `/api/timekeeper/gettimekeepers?month=${value?.format(
           "MM/YYYY"
         )}&role=${session?.user?.role}&contractorname=${
-          contractorName || "all"
+          contractors.find((c) => c.contractorname === contractorName)
+            ?.contractorId || "all"
         }&attendancedate=${
           attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
         }&orderBy=${orderBy}&filter=${debouncedFilter}`
@@ -655,7 +724,7 @@ export default function TimeKeeperTable({}: // contractors,
           item.manualouttime?.toString() || "-",
           item.manualduration || "-",
           item.manualshift || "-",
-          item.manualovertime || "-",
+          item.manualovertime?.toString() || "-",
           item.mleave || "-",
           item.department?.toString() || "-",
           item.designation?.toString() || "-",
@@ -688,6 +757,81 @@ export default function TimeKeeperTable({}: // contractors,
     if (comment && session?.user?.role === "PlantCommercial") return false;
 
     return true;
+  };
+
+  const renderValue = (row: TimeKeeperWithComment, column: Column) => {
+    switch (column.id) {
+      case "status":
+        return (
+          <TableCell
+            onClick={() => {
+              if (session?.user?.role === "PlantCommercial") {
+                setStatusChange(true);
+                setRejectId(row.id as string);
+              }
+            }}
+          >
+            {row.status || "-"}
+          </TableCell>
+        );
+      case "comment":
+        return (
+          <TableCell onClick={() => handleOpen1(row.id as string)}>
+            View
+          </TableCell>
+        );
+      case "uploaddocument":
+        return (
+          <TableCell onClick={() => handleOpen(row.id as string)}>
+            View
+          </TableCell>
+        );
+      case "action":
+        return (
+          <>
+            {session?.user?.role === "HR" && (
+              <TableCell>
+                {!row.status ? (
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    sx={{ color: "#673AB7" }}
+                  >
+                    <Button onClick={() => handleApprove(row.id as string)}>
+                      <Done sx={{ color: "#673AB7" }} />
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setRejectId(row.id as string);
+                        setRejectModal(true);
+                      }}
+                    >
+                      <Close sx={{ color: "#673AB7" }} />
+                    </Button>
+                  </Box>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+            )}
+            {(row.status === "NoChanges" ||
+              session?.user?.role !== "TimeKeeper") &&
+              session?.user?.role !== "HR" &&
+              editOption(row.comment as any) && (
+                <TableCell size="small">
+                  <IconButton
+                    onClick={() => router.push(`/details/${row.id}`)}
+                    sx={{ m: 0 }}
+                  >
+                    <Edit fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              )}
+          </>
+        );
+      default:
+        return <TableCell>{_.get(row, column.id, "-") || "-"}</TableCell>;
+    }
   };
 
   return (
@@ -732,6 +876,7 @@ export default function TimeKeeperTable({}: // contractors,
             fetchTimeKeeper={fetchTimeKeeper}
             attendanceDate={attendancedate}
             setAttendancedate={setAttendancedate}
+            setOpenColumn={setOpenColumn}
           />
 
           <TableContainer
@@ -765,7 +910,7 @@ export default function TimeKeeperTable({}: // contractors,
                       contractorName === "all"
                   ).length
                 }
-                headCells={extraHeadCells}
+                headCells={selectedColumn}
                 orderby={orderBy}
                 setOrderby={setOrderBy}
               />
@@ -814,90 +959,9 @@ export default function TimeKeeperTable({}: // contractors,
                           />
                         </TableCell>
 
-                        <TableCell>{row.employeeid}</TableCell>
-                        <TableCell>{row.employeename}</TableCell>
-                        <TableCell>{row.machineInTime}</TableCell>
-                        <TableCell>{row.machineOutTime}</TableCell>
-                        <TableCell>{row.machineduration || "-"}</TableCell>
-                        <TableCell>{row.machineshift || "-"}</TableCell>
-                        <TableCell>{row.attendance || "-"}</TableCell>
-                        <TableCell>{row.attendancedate || "-"}</TableCell>
-                        <TableCell>{row.overtime || "-"}</TableCell>
-                        <TableCell>{row.eleave || "-"}</TableCell>
-                        <TableCell>{row.manualintime || "-"}</TableCell>
-                        <TableCell>{row.manualouttime || "-"}</TableCell>
-                        <TableCell>{row.manualduration || "-"}</TableCell>
-                        <TableCell>{row.manualshift || "-"}</TableCell>
-                        <TableCell>{row.manualovertime || "-"}</TableCell>
-                        <TableCell>{row.mleave || "-"}</TableCell>
-                        <TableCell>{row.department || "-"}</TableCell>
-                        <TableCell>{row.designation || "-"}</TableCell>
-                        <TableCell>{row.gender || "-"}</TableCell>
-                        <TableCell
-                          onClick={() => {
-                            if (session?.user?.role === "PlantCommercial") {
-                              setStatusChange(true);
-                              setRejectId(row.id as string);
-                            }
-                          }}
-                        >
-                          {row.status || "-"}
-                        </TableCell>
-
-                        <TableCell
-                          onClick={() => handleOpen1(row.id as string)}
-                        >
-                          View
-                        </TableCell>
-                        <TableCell onClick={() => handleOpen(row.id as string)}>
-                          View
-                        </TableCell>
-                        {session?.user?.role === "HR" && (
-                          <>
-                            <TableCell>
-                              {!row.status ? (
-                                <Box
-                                  display="flex"
-                                  alignItems="center"
-                                  sx={{ color: "#673AB7" }}
-                                >
-                                  <Button
-                                    onClick={() =>
-                                      handleApprove(row.id as string)
-                                    }
-                                  >
-                                    <Done sx={{ color: "#673AB7" }} />
-                                  </Button>
-                                  <Button
-                                    onClick={() => {
-                                      setRejectId(row.id as string);
-                                      setRejectModal(true);
-                                    }}
-                                  >
-                                    <Close sx={{ color: "#673AB7" }} />
-                                  </Button>
-                                </Box>
-                              ) : (
-                                "-"
-                              )}
-                            </TableCell>
-                          </>
-                        )}
-                        {(row.status === "NoChanges" ||
-                          session?.user?.role !== "TimeKeeper") &&
-                          session?.user?.role !== "HR" &&
-                          editOption(row.comment as any) && (
-                            <TableCell size="small">
-                              <IconButton
-                                onClick={() =>
-                                  router.push(`/details/${row.id}`)
-                                }
-                                sx={{ m: 0 }}
-                              >
-                                <Edit fontSize="small" />
-                              </IconButton>
-                            </TableCell>
-                          )}
+                        {selectedColumn.map((column) => {
+                          return renderValue(row, column);
+                        })}
                       </TableRow>
                     );
                   })}
@@ -920,15 +984,39 @@ export default function TimeKeeperTable({}: // contractors,
               </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50, 100]}
-            component="div"
-            count={count}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+            }}
+          >
+            <Stack
+              sx={{ width: "50%", alignItems: "center", paddingLeft: "2rem" }}
+              direction="row"
+              spacing={5}
+            >
+              <Typography variant="h4" component="div">
+                Total Attendance:{" "}
+                <span style={{ fontWeight: "500" }}>{attendance}</span>
+              </Typography>
+              <Typography variant="h4" component="div">
+                Total Overtime:{" "}
+                <span style={{ fontWeight: "500" }}>{overtime}</span>
+              </Typography>
+            </Stack>
+            <TablePagination
+              rowsPerPageOptions={[50, 100, 250, 500, 1000, 1500]}
+              component="div"
+              count={count}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                width: "50%",
+              }}
+            />
+          </Box>
         </Paper>
       )}
       <CustomModal
@@ -943,6 +1031,13 @@ export default function TimeKeeperTable({}: // contractors,
         currentstatus={
           timekeeper.find((t) => t.id === rejectId)?.status as string
         }
+      />
+      <PersonaliseColumns
+        availableColumns={available}
+        selectedColumns={selectedColumn}
+        handleClose={() => setOpenColumn(false)}
+        open={openColumn}
+        updateColumns={updateColumns}
       />
     </Box>
   );

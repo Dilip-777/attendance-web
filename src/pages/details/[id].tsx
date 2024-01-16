@@ -149,18 +149,10 @@ export default function EditTimkeeper({
               contractorName,
               attendance,
               mleave,
+              manualovertime,
               ...others
             } = values;
             setSubmitting(true);
-
-            console.log(
-              values.manualduration,
-              timekeeper?.manualduration,
-              typeof values.manualduration,
-              typeof timekeeper?.manualduration,
-              values.manualduration !== timekeeper?.manualduration
-            );
-
             let changestr = "";
             if (values.manualduration !== timekeeper?.manualduration) {
               changestr += `Manual Duration changed from ${
@@ -217,6 +209,8 @@ export default function EditTimkeeper({
                 userName: session?.user?.name,
                 attendance: values.attendance.toString(),
                 mleave: values.mleave.toString(),
+                manualovertime:
+                  parseFloat(values.manualovertime.toString()) || null,
                 role: role,
                 changes: changestr,
                 ...others,

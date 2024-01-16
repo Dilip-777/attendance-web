@@ -27,7 +27,7 @@ export default async function getTimeKeeper(
     };
 
     if (contractorname !== "all") {
-      wh.contractorname = contractorname;
+      wh.contractorid = contractorname;
     }
 
     if (attendancedate) {
@@ -49,6 +49,42 @@ export default async function getTimeKeeper(
       where: wh,
     });
 
+    const c = await prisma.timeKeeper.aggregate({
+      where: {
+        manualovertime: null,
+        ...wh,
+      },
+      _sum: {
+        overtime: true,
+      },
+    });
+
+    const c1 = await prisma.timeKeeper.aggregate({
+      where: {
+        NOT: {
+          manualovertime: null,
+        },
+        ...wh,
+      },
+      _sum: {
+        manualovertime: true,
+      },
+    });
+
+    const fullattendance = await prisma.timeKeeper.count({
+      where: {
+        attendance: "1",
+        ...wh,
+      },
+    });
+
+    const halfattendance = await prisma.timeKeeper.count({
+      where: {
+        attendance: "0.5",
+        ...wh,
+      },
+    });
+
     const obj: any = {
       where: wh,
     };
@@ -59,8 +95,6 @@ export default async function getTimeKeeper(
     }
 
     if (role === "HR") {
-      console.log(obj);
-
       const savedTimekeeper = await prisma.saveTimekeeper.findMany(obj);
       const timekeepers =
         savedTimekeeper.length < Number(rowsPerPage) || !rowsPerPage
@@ -71,9 +105,12 @@ export default async function getTimeKeeper(
               },
             })
           : [];
-      res
-        .status(200)
-        .json({ data: [...savedTimekeeper, ...timekeepers], count });
+      res.status(200).json({
+        data: [...savedTimekeeper, ...timekeepers],
+        count,
+        overtime: (c1._sum.manualovertime || 0) + (c._sum.overtime || 0),
+        attendance: fullattendance + halfattendance / 2,
+      });
     } else {
       if (role !== "HR" && role !== "TimeKeeper") {
         wh.approvedByTimekeeper = true;
@@ -94,7 +131,12 @@ export default async function getTimeKeeper(
           comment: true,
         },
       });
-      res.status(200).json({ data: timekeepers, count });
+      res.status(200).json({
+        data: timekeepers,
+        count,
+        overtime: (c1._sum.manualovertime || 0) + (c._sum.overtime || 0),
+        attendance: fullattendance + halfattendance / 2,
+      });
     }
   }
 }

@@ -198,9 +198,7 @@ export const gethourlycount = (
       obj["rate"] = a.salary;
       obj["mandaysamount"] = obj["mandays"] * a.salary;
       obj["othrs"] = fulltime.reduce(
-        (a, b) =>
-          a +
-          (parseInt(b.manualovertime as string) || parseInt(b.overtime) || 0),
+        (a, b) => a + (b.manualovertime || b.overtime),
         0
       );
       obj["otamount"] = (obj["othrs"] * a.salary) / i.wrkhrs;
@@ -353,16 +351,12 @@ export const gethourlycount = (
           : contractor.salarywomen8hr;
 
       const ot8hr = fulltime8hr.reduce(
-        (a, b) =>
-          a +
-          (parseInt(b.manualovertime as string) || parseInt(b.overtime) || 0),
+        (a, b) => a + (b.manualovertime || b.overtime),
         0
       );
 
       const ot12hr = fulltime12hr.reduce(
-        (a, b) =>
-          a +
-          (parseInt(b.manualovertime as string) || parseInt(b.overtime) || 0),
+        (a, b) => a + (b.manualovertime || b.overtime),
         0
       );
 

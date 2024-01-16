@@ -244,16 +244,7 @@ const getTotalAmountAndRows = (
 
       totalovertime[id] = filtered
         .filter((f) => filter(f, designation, "0.5"))
-        .reduce(
-          (acc, curr) =>
-            acc +
-            parseInt(
-              parseInt(curr.manualovertime as string) === 0
-                ? "0"
-                : curr.manualovertime || curr.overtime
-            ),
-          0
-        );
+        .reduce((acc, curr) => acc + (curr.manualovertime || curr.overtime), 0);
       totalovertime["total"] = getRoundOff(
         (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
       );

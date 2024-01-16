@@ -87,13 +87,7 @@ const getEmployeesCalculation = (
       );
       if (ot) {
         const othrs = f.reduce(
-          (acc, curr) =>
-            acc +
-            parseInt(
-              parseInt(curr.manualovertime as string) === 0
-                ? "0"
-                : curr.manualovertime || curr.overtime
-            ),
+          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
           0
         );
         obj[date] = othrs;
@@ -109,13 +103,7 @@ const getEmployeesCalculation = (
     obj["total"] = count;
     if (ot) {
       const othrs = f.reduce(
-        (acc, curr) =>
-          acc +
-          parseInt(
-            parseInt(curr.manualovertime as string) === 0
-              ? "0"
-              : curr.manualovertime || curr.overtime
-          ),
+        (acc, curr) => acc + (curr.manualovertime || curr.overtime),
         0
       );
       obj["total"] = othrs;
@@ -140,13 +128,7 @@ const getEmployeesCalculation = (
       obj["amount"]) as number;
 
     obj["othrs"] = f.reduce(
-      (acc, curr) =>
-        acc +
-        parseInt(
-          parseInt(curr.manualovertime as string) === 0
-            ? "0"
-            : curr.manualovertime || curr.overtime
-        ),
+      (acc, curr) => acc + (curr.manualovertime || curr.overtime),
       0
     );
     totalobj["othrs"] = (((totalobj["othrs"] as number) || 0) +
