@@ -301,7 +301,13 @@ export default function FinalSheet({
       }}
     >
       <Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Stack
             direction="row"
             flexWrap="wrap"
@@ -309,15 +315,29 @@ export default function FinalSheet({
             spacing={2}
             sx={{ width: "100%" }}
           >
-            <FormSelect
-              value={selectedContractor}
-              handleChange={(value) => setSelectedContractor(value as string)}
-              options={contractors.map((c) => ({
-                value: c.contractorId || "",
-                label: c.contractorname,
-              }))}
-              label="Contractor"
-            />
+            <Box sx={{ minWidth: 240 }}>
+              <FormLabel sx={{ fontWeight: "700" }}>
+                Select Contractor
+              </FormLabel>
+              <Autocomplete
+                options={contractors.map((c) => ({
+                  value: c.contractorId || "",
+                  label: c.contractorname,
+                }))}
+                value={contractors
+                  .map((c) => ({
+                    value: c.contractorId || "",
+                    label: c.contractorname,
+                  }))
+                  .find((c) => c.value === selectedContractor)}
+                onChange={(e, value) =>
+                  setSelectedContractor(value?.value as string)
+                }
+                clearIcon={null}
+                disableClearable={true}
+                renderInput={(params) => <TextField {...params} />}
+              />
+            </Box>
             <MonthSelect
               label="Select Date"
               value={dayjs(value, "MM/YYYY")}
@@ -362,6 +382,13 @@ export default function FinalSheet({
               />
             </FormControl>
           </Stack>
+          {/* <Button
+            variant="contained"
+            color="secondary"
+            sx={{ height: "fit-content" }}
+          >
+            Freeze
+          </Button> */}
 
           {/* <Button
             variant="contained"

@@ -31,7 +31,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { Workorder } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
@@ -252,7 +252,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(
-              theme.palette.primary.main,
+              theme.palette.secondary.main,
               theme.palette.action.activatedOpacity
             ),
         }),
@@ -308,6 +308,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
     string | undefined
   >(undefined);
   const theme = useTheme();
+  const { data: session } = useSession();
 
   const handleClose = () => {
     setOpen(false);
@@ -437,7 +438,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                           onClick={(event) =>
                             handleClick(event, row.id as string)
                           }
-                          color="primary"
+                          color="secondary"
                           checked={isItemSelected}
                           inputProps={{
                             "aria-labelledby": labelId,
@@ -479,7 +480,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                         {row.amendmentDocument ? (
                           <Typography
                             component="a"
-                            href={`/uploadedFiles/${row.amendmentDocument}`}
+                            href={`/api/upload?fileName=${row.amendmentDocument}`}
                             target="_blank"
                             sx={{
                               textDecoration: "none",
@@ -499,7 +500,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                         {row.addendumDocument ? (
                           <Typography
                             component="a"
-                            href={`/uploadedFiles/${row.addendumDocument}`}
+                            href={`/api/upload?fileName=${row.addendumDocument}`}
                             target="_blank"
                             sx={{
                               textDecoration: "none",
@@ -519,7 +520,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                         {row.uploadDocument ? (
                           <Typography
                             component="a"
-                            href={`/uploadedFiles/${row.uploadDocument}`}
+                            href={`/api/upload?fileName=${row.uploadDocument}`}
                             target="_blank"
                             sx={{
                               textDecoration: "none",
@@ -535,26 +536,31 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                           <Typography>No Document</Typography>
                         )}
                       </TableCell>
-
-                      <TableCell size="small" align="center">
-                        <IconButton
-                          onClick={() => router.push(`/workorder/${row.id}`)}
-                          sx={{ m: 0 }}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                      <TableCell size="small" align="center">
-                        <IconButton
-                          onClick={() => {
-                            setOpen(true);
-                            setSelectedWorkorder(row.id);
-                          }}
-                          sx={{ m: 0 }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
+                      {session?.user?.role === "Corporate" && (
+                        <>
+                          <TableCell size="small" align="center">
+                            <IconButton
+                              onClick={() =>
+                                router.push(`/workorder/${row.id}`)
+                              }
+                              sx={{ m: 0 }}
+                            >
+                              <Edit fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                          <TableCell size="small" align="center">
+                            <IconButton
+                              onClick={() => {
+                                setOpen(true);
+                                setSelectedWorkorder(row.id);
+                              }}
+                              sx={{ m: 0 }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </>
+                      )}
                     </TableRow>
                   );
                 })}
@@ -591,7 +597,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ m: 1 }}>
-          <Button color="primary" variant="outlined" onClick={handleClose}>
+          <Button color="secondary" variant="outlined" onClick={handleClose}>
             Cancel
           </Button>
           <Button
@@ -623,13 +629,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session?.user?.email as string,
-    },
-  });
+  if (session.user?.role === "TimeKeeper") {
+    return {
+      redirect: {
+        destination: "/timekeeper",
+        permanent: false,
+      },
+    };
+  }
 
-  if (user?.role === "Admin") {
+  if (session.user?.role === "Admin") {
     return {
       redirect: {
         destination: "/admin",

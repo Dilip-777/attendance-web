@@ -47,6 +47,7 @@ interface Props {
   open: boolean;
   handleClose: () => void;
   updateColumns: (prop: { selectedC: Column[]; available: Column[] }) => void;
+  handleReset: () => void;
 }
 
 export default function PersonaliseColumns({
@@ -55,6 +56,7 @@ export default function PersonaliseColumns({
   open,
   handleClose,
   updateColumns,
+  handleReset,
 }: Props) {
   const [selected, setSelected] = useState<Column[]>(selectedColumns);
   const [available, setAvailable] = useState<Column[]>(availableColumns);
@@ -162,28 +164,45 @@ export default function PersonaliseColumns({
             </IconButton>
           </Stack>
         </Stack>
-        <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => {
-              setActive(null);
-              handleClose();
-            }}
-          >
-            Cancel
-          </Button>
+
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          spacing={2}
+          mt={3}
+        >
           <Button
             variant="contained"
             color="secondary"
             onClick={() => {
-              updateColumns({ selectedC: selected, available });
-              setActive(null);
-              handleClose();
+              handleReset();
             }}
           >
-            Save
+            Reset
           </Button>
+          <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => {
+                setActive(null);
+                handleClose();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                updateColumns({ selectedC: selected, available });
+                setActive(null);
+                handleClose();
+              }}
+            >
+              Save
+            </Button>
+          </Stack>
         </Stack>
       </Box>
     </Modal>

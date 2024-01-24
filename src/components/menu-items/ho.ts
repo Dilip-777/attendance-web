@@ -5,6 +5,7 @@ import Inventory from "@mui/icons-material/Inventory";
 import SupportIcon from "@mui/icons-material/Support";
 import AccountBalanceWallet from "@mui/icons-material/AccountBalanceWallet";
 import MonetizationOn from "@mui/icons-material/MonetizationOn";
+import Assignment from "@mui/icons-material/Assignment";
 
 // constant
 const icons = {
@@ -15,6 +16,7 @@ const icons = {
   SupportIcon,
   AccountBalanceWallet,
   MonetizationOn,
+  Assignment,
 };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
@@ -66,6 +68,22 @@ const ho = {
           title: "Add Employee",
           type: "item",
           url: "/employees/add",
+          target: true,
+        },
+      ],
+    },
+    {
+      id: "workorder",
+      title: "Work Order",
+      type: "collapse",
+      icon: icons.Assignment,
+
+      children: [
+        {
+          id: "/workorder",
+          title: "Work Order List",
+          type: "item",
+          url: "/workorder",
           target: true,
         },
       ],

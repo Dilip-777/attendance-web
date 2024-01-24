@@ -1013,6 +1013,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  if (
+    session.user?.role === "PlantCommercial" ||
+    session.user?.role === "TimeKeeper"
+  ) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   if (id !== "add") {
     const contractor = await prisma.contractor.findUnique({
       where: {

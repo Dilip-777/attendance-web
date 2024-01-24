@@ -38,10 +38,12 @@ import dayjs, { Dayjs } from "dayjs";
 import dynamic from "next/dynamic";
 import {
   Autocomplete,
+  FormLabel,
   InputAdornment,
   Menu,
   MenuItem,
   OutlinedInput,
+  Snackbar,
   TextField,
   styled,
 } from "@mui/material";
@@ -51,6 +53,14 @@ const ImportData = dynamic(() => import("@/components/import"));
 const CustomModal = dynamic(
   () => import("@/components/Timekeeper/ViewCommentsDocuments")
 );
+import FilterList from "@mui/icons-material/FilterList";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { getComparator, stableSort } from "@/utils/comparatorfuncitons";
+import FormSelect from "@/ui-component/FormSelect";
 
 interface TimeKeeperWithComment extends TimeKeeper {
   comment: Comment[];
@@ -69,46 +79,6 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
     borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
   },
 }));
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = "asc" | "desc";
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number
-) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
 interface Column {
   id: string;
   label: string;
@@ -192,15 +162,19 @@ interface EnhancedTableToolbarProps {
   setValue: React.Dispatch<React.SetStateAction<Dayjs>>;
   setContractorName: React.Dispatch<React.SetStateAction<string>>;
   contractors: { value: string; label: string }[];
-  handleApprove: () => void;
+  handleApprove: () => Promise<void>;
   showApprove: boolean;
   contractorlist: Contractor[];
   filter: string;
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   handledownload: () => void;
-  fetchTimeKeeper: () => void;
-  attendanceDate: Dayjs | null;
-  setAttendancedate: React.Dispatch<React.SetStateAction<Dayjs | null>>;
+  fetchTimeKeeper: (dateArray?: string[], attendance?: string) => void;
+  defaultStartDate: Dayjs;
+  defaultEndDate: Dayjs;
+  setDefaultStartDate: React.Dispatch<React.SetStateAction<Dayjs>>;
+  setDefaultEndDate: React.Dispatch<React.SetStateAction<Dayjs>>;
+  att: string;
+  setAtt: React.Dispatch<React.SetStateAction<string>>;
   setOpenColumn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -219,8 +193,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     filter,
     handledownload,
     fetchTimeKeeper,
-    attendanceDate,
-    setAttendancedate,
+    defaultStartDate,
+    defaultEndDate,
+    setDefaultStartDate,
+    setDefaultEndDate,
+    att,
+    setAtt,
     setOpenColumn,
   } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -228,9 +206,34 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+  const [open1, setOpen1] = React.useState(false);
+  const [tempvalue, setTempValue] = React.useState<Dayjs>(value);
+  const [tempcontractorName, setTempContractorName] =
+    React.useState(contractorName);
+  const [startDate, setStartDate] = React.useState<Dayjs>(defaultStartDate);
+  const [endDate, setEndDate] = React.useState<Dayjs>(defaultEndDate);
+  const [attendance, setAttendance] = React.useState(att);
+
   const router = useRouter();
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleSave = () => {
+    setOpen1(false);
+    setContractorName(tempcontractorName);
+    setDefaultStartDate(startDate);
+    setDefaultEndDate(endDate);
+    setAtt(attendance);
+  };
+
+  const handleCancel = () => {
+    setTempValue(value);
+    setTempContractorName(contractorName);
+    setStartDate(defaultStartDate);
+    setEndDate(defaultEndDate);
+    setAttendance(att);
+    setOpen1(false);
   };
 
   const deleteTimeKeeper = async (ids: string[]) => {
@@ -261,7 +264,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         ...(selected.length > 0 && {
           bgcolor: (theme) =>
             alpha(
-              theme.palette.primary.main,
+              theme.palette.secondary.main,
               theme.palette.action.activatedOpacity
             ),
         }),
@@ -288,39 +291,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               </InputAdornment>
             }
           />
-          <Box sx={{ minWidth: 240 }}>
-            <Autocomplete
-              options={contractors}
-              value={
-                contractors.find((c) => c.label === contractorName) || null
-              }
-              onChange={(e, value) => setContractorName(value?.label as string)}
-              renderInput={(params) => (
-                <TextField {...params} label="Select Contractor" />
-              )}
-            />
-          </Box>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              views={["day", "month", "year"]}
-              format="DD/MM/YYYY"
-              value={attendanceDate}
-              onChange={(newValue) => setAttendancedate(newValue as Dayjs)}
-              // value={value}
-              // onChange={(newValue) => {
-              //   if (newValue) setValue(newValue);
-              // }}
-            />
-          </LocalizationProvider>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              views={["month", "year"]}
-              value={value}
-              onChange={(newValue) => {
-                if (newValue) setValue(newValue);
-              }}
-            />
-          </LocalizationProvider>
         </Stack>
       )}
       {selected.length > 0 ? (
@@ -346,26 +316,16 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Stack>
       ) : (
         <Stack direction="row" spacing={2}>
+          <Tooltip title="Filter">
+            <IconButton onClick={() => setOpen1(true)}>
+              <FilterList />
+            </IconButton>
+          </Tooltip>
           {/* <ImportData contractors={contractorlist} /> */}
           <div>
             <IconButton onClick={handleClick}>
               <MoreVertIcon />
             </IconButton>
-            {/* <Button
-              id="basic-button"
-              aria-controls={open ? "basic-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? "true" : undefined}
-              onClick={handleClick}
-            >
-              Dashboard
-            </Button> */}
-            {/* {value.month() < dayjs().month() &&
-              session?.user?.role === "TimeKeeper" && (
-                <Button sx={{ mr: 3 }} onClick={handleApprove}>
-                  Approve
-                </Button>
-              )} */}
             <Menu
               id="basic-menu"
               anchorEl={anchorEl}
@@ -390,7 +350,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 Download
               </MenuItem>
               {session?.user?.role === "TimeKeeper" && (
-                <MenuItem sx={{ mr: 3 }} onClick={handleApprove}>
+                <MenuItem
+                  sx={{ mr: 3 }}
+                  onClick={() => {
+                    handleApprove();
+                  }}
+                >
                   Approve
                 </MenuItem>
               )}
@@ -407,6 +372,102 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </div>
         </Stack>
       )}
+      <Dialog
+        open={open1}
+        onClose={() => setOpen1(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle sx={{ fontSize: "1.2rem" }} id="alert-dialog-title">
+          Filter
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={4}>
+            <Stack spacing={4} direction="row" alignItems="center">
+              <Box sx={{ width: "100%" }}>
+                <FormLabel sx={{ fontWeight: "700" }}>
+                  Select the Contractor
+                </FormLabel>
+                <Autocomplete
+                  options={contractors}
+                  value={
+                    contractors.find((c) => c.label === tempcontractorName) ||
+                    null
+                  }
+                  onChange={(e, value) =>
+                    setTempContractorName(value?.label as string)
+                  }
+                  renderInput={(params) => (
+                    <TextField {...params} placeholder="All Contractors" />
+                  )}
+                />
+              </Box>
+              <FormSelect
+                options={[
+                  { label: "All Present", value: "1.5" },
+                  { label: "Present", value: "1" },
+                  { label: "Half Present", value: "0.5" },
+                  { label: "Absent", value: "0" },
+                ]}
+                label="Attendance"
+                value={attendance}
+                handleChange={(e) => setAttendance(e as string)}
+              />
+            </Stack>
+            <Stack direction="row" spacing={4}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <Box
+                  sx={{
+                    minWidth: 240,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <FormLabel sx={{ fontWeight: "700" }}>Start Date</FormLabel>
+                  <DatePicker
+                    value={startDate}
+                    onChange={(newValue) => setStartDate(newValue as Dayjs)}
+                    maxDate={endDate}
+                    format="DD/MM/YYYY"
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    minWidth: 240,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <FormLabel sx={{ fontWeight: "700" }}>End Date</FormLabel>
+                  <DatePicker
+                    value={endDate}
+                    onChange={(newValue) => setEndDate(newValue as Dayjs)}
+                    minDate={startDate}
+                    format="DD/MM/YYYY"
+                  />
+                </Box>
+              </LocalizationProvider>
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ padding: "2rem" }}>
+          <Button
+            onClick={() => handleCancel()}
+            color="secondary"
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            autoFocus
+            color="secondary"
+            variant="contained"
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Toolbar>
   );
 }
@@ -415,7 +476,6 @@ export default function TimeKeeperTable({}: // contractors,
 {
   // contractors: Contractor[];
 }) {
-  const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<string>("employeeid");
   const [filter, setFilter] = React.useState("");
   const [selected, setSelected] = React.useState<string[]>([]);
@@ -449,8 +509,14 @@ export default function TimeKeeperTable({}: // contractors,
   );
   const [statusChange, setStatusChange] = React.useState(false);
   const [debouncedFilter, setDebouncedFilter] = React.useState("");
-
+  const [startDate, setStartDate] = React.useState<Dayjs>(
+    dayjs().startOf("month")
+  );
+  const [endDate, setEndDate] = React.useState<Dayjs>(dayjs());
+  const [att, setAtt] = React.useState("1");
   const [count, setCount] = React.useState(0);
+  const [type, setType] = React.useState<"success" | "error">("success");
+  const [snopen, setSnopen] = React.useState(false);
   const { data: session } = useSession();
 
   const updateColumns = ({
@@ -463,12 +529,29 @@ export default function TimeKeeperTable({}: // contractors,
     setSelectedColumn(selectedC);
     setAvailable(available);
     localStorage.setItem("selectedColumn", JSON.stringify(selectedC));
+    localStorage.setItem("availableColumn", JSON.stringify(available));
+  };
+
+  const handleReset = () => {
+    setSelectedColumn(headCells.filter((h) => h.order >= 0));
+    setAvailable(headCells.filter((h) => h.order === -1));
+    localStorage.setItem(
+      "selectedColumn",
+      JSON.stringify(headCells.filter((h) => h.order >= 0))
+    );
+    localStorage.setItem(
+      "availableColumn",
+      JSON.stringify(headCells.filter((h) => h.order === -1))
+    );
+    setOpenColumn(false);
   };
 
   React.useEffect(() => {
     const selected = localStorage.getItem("selectedColumn");
-    if (selected) {
+    const available = localStorage.getItem("availableColumn");
+    if (selected && available) {
       setSelectedColumn(JSON.parse(selected));
+      setAvailable(JSON.parse(available));
     }
   }, []);
 
@@ -580,20 +663,22 @@ export default function TimeKeeperTable({}: // contractors,
   }, [filter]);
 
   const fetchTimeKeeper = async () => {
+    let dateArray = [];
+    let currentDate = startDate;
+    while (currentDate?.isBefore(endDate) || currentDate?.isSame(endDate)) {
+      dateArray.push(currentDate.format("DD/MM/YYYY"));
+      currentDate = currentDate.add(1, "day");
+    }
+    const role = session?.user?.role;
+    const contractorId =
+      contractors.find((c) => c.contractorname === contractorName)
+        ?.contractorId || "all";
+
+    const queryString = `/api/timekeeper/gettimekeepers?role=${role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${contractorId}&orderBy=${orderBy}&filter=${debouncedFilter}&attendance=${att}&dateArray=${dateArray}`;
     if (!debouncedFilter) setLoading(true);
     else setLoading(false);
     await axios
-      .get(
-        `/api/timekeeper/gettimekeepers?month=${value?.format(
-          "MM/YYYY"
-        )}&role=${session?.user
-          ?.role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${
-          contractors.find((c) => c.contractorname === contractorName)
-            ?.contractorId || "all"
-        }&attendancedate=${
-          attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
-        }&orderBy=${orderBy}&filter=${debouncedFilter}`
-      )
+      .get(queryString)
       .then((res) => {
         setTimeKepeer(res.data.data);
         setCount(res.data.count);
@@ -614,7 +699,9 @@ export default function TimeKeeperTable({}: // contractors,
     rowsPerPage,
     page,
     contractorName,
-    attendancedate,
+    startDate,
+    endDate,
+    att,
     orderBy,
     debouncedFilter,
   ]);
@@ -696,16 +783,19 @@ export default function TimeKeeperTable({}: // contractors,
     ];
 
     try {
-      const res = await axios.get(
-        `/api/timekeeper/gettimekeepers?month=${value?.format(
-          "MM/YYYY"
-        )}&role=${session?.user?.role}&contractorname=${
-          contractors.find((c) => c.contractorname === contractorName)
-            ?.contractorId || "all"
-        }&attendancedate=${
-          attendancedate ? attendancedate.format("DD/MM/YYYY") : ""
-        }&orderBy=${orderBy}&filter=${debouncedFilter}`
-      );
+      let dateArray = [];
+      let currentDate = startDate;
+      while (currentDate?.isBefore(endDate) || currentDate?.isSame(endDate)) {
+        dateArray.push(currentDate.format("DD/MM/YYYY"));
+        currentDate = currentDate.add(1, "day");
+      }
+      const role = session?.user?.role;
+      const contractorId =
+        contractors.find((c) => c.contractorname === contractorName)
+          ?.contractorId || "all";
+
+      const queryString = `/api/timekeeper/gettimekeepers?role=${role}&contractorname=${contractorId}&filter=${debouncedFilter}&attendance=${att}&dateArray=${dateArray}`;
+      const res = await axios.get(queryString);
       res.data.data.forEach((item: TimeKeeper) => {
         tableRows.push([
           item.contractorid || "-",
@@ -864,18 +954,40 @@ export default function TimeKeeperTable({}: // contractors,
             setValue={setValue}
             showApprove={showApprove()}
             handleApprove={async () => {
-              await axios.put(`/api/timekeeper/approve`, {
-                month: value.format("MM/YYYY"),
-                contractorname: contractorName,
-              });
+              const c = contractors.find(
+                (con) => con.contractorname === contractorName
+              );
+              let dateArray = [];
+              let currentDate = startDate;
+              while (
+                currentDate?.isBefore(endDate) ||
+                currentDate?.isSame(endDate)
+              ) {
+                dateArray.push(currentDate.format("DD/MM/YYYY"));
+                currentDate = currentDate.add(1, "day");
+              }
+              await axios
+                .put(`/api/timekeeper/approve`, {
+                  dates: dateArray,
+                  contractorname: c?.contractorId,
+                })
+                .then((res) => {
+                  setType("success");
+                })
+                .catch((err) => setType("error"));
+              setSnopen(true);
               fetchTimeKeeper();
             }}
             filter={filter}
             setFilter={setFilter}
             handledownload={handleClickReport}
+            defaultStartDate={startDate}
+            defaultEndDate={endDate}
+            setDefaultStartDate={setStartDate}
+            setDefaultEndDate={setEndDate}
+            att={att}
+            setAtt={setAtt}
             fetchTimeKeeper={fetchTimeKeeper}
-            attendanceDate={attendancedate}
-            setAttendancedate={setAttendancedate}
             setOpenColumn={setOpenColumn}
           />
 
@@ -931,24 +1043,39 @@ export default function TimeKeeperTable({}: // contractors,
                         tabIndex={-1}
                         key={row.id}
                         selected={isItemSelected}
+                        color="secondary"
                         sx={{
                           cursor: "pointer",
                           position: "relative",
                           bgcolor:
-                            row.comment?.length > 0 ? "#ede7f6" : "transparent",
+                            row.comment?.length > 0
+                              ? (theme) =>
+                                  alpha(
+                                    theme.palette.secondary.main,
+                                    theme.palette.action.activatedOpacity
+                                  )
+                              : "transparent",
                           ":hover": {
                             "& .MuiTableCell-root": {
                               backgroundColor:
                                 row.comment?.length > 0
-                                  ? "#ede7f6"
+                                  ? (theme) =>
+                                      alpha(
+                                        theme.palette.secondary.main,
+                                        theme.palette.action.activatedOpacity
+                                      )
                                   : "rgba(0, 0, 0, 0.04)",
+                              // backgroundColor:
+                              //   row.comment?.length > 0
+                              //     ? "#ede7f6"
+                              //     : "rgba(0, 0, 0, 0.04)",
                             },
                           },
                         }}
                       >
                         <TableCell padding="checkbox">
                           <Checkbox
-                            color="primary"
+                            color="secondary"
                             onClick={(event) =>
                               handleClick(event, row.id as string)
                             }
@@ -971,7 +1098,7 @@ export default function TimeKeeperTable({}: // contractors,
                       t.contractorname === contractorName ||
                       contractorName === "all"
                   ) as any,
-                  getComparator(order, orderBy)
+                  getComparator("asc", orderBy)
                 ).filter((t) => t.status !== "Pending").length === 0 && (
                   <TableRow
                     style={{
@@ -1038,6 +1165,35 @@ export default function TimeKeeperTable({}: // contractors,
         handleClose={() => setOpenColumn(false)}
         open={openColumn}
         updateColumns={updateColumns}
+        handleReset={handleReset}
+      />
+      <Snackbar
+        open={snopen}
+        autoHideDuration={5000}
+        color="success"
+        sx={{
+          "& .MuiSnackbarContent-root": {
+            backgroundColor: type === "success" ? "success.main" : "error.main",
+          },
+        }}
+        onClose={() => setSnopen(false)}
+        message={
+          type === "success"
+            ? "Data Approved Successfully"
+            : "Error while Approving Data"
+        }
+        action={
+          <React.Fragment>
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              sx={{ p: 0.5 }}
+              onClick={() => setSnopen(false)}
+            >
+              <Close />
+            </IconButton>
+          </React.Fragment>
+        }
       />
     </Box>
   );
@@ -1094,6 +1250,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         destination: "/vehiclelogbook",
+        permanent: false,
+      },
+    };
+  }
+
+  if (session.user?.role === "Manager") {
+    return {
+      redirect: {
+        destination: "/att-management",
         permanent: false,
       },
     };

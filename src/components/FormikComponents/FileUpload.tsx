@@ -13,7 +13,6 @@ import { useField, useFormikContext } from "formik";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import InsertDriveFile from "@mui/icons-material/InsertDriveFile";
-import { CLOUDINARY_URL, uploadprsetname } from "../../constants";
 import axios from "axios";
 
 const StyledCard = styled(Card)(

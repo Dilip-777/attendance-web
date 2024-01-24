@@ -170,7 +170,7 @@ export default function Bill() {
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
-                          color="primary"
+                          color="secondary"
                           checked={isItemSelected}
                           onClick={(event) =>
                             handleClick(event, row.id as string)

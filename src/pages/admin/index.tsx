@@ -145,7 +145,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(
-              theme.palette.primary.main,
+              theme.palette.secondary.main,
               theme.palette.action.activatedOpacity
             ),
         }),
@@ -342,7 +342,7 @@ export default function TimeKeeper({ users }: { users: User[] }) {
                           onClick={(event) =>
                             handleClick(event, row.id as string)
                           }
-                          color="primary"
+                          color="secondary"
                           checked={isItemSelected}
                           inputProps={{
                             "aria-labelledby": labelId,

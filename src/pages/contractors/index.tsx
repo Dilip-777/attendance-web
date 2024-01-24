@@ -1,45 +1,92 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import { useRouter } from 'next/router';
-import { Contractor, Department } from '@prisma/client';
-import { GetServerSideProps } from 'next';
-import { getSession, useSession } from 'next-auth/react';
-import prisma from '@/lib/prisma';
-import CustomTable from '@/components/Table/Table';
-import dynamic from 'next/dynamic';
-const ImportData = dynamic(() => import('@/components/importContractors'));
-const ContractorModal = dynamic(() => import('@/components/contractors/modal'));
+import * as React from "react";
+import Box from "@mui/material/Box";
+import { useRouter } from "next/router";
+import { Contractor, Department } from "@prisma/client";
+import { GetServerSideProps } from "next";
+import { getSession, useSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
+import CustomTable from "@/components/Table/Table";
+import dynamic from "next/dynamic";
+const ImportData = dynamic(() => import("@/components/importContractors"));
+const ContractorModal = dynamic(() => import("@/components/contractors/modal"));
 // import ImportData from "@/components/importContractors";
-import _ from 'lodash';
+import _ from "lodash";
+import PersonaliseColumns from "@/components/Timekeeper/PersonaliseColumn";
 // import ContractorModal from "@/components/contractors/modal";
 
-const createHeadCells = (id: string, label: string, numeric: boolean, included: boolean) => {
+interface Column {
+  id: string;
+  label: string;
+  numeric: boolean;
+  included: boolean;
+  selected: boolean;
+  order: number;
+}
+
+const createHeadCells = (
+  id: string,
+  label: string,
+  numeric: boolean,
+  included: boolean,
+  selected: boolean,
+  order: number
+) => {
   return {
     id: id,
     label: label,
     numeric: numeric,
     included: included,
+    selected: selected,
+    order: order,
   };
 };
 
 const headCells = [
-  createHeadCells('contractorId', 'Contractor ID', false, false),
-  createHeadCells('contractorname', 'Contractor Name', false, false),
-  createHeadCells('servicedetail', 'Service Detail', true, false),
-  createHeadCells('supplierdetail', 'Supplier Detail', true, false),
-  createHeadCells('telephonenumber', 'telephone Number', true, false),
-  createHeadCells('emailid', 'Email', false, false),
-  createHeadCells('mobilenumber', 'Mobile Number', true, false),
-  createHeadCells('officeaddress', 'Office Address', false, false),
-  createHeadCells('website', 'Website', false, false),
-  createHeadCells('expirationDate', 'Expiration Date', false, false),
-  createHeadCells('servicecharge', 'Service Charge', true, false),
-  createHeadCells('organisationtype', 'Organisation Type', false, false),
-  createHeadCells('isocertified', 'Is Certified', false, false),
-  createHeadCells('uniquenumber', 'Unique Number', false, false),
-  createHeadCells('registration_number', 'Registration Number', true, false),
-  createHeadCells('first_registration_number', 'First Registration Number', false, false),
-  createHeadCells('delivery_procedure', 'Delivery Procedure', false, false),
+  createHeadCells("contractorId", "Contractor ID", false, false, false, 0),
+  createHeadCells("contractorname", "Contractor Name", false, false, false, 1),
+  createHeadCells("servicedetail", "Service Detail", true, false, false, 2),
+  createHeadCells("supplierdetail", "Supplier Detail", true, false, false, 3),
+  createHeadCells("telephonenumber", "telephone Number", true, false, false, 4),
+  createHeadCells("emailid", "Email", false, false, false, 5),
+  createHeadCells("mobilenumber", "Mobile Number", true, false, false, 5),
+  createHeadCells("officeaddress", "Office Address", false, false, false, 6),
+  createHeadCells("website", "Website", false, false, false, 7),
+  createHeadCells("expirationDate", "Expiration Date", false, false, false, 8),
+  createHeadCells("servicecharge", "Service Charge", true, false, false, 9),
+  createHeadCells(
+    "organisationtype",
+    "Organisation Type",
+    false,
+    false,
+    false,
+    10
+  ),
+  createHeadCells("isocertified", "Is Certified", false, false, false, 11),
+  createHeadCells("uniquenumber", "Unique Number", false, false, false, 12),
+  createHeadCells(
+    "registration_number",
+    "Registration Number",
+    true,
+    false,
+    false,
+    13
+  ),
+  createHeadCells(
+    "first_registration_number",
+    "First Registration Number",
+    false,
+    false,
+    false,
+    14
+  ),
+  createHeadCells(
+    "delivery_procedure",
+    "Delivery Procedure",
+    false,
+    false,
+    false,
+    15
+  ),
 ];
 
 interface ContractorDepartment extends Contractor {
@@ -52,13 +99,19 @@ export default function Contractors({
   contractors: ContractorDepartment[];
   departments: Department[];
 }) {
-  const [filterName, setFilterName] = React.useState('');
-  const [orderby, setOrderby] = React.useState('contractorId');
-  const router = useRouter();
+  const [filterName, setFilterName] = React.useState("");
+  const [orderby, setOrderby] = React.useState("contractorId");
+  const [selectedColumn, setSelectedColumn] = React.useState(
+    headCells.filter((h) => h.order >= 0)
+  );
+  const [available, setAvailable] = React.useState(
+    headCells.filter((h) => h.order === -1)
+  );
+  const [openColumn, setOpenColumn] = React.useState(false);
   const { data: session } = useSession();
-  const [contractorId, setContractorId] = React.useState('');
+  const [contractorId, setContractorId] = React.useState("");
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState('');
+  const [value, setValue] = React.useState("");
   const [departments, setDepartments] = React.useState<Department[]>([]);
 
   // React.useEffect(() => {
@@ -72,16 +125,30 @@ export default function Contractors({
 
   const handleClose = () => {
     setOpen(false);
-    setContractorId('');
+    setContractorId("");
   };
 
-  const headcell1 = createHeadCells('attendance', 'View Attendance', false, true);
-  const headcell2 = createHeadCells('hoform', 'Ho Commercial Form', false, true);
+  const headcell1 = createHeadCells(
+    "attendance",
+    "View Attendance",
+    false,
+    true,
+    false,
+    16
+  );
+  const headcell2 = createHeadCells(
+    "hoform",
+    "Ho Commercial Form",
+    false,
+    true,
+    false,
+    17
+  );
 
   const getHeadCells = () => {
-    if (session?.user?.role === 'HR') return [];
-    else if (session?.user?.role === 'PlantCommercial') return [headcell1];
-    else if (session?.user?.role === 'HoCommercialAuditor') return [headcell1, headcell2];
+    if (session?.user?.role === "HR") return [];
+    else if (session?.user?.role === "HoCommercialAuditor")
+      return [headcell1, headcell2];
     else return [headcell1];
   };
 
@@ -90,45 +157,45 @@ export default function Contractors({
   const handleClickReport = () => {
     const tableRows = [
       [
-        'Contractorid',
-        'Contractor Name',
-        'Service Detail',
-        'Supplier Detail',
-        'Mobile Number',
-        'Office Address',
-        'Email',
-        'Organisation Type',
-        'Date of Incorporation',
-        'Competitor Name',
-        'ISO Certified',
-        'Turnover Last Year',
-        'Turnover 2 Year Back',
-        'Unique Number',
-        'Registration Number',
-        'First Registration Number',
-        'Latest Month GST1 Filed',
-        'Latest Month GST2B Filed',
-        'Comply Regulatory',
-        'Code of Proprietor',
-        'List Major Product',
-        'Quality Control Procedure',
-        'Value Add Product',
-        'Five Strength Points',
-        'Weakness',
-        'Training Provided',
-        'Clientele',
-        'Refrence Organisation1',
-        'Reference Contact1',
-        'Reference Designation1',
-        'Period of Service1',
-        'Refrence Organisation2',
-        'Reference Contact2',
-        'Reference Designation2',
-        'Period of Service2',
-        'Refrence Organisation3',
-        'Reference Contact3',
-        'Reference Designation3',
-        'Period of Service3',
+        "Contractorid",
+        "Contractor Name",
+        "Service Detail",
+        "Supplier Detail",
+        "Mobile Number",
+        "Office Address",
+        "Email",
+        "Organisation Type",
+        "Date of Incorporation",
+        "Competitor Name",
+        "ISO Certified",
+        "Turnover Last Year",
+        "Turnover 2 Year Back",
+        "Unique Number",
+        "Registration Number",
+        "First Registration Number",
+        "Latest Month GST1 Filed",
+        "Latest Month GST2B Filed",
+        "Comply Regulatory",
+        "Code of Proprietor",
+        "List Major Product",
+        "Quality Control Procedure",
+        "Value Add Product",
+        "Five Strength Points",
+        "Weakness",
+        "Training Provided",
+        "Clientele",
+        "Refrence Organisation1",
+        "Reference Contact1",
+        "Reference Designation1",
+        "Period of Service1",
+        "Refrence Organisation2",
+        "Reference Contact2",
+        "Reference Designation2",
+        "Period of Service2",
+        "Refrence Organisation3",
+        "Reference Contact3",
+        "Reference Designation3",
+        "Period of Service3",
       ],
     ];
     contractors.forEach((item: Contractor) => {
@@ -138,51 +205,51 @@ export default function Contractors({
         item.servicedetail,
         item.supplierdetail,
         item.mobilenumber,
-        item.officeaddress || '-',
-        (item?.emailid as string) || '-',
-        item.organisationtype || '-',
-        item.dateofincorporation?.toString() || '-',
-        item.competitorname || '-',
-        item.isocertified?.toString() || '-',
-        item.turnoverlastyear?.toString() || '-',
-        item.turnover2yearback || '-',
-        item.uniquenumber || '-',
-        item.registration_number || '-',
-        item.first_registration_number || '-',
-        item.latest_mnth_gst1_filed?.toString() || '-',
-        item.latest_mnth_gst2b_filed?.toString() || '-',
-        item.comply_regulatory.toString() || '-',
-        item.code_of_proprietor || '-',
-        item.list_major_product || '-',
-        item.qualty_control_procedure || '-',
-        item.valueadd_product || '-',
-        item.five_strength_points || '-',
-        item.weakness || '-',
-        item.selection_training_method || '-',
-        item.clientele || '-',
-        item.reference_organistaion_1 || '-',
-        item.reference_contact_1 || '-',
-        item.reference_designation_1 || '-',
-        item.period_of_service_1 || '-',
-        item.reference_organistaion_2 || '-',
-        item.reference_contact_2 || '-',
-        item.reference_designation_2 || '-',
-        item.period_of_service_2 || '-',
-        item.reference_organistaion_3 || '-',
-        item.reference_contact_3 || '-',
-        item.reference_designation_3 || '-',
-        item.period_of_service_3 || '-',
+        item.officeaddress || "-",
+        (item?.emailid as string) || "-",
+        item.organisationtype || "-",
+        item.dateofincorporation?.toString() || "-",
+        item.competitorname || "-",
+        item.isocertified?.toString() || "-",
+        item.turnoverlastyear?.toString() || "-",
+        item.turnover2yearback || "-",
+        item.uniquenumber || "-",
+        item.registration_number || "-",
+        item.first_registration_number || "-",
+        item.latest_mnth_gst1_filed?.toString() || "-",
+        item.latest_mnth_gst2b_filed?.toString() || "-",
+        item.comply_regulatory.toString() || "-",
+        item.code_of_proprietor || "-",
+        item.list_major_product || "-",
+        item.qualty_control_procedure || "-",
+        item.valueadd_product || "-",
+        item.five_strength_points || "-",
+        item.weakness || "-",
+        item.selection_training_method || "-",
+        item.clientele || "-",
+        item.reference_organistaion_1 || "-",
+        item.reference_contact_1 || "-",
+        item.reference_designation_1 || "-",
+        item.period_of_service_1 || "-",
+        item.reference_organistaion_2 || "-",
+        item.reference_contact_2 || "-",
+        item.reference_designation_2 || "-",
+        item.period_of_service_2 || "-",
+        item.reference_organistaion_3 || "-",
+        item.reference_contact_3 || "-",
+        item.reference_designation_3 || "-",
+        item.period_of_service_3 || "-",
       ]);
     });
-    const csvContent = `${tableRows.map((row) => row.join(',')).join('\n')}`;
+    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
 
     // Download CSV file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Contractors.csv');
-    link.style.visibility = 'hidden';
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Contractors.csv");
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -193,16 +260,55 @@ export default function Contractors({
     setOpen(true);
   };
 
+  const updateColumns = ({
+    selectedC,
+    available,
+  }: {
+    selectedC: Column[];
+    available: Column[];
+  }) => {
+    setSelectedColumn(selectedC);
+    setAvailable(available);
+    localStorage.setItem("selectedColumn1", JSON.stringify(selectedC));
+    localStorage.setItem("availableColumn1", JSON.stringify(available));
+  };
+
+  const handleReset = () => {
+    setSelectedColumn(headCells.filter((h) => h.order >= 0));
+    setAvailable(headCells.filter((h) => h.order === -1));
+    localStorage.setItem(
+      "selectedColumn1",
+      JSON.stringify(headCells.filter((h) => h.order >= 0))
+    );
+    localStorage.setItem(
+      "availableColumn1",
+      JSON.stringify(headCells.filter((h) => h.order === -1))
+    );
+    setOpenColumn(false);
+  };
+
+  React.useEffect(() => {
+    const selected = localStorage.getItem("selectedColumn1");
+    const available = localStorage.getItem("availableColumn1");
+    if (selected && available) {
+      setSelectedColumn(JSON.parse(selected));
+      setAvailable(JSON.parse(available));
+    }
+  }, []);
+
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: "100%" }}>
       <CustomTable
         rows={contractors.filter((contractor) =>
-          _.get(contractor, orderby, 'contractorname').toString().toLowerCase().includes(filterName.toLowerCase())
+          _.get(contractor, orderby, "contractorname")
+            .toString()
+            .toLowerCase()
+            .includes(filterName.toLowerCase())
         )}
         editLink="/contractors"
         filterName={filterName}
         setFilterName={setFilterName}
-        headcells={[...headCells, ...extraHeadCells]}
+        headcells={[...selectedColumn, ...extraHeadCells]}
         setContractorId={setContractorId}
         handleOpen={handleOpen}
         type="contractor"
@@ -210,6 +316,7 @@ export default function Contractors({
         upload={<ImportData />}
         orderby={orderby}
         setOrderby={setOrderby}
+        handleOpen1={() => setOpenColumn(true)}
       />
 
       <ContractorModal
@@ -217,8 +324,14 @@ export default function Contractors({
         handleClose={handleClose}
         contractorId={contractorId}
         options={departments}
-        setValue={setValue}
-        value={value}
+      />
+      <PersonaliseColumns
+        availableColumns={available}
+        selectedColumns={selectedColumn}
+        handleClose={() => setOpenColumn(false)}
+        open={openColumn}
+        updateColumns={updateColumns}
+        handleReset={handleReset}
       />
     </Box>
   );
@@ -230,7 +343,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session) {
     return {
       redirect: {
-        destination: '/login',
+        destination: "/login",
         permanent: false,
       },
     };
@@ -241,10 +354,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  if (user?.role === 'Admin') {
+  if (user?.role === "Admin") {
     return {
       redirect: {
-        destination: '/admin',
+        destination: "/admin",
         permanent: false,
       },
     };

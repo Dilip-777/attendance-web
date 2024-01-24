@@ -12,10 +12,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Edit from "@mui/icons-material/Edit";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import CircularProgress from "@mui/material/CircularProgress";
 import {
   Button,
@@ -597,11 +593,11 @@ export default function Vehiclelogbook({
         </Box>
         <DialogContent>
           <Typography>
-            Are you sure, you want to delete selected stream
+            Are you sure, you want to delete selected Work Order
           </Typography>
         </DialogContent>
         <DialogActions sx={{ m: 1 }}>
-          <Button color="primary" variant="outlined" onClick={handleClose}>
+          <Button color="secondary" variant="outlined" onClick={handleClose}>
             Cancel
           </Button>
           <Button

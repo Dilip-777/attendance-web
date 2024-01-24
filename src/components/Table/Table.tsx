@@ -1,23 +1,23 @@
-import Edit from '@mui/icons-material/Edit';
-import Launch from '@mui/icons-material/Launch';
-import Visibility from '@mui/icons-material/Visibility';
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import _ from 'lodash';
-import { useRouter } from 'next/router';
-import React, { useState } from 'react';
-import EnhancedTableHead from './EnhancedTableHead';
-import EnhancedTableToolbar from './EnhancedTableToolbar';
-import Download from '@mui/icons-material/Download';
-import { useSession } from 'next-auth/react';
+import Edit from "@mui/icons-material/Edit";
+import Launch from "@mui/icons-material/Launch";
+import Visibility from "@mui/icons-material/Visibility";
+import Box from "@mui/material/Box";
+import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import _ from "lodash";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
+import EnhancedTableHead from "./EnhancedTableHead";
+import EnhancedTableToolbar from "./EnhancedTableToolbar";
+import Download from "@mui/icons-material/Download";
+import { useSession } from "next-auth/react";
 
 interface HeadCells {
   id: string;
@@ -40,6 +40,7 @@ interface Props {
   upload?: React.ReactNode;
   orderby?: string;
   setOrderby?: React.Dispatch<React.SetStateAction<string>>;
+  handleOpen1?: () => void;
 }
 
 const CustomTable = (props: Props) => {
@@ -60,7 +61,7 @@ const CustomTable = (props: Props) => {
   };
 
   const getValue = (row: any, id: string) => {
-    const idParts = id.split('.');
+    const idParts = id.split(".");
 
     let propertyValue = row;
 
@@ -72,10 +73,13 @@ const CustomTable = (props: Props) => {
       }
     }
 
-    return propertyValue || '';
+    return propertyValue || "";
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, contractorname: string) => {
+  const handleClick = (
+    event: React.MouseEvent<unknown>,
+    contractorname: string
+  ) => {
     const selectedIndex = selected.indexOf(contractorname);
     let newSelected: readonly string[] = [];
 
@@ -86,27 +90,34 @@ const CustomTable = (props: Props) => {
     } else if (selectedIndex === selected.length - 1) {
       newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
     }
 
     setSelected(newSelected);
   };
 
-  const isSelected = (contractorname: string) => selected.indexOf(contractorname) !== -1;
+  const isSelected = (contractorname: string) =>
+    selected.indexOf(contractorname) !== -1;
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - props.rows.length) : 0;
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - props.rows.length) : 0;
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
+    <Box sx={{ width: "100%" }}>
+      <Paper sx={{ width: "100%", mb: 2 }}>
         <EnhancedTableToolbar
           numSelected={selected.length}
           filtername={props.filterName}
@@ -114,23 +125,29 @@ const CustomTable = (props: Props) => {
           handleClickReport={props.handleClickReport}
           type={props.type}
           upload={props.upload}
+          handleOpen={props.handleOpen1}
         />
         <TableContainer
           sx={{
-            maxHeight: 'calc(100vh - 16rem)',
-            overflowY: 'auto',
-            scrollBehavior: 'smooth',
-            '&::-webkit-scrollbar': {
+            maxHeight: "calc(100vh - 16rem)",
+            overflowY: "auto",
+            scrollBehavior: "smooth",
+            "&::-webkit-scrollbar": {
               height: 10,
               width: 10,
             },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#bdbdbd',
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#bdbdbd",
               borderRadius: 2,
             },
           }}
         >
-          <Table stickyHeader sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size="medium">
+          <Table
+            stickyHeader
+            sx={{ minWidth: 750 }}
+            aria-labelledby="tableTitle"
+            size="medium"
+          >
             <EnhancedTableHead
               numSelected={selected.length}
               onSelectAllClick={handleSelectAllClick}
@@ -140,79 +157,95 @@ const CustomTable = (props: Props) => {
               setOrderby={props.setOrderby}
             />
             <TableBody>
-              {props.rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
-                const isItemSelected = isSelected(row.contractorname as string);
-                const labelId = `enhanced-table-checkbox-${index}`;
+              {props.rows
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row, index) => {
+                  const isItemSelected = isSelected(
+                    row.contractorname as string
+                  );
+                  const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        onClick={(event) => handleClick(event, row.employeename as string)}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
-                      />
-                    </TableCell>
-                    {props.headcells
-                      .filter((h) => !h.included)
-                      .map((headCell) => (
-                        <TableCell sx={{ minWidth: '10rem' }}>
-                          {_.get(row, headCell.id) === true && 'Yes'}
-                          {_.get(row, headCell.id) === false && 'No'}
-                          {(typeof _.get(row, headCell.id) !== 'boolean' && getValue(row, headCell.id)) || '-'}
-                        </TableCell>
-                      ))}
-                    {props.setContractorId && props.handleOpen && (
-                      <>
-                        {session?.user?.role !== 'HR' && (
-                          <TableCell align="center">
-                            <IconButton
-                              onClick={() => {
-                                if (props.setContractorId && props.handleOpen) {
-                                  props.setContractorId(row.id as string);
-                                  props.handleOpen(row);
-                                }
-                              }}
-                              sx={{ m: 0 }}
-                            >
-                              <Visibility fontSize="small" />
-                            </IconButton>
+                  return (
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="secondary"
+                          checked={isItemSelected}
+                          onClick={(event) =>
+                            handleClick(event, row.employeename as string)
+                          }
+                          inputProps={{
+                            "aria-labelledby": labelId,
+                          }}
+                        />
+                      </TableCell>
+                      {props.headcells
+                        .filter((h) => !h.included)
+                        .map((headCell) => (
+                          <TableCell sx={{ minWidth: "10rem" }}>
+                            {_.get(row, headCell.id) === true && "Yes"}
+                            {_.get(row, headCell.id) === false && "No"}
+                            {(typeof _.get(row, headCell.id) !== "boolean" &&
+                              getValue(row, headCell.id)) ||
+                              "-"}
                           </TableCell>
-                        )}
+                        ))}
+                      {props.setContractorId && props.handleOpen && (
+                        <>
+                          {session?.user?.role !== "HR" && (
+                            <TableCell align="center">
+                              <IconButton
+                                onClick={() => {
+                                  if (
+                                    props.setContractorId &&
+                                    props.handleOpen
+                                  ) {
+                                    props.setContractorId(row.id as string);
+                                    props.handleOpen(row);
+                                  }
+                                }}
+                                sx={{ m: 0 }}
+                              >
+                                <Visibility fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          )}
 
-                        {session?.user?.role === 'HoCommercialAuditor' && (
-                          <TableCell align="center">
-                            <IconButton
-                              onClick={() => {
-                                router.push(`/hoauditor/${row.id}`);
-                              }}
-                              sx={{ m: 0 }}
-                            >
-                              <Launch fontSize="small" />
-                            </IconButton>
-                          </TableCell>
-                        )}
-                      </>
-                    )}
-                    <TableCell size="small" align="center">
-                      <IconButton onClick={() => router.push(`${props.editLink}/${row.id}`)} sx={{ m: 0 }}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                          {session?.user?.role === "HoCommercialAuditor" && (
+                            <TableCell align="center">
+                              <IconButton
+                                onClick={() => {
+                                  router.push(`/hoauditor/${row.id}`);
+                                }}
+                                sx={{ m: 0 }}
+                              >
+                                <Launch fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          )}
+                        </>
+                      )}
+                      <TableCell size="small" align="center">
+                        <IconButton
+                          onClick={() =>
+                            router.push(`${props.editLink}/${row.id}`)
+                          }
+                          sx={{ m: 0 }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
               {emptyRows > 0 && (
                 <TableRow

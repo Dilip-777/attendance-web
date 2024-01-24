@@ -9,29 +9,66 @@ export default async function getTimeKeeper(
     res.status(405).json({ name: "Method Not Allowed" });
   } else {
     const {
-      month,
       role,
       page,
       rowsPerPage,
       contractorname,
-      attendancedate,
+      dateArray,
+      attendance,
       orderBy,
       filter,
     } = req.query;
     // await prisma.timeKeeper.deleteMany();
 
     const wh: any = {};
-
-    wh.attendancedate = {
-      contains: month as string,
-    };
+    // if (month) {
+    //   wh.attendancedate = {
+    //     contains: month as string,
+    //   };
+    // }
 
     if (contractorname !== "all") {
       wh.contractorid = contractorname;
     }
 
-    if (attendancedate) {
-      wh.attendancedate = attendancedate;
+    if (dateArray) {
+      wh.attendancedate = {
+        in: (dateArray as string).split(","),
+      };
+    }
+
+    if (role !== "HR" && role !== "TimeKeeper") {
+      wh.approvedByTimekeeper = true;
+    }
+
+    const fullattendance =
+      attendance === "0.5"
+        ? 0
+        : await prisma.timeKeeper.count({
+            where: {
+              attendance: "1",
+              ...wh,
+            },
+          });
+
+    const halfattendance =
+      attendance === "1"
+        ? 0
+        : await prisma.timeKeeper.count({
+            where: {
+              attendance: "0.5",
+              ...wh,
+            },
+          });
+
+    if (attendance) {
+      if (attendance === "1.5") {
+        wh.attendance = {
+          in: ["1", "0.5"],
+        };
+      } else {
+        wh.attendance = attendance as string;
+      }
     }
 
     // if (role !== "HR" && role !== "TimeKeeper") {
@@ -45,21 +82,7 @@ export default async function getTimeKeeper(
       };
     }
 
-    const count = await prisma.timeKeeper.count({
-      where: wh,
-    });
-
-    const c = await prisma.timeKeeper.aggregate({
-      where: {
-        manualovertime: null,
-        ...wh,
-      },
-      _sum: {
-        overtime: true,
-      },
-    });
-
-    const c1 = await prisma.timeKeeper.aggregate({
+    const overtime = await prisma.timeKeeper.aggregate({
       where: {
         NOT: {
           manualovertime: null,
@@ -71,18 +94,8 @@ export default async function getTimeKeeper(
       },
     });
 
-    const fullattendance = await prisma.timeKeeper.count({
-      where: {
-        attendance: "1",
-        ...wh,
-      },
-    });
-
-    const halfattendance = await prisma.timeKeeper.count({
-      where: {
-        attendance: "0.5",
-        ...wh,
-      },
+    const count = await prisma.timeKeeper.count({
+      where: wh,
     });
 
     const obj: any = {
@@ -108,7 +121,7 @@ export default async function getTimeKeeper(
       res.status(200).json({
         data: [...savedTimekeeper, ...timekeepers],
         count,
-        overtime: (c1._sum.manualovertime || 0) + (c._sum.overtime || 0),
+        overtime: overtime._sum.manualovertime || 0,
         attendance: fullattendance + halfattendance / 2,
       });
     } else {
@@ -119,6 +132,11 @@ export default async function getTimeKeeper(
 
       const timekeepers = await prisma.timeKeeper.findMany({
         ...obj,
+        // where: {
+        //   attendancedate: {
+        //     in: (dateArray as string).split(","),
+        //   },
+        // },
         orderBy: [
           {
             employeeid: "asc",
@@ -134,8 +152,9 @@ export default async function getTimeKeeper(
       res.status(200).json({
         data: timekeepers,
         count,
-        overtime: (c1._sum.manualovertime || 0) + (c._sum.overtime || 0),
-        attendance: fullattendance + halfattendance / 2,
+        overtime: overtime._sum.manualovertime || 0,
+        attendance:
+          attendance === "0" ? 0 : fullattendance + halfattendance / 2,
       });
     }
   }

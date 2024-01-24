@@ -1,5 +1,6 @@
 import { Stack, Typography, Divider } from "@mui/material";
 import { Comment } from "@prisma/client";
+import dayjs from "dayjs";
 
 const Comments = ({ comments }: { comments: Comment[] }) => {
   return (
@@ -19,6 +20,9 @@ const Comments = ({ comments }: { comments: Comment[] }) => {
               sx={{ fontWeight: 600, fontSize: "1.1rem" }}
             >
               {comment.userName}
+            </Typography>
+            <Typography variant="subtitle2">
+              {dayjs(comment.createdAt).format("DD/MM/YYYY HH:mm")}
             </Typography>
             <Typography variant="subtitle2">{comment.role}</Typography>
           </Stack>

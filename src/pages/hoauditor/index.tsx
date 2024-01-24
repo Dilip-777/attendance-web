@@ -277,7 +277,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(
-              theme.palette.primary.main,
+              theme.palette.secondary.main,
               theme.palette.action.activatedOpacity
             ),
         }),
@@ -458,7 +458,7 @@ export default function Employees({
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
-                          color="primary"
+                          color="secondary"
                           checked={isItemSelected}
                           inputProps={{
                             "aria-labelledby": labelId,

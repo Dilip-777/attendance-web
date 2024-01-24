@@ -34,13 +34,13 @@ const validationSchema = Yup.object().shape({
   machineshift: Yup.string().optional(),
   overtime: Yup.number().optional(),
   eleave: Yup.number().optional(),
-  manualintime: Yup.string().optional(),
-  manualouttime: Yup.string().optional(),
-  manualshift: Yup.string().optional(),
-  manualovertime: Yup.number().optional(),
-  manualduration: Yup.string().optional(),
-  mleave: Yup.number().required("Required"),
-  department: Yup.string().optional(),
+  manualintime: Yup.string().optional().nullable(),
+  manualouttime: Yup.string().optional().nullable(),
+  manualshift: Yup.string().optional().nullable(),
+  manualovertime: Yup.number().optional().nullable(),
+  manualduration: Yup.string().optional().nullable(),
+  mleave: Yup.string().optional().nullable(),
+  department: Yup.string().optional().nullable(),
   gender: Yup.string().required("Required"),
   comment: Yup.string().required("Required"),
   uploadDocument: Yup.string().optional(),
@@ -92,12 +92,12 @@ export default function EditTimkeeper({
     attendancedate: timekeeper?.attendancedate || "",
     overtime: timekeeper?.overtime || 2,
     eleave: timekeeper?.eleave || 0,
-    manualintime: timekeeper?.manualintime || "",
-    manualouttime: timekeeper?.manualouttime || "",
-    manualshift: timekeeper?.manualshift || "",
-    manualovertime: timekeeper?.manualovertime || "",
-    manualduration: timekeeper?.manualduration || "",
-    mleave: timekeeper?.mleave || timekeeper?.eleave || 0,
+    manualintime: timekeeper?.manualintime || null,
+    manualouttime: timekeeper?.manualouttime || null,
+    manualshift: timekeeper?.manualshift || null,
+    manualovertime: timekeeper?.manualovertime || null,
+    manualduration: timekeeper?.manualduration || null,
+    mleave: timekeeper?.mleave || null,
     department: timekeeper?.department || "",
     gender: timekeeper?.gender || "",
     comment: "",
@@ -154,6 +154,12 @@ export default function EditTimkeeper({
             } = values;
             setSubmitting(true);
             let changestr = "";
+            console.log(
+              values.manualduration,
+              timekeeper?.manualduration,
+              "malkdjflk"
+            );
+
             if (values.manualduration !== timekeeper?.manualduration) {
               changestr += `Manual Duration changed from ${
                 timekeeper?.manualduration || timekeeper?.machineduration
@@ -196,8 +202,12 @@ export default function EditTimkeeper({
             }
             console.log(changestr);
 
-            if (values.attendance === "1" && values.mleave !== "0") {
-              setErrors({ mleave: "Manual Leave should be 0 nmmber" });
+            if (
+              values.attendance === "1" &&
+              values.mleave &&
+              values.mleave !== "0"
+            ) {
+              setErrors({ mleave: "Manual Leave should be 0" });
               return;
             }
             await axios
@@ -208,9 +218,9 @@ export default function EditTimkeeper({
                 userId: session?.user?.id,
                 userName: session?.user?.name,
                 attendance: values.attendance.toString(),
-                mleave: values.mleave.toString(),
+                mleave: values.mleave?.toString(),
                 manualovertime:
-                  parseFloat(values.manualovertime.toString()) || null,
+                  parseFloat(values.manualovertime?.toString() || "") || null,
                 role: role,
                 changes: changestr,
                 ...others,

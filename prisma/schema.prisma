@@ -98,6 +98,7 @@ model TimeKeeper {
   gender               String?
   status               Status    @default(NoChanges)
   hrdatetime           String?
+  freezed             Boolean   @default(false)
   comment              Comment[]
   approvedByTimekeeper Boolean   @default(false)
   UploadDocument       Upload[]
@@ -193,6 +194,7 @@ model Contractor {
   seperateSalary              SeperateSalary[]
   departments                 Department[]
   deductions                  Deductions[]
+  fixedSalary                 FixedSalary[]
 }
 
 model bills {
@@ -324,6 +326,7 @@ model Designations {
   department                Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   seperateSalary            SeperateSalary[]
   employees                 Employee[]
+  fixedSalary               FixedSalary[]
 
 }
 
@@ -334,6 +337,17 @@ model SeperateSalary {
   salary         Int
   contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
   designation    Designations @relation(fields: [designationId], references: [id], onDelete: Cascade)
+}
+
+model FixedSalary {
+  id              String  @id @default(cuid())
+  contractorId    String
+  designationId   String
+  month           String
+  salary         Int
+  contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  designation    Designations @relation(fields: [designationId], references: [id])
+  @@unique([month, contractorId, designationId])
 }
 
 model Shifts {
@@ -501,6 +515,8 @@ model WorkItem {
   work                 Works   @relation(fields: [workId], references: [id], onDelete: Cascade)
 }
 
+
+
 model BarBending {
   id              String           @id @default(cuid())
   itemcode        Int              @unique @default(autoincrement())
@@ -512,6 +528,8 @@ model BarBending {
   workorder       Workorder        @relation(fields: [workorderId], references: [id], onDelete: Cascade)
   contractor      Contractor       @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
+
+
 
 
 model Attendance_Log {
@@ -574,4 +592,5 @@ enum Role {
   Safety
   Automobile
   Civil
+  Manager
 }

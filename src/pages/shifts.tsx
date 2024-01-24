@@ -30,7 +30,7 @@ import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Department, Shifts,  User } from "@prisma/client";
+import { Department, Shifts, User } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import EditDesignation from "@/components/Admin/EditDesignation";
@@ -54,7 +54,7 @@ const createHeadCells = (
   label: string,
   numeric: boolean,
   included: boolean,
-    colspan?: number
+  colspan?: number
 ) => {
   return {
     id: id,
@@ -94,7 +94,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(
-              theme.palette.primary.main,
+              theme.palette.secondary.main,
               theme.palette.action.activatedOpacity
             ),
         }),
@@ -146,11 +146,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function Shift({
-  departments,
-}: {
-  departments: Department[];
-}) {
+export default function Shift({ departments }: { departments: Department[] }) {
   const [orderby, setOrderby] = React.useState("id");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
@@ -158,9 +154,7 @@ export default function Shift({
   const [open, setOpen] = React.useState(false);
   const [filter, setFilter] = React.useState("");
   const [shifts, setDesignations] = React.useState<Shifts[]>([]);
-  const [shift, setShift] = React.useState<
-    Shifts | undefined
-  >();
+  const [shift, setShift] = React.useState<Shifts | undefined>();
   const matches = useMediaQuery("(min-width:600px)");
   const [loading, setLoading] = React.useState(false);
 
@@ -295,14 +289,19 @@ export default function Shift({
                           onClick={(event) =>
                             handleClick(event, row.id as string)
                           }
-                          color="primary"
+                          color="secondary"
                           checked={isItemSelected}
                           inputProps={{
                             "aria-labelledby": labelId,
                           }}
                         />
                       </TableCell>
-                      <TableCell id={labelId} scope="row" padding="none" align="center">
+                      <TableCell
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                        align="center"
+                      >
                         {row?.id}
                       </TableCell>
                       <TableCell align="center">{row.shift}</TableCell>

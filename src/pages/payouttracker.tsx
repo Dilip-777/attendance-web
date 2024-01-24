@@ -103,7 +103,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(
-              theme.palette.primary.main,
+              theme.palette.secondary.main,
               theme.palette.action.activatedOpacity
             ),
         }),
@@ -338,7 +338,7 @@ export default function Employees({
                           onClick={(event) =>
                             handleClick(event, row.contractorName as string)
                           }
-                          color="primary"
+                          color="secondary"
                           checked={isItemSelected}
                           inputProps={{
                             "aria-labelledby": labelId,
@@ -371,7 +371,7 @@ export default function Employees({
                           <Typography
                             onClick={() => {
                               router.push(
-                                `/uploadedFiles/${row.uploadreceipt}`
+                                `/api/uploads?fileName=${row.uploadreceipt}`
                               );
                             }}
                           >

@@ -133,7 +133,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(
-              theme.palette.primary.main,
+              theme.palette.secondary.main,
               theme.palette.action.activatedOpacity
             ),
         }),
@@ -197,7 +197,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         <TableCell sx={{ bgcolor: "#eeeeee" }} padding="checkbox">
           {onSelectAllClick && !nocheckbox && (
             <Checkbox
-              color="primary"
+              color="secondary"
               indeterminate={numSelected > 0 && numSelected < rowCount}
               checked={rowCount > 0 && numSelected === rowCount}
               onChange={onSelectAllClick}
@@ -474,7 +474,7 @@ export default function AbstractSheet({
                         onClick={(event) =>
                           handleClick(event, row.id as string)
                         }
-                        color="primary"
+                        color="secondary"
                         // checked={isItemSelected}
                         // inputProps={{
                         //   "aria-labelledby": labelId,
@@ -505,7 +505,7 @@ export default function AbstractSheet({
                           onClick={(event) =>
                             handleClick(event, item.id as string)
                           }
-                          color="primary"
+                          color="secondary"
                           sx={{ mt: "auto" }}
                           // checked={isItemSelected}
                           // inputProps={{

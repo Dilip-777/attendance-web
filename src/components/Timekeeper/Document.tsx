@@ -27,7 +27,9 @@ export default function Documents({ documents }: { documents: Upload[] }) {
 
           <Typography
             sx={{ cursor: "pointer" }}
-            onClick={() => router.push(`/uploadedFiles/${document.document}`)}
+            onClick={() =>
+              router.push(`/api/uploads?fileName=${document.document}`)
+            }
           >
             Click to View to the Document
           </Typography>

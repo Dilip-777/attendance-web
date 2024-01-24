@@ -8,7 +8,6 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
-import useMediaQuery from "@mui/material/useMediaQuery";
 
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useRouter } from "next/router";
@@ -17,28 +16,17 @@ import { useRouter } from "next/router";
 
 const NavItem = ({ item, level }: { item: any; level: any }) => {
   const theme = useTheme();
-  const dispatch = useDispatch();
   const customization = useSelector((state: any) => state.customization);
-  const matchesSM = useMediaQuery(theme.breakpoints.down("lg"));
 
   const router = useRouter();
-  let isSelelected = router.pathname.includes(item.id);
-  console.log(
-    "router.pathname",
-    router.pathname,
-    item.id,
-    isSelelected,
-    level,
-    item.url
-  );
+  let isSelelected = router.pathname === item.url;
 
-  if (level > 0) {
+  if (level > 1) {
     isSelelected = router.pathname === item.id;
   }
 
-  if (item.url === "/") {
-    isSelelected = router.pathname === item.url;
-  }
+  // if (item.url === "/") {
+  // }
   const Icon = item.icon;
   const itemIcon = item?.icon ? (
     <Icon stroke={1.5} size="1.3rem" />

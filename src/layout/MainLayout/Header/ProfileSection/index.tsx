@@ -20,6 +20,14 @@ import Typography from "@mui/material/Typography";
 import Logout from "@mui/icons-material/Logout";
 import Search from "@mui/icons-material/Search";
 import Settings from "@mui/icons-material/Settings";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
 import VerifiedUser from "@mui/icons-material/VerifiedUser";
 import MainCard from "@/ui-component/cards/MainCard";
 import BackspaceIcon from "@mui/icons-material/Backspace";
@@ -34,6 +42,7 @@ const FormSelect = dynamic(() => import("@/ui-component/FormSelect"));
 
 import axios from "axios";
 import { CircularProgress } from "@mui/material";
+import Close from "@mui/icons-material/Close";
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -45,6 +54,7 @@ const ProfileSection = () => {
   const [value, setValue] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const [open1, setOpen1] = useState(false);
   const anchorRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<string | undefined>(
@@ -128,14 +138,14 @@ const ProfileSection = () => {
           alignItems: "center",
           borderRadius: "27px",
           transition: "all .2s ease-in-out",
-          borderColor: theme.palette.primary.light,
-          backgroundColor: theme.palette.primary.light,
+          borderColor: theme.palette.secondary.light,
+          backgroundColor: theme.palette.secondary.light,
           '&[aria-controls="menu-list-grow"], &:hover': {
-            borderColor: theme.palette.primary.main,
-            background: `${theme.palette.primary.main}!important`,
-            color: theme.palette.primary.light,
+            borderColor: theme.palette.secondary.main,
+            background: `${theme.palette.secondary.main}!important`,
+            color: theme.palette.secondary.light,
             "& svg": {
-              stroke: theme.palette.primary.light,
+              stroke: theme.palette.secondary.light,
             },
           },
           "& .MuiChip-label": {
@@ -162,7 +172,7 @@ const ProfileSection = () => {
         aria-controls={open ? "menu-list-grow" : undefined}
         aria-haspopup="true"
         onClick={handleToggle}
-        color="primary"
+        color="secondary"
       />
       <Popover
         open={open}
@@ -234,6 +244,7 @@ const ProfileSection = () => {
                       { value: "Safety", label: "Safety" },
                       { value: "Automobile", label: "Automobile" },
                       { value: "Civil", label: "Civil" },
+                      { value: "Manager", label: "Manager" },
                     ]}
                     fullWidth={true}
                     sx={{ maxWidth: "20rem", mb: 2 }}
@@ -319,7 +330,7 @@ const ProfileSection = () => {
                         borderRadius: `${customization.borderRadius}px`,
                       }}
                       selected={selectedIndex === 2}
-                      onClick={(event) => handleDelete()}
+                      onClick={(event) => setOpen1(true)}
                     >
                       <ListItemIcon>
                         {loading ? (
@@ -365,6 +376,49 @@ const ProfileSection = () => {
               </Box>
             </MainCard>
           </ClickAwayListener>
+          <Dialog
+            open={open1}
+            onClose={() => setOpen1(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle sx={{ m: 1, fontSize: "1rem" }}>
+              Confirm the action
+            </DialogTitle>
+            <Box position="absolute" top={0} right={0}>
+              <IconButton onClick={() => setOpen1(false)}>
+                <Close />
+              </IconButton>
+            </Box>
+            <DialogContent>
+              <Typography>
+                Are you sure, you want to delete the Attendance
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ m: 1 }}>
+              <Button
+                color="secondary"
+                variant="outlined"
+                onClick={() => setOpen1(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                color="secondary"
+                onClick={(event) => handleDelete()}
+                variant="contained"
+                disabled={loading}
+              >
+                Confirm
+                {loading && (
+                  <CircularProgress
+                    size={15}
+                    sx={{ ml: 1, color: "#364152" }}
+                  />
+                )}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Paper>
       </Popover>
     </>

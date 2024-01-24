@@ -3,16 +3,17 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
-import EnhancedTableToolbar from "@/components/Table/EnhancedTableToolbar";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
-import Row from "@/components/CollapseTable/Row";
-import { StoreItem, Stores } from "@prisma/client";
+import Row from "@/components/StoreSafety/Row";
+import { Contractor, StoreItem, Stores } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { TableCell, TableRow } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
+import dayjs, { Dayjs } from "dayjs";
+import EnhancedTableToolbar from "@/components/StoreSafety/EnhancedTableToolbar";
 
 const createHeadCells = (
   id: string,
@@ -78,11 +79,17 @@ const rows = [
 interface Props {
   stores: Stores[];
   storeItems: StoreItem[];
+  contractors: Contractor[];
 }
 
-export default function Store({ stores, storeItems }: Props) {
+export default function Store({ stores, storeItems, contractors }: Props) {
   const [filter, setFilter] = React.useState("");
   const router = useRouter();
+  const [selectedContractor, setSelectedContractor] = React.useState<{
+    value: string;
+    label: string;
+  } | null>(null);
+  const [month, setMonth] = React.useState<Dayjs>(dayjs());
   const handleDelete = async (id: string) => {
     const res = await axios
       .delete("api/stores", {
@@ -94,12 +101,85 @@ export default function Store({ stores, storeItems }: Props) {
         router.replace(router.asPath);
       });
   };
+  const handleClickReport = async () => {
+    const tableRows = [
+      [
+        "Store ID",
+        "Contractor Name",
+        "Month",
+        "Division",
+        "Chargeable Item Issued",
+        "Quantity",
+        "Units",
+        "Rate",
+        "Chargeable Amount",
+        "Total Amount",
+      ],
+    ];
+
+    try {
+      stores
+        .filter((s) => {
+          if (dayjs(month).format("MM/YYYY") !== s.month) return false;
+          if (filter)
+            return s.contractorName
+              .toLowerCase()
+              .includes(filter.toLowerCase());
+          if (selectedContractor)
+            return selectedContractor.value === s.contractorid;
+          return true;
+        })
+        .forEach((item: Stores) => {
+          storeItems
+            .filter((s) => s.storeId === item.id)
+            .forEach((i) => {
+              tableRows.push([
+                item.id,
+                item.contractorName,
+                item.month,
+                i.division,
+                i.chargeableItemIssued,
+                i.quantity.toString(),
+                i.units,
+                i.rate.toString(),
+                i.chargeableamount.toString(),
+                item.totalAmount.toString(),
+              ]);
+            });
+        });
+
+      const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+
+      // Download CSV file
+      const blob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "Stores.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <Paper>
       <EnhancedTableToolbar
         filtername={filter}
         setFilterName={setFilter}
-        numSelected={0}
+        contractors={contractors.map((c) => ({
+          value: c.contractorId,
+          label: c.contractorname,
+        }))}
+        selectedContractor={selectedContractor}
+        setSelectedContractor={setSelectedContractor}
+        month={month}
+        setMonth={setMonth}
+        handleClickReport={handleClickReport}
       />
 
       <TableContainer
@@ -125,18 +205,38 @@ export default function Store({ stores, storeItems }: Props) {
             rowCount={stores.length}
           />
           <TableBody>
-            {stores.map((row) => (
-              <Row
-                key={row.id}
-                row={row}
-                items={storeItems.filter((item) => item.storeId === row.id)}
-                headcells={headcells}
-                headcells1={headcells1}
-                handleDelete={handleDelete}
-              />
-            ))}
+            {stores
+              .filter((s) => {
+                if (dayjs(month).format("MM/YYYY") !== s.month) return false;
+                if (filter)
+                  return s.contractorName
+                    .toLowerCase()
+                    .includes(filter.toLowerCase());
+                if (selectedContractor)
+                  return selectedContractor.value === s.contractorid;
+                return true;
+              })
+              .map((row) => (
+                <Row
+                  key={row.id}
+                  row={row}
+                  items={storeItems.filter((item) => item.storeId === row.id)}
+                  headcells={headcells}
+                  headcells1={headcells1}
+                  handleDelete={handleDelete}
+                />
+              ))}
 
-            {stores.length === 0 && (
+            {stores.filter((s) => {
+              if (dayjs(month).format("MM/YYYY") !== s.month) return false;
+              if (filter)
+                return s.contractorName
+                  .toLowerCase()
+                  .includes(filter.toLowerCase());
+              if (selectedContractor)
+                return selectedContractor.value === s.contractorid;
+              return true;
+            }).length === 0 && (
               <TableRow>
                 <TableCell colSpan={4}>No Data</TableCell>
               </TableRow>
@@ -172,10 +272,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const storeItems = await prisma.storeItem.findMany();
 
+  const contractors = await prisma.contractor.findMany();
+
   return {
     props: {
       stores,
       storeItems,
+      contractors,
     },
   };
 };

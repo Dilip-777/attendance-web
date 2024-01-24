@@ -762,7 +762,7 @@ export default function PrintExcel({
       <Button
         variant="contained"
         fullWidth
-        color="primary"
+        color="secondary"
         onClick={handleExport}
       >
         Print Excel

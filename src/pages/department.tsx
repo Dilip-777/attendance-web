@@ -1,50 +1,58 @@
-import Head from 'next/head';
-import * as React from 'react';
-import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Delete from '@mui/icons-material/Delete';
-import Edit from '@mui/icons-material/Edit';
-import NavigateBefore from '@mui/icons-material/NavigateBefore';
-import Search from '@mui/icons-material/Search';
-import Backdrop from '@mui/material/Backdrop';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import InputAdornment from '@mui/material/InputAdornment';
-import Modal from '@mui/material/Modal';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Slide from '@mui/material/Slide';
-import Stack from '@mui/material/Stack';
-import { Autocomplete, Chip, CircularProgress, FormControl, FormHelperText, TextField, styled } from '@mui/material/';
-import { useMediaQuery } from '@mui/material';
-import { useRouter } from 'next/router';
-import { GetServerSideProps } from 'next';
-import { getSession } from 'next-auth/react';
-import prisma from '@/lib/prisma';
-import { Contractor, Department, Designations } from '@prisma/client';
-import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
-import axios from 'axios';
-import FormSelect from '@/ui-component/FormSelect';
-import { extend, set } from 'lodash';
-import ImportDepartments from '@/components/importDepartment';
+import Head from "next/head";
+import * as React from "react";
+import { alpha } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Delete from "@mui/icons-material/Delete";
+import Edit from "@mui/icons-material/Edit";
+import NavigateBefore from "@mui/icons-material/NavigateBefore";
+import Search from "@mui/icons-material/Search";
+import Backdrop from "@mui/material/Backdrop";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import InputAdornment from "@mui/material/InputAdornment";
+import Modal from "@mui/material/Modal";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Slide from "@mui/material/Slide";
+import Stack from "@mui/material/Stack";
+import {
+  Autocomplete,
+  Chip,
+  CircularProgress,
+  FormControl,
+  FormHelperText,
+  TextField,
+  styled,
+} from "@mui/material/";
+import { useMediaQuery } from "@mui/material";
+import { useRouter } from "next/router";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
+import { Contractor, Department, Designations } from "@prisma/client";
+import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
+import axios from "axios";
+import FormSelect from "@/ui-component/FormSelect";
+import { extend, set } from "lodash";
+import ImportDepartments from "@/components/importDepartment";
 
 const style = {
-  position: 'absolute',
-  overflowY: 'auto',
-  borderRadius: '15px',
-  bgcolor: 'background.paper',
+  position: "absolute",
+  overflowY: "auto",
+  borderRadius: "15px",
+  bgcolor: "background.paper",
   boxShadow: 24,
 };
 
@@ -53,7 +61,7 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   height: 40,
   marginRight: 30,
 
-  '& fieldset': {
+  "& fieldset": {
     borderWidth: `1px !important`,
     borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
   },
@@ -65,7 +73,7 @@ const createHeadCells = (
   numeric: boolean,
   included: boolean,
   colspan?: number,
-  align?: 'right' | 'left' | 'center'
+  align?: "right" | "left" | "center"
 ) => {
   return {
     id: id,
@@ -78,11 +86,11 @@ const createHeadCells = (
 };
 
 const headCells = [
-  createHeadCells('id', 'Id', false, false),
-  createHeadCells('department', 'Department', false, false),
-  createHeadCells('basicsalary_in_duration', 'Salary Duration', false, false),
-  createHeadCells('designation', 'Designations', false, false),
-  createHeadCells('Action', 'Action', false, false, 2, 'center'),
+  createHeadCells("id", "Id", false, false),
+  createHeadCells("department", "Department", false, false),
+  createHeadCells("basicsalary_in_duration", "Salary Duration", false, false),
+  createHeadCells("designation", "Designations", false, false),
+  createHeadCells("Action", "Action", false, false, 2, "center"),
 ];
 
 interface EnhancedTableToolbarProps {
@@ -101,15 +109,24 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       sx={{
         pl: { sm: 2 },
         pr: { xs: 1, sm: 1 },
-        display: 'flex',
-        justifyContent: 'space-between',
+        display: "flex",
+        justifyContent: "space-between",
         ...(numSelected > 0 && {
-          bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+          bgcolor: (theme) =>
+            alpha(
+              theme.palette.secondary.main,
+              theme.palette.action.activatedOpacity
+            ),
         }),
       }}
     >
       {numSelected > 0 ? (
-        <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
+        <Typography
+          sx={{ flex: "1 1 100%" }}
+          color="inherit"
+          variant="subtitle1"
+          component="div"
+        >
           {numSelected} selected
         </Typography>
       ) : (
@@ -136,12 +153,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: 'rgb(103, 58, 183)',
-              ':hover': { backgroundColor: 'rgb(103, 58, 183)' },
+              backgroundColor: "rgb(103, 58, 183)",
+              ":hover": { backgroundColor: "rgb(103, 58, 183)" },
             }}
             onClick={handleOpen}
           >
-            {' '}
+            {" "}
             + Add Department
           </Button>
         </Stack>
@@ -167,32 +184,41 @@ export default function Departments({
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
   const [open1, setOpen1] = React.useState(false);
-  const [filter, setFilter] = React.useState('');
-  const [selectedDepartment, setSelectedDepartment] = React.useState<DepartmentContractors | null>(null);
-  const [department, setDepartment] = React.useState(selectedDepartment?.department || '');
-  const [salaryduration, setSalaryDuration] = React.useState(selectedDepartment?.basicsalary_in_duration || '');
+  const [filter, setFilter] = React.useState("");
+  const [selectedDepartment, setSelectedDepartment] =
+    React.useState<DepartmentContractors | null>(null);
+  const [department, setDepartment] = React.useState(
+    selectedDepartment?.department || ""
+  );
+  const [salaryduration, setSalaryDuration] = React.useState(
+    selectedDepartment?.basicsalary_in_duration || ""
+  );
   const router = useRouter();
-  const [departments, setDepartments] = React.useState<DepartmentContractors[]>([]);
-  const matches = useMediaQuery('(min-width:600px)');
+  const [departments, setDepartments] = React.useState<DepartmentContractors[]>(
+    []
+  );
+  const matches = useMediaQuery("(min-width:600px)");
   const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState('');
-  const [selectedContractors, setSelectedContractors] = React.useState<Contractor[]>([]);
-  const [value, setValue] = React.useState('');
+  const [error, setError] = React.useState("");
+  const [selectedContractors, setSelectedContractors] = React.useState<
+    Contractor[]
+  >([]);
+  const [value, setValue] = React.useState("");
 
   const handleClose = () => {
     setOpen(false);
     setOpen1(false);
-    setDepartment('');
+    setDepartment("");
 
     setSelectedDepartment(null);
   };
 
   const handleAddDepartment = async () => {
-    setError('');
+    setError("");
     setLoading(true);
     if (selectedDepartment) {
       await axios
-        .post('api/admin/department', {
+        .post("api/admin/department", {
           id: selectedDepartment?.id,
           department,
           salaryduration,
@@ -203,7 +229,7 @@ export default function Departments({
           fetchDepartments();
         })
         .catch((err) => {
-          console.log(err.response.data.message, 'Error Message');
+          console.log(err.response.data.message, "Error Message");
           setError(err.message);
         });
       setLoading(false);
@@ -211,7 +237,7 @@ export default function Departments({
     }
 
     const res = await axios
-      .post('api/admin/department', {
+      .post("api/admin/department", {
         department,
         salaryduration,
         contractors: selectedContractors,
@@ -221,12 +247,12 @@ export default function Departments({
         fetchDepartments();
       })
       .catch((err) => {
-        console.log(err.response.data.message, 'Error Message');
+        console.log(err.response.data.message, "Error Message");
         setError(err.response.data.message);
       });
 
-    setDepartment('');
-    setSalaryDuration('');
+    setDepartment("");
+    setSalaryDuration("");
     setLoading(false);
   };
 
@@ -250,7 +276,10 @@ export default function Departments({
     } else if (selectedIndex === selected.length - 1) {
       newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
     }
 
     setSelected(newSelected);
@@ -260,13 +289,15 @@ export default function Departments({
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
   const fetchDepartments = async () => {
-    const res = await fetch('/api/admin/department');
+    const res = await fetch("/api/admin/department");
     const data = await res.json();
     setDepartments(data);
   };
@@ -277,11 +308,12 @@ export default function Departments({
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - departments.length) : 0;
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - departments.length) : 0;
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
+    <Box sx={{ width: "100%" }}>
+      <Paper sx={{ width: "100%", mb: 2 }}>
         <EnhancedTableToolbar
           numSelected={selected.length}
           filter={filter}
@@ -289,26 +321,30 @@ export default function Departments({
           handleOpen={() => {
             setOpen(true);
             setSelectedDepartment(null);
-            setDepartment('');
+            setDepartment("");
           }}
           fetchDepartments={fetchDepartments}
         />
         <TableContainer
           sx={{
-            maxHeight: 'calc(100vh - 16rem)',
-            overflow: 'auto',
-            scrollBehavior: 'smooth',
-            '&::-webkit-scrollbar': {
+            maxHeight: "calc(100vh - 16rem)",
+            overflow: "auto",
+            scrollBehavior: "smooth",
+            "&::-webkit-scrollbar": {
               height: 10,
               width: 10,
             },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#bdbdbd',
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#bdbdbd",
               borderRadius: 2,
             },
           }}
         >
-          <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size="medium">
+          <Table
+            sx={{ minWidth: 750 }}
+            aria-labelledby="tableTitle"
+            size="medium"
+          >
             <EnhancedTableHead
               numSelected={selected.length}
               onSelectAllClick={handleSelectAllClick}
@@ -317,7 +353,9 @@ export default function Departments({
             />
             <TableBody>
               {departments
-                .filter((user) => user.department.toLowerCase().includes(filter.toLowerCase()))
+                .filter((user) =>
+                  user.department.toLowerCase().includes(filter.toLowerCase())
+                )
                 ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index: number) => {
                   const isItemSelected = isSelected(row.id as string);
@@ -331,15 +369,17 @@ export default function Departments({
                       tabIndex={-1}
                       key={row.id}
                       selected={isItemSelected}
-                      sx={{ cursor: 'pointer' }}
+                      sx={{ cursor: "pointer" }}
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
-                          onClick={(event) => handleClick(event, row.id as string)}
-                          color="primary"
+                          onClick={(event) =>
+                            handleClick(event, row.id as string)
+                          }
+                          color="secondary"
                           checked={isItemSelected}
                           inputProps={{
-                            'aria-labelledby': labelId,
+                            "aria-labelledby": labelId,
                           }}
                         />
                       </TableCell>
@@ -350,14 +390,21 @@ export default function Departments({
                       <TableCell>{row.basicsalary_in_duration}</TableCell>
                       <TableCell>
                         <Box display="flex">
-                          {designations?.filter((d) => d.departmentname === row.department).length === 0 && (
+                          {designations?.filter(
+                            (d) => d.departmentname === row.department
+                          ).length === 0 && (
                             <Box display="flex" alignItems="center">
                               <Typography>No Designations</Typography>
                             </Box>
                           )}
                           {designations
                             ?.filter((d) => d.departmentname === row.department)
-                            .map((designation) => <Chip sx={{ mx: 1 }} label={designation.designation} />)}
+                            .map((designation) => (
+                              <Chip
+                                sx={{ mx: 1 }}
+                                label={designation.designation}
+                              />
+                            ))}
                         </Box>
                       </TableCell>
 
@@ -367,7 +414,9 @@ export default function Departments({
                             setSelectedDepartment(row);
                             setSelectedContractors(row.contractors);
                             setDepartment(row.department);
-                            setSalaryDuration(row.basicsalary_in_duration || '');
+                            setSalaryDuration(
+                              row.basicsalary_in_duration || ""
+                            );
                             setOpen(true);
                           }}
                           sx={{ m: 0 }}
@@ -379,7 +428,7 @@ export default function Departments({
                       <TableCell size="small" align="center">
                         <IconButton
                           onClick={async () => {
-                            await axios.delete('/api/admin/department', {
+                            await axios.delete("/api/admin/department", {
                               data: { id: row.id },
                             });
                             fetchDepartments();
@@ -424,27 +473,33 @@ export default function Departments({
         BackdropProps={{
           timeout: 500,
         }}
-        sx={{ display: 'flex', justifyContent: ' flex-end' }}
+        sx={{ display: "flex", justifyContent: " flex-end" }}
       >
-        <Slide direction={matches ? 'left' : 'up'} timeout={500} in={open || open1} mountOnEnter unmountOnExit>
+        <Slide
+          direction={matches ? "left" : "up"}
+          timeout={500}
+          in={open || open1}
+          mountOnEnter
+          unmountOnExit
+        >
           <Box
             p={{ xs: 0, sm: 2 }}
-            width={{ xs: '100%', sm: 400, md: 500 }}
-            height={{ xs: '70%', sm: '100%' }}
-            top={{ xs: '30%', sm: '0' }}
+            width={{ xs: "100%", sm: 400, md: 500 }}
+            height={{ xs: "70%", sm: "100%" }}
+            top={{ xs: "30%", sm: "0" }}
             sx={style}
           >
-            <Stack sx={{ overflowY: 'auto' }} p={3}>
-              <Typography sx={{ fontSize: '1.2rem', fontWeight: '700' }}>
+            <Stack sx={{ overflowY: "auto" }} p={3}>
+              <Typography sx={{ fontSize: "1.2rem", fontWeight: "700" }}>
                 <IconButton
                   onClick={handleClose}
                   sx={{
                     // zIndex: 2,
-                    padding: '5px',
+                    padding: "5px",
 
-                    marginRight: '1rem',
-                    background: 'white',
-                    ':hover': { background: 'white' },
+                    marginRight: "1rem",
+                    background: "white",
+                    ":hover": { background: "white" },
                   }}
                 >
                   <NavigateBefore fontSize="large" />
@@ -462,7 +517,7 @@ export default function Departments({
                       value={department}
                       onChange={(e) => {
                         setDepartment(e.target.value);
-                        setError('');
+                        setError("");
                       }}
                     />
                     <FormSelect
@@ -470,29 +525,40 @@ export default function Departments({
                       value={salaryduration}
                       handleChange={(e) => {
                         setSalaryDuration(e as string);
-                        setError('');
+                        setError("");
                       }}
                       options={[
-                        { label: 'Hourly', value: 'Hourly' },
-                        { label: 'Monthly', value: 'Monthly' },
+                        { label: "Hourly", value: "Hourly" },
+                        { label: "Monthly", value: "Monthly" },
                       ]}
                     />
 
                     <Autocomplete
                       onChange={(event: any, newValue: string | null) => {
-                        console.log(newValue, 'New Value', selectedContractors, 'Selected Contractors');
+                        console.log(
+                          newValue,
+                          "New Value",
+                          selectedContractors,
+                          "Selected Contractors"
+                        );
 
-                        if (!selectedContractors.find((d) => d.contractorname === newValue)) {
-                          const d = contractors.find((d) => d.contractorname === newValue);
+                        if (
+                          !selectedContractors.find(
+                            (d) => d.contractorname === newValue
+                          )
+                        ) {
+                          const d = contractors.find(
+                            (d) => d.contractorname === newValue
+                          );
                           console.log(contractors);
 
-                          console.log(d, 'D');
+                          console.log(d, "D");
 
                           if (d) {
                             setSelectedContractors([...selectedContractors, d]);
                           }
                         }
-                        setValue('');
+                        setValue("");
                       }}
                       value={value}
                       inputValue={value}
@@ -501,10 +567,17 @@ export default function Departments({
                       }}
                       id="controllable-states-demo"
                       options={[...contractors.map((c) => c.contractorname)]}
-                      renderInput={(params) => <TextField {...params} placeholder="Select a Contractor" />}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Select a Contractor"
+                        />
+                      )}
                       clearIcon={null}
                     />
-                    {error && <FormHelperText error={true}>{error}</FormHelperText>}
+                    {error && (
+                      <FormHelperText error={true}>{error}</FormHelperText>
+                    )}
                     <Stack direction="row" flexWrap="wrap">
                       {selectedContractors.map((c) => (
                         <Chip
@@ -513,14 +586,28 @@ export default function Departments({
                           label={c.contractorname}
                           onDelete={() =>
                             setSelectedContractors(
-                              selectedContractors.filter((contractor) => contractor.contractorId !== c.contractorId)
+                              selectedContractors.filter(
+                                (contractor) =>
+                                  contractor.contractorId !== c.contractorId
+                              )
                             )
                           }
                         />
                       ))}
                     </Stack>
-                    <Button variant="contained" fullWidth onClick={handleAddDepartment} disabled={loading}>
-                      Submit' {loading && <CircularProgress size={15} sx={{ ml: 1, color: '#364152' }} />}
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={handleAddDepartment}
+                      disabled={loading}
+                    >
+                      Submit'{" "}
+                      {loading && (
+                        <CircularProgress
+                          size={15}
+                          sx={{ ml: 1, color: "#364152" }}
+                        />
+                      )}
                     </Button>
                   </Stack>
                 </FormControl>
@@ -536,10 +623,10 @@ export default function Departments({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  if (!(session?.user?.role === 'Admin' || session?.user?.role === 'HR')) {
+  if (!(session?.user?.role === "Admin" || session?.user?.role === "HR")) {
     return {
       redirect: {
-        destination: '/',
+        destination: "/",
         permanent: false,
       },
     };

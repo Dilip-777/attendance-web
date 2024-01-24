@@ -68,6 +68,22 @@ const hr = {
       ],
     },
     {
+      id: "workorder",
+      title: "Work Order",
+      type: "collapse",
+      icon: icons.Assignment,
+
+      children: [
+        {
+          id: "/workorder",
+          title: "Work Order List",
+          type: "item",
+          url: "/workorder",
+          target: true,
+        },
+      ],
+    },
+    {
       id: "/attendance",
       title: "Attendance Report",
       type: "item",

@@ -20,7 +20,10 @@ export default function FormSelect({
   ...props
 }: props) {
   return (
-    <FormControl fullWidth={fullWidth} sx={{ minWidth: "15rem" }}>
+    <FormControl
+      fullWidth={fullWidth}
+      sx={{ minWidth: "15rem", width: "100%" }}
+    >
       {label && <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>}
       <Select
         value={value}
