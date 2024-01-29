@@ -27,7 +27,7 @@ export default function MonthlyTable({
     .filter((d) => d.departmentname === department?.department)
     .filter((d) => d.employees.length > 0)
     .map((d) => {
-      if (d.basicsalary_in_duration === "Monthly")
+      if (d.basicsalary_in_duration !== "Hourly")
         return { main: d.designation, id: d.id };
       if (d.gender === "Male")
         return { main: d.designation, sub: "M", id: d.id };

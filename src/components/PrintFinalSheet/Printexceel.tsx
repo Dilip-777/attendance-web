@@ -874,7 +874,7 @@ const table = ({
   const sidebar = department.designations
     .filter((d: any) => d.departmentname === department?.department)
     .map((d: any) => {
-      if (d.basicsalary_in_duration === "Monthly")
+      if (d.basicsalary_in_duration !== "Hourly")
         return { main: d.designation, id: d.designationid };
       if (d.gender === "Male")
         return { main: d.designation, sub: "M", id: d.designationid };

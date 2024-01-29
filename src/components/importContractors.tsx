@@ -158,7 +158,12 @@ function ImportData() {
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
-      <Button disabled={loading} variant="contained" component="label">
+      <Button
+        disabled={loading}
+        variant="contained"
+        component="label"
+        color="secondary"
+      >
         Upload
         {loading && (
           <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />

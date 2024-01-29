@@ -3,6 +3,11 @@ import {
   Autocomplete,
   Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormLabel,
   IconButton,
   Paper,
@@ -20,19 +25,24 @@ import { getSession } from "next-auth/react";
 import React, { useState } from "react";
 import axios from "axios";
 import FormSelect from "@/ui-component/FormSelect";
-import CloseIcon from "@mui/icons-material/Close";
+import Close from "@mui/icons-material/Close";
+import Warning from "@mui/icons-material/Warning";
 
 export default function AttedanceManagement({
   contractors,
 }: {
   contractors: { label: string; value: string }[];
 }) {
-  const [contractorId, setContractorId] = useState<string>("");
+  const [contractorId, setContractorId] = useState<string>(
+    contractors[0].value || ""
+  );
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("NoChanges");
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
+  const [open1, setOpen1] = useState(false);
+  const [count, setCount] = useState<number>(0);
   const [type, setType] = useState<"success" | "error">("success");
 
   const handleClose = (
@@ -44,6 +54,36 @@ export default function AttedanceManagement({
     }
 
     setOpen(false);
+  };
+
+  const getCount = async () => {
+    setLoading(true);
+    console.log(startDate, endDate);
+    const dates = [];
+
+    let currentDate = startDate;
+    while (currentDate?.isBefore(endDate) || currentDate?.isSame(endDate)) {
+      dates.push(currentDate.format("DD/MM/YYYY"));
+      currentDate = currentDate.add(1, "day");
+    }
+
+    if (dates.length === 0) return;
+    if (!contractorId) return;
+    if (!status) return;
+    try {
+      const res = await axios.get(
+        "/api/manager" +
+          `?contractorId=${contractorId}` +
+          `&dates=${dates}` +
+          `&status=${status}`
+      );
+
+      setCount(res.data.count);
+      setOpen1(true);
+    } catch (err) {
+      console.log(err);
+    }
+    setLoading(false);
   };
 
   const handleDelete = async () => {
@@ -71,6 +111,7 @@ export default function AttedanceManagement({
       console.log(err);
       setType("error");
     }
+    setOpen1(false);
     setOpen(true);
     setLoading(false);
   };
@@ -127,7 +168,7 @@ export default function AttedanceManagement({
         variant="contained"
         color="secondary"
         sx={{ mt: 2 }}
-        onClick={() => handleDelete()}
+        onClick={() => getCount()}
       >
         Delete Attendance
       </Button>
@@ -154,11 +195,54 @@ export default function AttedanceManagement({
               sx={{ p: 0.5 }}
               onClick={handleClose}
             >
-              <CloseIcon />
+              <Close />
             </IconButton>
           </React.Fragment>
         }
       />
+      <Dialog
+        open={open1}
+        onClose={() => setOpen1(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ m: 1, fontSize: "1rem" }}>
+          <IconButton>
+            <Warning color="error" />
+          </IconButton>
+          Confirm the action
+        </DialogTitle>
+        <Box position="absolute" top={0} right={0}>
+          <IconButton onClick={() => setOpen1(false)}>
+            <Close />
+          </IconButton>
+        </Box>
+        <DialogContent>
+          <Typography>
+            Are you sure, you want to delete the Attendance of {count} records?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ m: 1 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpen1(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            onClick={(event) => handleDelete()}
+            variant="contained"
+            disabled={loading}
+          >
+            Confirm
+            {loading && (
+              <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 }

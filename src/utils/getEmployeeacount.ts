@@ -123,7 +123,13 @@ const getEmployeesCalculation = (
     }
     totalobj["rate"] = "";
 
-    obj["amount"] = getRoundOff((count * employee.designation.basicsalary) / m);
+    if (employee.designation.basicsalary_in_duration === "Monthly") {
+      obj["amount"] = getRoundOff(
+        (count * employee.designation.basicsalary) / m
+      );
+    } else {
+      obj["amount"] = getRoundOff(count * employee.designation.basicsalary);
+    }
     totalobj["amount"] = (((totalobj["amount"] as number) || 0) +
       obj["amount"]) as number;
 
@@ -134,10 +140,17 @@ const getEmployeesCalculation = (
     totalobj["othrs"] = (((totalobj["othrs"] as number) || 0) +
       obj["othrs"]) as number;
 
-    obj["otamount"] = getRoundOff(
-      (obj["othrs"] * employee.designation.basicsalary) /
-        (m * employee.designation.allowed_wrking_hr_per_day)
-    );
+    if (employee.designation.basicsalary_in_duration === "Monthly") {
+      obj["otamount"] = getRoundOff(
+        (obj["othrs"] * employee.designation.basicsalary) /
+          (m * employee.designation.allowed_wrking_hr_per_day)
+      );
+    } else {
+      obj["otamount"] = getRoundOff(
+        (obj["othrs"] * employee.designation.basicsalary) /
+          employee.designation.allowed_wrking_hr_per_day
+      );
+    }
     totalobj["otamount"] = (((totalobj["otamount"] as number) || 0) +
       obj["otamount"]) as number;
 

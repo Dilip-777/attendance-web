@@ -33,6 +33,7 @@ import {
   CircularProgress,
   FormControl,
   FormHelperText,
+  FormLabel,
   TextField,
   styled,
 } from "@mui/material/";
@@ -510,16 +511,21 @@ export default function Departments({
 
               {open && (
                 <FormControl fullWidth sx={{ mt: 2 }}>
-                  <Stack width="100%" spacing={2}>
-                    <TextField
-                      placeholder="Department"
-                      variant="outlined"
-                      value={department}
-                      onChange={(e) => {
-                        setDepartment(e.target.value);
-                        setError("");
-                      }}
-                    />
+                  <Stack width="100%" spacing={3}>
+                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                      <FormLabel sx={{ fontWeight: "700" }}>
+                        Department
+                      </FormLabel>
+                      <TextField
+                        placeholder="Department"
+                        variant="outlined"
+                        value={department}
+                        onChange={(e) => {
+                          setDepartment(e.target.value);
+                          setError("");
+                        }}
+                      />
+                    </Box>
                     <FormSelect
                       label="Basic Salary In Duration"
                       value={salaryduration}
@@ -529,52 +535,60 @@ export default function Departments({
                       }}
                       options={[
                         { label: "Hourly", value: "Hourly" },
+                        { label: "Daily", value: "Daily" },
                         { label: "Monthly", value: "Monthly" },
                       ]}
                     />
-
-                    <Autocomplete
-                      onChange={(event: any, newValue: string | null) => {
-                        console.log(
-                          newValue,
-                          "New Value",
-                          selectedContractors,
-                          "Selected Contractors"
-                        );
-
-                        if (
-                          !selectedContractors.find(
-                            (d) => d.contractorname === newValue
-                          )
-                        ) {
-                          const d = contractors.find(
-                            (d) => d.contractorname === newValue
+                    <Box>
+                      <FormLabel sx={{ fontWeight: "700" }}>
+                        Select Contractor
+                      </FormLabel>
+                      <Autocomplete
+                        onChange={(event: any, newValue: string | null) => {
+                          console.log(
+                            newValue,
+                            "New Value",
+                            selectedContractors,
+                            "Selected Contractors"
                           );
-                          console.log(contractors);
 
-                          console.log(d, "D");
+                          if (
+                            !selectedContractors.find(
+                              (d) => d.contractorname === newValue
+                            )
+                          ) {
+                            const d = contractors.find(
+                              (d) => d.contractorname === newValue
+                            );
+                            console.log(contractors);
 
-                          if (d) {
-                            setSelectedContractors([...selectedContractors, d]);
+                            console.log(d, "D");
+
+                            if (d) {
+                              setSelectedContractors([
+                                ...selectedContractors,
+                                d,
+                              ]);
+                            }
                           }
-                        }
-                        setValue("");
-                      }}
-                      value={value}
-                      inputValue={value}
-                      onInputChange={(event, newInputValue) => {
-                        setValue(newInputValue);
-                      }}
-                      id="controllable-states-demo"
-                      options={[...contractors.map((c) => c.contractorname)]}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          placeholder="Select a Contractor"
-                        />
-                      )}
-                      clearIcon={null}
-                    />
+                          setValue("");
+                        }}
+                        value={value}
+                        inputValue={value}
+                        onInputChange={(event, newInputValue) => {
+                          setValue(newInputValue);
+                        }}
+                        id="controllable-states-demo"
+                        options={[...contractors.map((c) => c.contractorname)]}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder="Select a Contractor"
+                          />
+                        )}
+                        clearIcon={null}
+                      />
+                    </Box>
                     {error && (
                       <FormHelperText error={true}>{error}</FormHelperText>
                     )}

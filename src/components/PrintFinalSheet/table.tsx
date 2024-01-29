@@ -116,7 +116,7 @@ export default function DocTable({
   const sidebar = designations
     .filter((d) => d.departmentname === department?.department)
     .map((d) => {
-      if (d.basicsalary_in_duration === "Monthly")
+      if (d.basicsalary_in_duration !== "Hourly")
         return { main: d.designation, id: d.designationid };
       if (d.gender === "Male")
         return { main: d.designation, sub: "M", id: d.designationid };

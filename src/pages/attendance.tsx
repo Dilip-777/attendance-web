@@ -183,7 +183,11 @@ export default function PlantCommercial({
   const fetchEmployees = async () => {
     const res = await axios.get(
       `/api/hr/employee?contractor=${contractor1}&departments=${selectedDepartments
-        .filter((d) => d.basicsalary_in_duration === "Monthly")
+        .filter(
+          (d) =>
+            d.basicsalary_in_duration === "Monthly" ||
+            d.basicsalary_in_duration === "Daily"
+        )
         .map((d) => d.id)
         .join(",")}`
     );
@@ -404,7 +408,7 @@ export default function PlantCommercial({
               variant="contained"
               component="label"
               disabled={loadingbill}
-              sx={{ bgcolor: "#5e35b1" }}
+              color="secondary"
             >
               Upload
               {loadingbill && (
@@ -440,67 +444,69 @@ export default function PlantCommercial({
         ))}
       </Stack>
 
-      <Box sx={{ width: "100%" }}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <Tabs value={value} onChange={handleTabChange}>
-            <Tab
-              label="Attendance Calculation"
-              {...a11yProps(0)}
-              sx={{
-                borderBottom: tabvalue === 0 ? "3px solid #5e35b1" : "0",
-                color: tabvalue === 0 ? "#5e35b1" : "",
-              }}
-            />
-            <Tab
-              label="OT hrs Calculation"
-              {...a11yProps(1)}
-              sx={{
-                borderBottom: tabvalue === 1 ? "3px solid #5e35b1" : "0",
-                color: tabvalue === 1 ? "#5e35b1" : "",
-              }}
-            />
+      <Box sx={{ width: "100%", minHeight: "65vh" }}>
+        <Box
+          sx={{ borderBottom: 1, borderColor: "divider", marginBottom: "1rem" }}
+        >
+          <Tabs
+            value={tabvalue}
+            onChange={handleTabChange}
+            textColor="secondary"
+            indicatorColor="secondary"
+          >
+            <Tab label="Attendance Calculation" {...a11yProps(0)} />
+            <Tab label="OT hrs Calculation" {...a11yProps(1)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={tabvalue} index={0}>
-          <Stack spacing={3}>
-            {selectedDepartments.find(
-              (d) => d.basicsalary_in_duration === "Hourly"
-            ) &&
-              // {wrkhrs === 0 ? }
-              hrs.map((hr) => (
-                <HourlyTable
-                  departments={selectedDepartments.filter(
-                    (d) => d.basicsalary_in_duration === "Hourly"
-                  )}
-                  contractor={
-                    contractors.find(
-                      (c) => c.contractorId === contractor1
-                    ) as ContractorwithDepartment
-                  }
-                  shifts={shifts}
-                  value={value}
-                  wrkhrs={hr}
-                  servicecharge={
-                    contractors.find((c) => c.contractorId === contractor1)
-                      ?.servicecharge as number
-                  }
-                  timekeepers={timekeepers}
-                  ot={false}
-                />
-              ))}
-            {employees.length > 0 && (
-              <MonthlyPlantCommercialTable
+          {/* <Stack spacing={3}> */}
+          {selectedDepartments.find(
+            (d) => d.basicsalary_in_duration === "Hourly"
+          ) &&
+            // {wrkhrs === 0 ? }
+            hrs.map((hr) => (
+              <HourlyTable
+                departments={selectedDepartments.filter(
+                  (d) => d.basicsalary_in_duration === "Hourly"
+                )}
                 contractor={
-                  contractors.find((c) => c.contractorId === contractor1) as any
+                  contractors.find(
+                    (c) => c.contractorId === contractor1
+                  ) as ContractorwithDepartment
                 }
+                shifts={shifts}
                 value={value}
-                employees={employees}
-                departments={selectedDepartments}
+                wrkhrs={hr}
+                servicecharge={
+                  contractors.find((c) => c.contractorId === contractor1)
+                    ?.servicecharge as number
+                }
+                timekeepers={timekeepers}
                 ot={false}
-                seperateSalarys={seperateSalarys}
               />
-            )}
-          </Stack>
+            ))}
+          {employees.length > 0 && (
+            <MonthlyPlantCommercialTable
+              contractor={
+                contractors.find((c) => c.contractorId === contractor1) as any
+              }
+              value={value}
+              employees={employees}
+              departments={selectedDepartments}
+              ot={false}
+              seperateSalarys={seperateSalarys}
+            />
+          )}
+          {selectedDepartments.length === 0 && employees.length === 0 && (
+            <Typography
+              variant="h5"
+              component="span"
+              sx={{ p: 2, m: 0, fontWeight: "500", height: "20rem" }}
+            >
+              No Data Found
+            </Typography>
+          )}
+          {/* </Stack> */}
         </CustomTabPanel>
         <CustomTabPanel value={tabvalue} index={1}>
           <Stack spacing={3}>

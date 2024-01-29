@@ -206,13 +206,8 @@ const getTotalAmountAndRows = (
       );
       if (s) {
         rate[id] = s.salary;
-      } else if (designation.basicsalary_in_duration === "Monthly" || !wrkhrs) {
-        rate[id] = designation.basicsalary || 0;
       } else {
-        rate[id] =
-          wrkhrs === 8
-            ? designation.basicsalary
-            : designation.basicsalaryfor12hr;
+        rate[id] = designation.basicsalary || 0;
       }
 
       if (designation.basicsalary_in_duration === "Monthly") {
@@ -255,11 +250,7 @@ const getTotalAmountAndRows = (
         );
       } else {
         otRate = getRoundOff(
-          wrkhrs === 8
-            ? designation.basicsalary /
-                (wrkhrs || designation.allowed_wrking_hr_per_day)
-            : designation.basicsalaryfor12hr /
-                (wrkhrs || designation.allowed_wrking_hr_per_day)
+          designation.basicsalary / designation.allowed_wrking_hr_per_day
         );
       }
       otamount[id] = getRoundOff(Number(_.get(totalovertime, id, 0)) * otRate);

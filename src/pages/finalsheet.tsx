@@ -160,7 +160,7 @@ export default function FinalSheet({
     let r1 = { ...rows };
 
     selectedDepartments
-      .filter((d) => d.basicsalary_in_duration === "Monthly")
+      .filter((d) => d.basicsalary_in_duration !== "Hourly")
       .forEach((d) => {
         const { rows1, totalnetPayable } = getTotalAmountAndRows(
           res.data.filter((t: TimeKeeper) => t.department === d.department),
@@ -241,7 +241,7 @@ export default function FinalSheet({
     printMonthly({
       designations: designations,
       departments: selectedDepartments.filter(
-        (d) => d.basicsalary_in_duration === "Monthly"
+        (d) => d.basicsalary_in_duration !== "Hourly"
       ),
       total: totalPayable,
       rows: rows,
@@ -372,7 +372,7 @@ export default function FinalSheet({
                 id="controllable-states-demo"
                 options={[
                   ...departments
-                    .filter((d) => d.basicsalary_in_duration === "Monthly")
+                    .filter((d) => d.basicsalary_in_duration !== "Hourly")
                     .map((d) => d.department),
                 ]}
                 renderInput={(params) => (

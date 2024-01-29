@@ -219,15 +219,15 @@ export default function FinalSheetTable({
                     <TableRow>
                       <TableCell colSpan={9} align="center"></TableCell>
                       <TableCell
-                        colSpan={4}
+                        colSpan={6}
                         align="center"
                         sx={{ fontWeight: "600" }}
                       >
                         {d.label}
                       </TableCell>
                       <TableCell
-                        colSpan={3}
-                        align="right"
+                        colSpan={1}
+                        align="center"
                         sx={{ fontWeight: "600" }}
                       >
                         {Math.round(d.value).toLocaleString("en-IN")}

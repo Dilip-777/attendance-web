@@ -513,7 +513,7 @@ export default function TimeKeeperTable({}: // contractors,
     dayjs().startOf("month")
   );
   const [endDate, setEndDate] = React.useState<Dayjs>(dayjs());
-  const [att, setAtt] = React.useState("1");
+  const [att, setAtt] = React.useState("1.5");
   const [count, setCount] = React.useState(0);
   const [type, setType] = React.useState<"success" | "error">("success");
   const [snopen, setSnopen] = React.useState(false);
@@ -920,7 +920,7 @@ export default function TimeKeeperTable({}: // contractors,
           </>
         );
       default:
-        return <TableCell>{_.get(row, column.id, "-") || "-"}</TableCell>;
+        return <TableCell>{_.get(row, column.id, "-") ?? "-"}</TableCell>;
     }
   };
 

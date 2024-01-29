@@ -170,6 +170,7 @@ export default function EditDesignation({
                   placeHolder="Enter the Basic Salary"
                   options={[
                     { value: "Hourly", label: "Hourly" },
+                    { value: "Daily", label: "Daily" },
                     { value: "Monthly", label: "Monthly" },
                   ]}
                 />
