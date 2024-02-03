@@ -118,43 +118,45 @@ export default function Row(props: Props) {
         <TableCell align="left">{row.carbs}</TableCell>
         <TableCell align="left">{row.protein}</TableCell> */}
       </TableRow>
-      <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1 }}>
-              <Typography variant="h5" gutterBottom component="div">
-                Chargeable Items: {items.length}
-              </Typography>
-              <Table aria-label="purchases">
-                <TableHead>
-                  <TableRow>
-                    {headcells1.map((headcell) => (
-                      <TableCell sx={{ fontWeight: "600" }} align="center">
-                        {headcell.label}
-                      </TableCell>
-                    ))}
-                    {/* <TableCell>Date</TableCell>
+      {items.length > 0 && (
+        <TableRow>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 1 }}>
+                <Typography variant="h5" gutterBottom component="div">
+                  Chargeable Items: {items.length}
+                </Typography>
+                <Table aria-label="purchases">
+                  <TableHead>
+                    <TableRow>
+                      {headcells1.map((headcell) => (
+                        <TableCell sx={{ fontWeight: "600" }} align="center">
+                          {headcell.label}
+                        </TableCell>
+                      ))}
+                      {/* <TableCell>Date</TableCell>
                     <TableCell>Customer</TableCell>
                     <TableCell align="left">Amount</TableCell>
                     <TableCell align="left">Total price ($)</TableCell> */}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.id}>
-                      {headcells1.map((headcell) => (
-                        <TableCell align="center">
-                          {_.get(item, headcell.id, "-") || "-"}
-                        </TableCell>
-                      ))}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {items.map((item) => (
+                      <TableRow key={item.id}>
+                        {headcells1.map((headcell) => (
+                          <TableCell align="center">
+                            {_.get(item, headcell.id, "-") || "-"}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      )}
       {items2 && (
         <TableRow>
           <TableCell style={{ paddingBottom: 15, paddingTop: 0 }} colSpan={6}>
