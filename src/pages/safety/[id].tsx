@@ -423,7 +423,7 @@ function FieldArray1({
                       </Grid>
 
                       <Grid item xs={12} lg={4} mt={"auto"} pb={2}>
-                        {safetyItems.length > 1 && (
+                        {safetyItems.length > 0 && (
                           <Button
                             onClick={() => {
                               values.safetyItems[index].chargeableItemIssued =
@@ -652,7 +652,7 @@ function FieldArray2({
             <Stack my={4} spacing={0}>
               <Stack justifyContent="space-between" direction="row">
                 <Typography variant="h4">
-                  UnsafeActs and Voilations : {unsafeActs?.length || 0}
+                  UnsafeActs and Violations : {unsafeActs?.length || 0}
                 </Typography>
               </Stack>
               {unsafeActs?.map((value: any, index: number) => {
@@ -671,8 +671,8 @@ function FieldArray2({
                         /> */}
                         <AutoCompleteSelect
                           name={`unsafeActs.${index}.unsafeacts`}
-                          label="Unsafe Acts and Voilation*"
-                          placeHolder="Unsafe Acts and Voilation"
+                          label="Unsafe Acts and Violation*"
+                          placeHolder="Unsafe Acts and Violation"
                           disabled={false}
                           options={options}
                         />
@@ -710,7 +710,7 @@ function FieldArray2({
                       </Grid>
 
                       <Grid item xs={12} lg={4} px={10} mt={"auto"} pb={2}>
-                        {unsafeActs.length > 1 && (
+                        {unsafeActs.length > 0 && (
                           <Button
                             onClick={() => {
                               values.unsafeActs[index].unsafeacts = "";

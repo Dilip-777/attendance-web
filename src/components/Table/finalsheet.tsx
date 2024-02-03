@@ -227,7 +227,7 @@ export default function FinalSheetta({
                   <TableCell />
                   <TableCell colSpan={6}></TableCell>
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                    Safety Voilation's Penalty
+                    Safety Violation's Penalty
                   </TableCell>
                   <TableCell align="center">{safetydeduction}</TableCell>
                 </TableRow>
@@ -391,7 +391,7 @@ export default function FinalSheetta({
                   <TableCell />
                   <TableCell colSpan={6}></TableCell>
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
-                    Safety Voilation's Penalty
+                    Safety Violation's Penalty
                   </TableCell>
                   <TableCell align="center">{safetydeduction}</TableCell>
                 </TableRow>

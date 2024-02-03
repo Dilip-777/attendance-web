@@ -140,7 +140,7 @@ export default async function importdata(
       },
     });
 
-    const updatedTimekeepers = await prisma.timeKeeper.updateMany({
+    await prisma.timeKeeper.updateMany({
       data: {
         gender: "Female",
       },

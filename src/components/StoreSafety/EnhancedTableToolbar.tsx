@@ -32,8 +32,6 @@ interface EnhancedTableToolbarProps {
     React.SetStateAction<{ value: string; label: string } | null>
   >;
   contractors: { value: string; label: string }[];
-  month: Dayjs;
-  setMonth: React.Dispatch<React.SetStateAction<Dayjs>>;
 }
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
@@ -54,8 +52,6 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     selectedContractor,
     setSelectedContractor,
     contractors,
-    month,
-    setMonth,
   } = props;
 
   return (
@@ -88,15 +84,6 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             )}
           />
         </Box>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            views={["month", "year"]}
-            value={month}
-            onChange={(newValue) => {
-              if (newValue) setMonth(newValue);
-            }}
-          />
-        </LocalizationProvider>
       </Stack>
       <Stack direction="row" spacing={2}>
         <Tooltip title="Print">

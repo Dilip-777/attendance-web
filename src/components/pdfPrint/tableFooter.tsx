@@ -40,7 +40,7 @@ const InvoiceTableFooter = ({
   const rows = [
     { label: "Net Amount Payable", value: total },
     { label: "GST Hold", value: 0 },
-    { label: "Safety Voilation Penalty", value: safety?.totalAmount || 0 },
+    { label: "Safety Violation Penalty", value: safety?.totalAmount || 0 },
     {
       label: "Consumables / Rechargeable Items",
       value: store?.totalAmount || 0,

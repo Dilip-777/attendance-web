@@ -44,7 +44,7 @@ const createHeadCells = (
 };
 
 const headcells2 = [
-  createHeadCells("unsafeacts", "Unsafe Acts and Voilation", true, false),
+  createHeadCells("unsafeacts", "Unsafe Acts and Violation", true, false),
   createHeadCells("division", "Division", true, false),
   createHeadCells("frequency", "Frequency", true, false),
   createHeadCells("penalty", "Penalty Amount", true, false),
@@ -161,7 +161,7 @@ export default function Row(props: Props) {
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box sx={{ margin: 1 }}>
                 <Typography variant="h5" gutterBottom component="div">
-                  Unsafe Acts and Voilation: {items2.length}
+                  Unsafe Acts and Violation: {items2.length}
                 </Typography>
                 <Table aria-label="purchases">
                   <TableHead>
