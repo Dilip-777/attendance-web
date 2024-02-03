@@ -36,10 +36,13 @@ const FormDate: React.FC<Props> = ({
   const isError = Boolean(meta.touched && meta.error);
 
   return (
-    <FormControl error={isError} disabled={disabled} sx={{ my: 2 }}>
-      <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
-        {label}
-      </FormLabel>
+    <FormControl
+      color="secondary"
+      error={isError}
+      disabled={disabled}
+      sx={{ my: 2 }}
+    >
+      <FormLabel sx={{ fontWeight: "700", my: 0.5 }}>{label}</FormLabel>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           {...other}
@@ -47,7 +50,11 @@ const FormDate: React.FC<Props> = ({
           value={value}
           format="DD/MM/YYYY"
           //   disableFuture
-          sx={{ maxWidth: { xs: 250, xl: 300 }, width: "100%" }}
+          sx={{
+            maxWidth: { xs: 250, xl: 300 },
+            width: "100%",
+            color: "secondary",
+          }}
           onChange={(newValue) => {
             setValue(newValue);
             setFieldValue(name, newValue.format("DD/MM/YYYY"));

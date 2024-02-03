@@ -39,12 +39,11 @@ const SelectMonth: React.FC<Props> = ({
   return (
     <FormControl
       error={isError}
+      color="secondary"
       disabled={disabled}
       sx={{ my: 2, maxWidth: { xs: 250, xl: 300 }, width: "100%" }}
     >
-      <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
-        {label}
-      </FormLabel>
+      <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           {...other}

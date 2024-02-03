@@ -24,6 +24,7 @@ import SelectMonth from "@/components/FormikComponents/FormMonth";
 import { IconButton, Stack } from "@mui/material";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
+import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 
 const numberType = Yup.number().required("Required");
 
@@ -43,6 +44,7 @@ const StoreItem = Yup.object().shape({
       return value === chargeableAmount;
     }
   ),
+  remarks: Yup.string().optional(),
 });
 
 const validationSchema = Yup.object().shape({
@@ -91,6 +93,7 @@ export default function Edit({
             units: storeitem.units,
             rate: storeitem.rate,
             chargeableamount: storeitem.chargeableamount,
+            remarks: storeitem.remarks,
           }))
         : [
             {
@@ -100,6 +103,7 @@ export default function Edit({
               units: "",
               rate: 0,
               chargeableamount: 0,
+              remarks: "",
             },
           ],
     // division: store?.division || "",
@@ -151,13 +155,13 @@ export default function Edit({
                 totalAmount: values.totalamount,
                 storeItems: values.storeItems.map((storeItem) => ({
                   id: shortid.generate(),
-                  storeId: id,
                   division: storeItem.division,
                   chargeableItemIssued: storeItem.chargeableItemIssued,
                   quantity: storeItem.quantity,
                   units: storeItem.units,
                   rate: storeItem.rate,
                   chargeableamount: storeItem.chargeableamount,
+                  remarks: storeItem.remarks,
                 })),
               })
               .then((res) => {
@@ -180,7 +184,7 @@ export default function Edit({
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={3} mt={2} container>
                   <Grid item xs={12} sm={6} lg={4}>
-                    <FormSelect
+                    <AutoCompleteSelect
                       name="contractorid"
                       label="Contractor Name*"
                       placeHolder="Contractor Name"
@@ -266,6 +270,7 @@ export default function Edit({
                   type="submit"
                   variant="contained"
                   sx={{ float: "right", mr: 10 }}
+                  color="secondary"
                 >
                   Submit
                 </Button>
@@ -363,6 +368,13 @@ function FieldArray1({
                           type="number"
                         />
                       </Grid>
+                      <Grid item xs={12} sm={6} lg={4}>
+                        <FormInput
+                          name={`storeItems.${index}.remarks`}
+                          label="Remarks*"
+                          placeHolder="Enter the Remarks"
+                        />
+                      </Grid>
 
                       <Grid item xs={12} px={10} pb={2}>
                         {storeItems.length > 1 && (
@@ -375,6 +387,7 @@ function FieldArray1({
                               values.storeItems[index].units = "";
                               values.storeItems[index].rate = 0;
                               values.storeItems[index].chargeableamount = 0;
+                              values.storeItems[index].remarks = "";
                               remove(index);
                             }}
                             variant="contained"
@@ -406,14 +419,15 @@ function FieldArray1({
                     units: "",
                     rate: 0,
                     chargeableamount: 0,
+                    remarks: "",
                   })
                 }
                 size="small"
                 sx={{
-                  bgcolor: "#2065D1",
+                  bgcolor: "#673ab7",
                   alignSelf: "flex-start",
                   color: "white",
-                  ":hover": { bgcolor: "#103996" },
+                  ":hover": { bgcolor: "#673ab7" },
                 }}
               >
                 <Add sx={{ color: "white" }} />

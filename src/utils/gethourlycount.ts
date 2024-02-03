@@ -279,7 +279,7 @@ const getHourlyCount = (
         const a8 = f8.length + hf8.length / 2;
         const a12 = f12.length + hf12.length / 2;
         totalManDayAmount[id] = getRoundOff(
-          a8 * des.basicsalary + a12 * des.basicsalaryfor12hr
+          a8 * (rate[id] as number) + a12 * (rate[id] as number)
         );
         //   }
 
@@ -310,8 +310,8 @@ const getHourlyCount = (
           (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
         );
 
-        const amount8 = getRoundOff((o8 * des.basicsalary) / 8);
-        const amount12 = getRoundOff((o12 * des.basicsalaryfor12hr) / 12);
+        const amount8 = getRoundOff((o8 * (rate[id] as number)) / 8);
+        const amount12 = getRoundOff((o12 * (rate[id] as number)) / 12);
         otamount[id] = getRoundOff(amount8 + amount12);
 
         assignCounts("otamount", des, Number(_.get(otamount, id, 0)));

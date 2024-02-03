@@ -7,7 +7,7 @@ import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import Row from "@/components/StoreSafety/Row";
 import { Contractor, StoreItem, Stores } from "@prisma/client";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { TableCell, TableRow } from "@mui/material";
 import axios from "axios";
@@ -48,6 +48,7 @@ const headcells1 = [
   createHeadCells("units", "Units", true, false),
   createHeadCells("rate", "Rate", true, false),
   createHeadCells("chargeableamount", "Chargeable Amount", true, false),
+  createHeadCells("remarks", "Remarks", true, false),
 ];
 
 function createData(
@@ -90,6 +91,8 @@ export default function Store({ stores, storeItems, contractors }: Props) {
     label: string;
   } | null>(null);
   const [month, setMonth] = React.useState<Dayjs>(dayjs());
+  const { data: session } = useSession();
+
   const handleDelete = async (id: string) => {
     const res = await axios
       .delete("api/stores", {
@@ -166,6 +169,17 @@ export default function Store({ stores, storeItems, contractors }: Props) {
       console.log(error);
     }
   };
+
+  const extraheadcells = [...headcells];
+  if (
+    !(
+      session?.user?.role === "PlantCommercial" ||
+      session?.user?.role === "HoCommercialAuditor"
+    )
+  ) {
+    extraheadcells.push(createHeadCells("action", "Actions", true, false));
+  }
+
   return (
     <Paper>
       <EnhancedTableToolbar
@@ -200,7 +214,7 @@ export default function Store({ stores, storeItems, contractors }: Props) {
       >
         <Table aria-label="collapsible table">
           <EnhancedTableHead
-            headCells={headcells}
+            headCells={extraheadcells}
             numSelected={0}
             rowCount={stores.length}
           />
@@ -224,6 +238,7 @@ export default function Store({ stores, storeItems, contractors }: Props) {
                   headcells={headcells}
                   headcells1={headcells1}
                   handleDelete={handleDelete}
+                  handleEdit={() => router.push(`/store/${row.id}`)}
                 />
               ))}
 
@@ -263,6 +278,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         destination: "/admin",
+        permanent: false,
+      },
+    };
+  }
+
+  if (session.user?.role === "Safety" || session.user?.role === "TimeKeeper") {
+    return {
+      redirect: {
+        destination: "/",
         permanent: false,
       },
     };

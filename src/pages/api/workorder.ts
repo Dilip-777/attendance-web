@@ -6,7 +6,33 @@ export default async function workorder(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
+  if (req.method === "GET") {
+    const { contractorId, month } = req.query;
+    let where = {};
+    if (contractorId) {
+      where = {
+        contractorId: contractorId,
+      };
+    }
+    const workorders = await prisma.workorder.findMany({
+      where: {
+        OR: [
+          {
+            startDate: {
+              contains: month as string,
+            },
+          },
+          {
+            endDate: {
+              contains: month as string,
+            },
+          },
+        ],
+        ...where,
+      },
+    });
+    res.status(200).json(workorders);
+  } else if (req.method === "POST") {
     const { contractorId, ...rest } = req.body;
     const contractor = await prisma.contractor.findUnique({
       where: {

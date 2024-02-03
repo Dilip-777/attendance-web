@@ -86,10 +86,11 @@ const FormSelect: React.FC<Props> = ({
       disabled={disabled}
       sx={{ my: 2, maxWidth: { xs: 250, xl: 300 }, width: "100%" }}
     >
-      <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
+      <FormLabel color="secondary" sx={{ fontWeight: "700", my: 0.5 }}>
         {label}
       </FormLabel>
       <Select
+        color="secondary"
         labelId="demo-customized-select-label"
         id="demo-customized-select"
         placeholder={placeHolder}

@@ -7,7 +7,7 @@ export default async function Stores(
 ) {
   if (req.method === "GET") {
     const { contractorid, month } = req.query;
-    if(contractorid && month) {
+    if (contractorid && month) {
       const store = await prisma.stores.findFirst({
         where: {
           contractorid: contractorid as string,
@@ -21,22 +21,50 @@ export default async function Stores(
     res.status(200).json(stores);
   }
   if (req.method === "POST") {
-    const {  storeItems, ...rest } = req.body;
-      const store = await prisma.stores.create({
+    const { storeItems, ...rest } = req.body;
+    const isExist = await prisma.stores.findUnique({
+      where: {
+        id: rest.id,
+      },
+    });
+    if (isExist) {
+      const { id, data } = rest;
+      await prisma.storeItem.deleteMany({
+        where: {
+          storeId: isExist.id,
+        },
+      });
+      await prisma.stores.update({
+        where: {
+          id: isExist.id,
+        },
         data: {
+          storeItems: {
+            createMany: {
+              data: storeItems,
+              skipDuplicates: true,
+            },
+          },
+          ...data,
+        },
+      });
+    } else {
+      console.log("rest", rest);
+
+      await prisma.stores.create({
+        data: {
+          storeItems: {
+            createMany: {
+              data: storeItems,
+              skipDuplicates: true,
+            },
+          },
           ...rest,
         },
       });
-         
-      const storeItemsData = await prisma.storeItem.createMany({
-        data: storeItems,
-        skipDuplicates: true,
-      });
-
-      res.status(200).json({  success: true });
-    
-  }
-  else if(req.method === "DELETE") {
+    }
+    res.status(200).json({ success: true });
+  } else if (req.method === "DELETE") {
     const { id } = req.body;
     const store = await prisma.stores.delete({
       where: {

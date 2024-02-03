@@ -62,6 +62,79 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { getComparator, stableSort } from "@/utils/comparatorfuncitons";
 import FormSelect from "@/ui-component/FormSelect";
 
+const handleClickReport = async (data: TimeKeeper[]) => {
+  const tableRows = [
+    [
+      "Contractor ID",
+      "Contractor Name",
+      "Employee ID",
+      "Employee Name",
+      "Machine In Time",
+      "Machine Out Time",
+      "Machine Total Duration",
+      "Machine Shift",
+      "Attendance",
+      "Attendance Date",
+      "Machine Over Time",
+      "Machine Leave",
+      "Manual In Time",
+      "Manual Out Time",
+      "Manual Total Duration",
+      "Manual Shift",
+      "Manual Over Time",
+      "Manual Leave",
+      "Deployee Of Department",
+      "Designation",
+      "Gender",
+      "Status",
+    ],
+  ];
+
+  try {
+    data.forEach((item: TimeKeeper) => {
+      tableRows.push([
+        item.contractorid || "-",
+        item.contractorname || "-",
+        item.employeeid.toString(),
+        item.employeename || "-",
+        item.machineInTime,
+        item.machineOutTime || "-",
+        item.machineduration || "-",
+        item.machineshift || "-",
+        item?.attendance,
+        item.attendancedate || "-",
+        item.overtime?.toString() || "-",
+        item.mleave || "-",
+        item.manualintime?.toString() || "-",
+        item.manualouttime?.toString() || "-",
+        item.manualduration || "-",
+        item.manualshift || "-",
+        item.manualovertime?.toString() || "-",
+        item.mleave || "-",
+        item.department?.toString() || "-",
+        item.designation?.toString() || "-",
+        item?.gender || "-",
+        item.status || "-",
+      ]);
+    });
+
+    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "TimeKeeper.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 interface TimeKeeperWithComment extends TimeKeeper {
   comment: Comment[];
 }
@@ -219,6 +292,13 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     setAnchorEl(null);
   };
 
+  const handleReport = async () => {
+    const queryString = `/api/timekeeper/gettimekeepers?role=${session?.user?.role}`;
+    const res = await axios.get(queryString);
+
+    handleClickReport(res.data.data);
+  };
+
   const handleSave = () => {
     setOpen1(false);
     setContractorName(tempcontractorName);
@@ -348,6 +428,14 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 }}
               >
                 Download
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  handleReport();
+                }}
+              >
+                Download All
               </MenuItem>
               {session?.user?.role === "TimeKeeper" && (
                 <MenuItem
@@ -754,34 +842,7 @@ export default function TimeKeeperTable({}: // contractors,
     } else return false;
   };
 
-  const handleClickReport = async () => {
-    const tableRows = [
-      [
-        "Contractor ID",
-        "Contractor Name",
-        "Employee ID",
-        "Employee Name",
-        "Machine In Time",
-        "Machine Out Time",
-        "Machine Total Duration",
-        "Machine Shift",
-        "Attendance",
-        "Attendance Date",
-        "Machine Over Time",
-        "Machine Leave",
-        "Manual In Time",
-        "Manual Out Time",
-        "Manual Total Duration",
-        "Manual Shift",
-        "Manual Over Time",
-        "Manual Leave",
-        "Deployee Of Department",
-        "Designation",
-        "Gender",
-        "Status",
-      ],
-    ];
-
+  const handleReport = async () => {
     try {
       let dateArray = [];
       let currentDate = startDate;
@@ -796,45 +857,7 @@ export default function TimeKeeperTable({}: // contractors,
 
       const queryString = `/api/timekeeper/gettimekeepers?role=${role}&contractorname=${contractorId}&filter=${debouncedFilter}&attendance=${att}&dateArray=${dateArray}`;
       const res = await axios.get(queryString);
-      res.data.data.forEach((item: TimeKeeper) => {
-        tableRows.push([
-          item.contractorid || "-",
-          item.contractorname || "-",
-          item.employeeid.toString(),
-          item.employeename || "-",
-          item.machineInTime,
-          item.machineOutTime || "-",
-          item.machineduration || "-",
-          item.machineshift || "-",
-          item?.attendance,
-          item.attendancedate || "-",
-          item.overtime?.toString() || "-",
-          item.mleave || "-",
-          item.manualintime?.toString() || "-",
-          item.manualouttime?.toString() || "-",
-          item.manualduration || "-",
-          item.manualshift || "-",
-          item.manualovertime?.toString() || "-",
-          item.mleave || "-",
-          item.department?.toString() || "-",
-          item.designation?.toString() || "-",
-          item?.gender || "-",
-          item.status || "-",
-        ]);
-      });
-
-      const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
-
-      // Download CSV file
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "TimeKeeper.csv");
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      handleClickReport(res.data.data);
     } catch (error) {
       console.log(error);
     }
@@ -980,7 +1003,7 @@ export default function TimeKeeperTable({}: // contractors,
             }}
             filter={filter}
             setFilter={setFilter}
-            handledownload={handleClickReport}
+            handledownload={handleReport}
             defaultStartDate={startDate}
             defaultEndDate={endDate}
             setDefaultStartDate={setStartDate}

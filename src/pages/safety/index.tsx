@@ -6,15 +6,9 @@ import Paper from "@mui/material/Paper";
 import EnhancedTableToolbar from "@/components/StoreSafety/EnhancedTableToolbar";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import Row from "@/components/StoreSafety/Row";
-import {
-  Contractor,
-  Safety,
-  SafetyItem,
-  StoreItem,
-  Stores,
-} from "@prisma/client";
+import { Contractor, Safety, SafetyItem, UnsafeActs } from "@prisma/client";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { TableCell, TableRow } from "@mui/material";
 import { useRouter } from "next/router";
@@ -43,24 +37,24 @@ const headcells = [
 ];
 
 const headcells1 = [
-  createHeadCells("division", "Division", true, false),
   createHeadCells(
     "chargeableItemIssued",
     "Chargeable Item Issued",
     true,
     false
   ),
-  createHeadCells("penalty", "Penalty", true, false),
+  createHeadCells("division", "Division", true, false),
+  createHeadCells("quantity", "Quantity", true, false),
+  createHeadCells("rate", "Rate", true, false),
   createHeadCells("netchargeableamount", "Net Chargeable Amount", true, false),
+  createHeadCells("remarks", "Remarks", true, false),
 ];
 
 interface Props {
-  safety: Safety[];
-  safetyItem: SafetyItem[];
   contractors: Contractor[];
 }
 
-export default function Safety1({ safety, safetyItem, contractors }: Props) {
+export default function Safety1({ contractors }: Props) {
   const [filter, setFilter] = React.useState("");
   const router = useRouter();
   const [selectedContractor, setSelectedContractor] = React.useState<{
@@ -68,6 +62,27 @@ export default function Safety1({ safety, safetyItem, contractors }: Props) {
     label: string;
   } | null>(null);
   const [month, setMonth] = React.useState<Dayjs>(dayjs());
+  const [safety, setSafety] = React.useState<
+    (Safety & {
+      unsafeActs: UnsafeActs[];
+      safetyItems: SafetyItem[];
+    })[]
+  >([]);
+  const { data: session } = useSession();
+
+  const fetchSafety = async () => {
+    const res = await axios.get(
+      "/api/safety?month=" +
+        dayjs(month).format("MM/YYYY") +
+        "&contractorid=" +
+        selectedContractor?.value
+    );
+    setSafety(res.data || []);
+  };
+
+  React.useEffect(() => {
+    fetchSafety();
+  }, [month, selectedContractor]);
 
   const handleDelete = async (id: string) => {
     await axios
@@ -86,42 +101,73 @@ export default function Safety1({ safety, safetyItem, contractors }: Props) {
         "Store ID",
         "Contractor Name",
         "Month",
-        "Division",
         "Chargeable Item Issued",
-        "Penalty",
+        "Division",
+        "Quantity",
+        "Rate",
         "Net Chargeable Amount",
         "Total Amount",
+        "Remarks",
       ],
     ];
 
     try {
       safety
         .filter((s) => {
-          if (dayjs(month).format("MM/YYYY") !== s.month) return false;
           if (filter)
             return s.contractorName
               .toLowerCase()
               .includes(filter.toLowerCase());
-          if (selectedContractor)
-            return selectedContractor.value === s.contractorid;
           return true;
         })
-        .forEach((item: Safety) => {
-          safetyItem
-            .filter((s) => s.safetyId === item.id)
-            .forEach((i) => {
-              tableRows.push([
-                item.id,
-                item.contractorName,
-                item.month,
-                i.division,
-                i.chargeableItemIssued,
-                i.penalty.toString(),
-                i.netchargeableamount.toString(),
-                item.totalAmount.toString(),
-              ]);
-            });
+        .forEach((item) => {
+          item.safetyItems.forEach((i) => {
+            tableRows.push([
+              item.id,
+              item.contractorName,
+              item.month,
+              i.chargeableItemIssued,
+              i.division,
+              i.quantity.toString(),
+              i.rate.toString(),
+              i.netchargeableamount.toString(),
+              item.totalAmount.toString(),
+              i.remarks || "",
+            ]);
+          });
         });
+
+      tableRows.push(["", "", "", "", "", "", "", "", ""]);
+
+      tableRows.push(["", "", "", "", "", "", "", "", ""]);
+
+      tableRows.push([
+        "Store ID",
+        "Contractor Name",
+        "Month",
+        "Unsafe Acts and Voilations",
+        "Division",
+        "Frequency",
+        "Penalty Amount",
+        "Total Amount",
+        "Remarks",
+      ]);
+
+      safety.forEach((item) => {
+        item.unsafeActs.forEach((i) => {
+          tableRows.push([
+            item.id,
+            item.contractorName,
+            item.month,
+            i.unsafeacts,
+            i.division,
+            i.frequency.toString(),
+            i.penalty.toString(),
+            item.totalAmount.toString(),
+            i.remarks || "",
+          ]);
+        });
+      });
 
       const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
 
@@ -132,7 +178,7 @@ export default function Safety1({ safety, safetyItem, contractors }: Props) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", "Stores.csv");
+      link.setAttribute("download", "Safety.csv");
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
@@ -142,6 +188,15 @@ export default function Safety1({ safety, safetyItem, contractors }: Props) {
     }
   };
 
+  const extraheadcells = [...headcells];
+  if (
+    !(
+      session?.user?.role === "PlantCommercial" ||
+      session?.user?.role === "HoCommercialAuditor"
+    )
+  ) {
+    extraheadcells.push(createHeadCells("action", "Actions", true, false));
+  }
   return (
     <Paper>
       <EnhancedTableToolbar
@@ -176,41 +231,37 @@ export default function Safety1({ safety, safetyItem, contractors }: Props) {
       >
         <Table aria-label="collapsible table">
           <EnhancedTableHead
-            headCells={headcells}
+            headCells={extraheadcells}
             numSelected={0}
             rowCount={0}
           />
           <TableBody>
             {safety
               .filter((s) => {
-                if (dayjs(month).format("MM/YYYY") !== s.month) return false;
                 if (filter)
                   return s.contractorName
                     .toLowerCase()
                     .includes(filter.toLowerCase());
-                if (selectedContractor)
-                  return selectedContractor.value === s.contractorid;
                 return true;
               })
               .map((row) => (
                 <Row
                   key={row.id}
                   row={row}
-                  items={safetyItem.filter((item) => item.safetyId === row.id)}
+                  items={row.safetyItems}
+                  items2={row.unsafeActs}
                   headcells={headcells}
                   headcells1={headcells1}
                   handleDelete={handleDelete}
+                  handleEdit={() => router.push(`/safety/${row.id}`)}
                 />
               ))}
 
             {safety.filter((s) => {
-              if (dayjs(month).format("MM/YYYY") !== s.month) return false;
               if (filter)
                 return s.contractorName
                   .toLowerCase()
                   .includes(filter.toLowerCase());
-              if (selectedContractor)
-                return selectedContractor.value === s.contractorid;
               return true;
             }).length === 0 && (
               <TableRow>
@@ -244,16 +295,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const safety = await prisma.safety.findMany();
-
-  const safetyItem = await prisma.safetyItem.findMany();
+  if (session.user?.role === "Stores" || session.user?.role === "TimeKeeper") {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
 
   const contractors = await prisma.contractor.findMany();
 
   return {
     props: {
-      safety,
-      safetyItem,
       contractors,
     },
   };

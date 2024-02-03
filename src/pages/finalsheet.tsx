@@ -89,7 +89,7 @@ export default function FinalSheet({
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const [store, setStore] = useState<Stores | null>(null);
-  const [safety, setSafety] = useState<Safety | null>(null);
+  const [safety, setSafety] = useState<Safety[]>([]);
   const [details, setDetails] = useState<any>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [totalsRows, setTotalsRows] = useState<any>([]);
@@ -227,7 +227,7 @@ export default function FinalSheet({
       prevMonthAmount: Math.ceil(details?.prevMonthAmount),
       prevprevMonthAmount: Math.ceil(details?.prevprevMonthAmount),
       prevYearAmount: Math.ceil(details?.prevYearAmount),
-      safety: safety,
+      safety: safety[0],
       store: store,
       totals: hourlytotals,
       workorder: workorders.find(
@@ -245,7 +245,7 @@ export default function FinalSheet({
       ),
       total: totalPayable,
       rows: rows,
-      safety: safety,
+      safety: safety[0],
       store: store,
       contractor: f as Contractor,
       date: value,
@@ -479,7 +479,7 @@ export default function FinalSheet({
           total={totalPayable}
           department={departments.find((d) => d.department === department)}
           storededuction={store?.totalAmount || 0}
-          safetydeduction={safety?.totalAmount || 0}
+          safetydeduction={safety[0]?.totalAmount ?? 0}
           designations={designations}
           departments={selectedDepartments}
           totals={totalsRows}

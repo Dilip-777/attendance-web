@@ -50,27 +50,27 @@ model User {
 
 model SaveTimekeeper {
   id              String  @id
-   contractorid         String?
-  contractorname       String?
-  employeeid           String
-  employeename         String? 
-  designation          String
-  attendancedate       String
-  machineInTime        String
-  machineOutTime       String?
-  machineduration      String?
-  machineshift         String
-  attendance           String
-  overtime             Float       @default(0)
-  eleave               String
-  manualintime         String?
-  manualouttime        String?
-  manualduration       String?
-  manualshift          String?
-  manualovertime       Float?
-  mleave               String?
-  department           String?
-  gender               String?
+  contractorid    String?
+  contractorname  String?
+  employeeid      String
+  employeename    String?
+  designation     String
+  attendancedate  String
+  machineInTime   String
+  machineOutTime  String?
+  machineduration String?
+  machineshift    String
+  attendance      String
+  overtime        Float   @default(0)
+  eleave          String
+  manualintime    String?
+  manualouttime   String?
+  manualduration  String?
+  manualshift     String?
+  manualovertime  Float?
+  mleave          String?
+  department      String?
+  gender          String?
 }
 
 model TimeKeeper {
@@ -86,7 +86,7 @@ model TimeKeeper {
   machineduration      String?
   machineshift         String
   attendance           String
-  overtime             Float       @default(0)
+  overtime             Float     @default(0)
   eleave               String
   manualintime         String?
   manualouttime        String?
@@ -98,17 +98,18 @@ model TimeKeeper {
   gender               String?
   status               Status    @default(NoChanges)
   hrdatetime           String?
-  freezed             Boolean   @default(false)
+  freezed              Boolean   @default(false)
   comment              Comment[]
   approvedByTimekeeper Boolean   @default(false)
   UploadDocument       Upload[]
+
   @@unique([attendancedate, employeeid])
 }
 
 model Contractor {
-  id                          String       @id @default(cuid())
+  id                          String           @id @default(cuid())
   contractorname              String
-  contractorId                String       @unique
+  contractorId                String           @unique
   servicedetail               String
   supplierdetail              String
   officeaddress               String?
@@ -132,12 +133,12 @@ model Contractor {
   uploadutilitybill           String?
   organisationtype            String?
   dateofincorporation         String?
-  associationwithcompetitor   Boolean      @default(false)
+  associationwithcompetitor   Boolean          @default(false)
   memorandam_of_associate     String?
   listofdirector              String?
   profileofkeyperson          String?
   competitorname              String?
-  isocertified                Boolean      @default(false)
+  isocertified                Boolean          @default(false)
   turnoverlastyear            String?
   turnover2yearback           String?
   uploadbranchdetail          String?
@@ -147,7 +148,7 @@ model Contractor {
   first_registration_number   String?
   latest_mnth_gst1_filed      String?
   latest_mnth_gst2b_filed     String?
-  comply_regulatory           Boolean      @default(false)
+  comply_regulatory           Boolean          @default(false)
   upload_registration_cert    String?
   upload_licence1             String?
   upload_licence2             String?
@@ -179,11 +180,11 @@ model Contractor {
   upload_certificate_services String?
   upload_doc1                 String?
   upload_doc2                 String?
-  salarymen8hr                Int          @default(0)
-  salarywomen8hr              Int          @default(0)
-  salarymen12hr               Int          @default(0)
-  salarysvr8hr                Int          @default(0)
-  salarysvr12hr               Int          @default(0)
+  salarymen8hr                Int              @default(0)
+  salarywomen8hr              Int              @default(0)
+  salarymen12hr               Int              @default(0)
+  salarysvr8hr                Int              @default(0)
+  salarysvr12hr               Int              @default(0)
   employee                    Employee[]
   safety                      Safety[]
   bills                       bills[]
@@ -208,11 +209,11 @@ model bills {
 }
 
 model Employee {
-  id                        String     @id @default(cuid())
+  id                        String        @id @default(cuid())
   contractorname            String
-  employeeId                String     @unique
+  employeeId                String        @unique
   employeename              String
-  employeecode             String   @default("")  
+  employeecode              String        @default("")
   designationId             String?
   departmentId              String
   gender                    String
@@ -225,10 +226,9 @@ model Employee {
   gst                       Float?
   tds                       Float?
   contractorId              String
-  contractor                Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  contractor                Contractor    @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
   designation               Designations? @relation(fields: [designationId], references: [id], onDelete: Cascade)
-  department                Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-
+  department                Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
 
 model HOAuditor {
@@ -312,41 +312,41 @@ model Department {
 }
 
 model Designations {
-  id                        String     @id @default(cuid())
+  id                        String           @id @default(cuid())
   designationid             String
   departmentId              String
   departmentname            String
   designation               String
   basicsalary               Int
-  basicsalaryfor12hr        Int        @default(0)
+  basicsalaryfor12hr        Int              @default(0)
   gender                    String
   allowed_wrking_hr_per_day Int
   servicecharge             Float?
-  basicsalary_in_duration   String     @default("Hourly")
-  department                Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  basicsalary_in_duration   String           @default("Hourly")
+  department                Department       @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   seperateSalary            SeperateSalary[]
   employees                 Employee[]
   fixedSalary               FixedSalary[]
-
 }
 
 model SeperateSalary {
-  id              String  @id @default(cuid())
-  contractorId    String
-  designationId   String
-  salary         Int
-  contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
-  designation    Designations @relation(fields: [designationId], references: [id], onDelete: Cascade)
+  id            String       @id @default(cuid())
+  contractorId  String
+  designationId String
+  salary        Int
+  contractor    Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  designation   Designations @relation(fields: [designationId], references: [id], onDelete: Cascade)
 }
 
 model FixedSalary {
-  id              String  @id @default(cuid())
-  contractorId    String
-  designationId   String
-  month           String
-  salary         Int
-  contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
-  designation    Designations @relation(fields: [designationId], references: [id])
+  id            String       @id @default(cuid())
+  contractorId  String
+  designationId String
+  month         String
+  salary        Int
+  contractor    Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  designation   Designations @relation(fields: [designationId], references: [id])
+
   @@unique([month, contractorId, designationId])
 }
 
@@ -365,7 +365,7 @@ model Comment {
   role         Role
   timekeeperId String
   changes      String?
-  createdAt    DateTime  @updatedAt  @default(now()) 
+  createdAt    DateTime   @default(now()) @updatedAt
   timekeeper   TimeKeeper @relation(fields: [timekeeperId], references: [id], onDelete: Cascade)
 }
 
@@ -391,7 +391,7 @@ model Stores {
 }
 
 model StoreItem {
-  id                   String @id @default(cuid())
+  id                   String  @id @default(cuid())
   storeId              String
   division             String
   chargeableItemIssued String
@@ -399,7 +399,8 @@ model StoreItem {
   units                String
   rate                 Int
   chargeableamount     Int
-  store                Stores @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  remarks              String?
+  store                Stores  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
 
 model Safety {
@@ -408,30 +409,44 @@ model Safety {
   contractorid   String
   contractorName String
   safetyItems    SafetyItem[]
+  unsafeActs     UnsafeActs[]
   totalAmount    Int
   contractor     Contractor   @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 
 model SafetyItem {
-  id                   String @id @default(cuid())
+  id                   String  @id @default(cuid())
   safetyId             String
   division             String
   chargeableItemIssued String
-  penalty              Int
+  quantity             Int     @default(0)
+  rate                 Int     @default(0)
   netchargeableamount  Int
-  safety               Safety @relation(fields: [safetyId], references: [id], onDelete: Cascade)
+  remarks              String?
+  safety               Safety  @relation(fields: [safetyId], references: [id], onDelete: Cascade)
+}
+
+model UnsafeActs {
+  id         String  @id @default(cuid())
+  safetyId   String
+  unsafeacts String
+  division   String
+  frequency  Int
+  penalty    Int
+  remarks    String?
+  safety     Safety  @relation(fields: [safetyId], references: [id], onDelete: Cascade)
 }
 
 model Deductions {
-  id             String       @id @default(cuid())
+  id             String     @id @default(cuid())
   month          String
   contractorId   String
   contractorName String?
-  gsthold       Int        @default(0)
-  gstrelease    Int        @default(0)
-  advance       Int        @default(0)
-  anyother      Int        @default(0)
-  contractor     Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  gsthold        Int        @default(0)
+  gstrelease     Int        @default(0)
+  advance        Int        @default(0)
+  anyother       Int        @default(0)
+  contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
 model Automobile {
@@ -515,8 +530,6 @@ model WorkItem {
   work                 Works   @relation(fields: [workId], references: [id], onDelete: Cascade)
 }
 
-
-
 model BarBending {
   id              String           @id @default(cuid())
   itemcode        Int              @unique @default(autoincrement())
@@ -529,22 +542,20 @@ model BarBending {
   contractor      Contractor       @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 
-
-
-
 model Attendance_Log {
-  employeeid   Int
+  employeeid     Int
   attendancedate DateTime
-  intime       String
-  outtime      String
-  present      Float
-  absent       Float
-  begintime    String
-  endtime      String
-  durationhhmm String
-  overtimehhmm String
-  shiftid      String
-  LastUpdatedOn DateTime
+  intime         String
+  outtime        String
+  present        Float
+  absent         Float
+  begintime      String
+  endtime        String
+  durationhhmm   String
+  overtimehhmm   String
+  shiftid        String
+  LastUpdatedOn  DateTime
+
   @@id([employeeid, attendancedate])
 }
 

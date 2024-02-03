@@ -11,9 +11,16 @@ import Typography from "@mui/material/Typography";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import Delete from "@mui/icons-material/Delete";
-import { Safety, SafetyItem, StoreItem, Stores } from "@prisma/client";
+import {
+  Safety,
+  SafetyItem,
+  StoreItem,
+  Stores,
+  UnsafeActs,
+} from "@prisma/client";
 import _ from "lodash";
 import { useSession } from "next-auth/react";
+import Edit from "@mui/icons-material/Edit";
 
 interface Headcell {
   id: string;
@@ -22,16 +29,48 @@ interface Headcell {
   included: boolean;
 }
 
+const createHeadCells = (
+  id: string,
+  label: string,
+  numeric: boolean,
+  included: boolean
+) => {
+  return {
+    id: id,
+    label: label,
+    numeric: numeric,
+    included: included,
+  };
+};
+
+const headcells2 = [
+  createHeadCells("unsafeacts", "Unsafe Acts and Voilation", true, false),
+  createHeadCells("division", "Division", true, false),
+  createHeadCells("frequency", "Frequency", true, false),
+  createHeadCells("penalty", "Penalty Amount", true, false),
+  createHeadCells("remarks", "Remarks", true, false),
+];
+
 interface Props {
   row: Stores | Safety;
   items: StoreItem[] | SafetyItem[];
+  items2?: UnsafeActs[];
   headcells: Headcell[];
   headcells1: Headcell[];
   handleDelete: (id: string) => void;
+  handleEdit?: () => void;
 }
 
 export default function Row(props: Props) {
-  const { row, items, headcells, headcells1, handleDelete } = props;
+  const {
+    row,
+    items,
+    headcells,
+    headcells1,
+    handleDelete,
+    items2,
+    handleEdit,
+  } = props;
   const [open, setOpen] = React.useState(false);
   const { data: session } = useSession();
 
@@ -57,6 +96,14 @@ export default function Row(props: Props) {
           session?.user?.role === "HoCommercialAuditor"
         ) && (
           <TableCell>
+            {session?.user?.role !== "Corporate" && (
+              <IconButton
+                onClick={() => handleEdit && handleEdit()}
+                sx={{ mr: 2 }}
+              >
+                <Edit />
+              </IconButton>
+            )}
             <IconButton onClick={() => handleDelete(row.id)}>
               <Delete />
             </IconButton>
@@ -76,7 +123,7 @@ export default function Row(props: Props) {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Typography variant="h5" gutterBottom component="div">
-                Items: {items.length}
+                Chargeable Items: {items.length}
               </Typography>
               <Table aria-label="purchases">
                 <TableHead>
@@ -108,6 +155,45 @@ export default function Row(props: Props) {
           </Collapse>
         </TableCell>
       </TableRow>
+      {items2 && (
+        <TableRow>
+          <TableCell style={{ paddingBottom: 15, paddingTop: 0 }} colSpan={6}>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 1 }}>
+                <Typography variant="h5" gutterBottom component="div">
+                  Unsafe Acts and Voilation: {items2.length}
+                </Typography>
+                <Table aria-label="purchases">
+                  <TableHead>
+                    <TableRow>
+                      {headcells2.map((headcell) => (
+                        <TableCell sx={{ fontWeight: "600" }} align="center">
+                          {headcell.label}
+                        </TableCell>
+                      ))}
+                      {/* <TableCell>Date</TableCell>
+                    <TableCell>Customer</TableCell>
+                    <TableCell align="left">Amount</TableCell>
+                    <TableCell align="left">Total price ($)</TableCell> */}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {items2.map((item) => (
+                      <TableRow key={item.id}>
+                        {headcells2.map((headcell) => (
+                          <TableCell align="center" sx={{ maxWidth: "10rem" }}>
+                            {_.get(item, headcell.id, "-") || "-"}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      )}
     </React.Fragment>
   );
 }

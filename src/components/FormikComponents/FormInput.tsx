@@ -49,10 +49,14 @@ const FormInput: React.FC<Props> = ({
   const [field, meta] = useField(name);
   const isError = Boolean(meta.touched && meta.error);
   return (
-    <FormControl fullWidth error={isError} disabled={disabled} sx={{ my: 2 }}>
-      <FormLabel sx={{ color: "rgb(54, 65, 82)", fontWeight: "700" }}>
-        {label}
-      </FormLabel>
+    <FormControl
+      color="secondary"
+      fullWidth
+      error={isError}
+      disabled={disabled}
+      sx={{ my: 2 }}
+    >
+      <FormLabel sx={{ fontWeight: "700", my: 0.5 }}>{label}</FormLabel>
       <OutlineInputStyle
         sx={{ maxWidth: { xs: 250, xl: 300 }, width: "100%", ...sx }}
         id="input-search-header"

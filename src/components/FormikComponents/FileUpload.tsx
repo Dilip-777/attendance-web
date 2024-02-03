@@ -58,8 +58,8 @@ const FileUpload: React.FC<Props> = ({
     setError("");
 
     if (file1) {
-      if (file1.size > 1000000) {
-        setError("File size should be less than 1MB");
+      if (file1.size > 10000000) {
+        setError("File size should be less than 10MB");
         return;
       }
     }

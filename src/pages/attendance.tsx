@@ -30,6 +30,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  FormLabel,
   IconButton,
   Snackbar,
   TextField,
@@ -342,7 +343,26 @@ export default function PlantCommercial({
               value={dayjs(value, "MM/YYYY")}
               onChange={onChange}
             />
-            <FormSelect
+            <Autocomplete
+              sx={{
+                minWidth: 250,
+              }}
+              options={contractors.map((c) => ({
+                value: c.contractorId || "",
+                label: c.contractorname,
+              }))}
+              value={contractors
+                .map((c) => ({
+                  value: c.contractorId || "",
+                  label: c.contractorname,
+                }))
+                .find((c) => c.value === contractor1)}
+              onChange={(e, value) => setContractor(value?.value as string)}
+              clearIcon={null}
+              disableClearable={true}
+              renderInput={(params) => <TextField {...params} />}
+            />
+            {/* <FormSelect
               value={contractor1}
               setValue={setContractor}
               options={contractors.map((contractor1) => {
@@ -351,7 +371,7 @@ export default function PlantCommercial({
                   label: contractor1?.contractorname,
                 };
               })}
-            />
+            /> */}
             {/* <FormSelect
               value={department}
               setValue={setDepartment}

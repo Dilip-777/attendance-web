@@ -13,7 +13,6 @@ import {
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { shouldForwardProp } from "@mui/system";
 import { useEffect, useState } from "react";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
@@ -131,8 +130,6 @@ export default function AddWordOrder({
           }}
         >
           {({ handleSubmit, values, errors }) => {
-            console.log(values);
-
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={6} mt={2} container>

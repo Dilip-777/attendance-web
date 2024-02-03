@@ -1,4 +1,3 @@
-import Head from "next/head";
 import * as React from "react";
 import { alpha, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -20,23 +19,37 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import CircularProgress from "@mui/material/CircularProgress";
 import Search from "@mui/icons-material/Search";
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  InputAdornment,
-  OutlinedInput,
+  Autocomplete,
+  FormControl,
+  FormLabel,
+  Stack,
+  TextField,
+  //   Button,
+  //   Dialog,
+  //   DialogActions,
+  //   DialogContent,
+  //   DialogTitle,
+  //   InputAdornment,
+  //   OutlinedInput,
   styled,
 } from "@mui/material";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import InputAdornment from "@mui/material/InputAdornment";
+import OutlinedInput from "@mui/material/OutlinedInput";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Workorder } from "@prisma/client";
+import { Contractor, Workorder } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import Close from "@mui/icons-material/Close";
+import MonthSelect from "@/ui-component/MonthSelect";
+import dayjs, { Dayjs } from "dayjs";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -48,95 +61,6 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
     borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
   },
 }));
-
-interface Data {
-  calories: number;
-  carbs: number;
-  fat: number;
-  name: string;
-  protein: number;
-}
-
-interface Data1 {
-  contractorName: string;
-  employeeid: string;
-  employeename: string;
-  designation: string;
-  department: string;
-  gender: string;
-  phone: number;
-  emailid: string;
-  basicsalaryinduration: string;
-  basicsalary: string;
-  gst: number;
-  tds: number;
-  allowedWorkinghoursperday: string;
-  servicecharge: string;
-}
-
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number
-): Data {
-  return {
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
-  };
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = "asc" | "desc";
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<Workorder>(
-  array: readonly Workorder[],
-  comparator: (a: Workorder, b: Workorder) => number
-) {
-  const stabilizedThis = array.map(
-    (el, index) => [el, index] as [Workorder, number]
-  );
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
-}
 
 const createHeadCells = (
   id: string,
@@ -166,81 +90,26 @@ const headCells = [
   createHeadCells("document", "Document", false, false),
 ];
 
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data1
-  ) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-}
-
-// function EnhancedTableHead(props: EnhancedTableProps) {
-//   const {
-//     onSelectAllClick,
-//     order,
-//     orderBy,
-//     numSelected,
-//     rowCount,
-//     onRequestSort,
-//   } = props;
-//   const createSortHandler =
-//     (property: keyof Data1) => (event: React.MouseEvent<unknown>) => {
-//       onRequestSort(event, property);
-//     };
-
-//   return (
-//     <TableHead>
-//       <TableRow>
-//         <TableCell padding="checkbox">
-//           <Checkbox
-//             color="primary"
-//             indeterminate={numSelected > 0 && numSelected < rowCount}
-//             checked={rowCount > 0 && numSelected === rowCount}
-//             onChange={onSelectAllClick}
-//             inputProps={{
-//               "aria-label": "select all desserts",
-//             }}
-//           />
-//         </TableCell>
-//         {headCells1.map((headCell) => (
-//           <TableCell
-//             key={headCell.id}
-//             align={"center"}
-//             padding={headCell.disablePadding ? "none" : "normal"}
-//             sortDirection={orderBy === headCell.id ? order : false}
-//             sx={{ fontWeight: "700" }}
-//           >
-//             <TableSortLabel
-//               active={orderBy === headCell.id}
-//               direction={orderBy === headCell.id ? order : "asc"}
-//               onClick={createSortHandler(headCell.id as keyof Data1)}
-//             >
-//               {headCell.label}
-//               {orderBy === headCell.id ? (
-//                 <Box component="span" sx={visuallyHidden}>
-//                   {order === "desc" ? "sorted descending" : "sorted ascending"}
-//                 </Box>
-//               ) : null}
-//             </TableSortLabel>
-//           </TableCell>
-//         ))}
-//       </TableRow>
-//     </TableHead>
-//   );
-// }
-
 interface EnhancedTableToolbarProps {
   numSelected: number;
   filtername: string;
   setFilterName: React.Dispatch<React.SetStateAction<string>>;
+  contractors: Contractor[];
+  selectedContractor: string;
+  setSelectedContractor: React.Dispatch<React.SetStateAction<string>>;
+  month: string;
+  setMonth: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, filtername, setFilterName } = props;
+  const {
+    numSelected,
+    contractors,
+    selectedContractor,
+    setSelectedContractor,
+    month,
+    setMonth,
+  } = props;
 
   return (
     <Toolbar
@@ -268,16 +137,50 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           {numSelected} selected
         </Typography>
       ) : (
-        <StyledSearch
-          value={filtername}
-          onChange={(e) => setFilterName(e.target.value)}
-          placeholder="Search Workorder..."
-          startAdornment={
-            <InputAdornment position="start">
-              <Search />
-            </InputAdornment>
-          }
-        />
+        // <StyledSearch
+        //   value={filtername}
+        //   onChange={(e) => setFilterName(e.target.value)}
+        //   placeholder="Search Workorder..."
+        //   startAdornment={
+        //     <InputAdornment position="start">
+        //       <Search />
+        //     </InputAdornment>
+        //   }
+        // />
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          alignItems="center"
+          spacing={2}
+          sx={{ width: "100%" }}
+        >
+          <Box sx={{ minWidth: 240 }}>
+            <FormLabel sx={{ fontWeight: "700" }}>Select Contractor</FormLabel>
+            <Autocomplete
+              options={contractors.map((c) => ({
+                value: c.contractorId || "",
+                label: c.contractorname,
+              }))}
+              value={contractors
+                .map((c) => ({
+                  value: c.contractorId || "",
+                  label: c.contractorname,
+                }))
+                .find((c) => c.value === selectedContractor)}
+              onChange={(e, value) =>
+                setSelectedContractor(value?.value as string)
+              }
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </Box>
+          <MonthSelect
+            label="Select Month"
+            value={dayjs(month, "MM/YYYY")}
+            onChange={(value: Dayjs | null) =>
+              setMonth(value?.format("MM/YYYY") || "")
+            }
+          />
+        </Stack>
       )}
       {numSelected > 0 ? (
         <Tooltip title="Delete">
@@ -296,7 +199,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function Employees({ workorder }: { workorder: Workorder[] }) {
+export default function WorkOrder({
+  contractors,
+}: {
+  contractors: Contractor[];
+}) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -304,16 +211,37 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [workorder, setWorkOrder] = React.useState<Workorder[]>([]);
   const [selectedWorkorder, setSelectedWorkorder] = React.useState<
     string | undefined
   >(undefined);
   const theme = useTheme();
   const { data: session } = useSession();
+  const [selectedContractor, setSelectedContractor] =
+    React.useState<string>("");
+  const [month, setMonth] = React.useState<string>(dayjs().format("MM/YYYY"));
 
   const handleClose = () => {
     setOpen(false);
     setSelectedWorkorder(undefined);
   };
+
+  const fetchWorkorder = async () => {
+    const res = await axios
+      .get(
+        "/api/workorder?contractorId=" + selectedContractor + "&month=" + month
+      )
+      .then((res) => {
+        setWorkOrder(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  React.useEffect(() => {
+    fetchWorkorder();
+  }, [selectedContractor, month]);
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -385,6 +313,11 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
           numSelected={selected.length}
           filtername={filterName}
           setFilterName={setFilterName}
+          contractors={contractors}
+          selectedContractor={selectedContractor}
+          setSelectedContractor={setSelectedContractor}
+          month={month}
+          setMonth={setMonth}
         />
         <TableContainer
           sx={{
@@ -413,11 +346,6 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
             />
             <TableBody>
               {workorder
-                .filter((employee) =>
-                  employee.contractorName
-                    .toLowerCase()
-                    .includes(filterName.toLowerCase())
-                )
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.id as string);
@@ -569,6 +497,11 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
                   <TableCell colSpan={6} />
                 </TableRow>
               )}
+              {workorder.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6}>No Data</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -593,7 +526,7 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
         </Box>
         <DialogContent>
           <Typography>
-            Are you sure, you want to delete selected stream
+            Are you sure, you want to delete selected Work Order
           </Typography>
         </DialogContent>
         <DialogActions sx={{ m: 1 }}>
@@ -620,7 +553,6 @@ export default function Employees({ workorder }: { workorder: Workorder[] }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  const workorder = await prisma.workorder.findMany();
   if (!session) {
     return {
       redirect: {
@@ -646,9 +578,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  const workorder = await prisma.workorder.findMany();
+
+  const contractors = await prisma.contractor.findMany();
+
   return {
     props: {
       workorder,
+      contractors,
     },
   };
 };
