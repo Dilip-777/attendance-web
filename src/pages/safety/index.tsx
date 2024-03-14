@@ -67,18 +67,22 @@ export default function Safety1({ contractors }: Props) {
       safetyItems: SafetyItem[];
     })[]
   >([]);
+  const [month, setMonth] = React.useState<Dayjs>(dayjs());
   const { data: session } = useSession();
 
   const fetchSafety = async () => {
     const res = await axios.get(
-      "/api/safety?month=" + "&contractorid=" + selectedContractor?.value
+      "/api/safety?month=" +
+        dayjs(month).format("MM/YYYY") +
+        "&contractorid=" +
+        selectedContractor?.value
     );
     setSafety(res.data || []);
   };
 
   React.useEffect(() => {
     fetchSafety();
-  }, [selectedContractor]);
+  }, [selectedContractor, month]);
 
   const handleDelete = async (id: string) => {
     await axios
@@ -205,6 +209,8 @@ export default function Safety1({ contractors }: Props) {
         selectedContractor={selectedContractor}
         setSelectedContractor={setSelectedContractor}
         handleClickReport={handleClickReport}
+        month={month}
+        setMonth={setMonth}
       />
 
       <TableContainer

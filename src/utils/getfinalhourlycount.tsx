@@ -198,17 +198,18 @@ export const gethourlycount = (
       obj["rate"] = a.salary;
       obj["mandaysamount"] = obj["mandays"] * a.salary;
       obj["othrs"] = fulltime.reduce(
-        (a, b) => a + (b.manualovertime || b.overtime),
+        (a, b) => a + (b.manualovertime ?? b.overtime),
         0
       );
       obj["otamount"] = (obj["othrs"] * a.salary) / i.wrkhrs;
-      obj["servicechargerate"] = 10;
-      obj["servicechargeamount"] = obj["mandaysamount"] * 0.1;
+      obj["servicechargerate"] = contractor.servicecharge ?? 0;
+      obj["servicechargeamount"] =
+        obj["mandaysamount"] * 0.01 * obj["servicechargerate"];
       obj["taxable"] =
         obj["mandaysamount"] + obj["otamount"] + obj["servicechargeamount"];
       obj["gst"] = obj["taxable"] * 0.18;
       obj["billamount"] = obj["taxable"] + obj["gst"];
-      obj["tds"] = obj["taxable"] * 0.01;
+      obj["tds"] = (obj["taxable"] * (contractor.tds || 0)) / 100;
       obj["netpayable"] = obj["billamount"] - obj["tds"];
       if (i.wrkhrs === 8) {
         rows1.push(obj);
@@ -262,125 +263,115 @@ export const gethourlycount = (
     }
   });
 
-  departments.forEach((d) => {
-    const data = timekeeper.filter((t) => t.department === d.department);
-    d.designations.forEach((des) => {
-      const fulltime8hr = data.filter(
-        (d) =>
-          filterByShifts(d, 8) &&
-          filter({
-            item: d,
-            attendance: "0.5",
-            designation:
-              des.designation.toLowerCase() === "supervisor"
-                ? "supervisor"
-                : undefined,
-            gender:
-              des.designation.toLowerCase() === "supervisor"
-                ? undefined
-                : des.gender,
-          })
-      );
-      const halftime8hr = data.filter(
-        (d) =>
-          filterByShifts(d, 8) &&
-          filter({
-            item: d,
-            attendance: "1",
-            designation:
-              des.designation.toLowerCase() === "supervisor"
-                ? "supervisor"
-                : undefined,
-            gender:
-              des.designation.toLowerCase() === "supervisor"
-                ? undefined
-                : des.gender,
-          })
-      );
+  [8, 12].map((wrkhrs) => {
+    departments.forEach((d) => {
+      const data = timekeeper.filter((t) => t.department === d.department);
+      d.designations.forEach((des) => {
+        const fulltime = data.filter(
+          (d) =>
+            filterByShifts(d, wrkhrs) &&
+            filter({
+              item: d,
+              attendance: "0.5",
+              designation:
+                des.designation.toLowerCase() === "supervisor"
+                  ? "supervisor"
+                  : undefined,
+              gender:
+                des.designation.toLowerCase() === "supervisor"
+                  ? undefined
+                  : des.gender,
+            })
+        );
 
-      const fulltime12hr = data.filter(
-        (d) =>
-          filterByShifts(d, 12) &&
-          filter({
-            item: d,
-            attendance: "0.5",
-            designation:
-              des.designation.toLowerCase() === "supervisor"
-                ? "supervisor"
-                : undefined,
-            gender:
-              des.designation.toLowerCase() === "supervisor"
-                ? undefined
-                : des.gender,
-          })
-      );
+        const halftime = data.filter(
+          (d) =>
+            filterByShifts(d, wrkhrs) &&
+            filter({
+              item: d,
+              attendance: "1",
+              designation:
+                des.designation.toLowerCase() === "supervisor"
+                  ? "supervisor"
+                  : undefined,
+              gender:
+                des.designation.toLowerCase() === "supervisor"
+                  ? undefined
+                  : des.gender,
+            })
+        );
 
-      const halftime12hr = data.filter(
-        (d) =>
-          filterByShifts(d, 12) &&
-          filter({
-            item: d,
-            attendance: "1",
-            designation:
-              des.designation.toLowerCase() === "supervisor"
-                ? "supervisor"
-                : undefined,
-            gender:
-              des.designation.toLowerCase() === "supervisor"
-                ? undefined
-                : des.gender,
-          })
-      );
+        const obj: Record<string, string | number> = {
+          department: d.department,
+          date: des.designation,
+        };
+        obj["shifthrs"] = wrkhrs;
+        obj["mandays"] = fulltime.length + halftime.length / 2;
 
-      const obj: Record<string, string | number> = {
-        department: d.department,
-        date: des.designation,
-      };
-      obj["shifthrs"] = des.allowed_wrking_hr_per_day;
-      obj["mandays"] =
-        fulltime8hr.length +
-        halftime8hr.length / 2 +
-        fulltime12hr.length +
-        halftime12hr.length / 2;
+        if (obj["mandays"] > 0) {
+          if (wrkhrs === 8) {
+            if (des.designation.toLowerCase() === "supervisor") {
+              obj["rate"] = contractor.salarysvr8hr;
+            } else if (des.gender.toLowerCase() === "female") {
+              obj["rate"] = contractor.salarywomen8hr;
+            } else {
+              obj["rate"] = contractor.salarymen8hr;
+            }
+          } else {
+            if (des.designation.toLowerCase() === "supervisor") {
+              obj["rate"] = contractor.salarysvr12hr;
+            } else if (des.gender.toLowerCase() === "male") {
+              obj["rate"] = contractor.salarymen12hr;
+            } else {
+              obj["rate"] = 0;
+            }
+          }
 
-      obj["rate"] =
-        des.designation === "supervisor"
-          ? contractor.salarysvr8hr
-          : des.gender.toLowerCase() === "male"
-          ? contractor.salarymen8hr
-          : contractor.salarywomen8hr;
+          // obj["rate"] =
+          //   des.designation === "supervisor"
+          //     ? contractor.salarysvr8hr
+          //     : des.gender.toLowerCase() === "male"
+          //     ? contractor.salarymen8hr
+          //     : contractor.salarywomen8hr;
 
-      const ot8hr = fulltime8hr.reduce(
-        (a, b) => a + (b.manualovertime || b.overtime),
-        0
-      );
+          // const ot8hr = fulltime8hr.reduce(
+          //   (a, b) => a + (b.manualovertime ?? b.overtime),
+          //   0
+          // );
 
-      const ot12hr = fulltime12hr.reduce(
-        (a, b) => a + (b.manualovertime || b.overtime),
-        0
-      );
+          // const ot12hr = fulltime12hr.reduce(
+          //   (a, b) => a + (b.manualovertime ?? b.overtime),
+          //   0
+          // );
 
-      const { mandaysamount, otamount } = getMandaysOtAmount(
-        fulltime8hr.length + halftime8hr.length / 2,
-        fulltime12hr.length + halftime12hr.length / 2,
-        ot8hr,
-        ot12hr,
-        des,
-        obj
-      );
-      obj["mandaysamount"] = mandaysamount;
-      obj["othrs"] = ot8hr + ot12hr;
-      obj["otamount"] = otamount;
-      obj["servicechargerate"] = 10;
-      obj["servicechargeamount"] =
-        obj["mandaysamount"] * (obj["servicechargerate"] as number) * 0.01;
-      obj["taxable"] =
-        obj["mandaysamount"] + obj["otamount"] + obj["servicechargeamount"];
-      obj["gst"] = obj["taxable"] * 0.18;
-      obj["billamount"] = obj["taxable"] + obj["gst"];
-      obj["tds"] = obj["taxable"] * 0.01;
-      obj["netpayable"] = obj["billamount"] - obj["tds"];
-      rows3.push(obj);
+          const othrs = fulltime.reduce(
+            (a, b) => a + (b.manualovertime ?? b.overtime),
+            0
+          );
+
+          // const { mandaysamount, otamount } = getMandaysOtAmount(
+          //   fulltime8hr.length + halftime8hr.length / 2,
+          //   fulltime12hr.length + halftime12hr.length / 2,
+          //   ot8hr,
+          //   ot12hr,
+          //   des,
+          //   obj
+          // );
+          obj["mandaysamount"] = obj["mandays"] * obj["rate"];
+          obj["othrs"] = othrs;
+          obj["otamount"] = (othrs * obj["rate"]) / wrkhrs;
+          obj["servicechargerate"] = contractor.servicecharge ?? 0;
+          obj["servicechargeamount"] =
+            obj["mandaysamount"] * (obj["servicechargerate"] as number) * 0.01;
+          obj["taxable"] =
+            obj["mandaysamount"] + obj["otamount"] + obj["servicechargeamount"];
+          obj["gst"] = obj["taxable"] * 0.18;
+          obj["billamount"] = obj["taxable"] + obj["gst"];
+          obj["tds"] = obj["taxable"] * (contractor.tds ?? 0) * 0.01;
+          obj["netpayable"] = obj["billamount"] - obj["tds"];
+          rows3.push(obj);
+        }
+      });
     });
   });
   const obj: Record<string, string | number> = {

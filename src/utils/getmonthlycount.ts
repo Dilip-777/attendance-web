@@ -1,4 +1,5 @@
 import {
+  Contractor,
   Department,
   Designations,
   SeperateSalary,
@@ -47,32 +48,13 @@ const filter = (
   }
 };
 
-// Get Count of 8HR and 12HR Shifts
-const getCountofShifts = (
-  timekeeper: TimeKeeper[],
-  shifts: Shifts[],
-  designation: DesignationwithSalary,
-  wrkhrs: number
-) => {
-  const fullpresentcount = timekeeper.filter((item) =>
-    filter(item, designation, "0.5")
-  ).length;
-  const halfpresentcount = timekeeper.filter((item) =>
-    filter(item, designation, "1")
-  ).length;
-
-  return fullpresentcount + halfpresentcount / 2;
-};
-
 const getTotalAmountAndRows = (
   timekeeper: TimeKeeper[],
   month: number,
   year: number,
-  shifts: Shifts[],
   contractorId: string,
-  designations?: DesignationwithSalary[],
-  department?: Department | undefined,
-  wrkhrs?: number
+  contractor: Contractor,
+  designations?: DesignationwithSalary[]
 ) => {
   const m = dayjs(`${year}-${month}`).daysInMonth();
 
@@ -239,18 +221,18 @@ const getTotalAmountAndRows = (
 
       totalovertime[id] = filtered
         .filter((f) => filter(f, designation, "0.5"))
-        .reduce((acc, curr) => acc + (curr.manualovertime || curr.overtime), 0);
+        .reduce((acc, curr) => acc + (curr.manualovertime ?? curr.overtime), 0);
       totalovertime["total"] = getRoundOff(
         (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
       );
       let otRate = 0;
       if (designation.basicsalary_in_duration === "Monthly") {
         otRate = getRoundOff(
-          designation.basicsalary / designation.allowed_wrking_hr_per_day / m
+          Number(_.get(rate, id, 0)) / designation.allowed_wrking_hr_per_day / m
         );
       } else {
         otRate = getRoundOff(
-          designation.basicsalary / designation.allowed_wrking_hr_per_day
+          Number(_.get(rate, id, 0)) / designation.allowed_wrking_hr_per_day
         );
       }
       otamount[id] = getRoundOff(Number(_.get(totalovertime, id, 0)) * otRate);
@@ -260,7 +242,7 @@ const getTotalAmountAndRows = (
       totalnetamount[id] = getRoundOff(
         Number(_.get(totalManDayAmount, id, 0)) + Number(_.get(otamount, id, 0))
       );
-      cprate[id] = designation.servicecharge as number;
+      cprate[id] = contractor.servicecharge as number;
 
       cpamount[id] = getRoundOff(
         (Number(_.get(totalManDayAmount, id, 0)) *
@@ -278,7 +260,9 @@ const getTotalAmountAndRows = (
       billAmount1[id] = getRoundOff(
         Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
       );
-      tds1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.01));
+      tds1[id] = getRoundOff(
+        Number(((_.get(total, id, 0) as number) * (contractor.tds ?? 0)) / 100)
+      );
       netPayable1[id] =
         Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0));
     });
@@ -292,35 +276,49 @@ const getTotalAmountAndRows = (
   total["total"] = totalnetamount.total + parseFloat(cpamount.total as string);
   gst1["total"] = getRoundOff(Number(total.total * 0.18));
   billAmount1["total"] = getRoundOff(Number(total.total + gst1.total));
-  tds1["total"] = getRoundOff(Number(total.total * 0.01));
+  cprate["total"] = contractor.servicecharge as number;
+  tds1["total"] = getRoundOff(
+    Number((total.total * (contractor.tds ?? 0)) / 100)
+  );
   netPayable1["total"] = getRoundOff(Number(billAmount1.total - tds1.total));
-  rows2.push(attendancecount);
+
+  const r = [
+    attendancecount,
+    rate,
+    totalManDayAmount,
+    totalovertime,
+    otamount,
+    totalnetamount,
+    cprate,
+    cpamount,
+    total,
+    gst1,
+    billAmount1,
+    tds1,
+    netPayable1,
+  ];
+  rows2.push(...r);
   rows.push(attendancecount);
 
-  rows2.push(rate);
   rows.push(rate);
 
-  rows2.push(totalManDayAmount);
   rows.push(totalManDayAmount);
-  rows2.push(totalovertime);
   rows.push(totalovertime);
-  rows2.push(otamount);
   rows.push(otamount);
-  rows2.push(totalnetamount);
   rows.push(totalnetamount);
   // if(department?.basicsalary_in_duration?.toLowerCase() === "hourly") {
-  rows2.push(cprate);
+  // rows2.push(cprate);
   rows.push(cprate);
-  rows2.push(cpamount);
+  // rows2.push(cpamount);
   rows.push(cpamount);
-  rows2.push(total);
+  // rows2.push(total);
   rows.push(total);
   // }
-  rows2.push(gst1);
+  // rows2.push(gst1);
 
-  rows2.push(billAmount1);
-  rows2.push(tds1);
-  rows2.push(netPayable1);
+  // rows2.push(billAmount1);
+  // rows2.push(tds1);
+  // rows2.push(netPayable1);
 
   return {
     rows,

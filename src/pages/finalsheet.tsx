@@ -166,14 +166,15 @@ export default function FinalSheet({
           res.data.filter((t: TimeKeeper) => t.department === d.department),
           dayjs(value, "MM/YYYY").month() + 1,
           dayjs(value, "MM/YYYY").year(),
-          shifts,
           selectedContractor,
+          contractors.find(
+            (c) => c.contractorId === selectedContractor
+          ) as Contractor,
           designations.filter(
             (de) =>
               d.designations.find((des) => des.id === de.id) &&
               de.employees.length > 0
-          ),
-          d
+          )
         );
         rows1.forEach((item) => {
           const { date, ...values } = item;

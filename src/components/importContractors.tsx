@@ -12,21 +12,12 @@ import shortid from "shortid";
 import * as XLSX from "xlsx";
 
 function ImportData() {
-  // on change states
-  const [excelFile, setExcelFile] = useState<string | ArrayBuffer | null>(null);
-  const [excelFileError, setExcelFileError] = useState<string | null>("");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [key, setKey] = useState(0);
   const [message, setMessage] = useState("");
 
-  // submit
-  const [excelData, setExcelData] = useState(null);
-  // it will contain array of objects
-
-  // handle File
-  const fileType = ["application/vnd.xlsx", "application/vnd.ms-excel"];
   const handleFile = (e: any) => {
     let selectedFile = e.target.files[0];
     if (selectedFile) {

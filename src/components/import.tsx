@@ -102,9 +102,15 @@ function ImportData({
     </React.Fragment>
   );
 
-  const getDate = (excelDate: number) => {
+  const getDate = (excelDate: number | string) => {
+    let d = 0;
+    let date: Date;
+    if (typeof excelDate === "string") {
+      date = new Date(excelDate);
+    } else {
+      date = new Date((excelDate - (25567 + 2)) * 86400 * 1000);
+    }
     // const excelDate = 44986;
-    const date = new Date((excelDate - (25567 + 2)) * 86400 * 1000);
     const formattedDate = `${date.getDate().toString().padStart(2, "0")}/${(
       date.getMonth() + 1
     )
@@ -162,6 +168,8 @@ function ImportData({
     };
 
     const selected = contractors.find((c) => c.contractorId === contractor);
+
+    console.log(data, "data");
 
     const body = data.map((data: any) => {
       return {

@@ -25,7 +25,7 @@ import Search from "@mui/icons-material/Search";
 
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { payoutTracker } from "@prisma/client";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -163,6 +163,7 @@ export default function Employees({
     payoutTracker | undefined
   >();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleClose = () => {
     setOpen(false);
@@ -371,7 +372,7 @@ export default function Employees({
                           <Typography
                             onClick={() => {
                               router.push(
-                                `/api/uploads?fileName=${row.uploadreceipt}`
+                                `/api/upload?fileName=${row.uploadreceipt}`
                               );
                             }}
                           >

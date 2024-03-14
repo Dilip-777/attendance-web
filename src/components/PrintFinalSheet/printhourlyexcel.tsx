@@ -84,7 +84,17 @@ export const HourlyPrint = ({
       font: { size: 14, bold: true },
     },
     {
-      header: ["STRATEGIC BUSINESS UNIT", "", "", "", "", "", "", "", "RTTTT"],
+      header: [
+        "STRATEGIC BUSINESS UNIT",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        contractor.strategicbusinessunit,
+      ],
       colSpan: 5,
       bgcolor: "fafafa",
       font: { size: 13, bold: true },

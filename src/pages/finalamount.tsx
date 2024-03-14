@@ -1,15 +1,15 @@
-import * as React from 'react';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import { GetServerSideProps } from 'next';
-import { getSession } from 'next-auth/react';
-import prisma from '@/lib/prisma';
+import * as React from "react";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
 import {
   Contractor,
   Department,
@@ -19,12 +19,12 @@ import {
   TimeKeeper,
   Workorder,
   payoutTracker,
-} from '@prisma/client';
-import { Box, Divider, FormControl, MenuItem, Select } from '@mui/material';
-import getTotalAmountAndRows from '@/utils/getmonthlycount';
-import MonthSelect from '@/ui-component/MonthSelect';
-import dayjs, { Dayjs } from 'dayjs';
-import axios from 'axios';
+} from "@prisma/client";
+import { Box, Divider, FormControl, MenuItem, Select } from "@mui/material";
+import getTotalAmountAndRows from "@/utils/getmonthlycount";
+import MonthSelect from "@/ui-component/MonthSelect";
+import dayjs, { Dayjs } from "dayjs";
+import axios from "axios";
 
 interface Data {
   date: string;
@@ -80,13 +80,15 @@ export default function PlantCommercial({
   designations,
   departments,
   shifts,
+  contractors,
 }: {
   workorders: Workorder[];
   designations: DesignationsWtihSalary[];
   departments: Department[];
   shifts: Shifts[];
+  contractors: Contractor[];
 }) {
-  const [value, setValue] = React.useState<string>(dayjs().format('MM/YYYY'));
+  const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [loading, setLoading] = React.useState(false);
@@ -116,13 +118,17 @@ export default function PlantCommercial({
 
     departments.forEach((d) => {
       const { totalnetPayable } = getTotalAmountAndRows(
-        timekeepers.filter((t) => t.contractorname === contractorname && t.department === d.department),
-        dayjs(value, 'MM/YYYY').month() + 1,
-        dayjs(value, 'MM/YYYY').year(),
-        shifts,
+        timekeepers.filter(
+          (t) =>
+            t.contractorname === contractorname && t.department === d.department
+        ),
+        dayjs(value, "MM/YYYY").month() + 1,
+        dayjs(value, "MM/YYYY").year(),
         contractorId,
-        designations.filter((da) => da.departmentname === d.department),
-        departments.find((de) => de.department === d.department)
+        contractors.find(
+          (c) => c.contractorname === contractorname
+        ) as Contractor,
+        designations.filter((da) => da.departmentname === d.department)
       );
       total += totalnetPayable;
       totals.push(totalnetPayable);
@@ -141,12 +147,18 @@ export default function PlantCommercial({
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
 
-  const handleAddRecord = async (amount: number, contractorName: string, contractorId: number) => {
+  const handleAddRecord = async (
+    amount: number,
+    contractorName: string,
+    contractorId: number
+  ) => {
     await axios.post(`/api/payouttracker`, {
       amount,
       contractorName,
@@ -159,32 +171,37 @@ export default function PlantCommercial({
     fetchPayouts();
   };
 
-  const onChange = (value: Dayjs | null) => setValue(value?.format('MM/YYYY') || '');
+  const onChange = (value: Dayjs | null) =>
+    setValue(value?.format("MM/YYYY") || "");
 
   return (
-    <Paper sx={{ width: '100%' }}>
+    <Paper sx={{ width: "100%" }}>
       <Box
         sx={{
-          height: '5rem',
-          display: 'flex',
+          height: "5rem",
+          display: "flex",
           p: 3,
-          justifyContent: 'flex-start',
+          justifyContent: "flex-start",
           mb: 2,
         }}
       >
-        <MonthSelect label="Select Date" value={dayjs(value, 'MM/YYYY')} onChange={onChange} />
+        <MonthSelect
+          label="Select Date"
+          value={dayjs(value, "MM/YYYY")}
+          onChange={onChange}
+        />
       </Box>
 
       <TableContainer
         sx={{
           maxHeight: 500,
-          scrollBehavior: 'smooth',
-          '&::-webkit-scrollbar': {
+          scrollBehavior: "smooth",
+          "&::-webkit-scrollbar": {
             width: 9,
             height: 10,
           },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#bdbdbd',
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#bdbdbd",
             borderRadius: 2,
           },
         }}
@@ -222,25 +239,34 @@ export default function PlantCommercial({
                         {row.contractorName}
                       </TableCell>
                       <TableCell align="center" colSpan={1}>
-                        {dayjs(row.startDate, 'DD/MM/YYYY').format('MM/YYYY')}
+                        {dayjs(row.startDate, "DD/MM/YYYY").format("MM/YYYY")}
                       </TableCell>
-                      {getAttendance(row.contractorName, row.contractorId).map((a) => (
-                        <TableCell align="center" colSpan={1}>
-                          {a}
-                        </TableCell>
-                      ))}
+                      {getAttendance(row.contractorName, row.contractorId).map(
+                        (a) => (
+                          <TableCell align="center" colSpan={1}>
+                            {a}
+                          </TableCell>
+                        )
+                      )}
                       <TableCell
                         align="center"
                         colSpan={1}
                         onClick={() =>
                           handleAddRecord(
-                            getAttendance(row.contractorName, row.contractorId)[5],
+                            getAttendance(
+                              row.contractorName,
+                              row.contractorId
+                            )[5],
                             row.contractorName,
                             parseInt(row.contractorId)
                           )
                         }
                       >
-                        {payouts.find((p) => p.contractorName === row.contractorName) ? 'Update Record' : 'Add Record'}
+                        {payouts.find(
+                          (p) => p.contractorName === row.contractorName
+                        )
+                          ? "Update Record"
+                          : "Add Record"}
                       </TableCell>
                     </TableRow>
                   );
@@ -272,7 +298,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session) {
     return {
       redirect: {
-        destination: '/login',
+        destination: "/login",
         permanent: false,
       },
     };
@@ -283,10 +309,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  if (user?.role === 'Admin') {
+  if (user?.role === "Admin") {
     return {
       redirect: {
-        destination: '/admin',
+        destination: "/admin",
         permanent: false,
       },
     };
@@ -300,12 +326,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const departments = await prisma.department.findMany();
   const workorders = await prisma.workorder.findMany();
   const shifts = await prisma.shifts.findMany();
+  const contractors = await prisma.contractor.findMany();
   return {
     props: {
       workorders,
       designations,
       departments,
       shifts,
+      contractors,
     },
   };
 };

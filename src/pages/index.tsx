@@ -109,7 +109,7 @@ const handleClickReport = async (data: TimeKeeper[]) => {
         item.manualouttime?.toString() || "-",
         item.manualduration || "-",
         item.manualshift || "-",
-        item.manualovertime?.toString() || "-",
+        item.manualovertime?.toString() ?? "-",
         item.mleave || "-",
         item.department?.toString() || "-",
         item.designation?.toString() || "-",
@@ -285,7 +285,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     React.useState(contractorName);
   const [startDate, setStartDate] = React.useState<Dayjs>(defaultStartDate);
   const [endDate, setEndDate] = React.useState<Dayjs>(defaultEndDate);
+  const [startDate1, setStartDate1] = React.useState<Dayjs>(
+    dayjs().startOf("month")
+  );
+  const [endDate1, setEndDate1] = React.useState<Dayjs>(dayjs());
   const [attendance, setAttendance] = React.useState(att);
+  const [open2, setOpen2] = React.useState(false);
 
   const router = useRouter();
   const handleClose = () => {
@@ -293,7 +298,13 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   };
 
   const handleReport = async () => {
-    const queryString = `/api/timekeeper/gettimekeepers?role=${session?.user?.role}`;
+    let dateArray = [];
+    let currentDate = startDate1;
+    while (currentDate?.isBefore(endDate1) || currentDate?.isSame(endDate1)) {
+      dateArray.push(currentDate.format("DD/MM/YYYY"));
+      currentDate = currentDate.add(1, "day");
+    }
+    const queryString = `/api/timekeeper/gettimekeepers?role=${session?.user?.role}&dateArray=${dateArray}`;
     const res = await axios.get(queryString);
 
     handleClickReport(res.data.data);
@@ -305,6 +316,10 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     setDefaultStartDate(startDate);
     setDefaultEndDate(endDate);
     setAtt(attendance);
+    localStorage.setItem("contractorName", tempcontractorName);
+    localStorage.setItem("startDate", startDate.toString());
+    localStorage.setItem("endDate", endDate.toString());
+    localStorage.setItem("attendance", attendance);
   };
 
   const handleCancel = () => {
@@ -374,26 +389,28 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Stack>
       )}
       {selected.length > 0 ? (
-        <Stack direction="row" spacing={2}>
-          {selected.length === 1 && (
-            <Tooltip title="Edit">
+        session?.user?.role !== "HR" && (
+          <Stack direction="row" spacing={2}>
+            {selected.length === 1 && (
+              <Tooltip title="Edit">
+                <IconButton
+                  onClick={() => router.push(`/details/${selected[0]}`)}
+                >
+                  <Edit />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Tooltip title="Delete">
               <IconButton
-                onClick={() => router.push(`/details/${selected[0]}`)}
+                onClick={() => {
+                  deleteTimeKeeper(selected);
+                }}
               >
-                <Edit />
+                <DeleteIcon />
               </IconButton>
             </Tooltip>
-          )}
-          <Tooltip title="Delete">
-            <IconButton
-              onClick={() => {
-                deleteTimeKeeper(selected);
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+          </Stack>
+        )
       ) : (
         <Stack direction="row" spacing={2}>
           <Tooltip title="Filter">
@@ -432,7 +449,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               <MenuItem
                 onClick={() => {
                   handleClose();
-                  handleReport();
+                  // handleReport();
+                  setOpen2(true);
                 }}
               >
                 Download All
@@ -461,99 +479,165 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Stack>
       )}
       <Dialog
-        open={open1}
-        onClose={() => setOpen1(false)}
+        open={open1 || open2}
+        onClose={() => {
+          setOpen1(false);
+          setOpen2(false);
+        }}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle sx={{ fontSize: "1.2rem" }} id="alert-dialog-title">
-          Filter
+          {open1 ? "Filter" : "Download All"}
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={4}>
-            <Stack spacing={4} direction="row" alignItems="center">
-              <Box sx={{ width: "100%" }}>
-                <FormLabel sx={{ fontWeight: "700" }}>
-                  Select the Contractor
-                </FormLabel>
-                <Autocomplete
-                  options={contractors}
-                  value={
-                    contractors.find((c) => c.label === tempcontractorName) ||
-                    null
-                  }
-                  onChange={(e, value) =>
-                    setTempContractorName(value?.label as string)
-                  }
-                  renderInput={(params) => (
-                    <TextField {...params} placeholder="All Contractors" />
-                  )}
+          {open1 && (
+            <Stack spacing={4}>
+              <Stack spacing={4} direction="row" alignItems="center">
+                <Box sx={{ width: "100%" }}>
+                  <FormLabel sx={{ fontWeight: "700" }}>
+                    Select the Contractor
+                  </FormLabel>
+                  <Autocomplete
+                    options={contractors}
+                    value={
+                      contractors.find((c) => c.label === tempcontractorName) ||
+                      null
+                    }
+                    onChange={(e, value) => {
+                      setTempContractorName(value?.label as string);
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} placeholder="All Contractors" />
+                    )}
+                  />
+                </Box>
+                <FormSelect
+                  options={[
+                    { label: "All Present", value: "1.5" },
+                    { label: "Present", value: "1" },
+                    { label: "Half Present", value: "0.5" },
+                    { label: "Absent", value: "0" },
+                  ]}
+                  label="Attendance"
+                  value={attendance}
+                  handleChange={(e) => {
+                    setAttendance(e as string);
+                  }}
                 />
-              </Box>
-              <FormSelect
-                options={[
-                  { label: "All Present", value: "1.5" },
-                  { label: "Present", value: "1" },
-                  { label: "Half Present", value: "0.5" },
-                  { label: "Absent", value: "0" },
-                ]}
-                label="Attendance"
-                value={attendance}
-                handleChange={(e) => setAttendance(e as string)}
-              />
+              </Stack>
+              <Stack direction="row" spacing={4}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <Box
+                    sx={{
+                      minWidth: 240,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <FormLabel sx={{ fontWeight: "700" }}>Start Date</FormLabel>
+                    <DatePicker
+                      value={startDate}
+                      onChange={(newValue) => {
+                        setStartDate(newValue as Dayjs);
+                      }}
+                      maxDate={endDate}
+                      format="DD/MM/YYYY"
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      minWidth: 240,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <FormLabel sx={{ fontWeight: "700" }}>End Date</FormLabel>
+                    <DatePicker
+                      value={endDate}
+                      onChange={(newValue) => {
+                        setEndDate(newValue as Dayjs);
+                      }}
+                      minDate={startDate}
+                      format="DD/MM/YYYY"
+                    />
+                  </Box>
+                </LocalizationProvider>
+              </Stack>
             </Stack>
-            <Stack direction="row" spacing={4}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Box
-                  sx={{
-                    minWidth: 240,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <FormLabel sx={{ fontWeight: "700" }}>Start Date</FormLabel>
-                  <DatePicker
-                    value={startDate}
-                    onChange={(newValue) => setStartDate(newValue as Dayjs)}
-                    maxDate={endDate}
-                    format="DD/MM/YYYY"
-                  />
-                </Box>
-                <Box
-                  sx={{
-                    minWidth: 240,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <FormLabel sx={{ fontWeight: "700" }}>End Date</FormLabel>
-                  <DatePicker
-                    value={endDate}
-                    onChange={(newValue) => setEndDate(newValue as Dayjs)}
-                    minDate={startDate}
-                    format="DD/MM/YYYY"
-                  />
-                </Box>
-              </LocalizationProvider>
+          )}
+          {open2 && (
+            <Stack spacing={4} direction="row" alignItems="center">
+              <Stack direction="row" spacing={4}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <Box
+                    sx={{
+                      minWidth: 240,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <FormLabel sx={{ fontWeight: "700" }}>Start Date</FormLabel>
+                    <DatePicker
+                      value={startDate1}
+                      onChange={(newValue) => setStartDate1(newValue as Dayjs)}
+                      maxDate={endDate1}
+                      format="DD/MM/YYYY"
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      minWidth: 240,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <FormLabel sx={{ fontWeight: "700" }}>End Date</FormLabel>
+                    <DatePicker
+                      value={endDate1}
+                      onChange={(newValue) => setEndDate1(newValue as Dayjs)}
+                      minDate={startDate1}
+                      format="DD/MM/YYYY"
+                    />
+                  </Box>
+                </LocalizationProvider>
+              </Stack>
             </Stack>
-          </Stack>
+          )}
         </DialogContent>
         <DialogActions sx={{ padding: "2rem" }}>
-          <Button
-            onClick={() => handleCancel()}
-            color="secondary"
-            variant="outlined"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            autoFocus
-            color="secondary"
-            variant="contained"
-          >
-            Save
-          </Button>
+          {open1 && (
+            <>
+              <Button
+                onClick={() => handleCancel()}
+                color="secondary"
+                variant="outlined"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSave}
+                autoFocus
+                color="secondary"
+                variant="contained"
+              >
+                Save
+              </Button>
+            </>
+          )}
+          {open2 && (
+            <Button
+              onClick={() => {
+                handleReport();
+                setOpen2(false);
+              }}
+              autoFocus
+              color="secondary"
+              variant="contained"
+            >
+              Download
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Toolbar>
@@ -564,6 +648,9 @@ export default function TimeKeeperTable({}: // contractors,
 {
   // contractors: Contractor[];
 }) {
+  const getLocalData = (key: string) => {
+    return JSON.parse(localStorage.getItem(key) as string);
+  };
   const [orderBy, setOrderBy] = React.useState<string>("employeeid");
   const [filter, setFilter] = React.useState("");
   const [selected, setSelected] = React.useState<string[]>([]);
@@ -592,9 +679,6 @@ export default function TimeKeeperTable({}: // contractors,
   const matches = useMediaQuery("(min-width:600px)");
   const [contractorName, setContractorName] = React.useState("all");
   const [value, setValue] = React.useState<Dayjs>(dayjs());
-  const [attendancedate, setAttendancedate] = React.useState<Dayjs | null>(
-    null
-  );
   const [statusChange, setStatusChange] = React.useState(false);
   const [debouncedFilter, setDebouncedFilter] = React.useState("");
   const [startDate, setStartDate] = React.useState<Dayjs>(
@@ -635,6 +719,14 @@ export default function TimeKeeperTable({}: // contractors,
   };
 
   React.useEffect(() => {
+    const startDate = localStorage.getItem("startDate") as string;
+    const endDate = localStorage.getItem("endDate") as string;
+    const attendance = localStorage.getItem("attendance") as string;
+    const contractorName = localStorage.getItem("contractorName") as string;
+    setStartDate(startDate ? dayjs(startDate) : dayjs().startOf("month"));
+    setEndDate(endDate ? dayjs(endDate) : dayjs());
+    setAtt(attendance ? attendance : "1.5");
+    setContractorName(contractorName ? contractorName : "all");
     const selected = localStorage.getItem("selectedColumn");
     const available = localStorage.getItem("availableColumn");
     if (selected && available) {

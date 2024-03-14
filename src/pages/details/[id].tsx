@@ -95,7 +95,7 @@ export default function EditTimkeeper({
     manualintime: timekeeper?.manualintime || null,
     manualouttime: timekeeper?.manualouttime || null,
     manualshift: timekeeper?.manualshift || null,
-    manualovertime: timekeeper?.manualovertime || null,
+    manualovertime: timekeeper?.manualovertime ?? null,
     manualduration: timekeeper?.manualduration || null,
     mleave: timekeeper?.mleave || null,
     department: timekeeper?.department || "",
@@ -220,7 +220,7 @@ export default function EditTimkeeper({
                 attendance: values.attendance.toString(),
                 mleave: values.mleave?.toString(),
                 manualovertime:
-                  parseFloat(values.manualovertime?.toString() || "") || null,
+                  parseFloat(values.manualovertime?.toString() ?? "") ?? null,
                 role: role,
                 changes: changestr,
                 ...others,

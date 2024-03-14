@@ -122,7 +122,8 @@ model Contractor {
   emailid                     String?
   website                     String?
   expirationDate              String?
-  servicecharge               Int?
+  servicecharge               Float?
+  tds                         Float?
   bankaccountnumber           String?
   ifscno                      String?
   beneficialname              String?
@@ -446,6 +447,7 @@ model Deductions {
   gstrelease     Int        @default(0)
   advance        Int        @default(0)
   anyother       Int        @default(0)
+  remarks        String?
   contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 

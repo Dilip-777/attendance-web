@@ -48,6 +48,8 @@ const validationSchema = Yup.object().shape({
   website: stringtype.url("Please enter a valid website URL"),
   expirationDate: stringtype,
   servicecharge: Yup.number().required("Rquired"),
+  tds: Yup.number().required("Rquired"),
+
   bankaccountnumber: stringtype.required("Required"),
   ifscno: stringtype.required("Required"),
   pancardno: stringtype,
@@ -145,6 +147,7 @@ export default function EditContractor({
     areaofwork: contractor?.areaofwork || "",
     expirationDate: contractor?.expirationDate || "",
     servicecharge: contractor?.servicecharge || 0,
+    tds: contractor?.tds || 0,
     bankaccountnumber: contractor?.bankaccountnumber || "",
     ifscno: contractor?.ifscno || "",
     beneficialname: contractor?.beneficialname || "",
@@ -412,6 +415,15 @@ export default function EditContractor({
                         name="servicecharge"
                         label="Service Charge*"
                         placeHolder="Enter the Service Charge"
+                        disabled={false}
+                        type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="tds"
+                        label="TDS*"
+                        placeHolder="Enter the TDS"
                         disabled={false}
                         type="number"
                       />
@@ -973,6 +985,7 @@ export default function EditContractor({
                 <Button
                   type="submit"
                   variant="contained"
+                  color="secondary"
                   sx={{ float: "right", mr: 10 }}
                   disabled={isSubmitting}
                 >

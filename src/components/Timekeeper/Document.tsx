@@ -1,9 +1,11 @@
 import { Stack, Typography } from "@mui/material";
 import { Upload } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 export default function Documents({ documents }: { documents: Upload[] }) {
   const router = useRouter();
+  const { data: session } = useSession();
   return (
     <Stack spacing={2} alignItems="flex-start" mt={2}>
       {documents.map((document) => (
@@ -27,9 +29,14 @@ export default function Documents({ documents }: { documents: Upload[] }) {
 
           <Typography
             sx={{ cursor: "pointer" }}
-            onClick={() =>
-              router.push(`/api/uploads?fileName=${document.document}`)
-            }
+            component="a"
+            href={`/api/upload?fileName=${document.document}`}
+            target="_blank"
+            // onClick={() =>
+            //   router.push(
+            //     `/api/uploads?fileName=${document.document}`
+            //   )
+            // }
           >
             Click to View to the Document
           </Typography>

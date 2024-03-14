@@ -92,19 +92,24 @@ export default function MonthlyTable({
             backgroundColor: "#bdbdbd",
             borderRadius: 2,
           },
+          maxHeight: "70vh",
         }}
       >
-        <Table aria-label="sticky table">
+        <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow sx={{ bgcolor: "#eeeeee" }}>
-              <TableCell align="center" sx={{ fontWeight: "700" }} colSpan={1}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "700", bgcolor: "#eeeeee" }}
+                colSpan={1}
+              >
                 Designation
               </TableCell>
               {department?.basicsalary_in_duration?.toLowerCase() ===
                 "hourly" && (
                 <TableCell
                   align="center"
-                  sx={{ fontWeight: "700" }}
+                  sx={{ fontWeight: "700", bgcolor: "#eeeeee" }}
                   colSpan={1}
                 >
                   Type
@@ -113,7 +118,7 @@ export default function MonthlyTable({
               {headers.map((header, index) => (
                 <TableCell
                   align="center"
-                  sx={{ fontWeight: "700" }}
+                  sx={{ fontWeight: "700", bgcolor: "#eeeeee" }}
                   colSpan={1}
                   key={index}
                 >

@@ -157,6 +157,7 @@ export default function FinalSheetta({
                 backgroundColor: "#bdbdbd",
                 borderRadius: 2,
               },
+              maxHeight: "70vh",
             }}
           >
             <Table aria-label="sticky table">

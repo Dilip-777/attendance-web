@@ -20,7 +20,6 @@ import {
   Shifts,
   TimeKeeper,
 } from "@prisma/client";
-import getTotalAmountAndRows from "@/utils/getmonthlycount";
 import MonthSelect from "@/ui-component/MonthSelect";
 import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
@@ -38,7 +37,6 @@ import {
   Tooltip,
 } from "@mui/material";
 import Close from "@mui/icons-material/Close";
-import getHourlyCount from "@/utils/gethourlycount";
 import MonthlyPlantCommercialTable from "@/components/PlantCommercial/MonthlyTable";
 import HourlyTable from "@/components/PlantCommercial/HourlyTable";
 
@@ -439,9 +437,10 @@ export default function PlantCommercial({
         </Stack>
       </Box>
 
-      <Stack direction="row" spacing={2} px={5} pb={2}>
+      <Stack direction="row" flexWrap="wrap" px={2} pb={2}>
         {selectedDepartments.map((d) => (
           <Chip
+            sx={{ m: 1 }}
             key={d.department}
             label={d.department}
             onDelete={() =>

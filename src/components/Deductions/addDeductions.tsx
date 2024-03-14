@@ -46,6 +46,7 @@ export default function AddDeductions({
   const [gstrelease, setGstrelease] = useState<number>(0);
   const [advance, setAdvance] = useState<number>(0);
   const [anyother, setAnyother] = useState<number>(0);
+  const [remarks, setRemarks] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async () => {
@@ -58,6 +59,7 @@ export default function AddDeductions({
         gstrelease: gstrelease,
         advance: advance,
         anyother: anyother,
+        remarks: remarks,
       });
       handleClose();
       setLoading(false);
@@ -75,6 +77,7 @@ export default function AddDeductions({
       setGstrelease(deduction.gstrelease);
       setAdvance(deduction.advance);
       setAnyother(deduction.anyother);
+      setRemarks(deduction?.remarks || "");
     }
   }, [deduction]);
 
@@ -124,7 +127,7 @@ export default function AddDeductions({
                 Deductions
               </Typography>
               <Divider />
-              <FormControl fullWidth sx={{ mt: 2 }}>
+              <FormControl fullWidth sx={{ mt: 2 }} color="secondary">
                 <Stack width="100%" spacing={4}>
                   <FormSelect
                     options={contractors.map((contractor) => ({
@@ -168,6 +171,13 @@ export default function AddDeductions({
                     value={anyother}
                     onChange={(e) => setAnyother(Number(e.target.value))}
                   />
+                  <TextField
+                    label="Remarks"
+                    variant="outlined"
+                    fullWidth
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                  />
                 </Stack>
                 <Button
                   type="submit"
@@ -175,6 +185,7 @@ export default function AddDeductions({
                   sx={{ mt: 3, float: "right" }}
                   disabled={loading}
                   onClick={() => handleSubmit()}
+                  color="secondary"
                 >
                   Submit
                   {loading && (

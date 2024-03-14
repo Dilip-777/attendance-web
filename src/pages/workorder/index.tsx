@@ -97,8 +97,6 @@ interface EnhancedTableToolbarProps {
   contractors: Contractor[];
   selectedContractor: string;
   setSelectedContractor: React.Dispatch<React.SetStateAction<string>>;
-  month: string;
-  setMonth: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -107,8 +105,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     contractors,
     selectedContractor,
     setSelectedContractor,
-    month,
-    setMonth,
   } = props;
 
   return (
@@ -173,13 +169,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               renderInput={(params) => <TextField {...params} />}
             />
           </Box>
-          <MonthSelect
-            label="Select Month"
-            value={dayjs(month, "MM/YYYY")}
-            onChange={(value: Dayjs | null) =>
-              setMonth(value?.format("MM/YYYY") || "")
-            }
-          />
         </Stack>
       )}
       {numSelected > 0 ? (
@@ -219,7 +208,6 @@ export default function WorkOrder({
   const { data: session } = useSession();
   const [selectedContractor, setSelectedContractor] =
     React.useState<string>("");
-  const [month, setMonth] = React.useState<string>(dayjs().format("MM/YYYY"));
 
   const handleClose = () => {
     setOpen(false);
@@ -228,9 +216,7 @@ export default function WorkOrder({
 
   const fetchWorkorder = async () => {
     const res = await axios
-      .get(
-        "/api/workorder?contractorId=" + selectedContractor + "&month=" + month
-      )
+      .get("/api/workorder?contractorId=" + selectedContractor)
       .then((res) => {
         setWorkOrder(res.data);
       })
@@ -241,7 +227,7 @@ export default function WorkOrder({
 
   React.useEffect(() => {
     fetchWorkorder();
-  }, [selectedContractor, month]);
+  }, [selectedContractor]);
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -316,8 +302,6 @@ export default function WorkOrder({
           contractors={contractors}
           selectedContractor={selectedContractor}
           setSelectedContractor={setSelectedContractor}
-          month={month}
-          setMonth={setMonth}
         />
         <TableContainer
           sx={{

@@ -12,11 +12,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import _ from "lodash";
-import { useRouter } from "next/router";
 import React, { useState } from "react";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
-import EnhancedTableToolbar from "@/components/Table/EnhancedTableToolbar";
-import Download from "@mui/icons-material/Download";
 import { useSession } from "next-auth/react";
 import { Contractor, Deductions } from "@prisma/client";
 import prisma from "@/lib/prisma";
@@ -45,6 +42,7 @@ const headCells = [
   { id: "gstrelease", label: "GST Release", numeric: true, included: false },
   { id: "advance", label: "Advance", numeric: true, included: false },
   { id: "anyother", label: "Any Other", numeric: true, included: false },
+  { id: "remarks", label: "Remarks", numeric: false, included: false },
   { id: "action", label: "Action", numeric: false, included: true },
 ];
 
@@ -168,6 +166,7 @@ export default function Deduction({
             variant="contained"
             onClick={() => setOpen(true)}
             sx={{ justifySelf: "flex-end" }}
+            color="secondary"
           >
             Add Deduction
           </Button>

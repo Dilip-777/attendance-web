@@ -87,7 +87,7 @@ const getEmployeesCalculation = (
       );
       if (ot) {
         const othrs = f.reduce(
-          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
+          (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
           0
         );
         obj[date] = othrs;
@@ -103,7 +103,7 @@ const getEmployeesCalculation = (
     obj["total"] = count;
     if (ot) {
       const othrs = f.reduce(
-        (acc, curr) => acc + (curr.manualovertime || curr.overtime),
+        (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
         0
       );
       obj["total"] = othrs;
@@ -124,17 +124,15 @@ const getEmployeesCalculation = (
     totalobj["rate"] = "";
 
     if (employee.designation.basicsalary_in_duration === "Monthly") {
-      obj["amount"] = getRoundOff(
-        (count * employee.designation.basicsalary) / m
-      );
+      obj["amount"] = getRoundOff((count * obj["rate"]) / m);
     } else {
-      obj["amount"] = getRoundOff(count * employee.designation.basicsalary);
+      obj["amount"] = getRoundOff(count * obj["rate"]);
     }
     totalobj["amount"] = (((totalobj["amount"] as number) || 0) +
       obj["amount"]) as number;
 
     obj["othrs"] = f.reduce(
-      (acc, curr) => acc + (curr.manualovertime || curr.overtime),
+      (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
       0
     );
     totalobj["othrs"] = (((totalobj["othrs"] as number) || 0) +
@@ -142,12 +140,12 @@ const getEmployeesCalculation = (
 
     if (employee.designation.basicsalary_in_duration === "Monthly") {
       obj["otamount"] = getRoundOff(
-        (obj["othrs"] * employee.designation.basicsalary) /
+        (obj["othrs"] * obj["rate"]) /
           (m * employee.designation.allowed_wrking_hr_per_day)
       );
     } else {
       obj["otamount"] = getRoundOff(
-        (obj["othrs"] * employee.designation.basicsalary) /
+        (obj["othrs"] * obj["rate"]) /
           employee.designation.allowed_wrking_hr_per_day
       );
     }

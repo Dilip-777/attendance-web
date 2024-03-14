@@ -95,7 +95,7 @@ export default function PrintExcel({
           "",
           "",
           "",
-          "RTTTT",
+          contractor.strategicbusinessunit,
         ],
         colSpan: 5,
         bgcolor: "fafafa",

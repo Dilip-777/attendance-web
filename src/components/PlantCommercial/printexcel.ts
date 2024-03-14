@@ -1,16 +1,24 @@
-import { plantname } from '@/constants';
-import { Button } from '@mui/material';
-import { Contractor, Department, Designations, Safety, Stores, Workorder, payoutTracker } from '@prisma/client';
-import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
-const ExcelJS = require('exceljs');
+import { plantname } from "@/constants";
+import { Button } from "@mui/material";
+import {
+  Contractor,
+  Department,
+  Designations,
+  Safety,
+  Stores,
+  Workorder,
+  payoutTracker,
+} from "@prisma/client";
+import _ from "lodash";
+import React, { useEffect, useState } from "react";
+const ExcelJS = require("exceljs");
 
 function getMonthName(monthNumber: number) {
   const date = new Date();
   date.setMonth(monthNumber - 1);
 
-  return date.toLocaleString('en-US', {
-    month: 'long',
+  return date.toLocaleString("en-US", {
+    month: "long",
   });
 }
 
@@ -28,6 +36,7 @@ const handleprint = ({
   netTotal,
   year,
   ot,
+  servicecharge,
 }: {
   rows: any;
   departments: d[];
@@ -38,11 +47,12 @@ const handleprint = ({
   total: number;
   netTotal: number;
   ot: boolean;
+  servicecharge: number;
 }) => {
   const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet 1');
+  const worksheet = workbook.addWorksheet("Sheet 1");
 
-  const headcells = [{ id: 'date', label: 'Date', colspan: 1 }];
+  const headcells = [{ id: "date", label: "Date", colspan: 1 }];
 
   let count = 2;
 
@@ -55,30 +65,34 @@ const handleprint = ({
           colspan: department.designations.length,
         });
       } else {
-        headcells.push({ id: '', label: '', colspan: 0 });
+        headcells.push({ id: "", label: "", colspan: 0 });
       }
       count++;
     });
   });
 
-  headcells.push({ id: 'total', label: 'Total', colspan: 1 });
+  headcells.push({ id: "total", label: "Total", colspan: 1 });
 
   const border = {
-    top: { style: 'thin', color: { argb: 'black' } },
-    left: { style: 'thin', color: { argb: 'black' } },
-    bottom: { style: 'thin', color: { argb: 'black' } },
-    right: { style: 'thin', color: { argb: 'black' } },
+    top: { style: "thin", color: { argb: "black" } },
+    left: { style: "thin", color: { argb: "black" } },
+    bottom: { style: "thin", color: { argb: "black" } },
+    right: { style: "thin", color: { argb: "black" } },
   };
 
   const headings = [
     {
       header: [plantname],
       colSpan: count,
-      bgcolor: 'a3f2fd',
+      bgcolor: "a3f2fd",
       font: { size: 16, bold: true },
     },
     {
-      header: [`Contractor Name - ${contractor}      Month - ${getMonthName(month)}-${year}`],
+      header: [
+        `Contractor Name - ${contractor}      Month - ${getMonthName(
+          month
+        )}-${year}`,
+      ],
       colSpan: count,
       font: { size: 14, bold: true },
     },
@@ -91,14 +105,20 @@ const handleprint = ({
     headingTextRow.height = heading.height || 40;
 
     while (count / colspan > 1) {
-      worksheet.mergeCells(`${headingTextRow.getCell(1).address}:${headingTextRow.getCell(colspan).address}`);
+      worksheet.mergeCells(
+        `${headingTextRow.getCell(1).address}:${
+          headingTextRow.getCell(colspan).address
+        }`
+      );
 
       start = start + colspan;
       colspan = count - colspan;
     }
 
     worksheet.mergeCells(
-      `${headingTextRow.getCell(1).address}:${headingTextRow.getCell(heading.colSpan || count).address}`
+      `${headingTextRow.getCell(1).address}:${
+        headingTextRow.getCell(heading.colSpan || count).address
+      }`
     );
     // if (heading.colSpan === 5) {
     //   worksheet.mergeCells(`A${headingTextRow.number}:H${headingTextRow.number}`);
@@ -107,11 +127,11 @@ const handleprint = ({
     //   worksheet.mergeCells(`A${headingTextRow.number}:P${headingTextRow.number}`);
     // }
     headingTextRow.eachCell((cell: any) => {
-      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
       cell.font = heading.font;
       cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
+        type: "pattern",
+        pattern: "solid",
         fgColor: { argb: heading.bgcolor }, // Replace 'FFFF0000' with the desired color code
       };
       cell.border = border;
@@ -123,7 +143,7 @@ const handleprint = ({
   });
 
   createHeading({
-    header: [''],
+    header: [""],
     height: 30,
   });
 
@@ -132,7 +152,9 @@ const handleprint = ({
     headcells.forEach((headcell: any) => {
       if (headcell.colspan > 1) {
         worksheet.mergeCells(
-          `${tableheader.getCell(i).address}:${tableheader.getCell(i + headcell.colspan - 1).address}`
+          `${tableheader.getCell(i).address}:${
+            tableheader.getCell(i + headcell.colspan - 1).address
+          }`
         );
       }
       //   if()
@@ -148,49 +170,49 @@ const handleprint = ({
   tableheader.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: 'middle',
-      horizontal: 'center',
+      vertical: "middle",
+      horizontal: "center",
     };
     cell.font = { bold: true, size: 11, wrapText: true };
     cell.border = border;
     cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
     };
   });
 
-  const headcells2 = [{ id: 'date', label: '', colspan: 1 }];
+  const headcells2 = [{ id: "date", label: "", colspan: 1 }];
 
   departments.forEach((department) => {
     department.designations.forEach((d) => {
       headcells2.push({ id: d.id, label: d.designation, colspan: 1 });
     });
   });
-  headcells2.push({ id: 'total', label: '', colspan: 1 });
+  headcells2.push({ id: "total", label: "", colspan: 1 });
 
   const tableheader2 = worksheet.addRow(headcells2.map((h) => h.label));
 
   tableheader2.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: 'middle',
-      horizontal: 'center',
+      vertical: "middle",
+      horizontal: "center",
     };
     cell.font = { bold: true, size: 11, wrapText: true };
     cell.border = border;
     cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
     };
   });
 
   rows.forEach((row: any) => {
     const data = headcells2.map((h) => {
-      if (h.id === 'date') {
+      if (h.id === "date") {
         return row.date;
-      } else if (h.id === 'total') {
+      } else if (h.id === "total") {
         return row.total;
       } else {
         return row[h.id];
@@ -200,8 +222,8 @@ const handleprint = ({
     datarow.eachCell((cell: any) => {
       cell.alignment = {
         wrapText: true,
-        vertical: 'middle',
-        horizontal: 'center',
+        vertical: "middle",
+        horizontal: "center",
       };
       cell.border = border;
       cell.font = { size: 9, wrapText: true };
@@ -211,19 +233,19 @@ const handleprint = ({
 
   if (!ot) {
     const headcells3 = [
-      { label: '', id: 'date' },
-      { label: 'Att Count', id: 'attendancecount' },
-      { label: 'Amt', id: 'mandaysamount' },
-      { label: 'OT Hrs', id: 'othrs' },
-      { label: 'OT Amt', id: 'otamount' },
-      { label: 'Total', id: 'totalnetamount' },
+      { label: "", id: "date" },
+      { label: "Att Count", id: "attendancecount" },
+      { label: "Amt", id: "mandaysamount" },
+      { label: "OT Hrs", id: "othrs" },
+      { label: "OT Amt", id: "otamount" },
+      { label: "Total", id: "totalnetamount" },
     ];
 
     rows.forEach((row: any) => {
       const data = headcells2.map((h) => {
-        if (h.id === 'date') {
+        if (h.id === "date") {
           return row.date;
-        } else if (h.id === 'total') {
+        } else if (h.id === "total") {
           return row.total;
         } else {
           return row[h.id];
@@ -233,8 +255,8 @@ const handleprint = ({
       datarow.eachCell((cell: any) => {
         cell.alignment = {
           wrapText: true,
-          vertical: 'middle',
-          horizontal: 'center',
+          vertical: "middle",
+          horizontal: "center",
         };
         cell.border = border;
         cell.font = { size: 9, wrapText: true };
@@ -244,34 +266,38 @@ const handleprint = ({
 
     let c = count;
     while (c >= 9) {
-      headcells3.push({ label: '', id: '' });
+      headcells3.push({ label: "", id: "" });
       c--;
     }
 
-    const tableheader3 = worksheet.addRow([...headcells3.map((h) => h.label), 'ADD 10%', total * 0.1]);
+    const tableheader3 = worksheet.addRow([
+      ...headcells3.map((h) => h.label),
+      `Add ${servicecharge || 0}%`,
+      (total * (servicecharge || 0)) / 100,
+    ]);
     tableheader3.eachCell((cell: any) => {
       cell.alignment = {
         wrapText: true,
-        vertical: 'middle',
-        horizontal: 'center',
+        vertical: "middle",
+        horizontal: "center",
       };
       cell.font = { bold: true, size: 11, wrapText: true };
       cell.border = border;
       cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
       };
     });
 
     allcounts.forEach((row: any) => {
       const data = headcells3.map((h) => {
-        if (h.id === 'date') {
+        if (h.id === "date") {
           return row.date;
-        } else if (h.id === 'total') {
+        } else if (h.id === "total") {
           return row.total;
-        } else if (h.id === '') {
-          return '';
+        } else if (h.id === "") {
+          return "";
         } else {
           return row[h.id] || 0;
         }
@@ -284,47 +310,47 @@ const handleprint = ({
       datarow.eachCell((cell: any) => {
         cell.alignment = {
           wrapText: true,
-          vertical: 'middle',
-          horizontal: 'center',
+          vertical: "middle",
+          horizontal: "center",
         };
         cell.font = { bold: true, size: 11, wrapText: true };
         cell.border = border;
         cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
         };
       });
     });
   }
   createHeading({
-    header: [''],
+    header: [""],
     height: 30,
   });
 
   const row = worksheet.addRow([
-    'Checked By',
-    '',
-    'Verified By   8HR',
-    '',
-    'Verified By   COMM',
-    '',
-    'Passed By    ED',
-    '',
-    '',
+    "Checked By",
+    "",
+    "Verified By   8HR",
+    "",
+    "Verified By   COMM",
+    "",
+    "Passed By    ED",
+    "",
+    "",
   ]);
   row.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: 'middle',
-      horizontal: 'center',
+      vertical: "middle",
+      horizontal: "center",
     };
     cell.font = { bold: true, size: 11, wrapText: true };
     cell.border = border;
     cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
     };
   });
 
@@ -370,12 +396,12 @@ const handleprint = ({
 
   workbook.xlsx.writeBuffer().then((buffer: any) => {
     const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute('download', 'plantcommercialhourly.xlsx');
+    link.setAttribute("download", "plantcommercialhourly.xlsx");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -18,18 +18,35 @@ const filterByDate = (
   attendance: string,
   department: string,
   date?: string,
-  gender?: string
+  gender?: string,
+  designation?: string
 ) => {
   //   console.log(item, department, gender, attendance);
 
   if (department !== item.department) return false;
   if (attendance !== item.attendance) return false;
-  if (
-    gender &&
-    item.gender &&
-    item.gender[0].toLowerCase() !== gender[0].toLowerCase()
-  )
-    return false;
+  if (designation && designation.toLowerCase() === "supervisor") {
+    if (designation !== item.designation) return false;
+  } else {
+    if (
+      gender &&
+      item.gender &&
+      item.gender[0].toLowerCase() !== gender[0].toLowerCase()
+    )
+      return false;
+  }
+  // if (department.toLowerCase() === "supervisor") {
+  //   if (department !== item.department) return false;
+  //   if (designation && designation === "supervisor") {
+  //   }
+  // } else {
+  //   if (
+  //     gender &&
+  //     item.gender &&
+  //     item.gender[0].toLowerCase() !== gender[0].toLowerCase()
+  //   )
+  //     return false;
+  // }
   if (date) {
     return item.attendancedate === date;
   }
@@ -175,13 +192,27 @@ const getHourlyCount = (
       department.designations.forEach((des) => {
         const id = des.id;
 
-        const ff = f.filter((f) => f.gender === des.gender);
-        const fhf = hf.filter((f) => f.gender === des.gender);
+        const ff = f.filter((f) => {
+          if (f.designation.toLowerCase() === "supervisor") {
+            return f.designation === des.designation;
+          } else {
+            f.gender === des.gender;
+          }
+        });
+        const fhf = hf.filter((f) => {
+          if (f.designation.toLowerCase() === "supervisor") {
+            return f.designation === des.designation;
+          } else {
+            f.gender === des.gender;
+          }
+        });
         // console.log(ff, fhf, 'ff, fhf', des.designation, des.gender[0].toLowerCase());
         const othrs = ff.reduce(
-          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
+          (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
           0
         );
+        console.log(othrs, "slfjskldfjsl");
+
         obj[id] = calot ? othrs : ff.length + fhf.length / 2;
         obj["total"] = (obj.total as number) + (Number(obj[id]) || 0);
       });
@@ -218,30 +249,55 @@ const getHourlyCount = (
       const gender = des.gender[0].toLowerCase();
       const f8: TimeKeeper[] = f.filter(
         (f) =>
-          filterByDate(f, "1", department.department, undefined, gender) &&
-          filterByShift(f, 8)
+          filterByDate(
+            f,
+            "1",
+            department.department,
+            undefined,
+            gender,
+            des.designation
+          ) && filterByShift(f, 8)
       );
       const f12 = f.filter(
         (f) =>
-          filterByDate(f, "1", department.department, undefined, gender) &&
-          filterByShift(f, 12)
+          filterByDate(
+            f,
+            "1",
+            department.department,
+            undefined,
+            gender,
+            des.designation
+          ) && filterByShift(f, 12)
       );
       const hf8 = hf.filter(
         (f) =>
-          filterByDate(f, "0.5", department.department, undefined, gender) &&
-          filterByShift(f, 8)
+          filterByDate(
+            f,
+            "0.5",
+            department.department,
+            undefined,
+            gender,
+            des.designation
+          ) && filterByShift(f, 8)
       );
       const hf12 = hf.filter(
         (f) =>
-          filterByDate(f, "0.5", department.department, undefined, gender) &&
-          filterByShift(f, 12)
+          filterByDate(
+            f,
+            "0.5",
+            department.department,
+            undefined,
+            gender,
+            des.designation
+          ) && filterByShift(f, 12)
       );
 
       const id = des.id;
       const count = rows.reduce((acc, curr) => acc + Number(curr[id] || 0), 0);
       othrs[id] = count;
+
       othrs["total"] = (othrs.total as number) + (Number(othrs[id]) || 0);
-      if (calot) return;
+      // if (calot) return;
       attendancecount[id] = count;
 
       assignCounts("attendancecount", des, count);
@@ -256,12 +312,16 @@ const getHourlyCount = (
         if (s) {
           rate[id] = s.salary;
         } else if (wrkhrs === 8) {
-          if (des.gender.toLowerCase() === "female") {
-            rate[id] = contractor.salarywomen8hr;
-          } else if (des.designation.toLowerCase() === "supervisor") {
+          if (des.designation.toLowerCase() === "supervisor") {
+            console.log(des, "des");
+
             rate[id] = contractor.salarysvr8hr;
-          } else {
+          } else if (des.gender.toLowerCase() === "female") {
+            rate[id] = contractor.salarywomen8hr;
+          } else if (des.gender.toLowerCase() === "male") {
             rate[id] = contractor.salarymen8hr;
+          } else {
+            rate[id] = 0;
           }
         } else if (wrkhrs === 12) {
           if (des.designation.toLowerCase() === "supervisor")
@@ -295,12 +355,17 @@ const getHourlyCount = (
         );
 
         const o8 = f8.reduce(
-          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
+          (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
           0
         );
 
+        console.log(
+          f8.filter((f) => f.designation === "Supervisor").length,
+          f8.length
+        );
+
         const o12 = f12.reduce(
-          (acc, curr) => acc + (curr.manualovertime || curr.overtime),
+          (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
           0
         );
 
@@ -310,6 +375,7 @@ const getHourlyCount = (
           (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
         );
 
+        console.log(totalovertime, "totalovertime");
         const amount8 = getRoundOff((o8 * (rate[id] as number)) / 8);
         const amount12 = getRoundOff((o12 * (rate[id] as number)) / 12);
         otamount[id] = getRoundOff(amount8 + amount12);
@@ -328,7 +394,7 @@ const getHourlyCount = (
           des,
           Number(_.get(totalnetamount, id, 0))
         );
-        cprate[id] = des.servicecharge as number;
+        cprate[id] = contractor.servicecharge as number;
 
         cpamount[id] = getRoundOff(
           (Number(_.get(totalManDayAmount, id, 0)) *
@@ -346,7 +412,11 @@ const getHourlyCount = (
         billAmount1[id] = getRoundOff(
           Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
         );
-        tds1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.01));
+        tds1[id] = getRoundOff(
+          Number(
+            ((_.get(total, id, 0) as number) * (contractor.tds ?? 0)) / 100
+          )
+        );
         netPayable1[id] =
           Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0));
       }
@@ -361,7 +431,9 @@ const getHourlyCount = (
   total["total"] = totalnetamount.total + parseFloat(cpamount.total as string);
   gst1["total"] = getRoundOff(Number(total.total * 0.18));
   billAmount1["total"] = getRoundOff(Number(total.total + gst1.total));
-  tds1["total"] = getRoundOff(Number(total.total * 0.01));
+  tds1["total"] = getRoundOff(
+    Number((total.total * (contractor?.tds ?? 0)) / 100)
+  );
   netPayable1["total"] = getRoundOff(Number(billAmount1.total - tds1.total));
 
   const allcounts = [malecount, femalecount, svrcount, totalall];
@@ -400,16 +472,21 @@ const getHourlyCount = (
   //   };
   // }
 
-  rows.push(
-    ...[
-      attendancecount,
-      rate,
-      totalManDayAmount,
-      totalovertime,
-      otamount,
-      totalnetamount,
-    ]
-  );
+  if (calot) {
+    rows.push(attendancecount);
+  } else {
+    rows.push(
+      ...[
+        attendancecount,
+        rate,
+        totalManDayAmount,
+        totalovertime,
+        otamount,
+        totalnetamount,
+      ]
+    );
+  }
+
   rows2.push(
     ...[
       attendancecount,

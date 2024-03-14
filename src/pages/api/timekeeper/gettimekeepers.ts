@@ -41,6 +41,13 @@ export default async function getTimeKeeper(
       wh.approvedByTimekeeper = true;
     }
 
+    if (orderBy && filter) {
+      wh[orderBy as string] = {
+        contains: filter,
+        mode: "insensitive",
+      };
+    }
+
     const fullattendance =
       attendance === "0.5"
         ? 0
@@ -75,12 +82,12 @@ export default async function getTimeKeeper(
     //   wh.approvedByTimekeeper = true;
     // }
 
-    if (orderBy && filter) {
-      wh[orderBy as string] = {
-        contains: filter,
-        mode: "insensitive",
-      };
-    }
+    // if (orderBy && filter) {
+    //   wh[orderBy as string] = {
+    //     contains: filter,
+    //     mode: "insensitive",
+    //   };
+    // }
 
     const overtime = await prisma.timeKeeper.aggregate({
       where: {

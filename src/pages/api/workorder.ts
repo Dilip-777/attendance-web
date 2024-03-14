@@ -9,27 +9,13 @@ export default async function workorder(
   if (req.method === "GET") {
     const { contractorId, month } = req.query;
     let where = {};
-    if (contractorId) {
+    if (contractorId && contractorId !== "undefined") {
       where = {
         contractorId: contractorId,
       };
     }
     const workorders = await prisma.workorder.findMany({
-      where: {
-        OR: [
-          {
-            startDate: {
-              contains: month as string,
-            },
-          },
-          {
-            endDate: {
-              contains: month as string,
-            },
-          },
-        ],
-        ...where,
-      },
+      where,
     });
     res.status(200).json(workorders);
   } else if (req.method === "POST") {

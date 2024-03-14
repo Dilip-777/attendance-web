@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import FormSelect from "@/ui-component/FormSelect";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 const Upload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [documentUrl, setDocumentUrl] = useState("");
+  const { data: session } = useSession();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

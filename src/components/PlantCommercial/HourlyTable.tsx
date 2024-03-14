@@ -18,10 +18,10 @@ import {
 } from "@prisma/client";
 import dayjs from "dayjs";
 import _ from "lodash";
-import getHourlyCount from "@/utils/gethourlycount";
 import { IconButton, Tooltip } from "@mui/material";
 import handleprint from "./printexcel";
 import { useSession } from "next-auth/react";
+import getTotalAmountAndRows from "@/utils/gethourly";
 
 interface DesignationwithSalary extends Designations {
   seperateSalary: SeperateSalary[];
@@ -48,7 +48,6 @@ const HourlyTable = ({
   shifts,
   value,
   wrkhrs,
-  servicecharge,
   timekeepers,
   ot,
 }: TableProps) => {
@@ -62,20 +61,24 @@ const HourlyTable = ({
   const [colspan1, setColspan1] = React.useState(0);
   const [netTotal, setNetTotal] = React.useState(0);
   const { data: session } = useSession();
-  const sgst = Math.ceil(total * 0.09);
 
   const fetchTimekeepers = async () => {
     setLoading(true);
-    const { rows, total, allcounts, netTotal } = getHourlyCount(
+    const designations: DesignationwithSalary[] = _.flatten(
+      departments.map((d) => d.designations)
+    );
+    const { rows, total, allcounts, netTotal } = getTotalAmountAndRows(
       timekeepers,
       dayjs(value, "MM/YYYY").month() + 1,
       dayjs(value, "MM/YYYY").year(),
       shifts,
+      contractor.contractorId,
       contractor,
+      designations,
       departments,
       wrkhrs,
-      ot,
-      session?.user?.role
+      session?.user?.role,
+      ot
     );
 
     setAllCounts(allcounts);
@@ -148,6 +151,7 @@ const HourlyTable = ({
                 total,
                 netTotal,
                 ot,
+                servicecharge: contractor.servicecharge || 0,
               })
             }
           >
@@ -159,7 +163,7 @@ const HourlyTable = ({
         sx={{
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            // width: 7,
+            width: 9,
             height: 9,
           },
           "&::-webkit-scrollbar-thumb": {
@@ -168,9 +172,10 @@ const HourlyTable = ({
           },
           border: "1px solid #e0e0e0",
           borderRadius: 2,
+          maxHeight: "70vh",
         }}
       >
-        <Table sx={{}} aria-label="sticky table">
+        <Table stickyHeader sx={{}} aria-label="sticky table">
           <TableHead>
             <TableRow sx={{ bgcolor: "#e0e0e0" }}>
               <TableCell
@@ -180,18 +185,20 @@ const HourlyTable = ({
               >
                 Date
               </TableCell>
-              {departments.map((department) => {
-                return (
-                  <TableCell
-                    key={department.id}
-                    align="center"
-                    sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
-                    colSpan={department.designations.length * 1}
-                  >
-                    {department.department}
-                  </TableCell>
-                );
-              })}
+              {departments
+                .filter((d) => d.designations.length > 0)
+                .map((department) => {
+                  return (
+                    <TableCell
+                      key={department.id}
+                      align="center"
+                      sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                      colSpan={department.designations.length}
+                    >
+                      {department.department}
+                    </TableCell>
+                  );
+                })}
               {colspan1 !== 0 && (
                 <TableCell
                   align="center"
@@ -298,9 +305,11 @@ const HourlyTable = ({
                   </TableCell>
                 ))}
                 <TableCell colSpan={colspan}></TableCell>
-                <TableCell sx={{ fontWeight: "700" }}>ADD 10%</TableCell>
+                <TableCell sx={{ fontWeight: "700" }}>
+                  Add {contractor?.servicecharge || 0}%
+                </TableCell>
                 <TableCell sx={{ fontWeight: "700" }} align="center">
-                  {Math.ceil(total * 0.1)}
+                  {Math.ceil((total * (contractor?.servicecharge || 0)) / 100)}
                 </TableCell>
               </TableRow>
             )}

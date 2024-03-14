@@ -203,6 +203,7 @@ export default function FinalSheetTable({
                     {
                       label: "ANY OTHER DEDUCTIONS (IF ANY)",
                       value: deduction?.anyother || 0,
+                      remarks: deduction?.remarks,
                     },
                     {
                       label: "FINAL PAYABLE",
@@ -217,7 +218,13 @@ export default function FinalSheetTable({
                     },
                   ].map((d) => (
                     <TableRow>
-                      <TableCell colSpan={9} align="center"></TableCell>
+                      <TableCell
+                        colSpan={9}
+                        align="center"
+                        sx={{ fontWeight: "600" }}
+                      >
+                        {d.remarks || ""}
+                      </TableCell>
                       <TableCell
                         colSpan={6}
                         align="center"

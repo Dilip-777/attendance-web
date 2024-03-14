@@ -3,6 +3,8 @@ import formidable from "formidable";
 import path from "path";
 import fs from "fs/promises";
 import { createReadStream } from "fs";
+import prisma from "@/lib/prisma";
+import { getSession } from "next-auth/react";
 
 export const config = {
   api: {
@@ -42,7 +44,11 @@ const handler: NextApiHandler = async (req, res) => {
     res.status(200).json({ success: "true", file: options.files.myFile });
   } else if (req.method === "GET") {
     try {
-      const { workorderId, fileName } = req.query;
+      const { fileName } = req.query;
+      const session = await getSession({ req });
+      if (!session?.user?.id) {
+        return res.status(400).json("Access Denied");
+      }
       const filePath = path.join(process.cwd(), `/uploads/${fileName}`);
       const stream = createReadStream(filePath);
       stream.pipe(res);

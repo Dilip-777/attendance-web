@@ -131,6 +131,7 @@ export default function ContractorModal({
             </FormControl>
             <Button
               variant="contained"
+              color="secondary"
               disabled={selectedDepartments.length === 0}
               onClick={() => {
                 if (selectedDepartments.find((d) => d.id === "0")) {

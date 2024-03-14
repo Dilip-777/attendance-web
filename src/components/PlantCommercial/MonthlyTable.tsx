@@ -63,8 +63,6 @@ const MonthlyPlantCommercialTable = ({
   ot,
   seperateSalarys,
 }: TableProps) => {
-  console.log(departments);
-
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
   const [total, setTotal] = React.useState(0);
@@ -160,6 +158,7 @@ const MonthlyPlantCommercialTable = ({
                 total,
                 netTotal: nettotal,
                 ot,
+                servicecharge: contractor.servicecharge || 0,
               })
             }
           >
@@ -171,7 +170,7 @@ const MonthlyPlantCommercialTable = ({
         sx={{
           scrollBehavior: "smooth",
           "&::-webkit-scrollbar": {
-            // width: 7,
+            width: 9,
             height: 9,
           },
           "&::-webkit-scrollbar-thumb": {
@@ -180,9 +179,10 @@ const MonthlyPlantCommercialTable = ({
           },
           border: "1px solid #e0e0e0",
           borderRadius: 2,
+          maxHeight: "70vh",
         }}
       >
-        <Table sx={{}} aria-label="sticky table">
+        <Table stickyHeader sx={{}} aria-label="sticky table">
           <TableHead>
             <TableRow sx={{ bgcolor: "#e0e0e0" }}>
               {headcells.map((headCell) => (
@@ -217,18 +217,33 @@ const MonthlyPlantCommercialTable = ({
             {!ot &&
               session?.user?.role !== "HR" &&
               [
-                { label: "Add 10%", value: Math.ceil(total * 0.1) },
+                {
+                  label: `Add ${contractor?.servicecharge || 0}%`,
+                  value: Math.ceil(
+                    (total * (contractor?.servicecharge || 0)) / 100
+                  ),
+                },
                 {
                   label: "Taxable Amount",
-                  value: Math.ceil(total * 0.1 + nettotal),
+                  value: Math.ceil(
+                    (total * (contractor?.servicecharge || 0)) / 100 + nettotal
+                  ),
                 },
                 {
                   label: "IGST 18%",
-                  value: Math.ceil((total * 0.1 + nettotal) * 0.18),
+                  value: Math.ceil(
+                    ((total * (contractor?.servicecharge || 0)) / 100 +
+                      nettotal) *
+                      0.18
+                  ),
                 },
                 {
                   label: "Total",
-                  value: Math.ceil((total * 0.1 + nettotal) * 1.18),
+                  value: Math.ceil(
+                    ((total * (contractor?.servicecharge || 0)) / 100 +
+                      nettotal) *
+                      1.18
+                  ),
                 },
               ].map((item) => (
                 <TableRow>
