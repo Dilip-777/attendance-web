@@ -14,20 +14,23 @@ import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormLabel,
   OutlinedInput,
   Stack,
+  TextField,
   styled,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Automobile, Contractor, Workorder } from "@prisma/client";
+import { Automobile, Contractor, Vehicle, Workorder } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import Close from "@mui/icons-material/Close";
@@ -36,8 +39,9 @@ import FormSelect from "@/ui-component/FormSelect";
 import dayjs, { Dayjs } from "dayjs";
 import MonthSelect from "@/ui-component/MonthSelect";
 import getAutomobile from "@/utils/getAutomobile";
-import _ from "lodash";
+import _, { set } from "lodash";
 import TextEditor from "@/ui-component/TextEditor";
+import AutoComplete from "@/ui-component/Autocomplete";
 
 const createHeadCells = (
   id: string,
@@ -55,6 +59,9 @@ const createHeadCells = (
 
 const headCells = [
   createHeadCells("date", "Date", false, false),
+  createHeadCells("startTime", "Start Time", false, false),
+  createHeadCells("endTime", "End Time", false, false),
+  createHeadCells("totalRunningTime", "Total Running Time", false, false),
   createHeadCells("openingMeterReading", "Opening Meter Reading", false, false),
   createHeadCells("closingMeterReading", "Close Meter Reading", false, false),
   createHeadCells("totalRunning", "Total Running", false, false),
@@ -64,7 +71,7 @@ const headCells = [
     false,
     false
   ),
-  createHeadCells("maintenanceTime", "Maintenance Time", false, false),
+  createHeadCells("maintenanceDays", "Maintenance Time", false, false),
   createHeadCells("breakdownTime", "Break Down Time", false, false),
   createHeadCells(
     "breakDownDaysCounted",
@@ -72,113 +79,24 @@ const headCells = [
     false,
     false
   ),
-  createHeadCells(
-    "reasonBehindBreakDown",
-    "Reason Behind Breakdown",
-    true,
-    false
-  ),
+  createHeadCells("idealStandingDays", "Ideal Standing Days", true, false),
+  createHeadCells("trips", "Trips", true, false),
   createHeadCells("remarks", "Remarks", false, false),
   createHeadCells("status", "Status", false, false),
 ];
 
-interface EnhancedTableToolbarProps {
-  contractors: Contractor[];
-  workorders: Workorder[];
-  contractor: string | undefined;
-  setContractor: React.Dispatch<React.SetStateAction<string | undefined>>;
-  month: string;
-  monthChange: (value: Dayjs | null) => void;
-  changes: any[];
-  loading: boolean;
-  handleSave: () => Promise<void>;
-  handleDiscard: () => void;
-  rate: string;
-  setRate: React.Dispatch<React.SetStateAction<string>>;
-}
-
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const {
-    contractor,
-    setContractor,
-    contractors,
-    month,
-    monthChange,
-    changes,
-    loading,
-    handleSave,
-    handleDiscard,
-    rate,
-    setRate,
-  } = props;
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        display: "flex",
-        justifyContent: "space-between",
-      }}
-    >
-      <Stack direction="row" alignItems="center" spacing={2}>
-        <FormSelect
-          label="Contractor"
-          value={contractor as string}
-          handleChange={(e) => setContractor(e as string)}
-          options={contractors.map((contractor) => ({
-            label: contractor.contractorname,
-            value: contractor.contractorId,
-          }))}
-        />
-        <MonthSelect
-          label="Select Month"
-          value={dayjs(month, "MM/YYYY")}
-          onChange={monthChange}
-        />
-        <FormSelect
-          label="Rate"
-          value={rate as string}
-          handleChange={(v) => setRate(v as string)}
-          options={[
-            { label: "kms", value: "kms" },
-            { label: "day", value: "day" },
-            { label: "hrs", value: "hrs" },
-          ]}
-        />
-      </Stack>
-      {changes.length > 0 && (
-        <Stack direction="row" spacing="1rem">
-          <Button
-            variant="contained"
-            onClick={() => handleSave()}
-            disabled={loading}
-          >
-            Save
-            {loading && (
-              <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
-            )}
-          </Button>
-          <Button variant="outlined" disabled={loading} onClick={handleDiscard}>
-            Cancel
-          </Button>
-        </Stack>
-      )}
-    </Toolbar>
-  );
-}
-
 export default function Vehiclelogbook({
   workorders,
   contractors,
+  vehicles,
 }: {
   workorders: Workorder[];
   contractors: Contractor[];
+  vehicles: Vehicle[];
 }) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [filterName, setFilterName] = React.useState("");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -191,68 +109,15 @@ export default function Vehiclelogbook({
   const [rows, setRows] = React.useState<any[]>([]);
   const [discard, setDiscard] = React.useState(false);
   const { data: session } = useSession();
-  const [rate, setRate] = React.useState("kms");
+  const [contractor, setContractor] = React.useState<string | undefined>(
+    contractors.length > 0 ? contractors[0]?.contractorId : undefined
+  );
 
-  React.useEffect(() => {
-    if (rate != "kms") {
-      headCells[1] = {
-        id: "startTime",
-        label: "Start Time",
-        included: false,
-        numeric: false,
-      };
-      headCells[2] = {
-        id: "endTime",
-        label: "End Time",
-        included: false,
-        numeric: false,
-      };
-    } else {
-      headCells[1] = {
-        id: "openingMeterReading",
-        label: "Opening Meter Reading",
-        included: false,
-        numeric: false,
-      };
-      headCells[2] = {
-        id: "closingMeterReading",
-        label: "Close Meter Reading",
-        included: false,
-        numeric: false,
-      };
-    }
-
-    // if(rate )
-    // setLoading(true);
-    // if (rate != "kms") {
-    //   headCells[1] = {
-    //     id: "startTime",
-    //     label: "Start Time",
-    //     included: false,
-    //     numeric: false,
-    //   };
-    //   headCells[2] = {
-    //     id: "endtime",
-    //     label: "End Time",
-    //     included: false,
-    //     numeric: false,
-    //   };
-    // } else {
-    //   headCells[1] = {
-    //     id: "openingMeterReading",
-    //     label: "Opening Meter Reading",
-    //     included: false,
-    //     numeric: false,
-    //   };
-    //   headCells[2] = {
-    //     id: "closingMeterReading",
-    //     label: "Close Meter Reading",
-    //     included: false,
-    //     numeric: false,
-    //   };
-    // }
-    // setLoading(false);
-  }, [rate]);
+  const [vehicle, setVehicle] = React.useState<string | undefined>(
+    vehicles.filter((v) => v.contractorId === contractor)[0]?.id as
+      | string
+      | undefined
+  );
 
   React.useEffect(() => {
     if (session?.user?.role === "PlantCommercial") {
@@ -265,13 +130,6 @@ export default function Vehiclelogbook({
     setOpen(false);
     setSelectedWorkorder(undefined);
   };
-
-  const [contractor, setContractor] = React.useState<string | undefined>(
-    contractors.length > 0 ? contractors[0]?.contractorId : undefined
-  );
-  const [workorder, setWorkOrder] = React.useState<string | undefined>(
-    workorders.length > 0 ? workorders[0]?.id : undefined
-  );
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -310,14 +168,12 @@ export default function Vehiclelogbook({
       console.log(error);
     }
     await fetchAutomobiles();
-    // console.log(data, "jhghjgjghjgfghfghf");
 
     setLoading(false);
   };
 
   const handleReject = async (data: any) => {
     setLoading(true);
-    // console.log(data);
 
     try {
       await axios.put("/api/vehiclelogbook", {
@@ -333,8 +189,6 @@ export default function Vehiclelogbook({
     await fetchAutomobiles();
     setLoading(false);
   };
-
-  console.log(changes);
 
   const handleDiscard = () => {
     setChanges([]);
@@ -356,50 +210,140 @@ export default function Vehiclelogbook({
       field === "openingMeterReading" ||
       field === "closingMeterReading" ||
       field === "breakDownDaysCounted" ||
-      field === "totalRunning"
+      field === "totalRunning" ||
+      field === "hsdIssuedOrConsumed" ||
+      field === "idealStandingDays" ||
+      field === "maintenanceDays" ||
+      field === "trips"
     ) {
-      v = Number(value);
+      v = value ? Number(value) : "";
     }
-    if (field === "closingMeterReading" || field === "endTime") {
-      const nextIndex = changes.findIndex((e) => e.date === nextdate);
-      if (nextIndex !== -1) {
-        const newEditedValues = [...changes];
-        if (field === "closingMeterReading")
-          newEditedValues[nextIndex]["openingMeterReading"] = v;
-        if (field === "endTime") newEditedValues[nextIndex]["startTime"] = v;
 
-        setChanges(newEditedValues);
-      } else {
-        setChanges((c) => [
-          ...c,
-          {
-            date: nextdate,
-            ...rows.find((e) => e.date === nextdate),
-            [field === "closingMeterReading"
-              ? "openingMeterReading"
-              : "startTime"]: v,
-            contractorId: contractor as string,
-          },
-        ]);
+    let flag1 = false;
+    let flag2 = false;
+
+    const updatedChanges = changes.map((e) => {
+      if (e.date === date) {
+        if (e.closingMeterReading && field === "openingMeterReading") {
+          e.totalRunning = e.closingMeterReading - (v as number);
+        }
+        if (e.startTime && field === "endTime") {
+          const start = dayjs(e.startTime, "HH:mm");
+          const end = dayjs(v, "HH:mm");
+          const diff = end.diff(start, "minute");
+          const hours = Math.floor(diff / 60);
+          const minutes = diff % 60;
+
+          const formattedHours = String(hours).padStart(2, "0");
+          const formattedMinutes = String(minutes).padStart(2, "0");
+
+          e.totalRunningTime = `${formattedHours}:${formattedMinutes}`;
+        }
+        if (e.openingMeterReading && field === "closingMeterReading")
+          e.totalRunning = (v as number) - e.openingMeterReading;
+        if (e[field] || v) e[field] = v;
+        flag1 = true;
       }
-    }
-    const index = changes.findIndex((e) => e.date === date);
+      if (e.date === nextdate && field === "closingMeterReading") {
+        if (e.openingMeterReading) {
+          e.totalRunning = e.closingMeterReading - (v as number);
+        }
+        if (field === "closingMeterReading") e.openingMeterReading = v;
+        flag2 = true;
+      }
+      return e;
+    });
 
-    if (index === -1) {
-      setChanges((c) => [
-        ...c,
-        {
+    if (!flag1) {
+      let ch = rows.find((e) => e.date === date);
+      if (v || v === 0) {
+        if (ch.startTime && field === "endTime") {
+          const start = dayjs(ch.startTime, "HH:mm");
+          const end = dayjs(v, "HH:mm");
+          const diff = end.diff(start, "minute");
+          const hours = Math.floor(diff / 60);
+          const minutes = diff % 60;
+
+          const formattedHours = String(hours).padStart(2, "0");
+          const formattedMinutes = String(minutes).padStart(2, "0");
+
+          ch.totalRunningTime = `${formattedHours}:${formattedMinutes}`;
+        }
+        updatedChanges.push({
           date: date,
-          ...rows.find((e) => e.date === date),
+          ...ch,
           [field]: v,
           contractorId: contractor as string,
-        },
-      ]);
-    } else {
-      const newEditedValues = [...changes];
-      newEditedValues[index][field] = v;
-      setChanges(newEditedValues);
+          vehicleId: vehicle as string,
+        });
+      }
     }
+
+    if (!flag2 && field === "closingMeterReading" && value) {
+      updatedChanges.push({
+        date: nextdate,
+        ...rows.find((e) => e.date === nextdate),
+        openingMeterReading: v,
+        contractorId: contractor as string,
+        vehicleId: vehicle as string,
+      });
+    }
+
+    setChanges(updatedChanges);
+
+    // if (field === "closingMeterReading" || field === "endTime") {
+    //   const nextIndex = changes.findIndex((e) => e.date === nextdate);
+    //   if (nextIndex !== -1) {
+    //     const newEditedValues = [...changes];
+    //     if (field === "closingMeterReading")
+    //       newEditedValues[nextIndex]["openingMeterReading"] = v;
+    //     if (field === "endTime") newEditedValues[nextIndex]["startTime"] = v;
+
+    //     setChanges(newEditedValues);
+    //   } else {
+    //     setChanges((c) =>
+    //       c.map((e) => {
+    //         if (e.date === nextdate) {
+    //           if (e.closingMeterReading) {
+    //             e.totalRunning = e.closingMeterReading - (v as number);
+    //           }
+    //           if (field === "endTime") e.startTime = v;
+    //           if (field === "closingMeterReading") e.openingMeterReading = v;
+    //         }
+    //         return e;
+    //       })
+    //     );
+    //     // setChanges((c) => [
+    //     //   ...c,
+    //     //   {
+    //     //     date: nextdate,
+    //     //     ...rows.find((e) => e.date === nextdate),
+    //     //     [field === "closingMeterReading"
+    //     //       ? "openingMeterReading"
+    //     //       : "startTime"]: v,
+    //     //     contractorId: contractor as string,
+    //     //   },
+    //     // ]);
+    //   }
+    // }
+    // const index = changes.findIndex((e) => e.date === date);
+
+    // if (index === -1) {
+    //   setChanges((c) => [
+    //     ...c,
+    //     {
+    //       date: date,
+    //       ...rows.find((e) => e.date === date),
+    //       [field]: v,
+    //       contractorId: contractor as string,
+    //     },
+    //   ]);
+    // } else {
+    //   const newEditedValues = [...changes];
+    //   newEditedValues[index][field] = v;
+
+    //   setChanges(newEditedValues);
+    // }
   };
 
   const isSelected = (contractorName: string) =>
@@ -424,9 +368,11 @@ export default function Vehiclelogbook({
     const res = await axios.get(
       `/api/vehiclelogbook?month=${month}&contractor=${contractor}`
     );
-    setAutomobiles(res.data);
+    setAutomobiles(
+      res.data.filter((auto: Automobile) => auto.vehicleId === vehicle)
+    );
     const r = getAutomobile(
-      res.data,
+      res.data.filter((auto: Automobile) => auto.vehicleId === vehicle),
       dayjs(month, "MM/YYYY").month() + 1,
       dayjs(month, "MM/YYYY").year()
     );
@@ -436,70 +382,125 @@ export default function Vehiclelogbook({
 
   React.useEffect(() => {
     fetchAutomobiles();
-  }, [contractor, month, rate]);
+    setChanges([]);
+  }, [contractor, month, vehicle]);
+
+  React.useEffect(() => {
+    if (contractor) {
+      setVehicle(vehicles.filter((v) => v.contractorId === contractor)[0]?.id);
+    }
+  }, [contractor]);
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  console.log(rows);
+  const filteredVehicles = vehicles.filter(
+    (vehicle) => vehicle.contractorId === contractor
+  );
+
+  console.log(changes);
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar
-          contractors={contractors}
-          workorders={workorders}
-          contractor={contractor}
-          setContractor={setContractor}
-          month={month}
-          monthChange={(value: Dayjs | null) =>
-            setMonth(value?.format("MM/YYYY") || "")
-          }
-          changes={changes}
-          loading={loading}
-          handleSave={handleSave}
-          handleDiscard={handleDiscard}
-          rate={rate}
-          setRate={setRate}
-        />
-        {/* <TextEditor /> */}
-        <TableContainer
+      <Paper sx={{ width: "100%", pb: 2 }}>
+        <Toolbar
           sx={{
-            maxHeight: "68vh",
-            scrollBehavior: "smooth",
-            "&::-webkit-scrollbar": {
-              height: 10,
-              width: 9,
-            },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "#bdbdbd",
-              borderRadius: 2,
-            },
+            pl: { sm: 2 },
+            pr: { xs: 1, sm: 1 },
           }}
         >
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size="medium"
+          <Stack sx={{ width: "100%" }} spacing={2}>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <AutoComplete
+                label="Select Contractor"
+                value={contractor as string}
+                setValue={setContractor}
+                options={contractors.map((c) => ({
+                  value: c.contractorId || "",
+                  label: c.contractorname,
+                }))}
+              />
+              <MonthSelect
+                label="Select Month"
+                value={dayjs(month, "MM/YYYY")}
+                onChange={(value: Dayjs | null) =>
+                  setMonth(value?.format("MM/YYYY") || "")
+                }
+              />
+              <AutoComplete
+                label="Vehicle"
+                value={vehicle as string}
+                setValue={setVehicle}
+                options={filteredVehicles.map((vehicle) => ({
+                  label: vehicle.vehicleNo + " " + vehicle.vehicleType,
+                  value: vehicle.id,
+                }))}
+              />
+            </Stack>
+            {changes.length > 0 && (
+              <Stack
+                direction="row"
+                spacing="1rem"
+                sx={{ alignSelf: "flex-end" }}
+              >
+                <Button
+                  variant="contained"
+                  onClick={() => handleSave()}
+                  disabled={loading}
+                  color="secondary"
+                >
+                  Save
+                  {loading && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: "#364152" }}
+                    />
+                  )}
+                </Button>
+                <Button
+                  variant="outlined"
+                  disabled={loading}
+                  onClick={handleDiscard}
+                  color="secondary"
+                >
+                  Cancel
+                </Button>
+              </Stack>
+            )}
+          </Stack>
+        </Toolbar>
+        {vehicle ? (
+          <TableContainer
+            sx={{
+              maxHeight: "68vh",
+              scrollBehavior: "smooth",
+              "&::-webkit-scrollbar": {
+                height: 10,
+                width: 9,
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#bdbdbd",
+                borderRadius: 2,
+              },
+            }}
           >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              onSelectAllClick={handleSelectAllClick}
-              rowCount={rows.length}
-              headCells={headCells}
-              nocheckbox={true}
-              align="center"
-            />
-            {!loading && (
-              <TableBody>
-                {rows
-                  // .filter((employee) =>
-                  //   employee.contractorName
-                  //     .toLowerCase()
-                  //     .includes(filterName.toLowerCase())
-                  // )
-                  .map((row, index) => {
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size="medium"
+            >
+              <EnhancedTableHead
+                numSelected={selected.length}
+                onSelectAllClick={handleSelectAllClick}
+                rowCount={rows.length}
+                headCells={headCells}
+                nocheckbox={true}
+                align="center"
+              />
+              {!loading && (
+                <TableBody>
+                  {rows.map((row, index) => {
                     const isItemSelected = isSelected(row.id as string);
                     const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -528,17 +529,21 @@ export default function Vehiclelogbook({
                                   handleChange={handleChange}
                                   field={cell.id}
                                   date={row.date}
-                                  value={_.get(row, cell.id, "-")}
+                                  value={_.get(row, cell.id, "")}
                                   type={
                                     cell.id === "openingMeterReading" ||
                                     cell.id === "closingMeterReading" ||
                                     cell.id === "totalRunning" ||
-                                    cell.id === "breakDownDaysCounted"
+                                    cell.id === "breakDownDaysCounted" ||
+                                    cell.id === "maintenanceDays" ||
+                                    cell.id === "idealStandingDays" ||
+                                    cell.id === "hsdIssuedOrConsumed"
                                       ? "number"
                                       : "text"
                                   }
                                   discard={discard}
                                   setDiscard={setDiscard}
+                                  changes={changes}
                                 />
                               </TableCell>
                             )
@@ -563,15 +568,22 @@ export default function Vehiclelogbook({
                       </TableRow>
                     );
                   })}
-                {emptyRows > 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </TableBody>
-            )}
-          </Table>
-        </TableContainer>
+                  {emptyRows > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} />
+                    </TableRow>
+                  )}
+                </TableBody>
+              )}
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography
+            sx={{ textAlign: "center", fontSize: "1.5rem", my: "3rem" }}
+          >
+            No Vehicle Found
+          </Typography>
+        )}
         {/* <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
@@ -638,11 +650,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
   const workorders = await prisma.workorder.findMany();
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    where: {
+      servicedetail: "Equipment / Vehicle Hiring",
+    },
+  });
+  const vehicles = await prisma.vehicle.findMany();
   return {
     props: {
       workorders,
       contractors,
+      vehicles,
     },
   };
 };

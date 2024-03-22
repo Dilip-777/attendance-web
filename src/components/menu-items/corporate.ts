@@ -11,6 +11,7 @@ import Inventory from "@mui/icons-material/Inventory";
 import Support from "@mui/icons-material/Support";
 import AccountBalanceWallet from "@mui/icons-material/AccountBalanceWallet";
 import MonetizationOn from "@mui/icons-material/MonetizationOn";
+import LocalShipping from "@mui/icons-material/LocalShipping";
 
 // constant
 const icons = {
@@ -25,6 +26,7 @@ const icons = {
   Support,
   Inventory,
   AccountBalanceWallet,
+  LocalShipping,
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -141,6 +143,14 @@ const corporator = {
       type: "item",
       url: "/finalsheet",
       icon: icons.Description,
+      breadcrumbs: false,
+    },
+    {
+      id: "/automobile-finalsheet",
+      title: "FinalSheet Hiring",
+      type: "item",
+      url: "/automobile-finalsheet",
+      icon: icons.LocalShipping,
       breadcrumbs: false,
     },
     {

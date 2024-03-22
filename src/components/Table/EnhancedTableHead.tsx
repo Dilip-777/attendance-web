@@ -40,8 +40,6 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
     setOrderby,
   } = props;
 
-  console.log(headCells);
-
   return (
     <TableHead sx={{ bgcolor: "#eeeeee" }}>
       <TableRow sx={{ bgcolor: "#eeeeee" }}>
@@ -62,7 +60,7 @@ export default function EnhancedTableHead(props: EnhancedTableProps) {
           <TableCell
             key={headCell.id}
             align={headCell.align || align || "left"}
-            padding={"normal"}
+            // padding={"normal"}
             colSpan={headCell.colspan || 1}
             sx={{ fontWeight: "600", minWidth: "5rem", bgcolor: "#eeeeee" }}
           >

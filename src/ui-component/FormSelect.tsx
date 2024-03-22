@@ -21,6 +21,7 @@ export default function FormSelect({
 }: props) {
   return (
     <FormControl
+      color="secondary"
       fullWidth={fullWidth}
       sx={{ minWidth: "15rem", width: "100%" }}
     >

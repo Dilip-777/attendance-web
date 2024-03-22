@@ -197,6 +197,8 @@ model Contractor {
   departments                 Department[]
   deductions                  Deductions[]
   fixedSalary                 FixedSalary[]
+  vehicle                     Vehicle[]
+  hsd                         Hsd[]
 }
 
 model bills {
@@ -451,50 +453,83 @@ model Deductions {
   contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
-model Automobile {
-  id                    String  @id @default(cuid())
-  contractorId          String
-  workorderId           String?
-  date                  String?
-  openingMeterReading   Int?
-  closingMeterReading   Int?
-  startTime             String?
-  endTime               String?
-  totalRunning          Int?
-  unit                  String?
-  hsdIssuedOrConsumed   String?
-  maintenanceTime       String?
-  breakdownTime         String?
-  breakDownDaysCounted  Int?
-  reasonBehindBreakDown String?
-  remarks               String?
-  status                Status  @default(Pending)
-  rejectionReason       String?
+model Vehicle {
+  id                  String       @id @default(cuid())
+  contractorId        String
+  vehicleNo           String
+  vehicleType         String
+  mileage             Float
+  charges             Float
+  paymentMode         String
+  paymentStructure    String?
+  rate                String?
+  shiftduraion        Int
+  mainenanceTime      String
+  deployment          String
+  eligibleForOvertime Boolean      @default(false)
+  hsdDeduction        Boolean      @default(false)
+  hsdProvidedBy       String
+  gst                 Float
+  automobile          Automobile[]
+  contractor          Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+}
 
-  @@unique([date, contractorId])
+model Hsd {
+  id              String     @id @default(cuid())
+  contractorId    String
+  month           String
+  recoverableRate Int
+  payableRate     Int
+  contractor      Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+}
+
+model Automobile {
+  id                   String  @id @default(cuid())
+  contractorId         String
+  workorderId          String?
+  vehicleId            String
+  date                 String?
+  openingMeterReading  Int?
+  closingMeterReading  Int?
+  startTime            String?
+  endTime              String?
+  totalRunning         Int?
+  totalRunningTime     String?
+  hsdIssuedOrConsumed  Int?
+  maintenanceDays      Int?
+  breakDownDaysCounted Int?
+  trips                Int?
+  idealStandingDays    Int?
+  remarks              String?
+  status               Status  @default(Pending)
+  rejectionReason      String?
+  vehicle              Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([date, contractorId, vehicleId])
 }
 
 model SaveAutomobile {
-  id                    String  @id @default(cuid())
-  contractorId          String
-  workorderId           String?
-  date                  String?
-  openingMeterReading   Int?
-  closingMeterReading   Int?
-  startTime             String?
-  endTime               String?
-  totalRunning          Int?
-  unit                  String?
-  hsdIssuedOrConsumed   String?
-  maintenanceTime       String?
-  breakdownTime         String?
-  breakDownDaysCounted  Int?
-  reasonBehindBreakDown String?
-  remarks               String?
-  status                Status  @default(Pending)
-  rejectionReason       String?
+  id                   String  @id @default(cuid())
+  contractorId         String
+  workorderId          String?
+  vehicleId            String
+  date                 String?
+  openingMeterReading  Int?
+  closingMeterReading  Int?
+  startTime            String?
+  endTime              String?
+  totalRunning         Int?
+  totalRunningTime     String?
+  hsdIssuedOrConsumed  Int?
+  maintenanceDays      Int?
+  breakDownDaysCounted Int?
+  trips                Int?
+  idealStandingDays    Int?
+  remarks              String?
+  status               Status  @default(Pending)
+  rejectionReason      String?
 
-  @@unique([date, contractorId])
+  @@unique([date, contractorId, vehicleId])
 }
 
 model Works {

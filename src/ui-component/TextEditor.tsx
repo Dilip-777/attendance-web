@@ -4,6 +4,10 @@ import { render } from "react-dom";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 
 interface Props {
   value: string;
@@ -18,6 +22,7 @@ interface Props {
   type: string;
   discard: boolean;
   setDiscard: React.Dispatch<React.SetStateAction<boolean>>;
+  changes: any[];
 }
 
 export default function TextEditor({
@@ -27,6 +32,7 @@ export default function TextEditor({
   field,
   type,
   discard,
+  changes,
   setDiscard,
 }: Props) {
   //   const classes = useStyles(props);
@@ -40,9 +46,23 @@ export default function TextEditor({
     }
   }, [discard]);
 
+  React.useEffect(() => {
+    const ch = changes.find((c) => c.date === date);
+    if (ch) {
+      setName(ch[field] ?? value ?? "");
+    }
+  }, [changes]);
+
+  // console.log(
+  //   name ? dayjs(name, "HH:MM") : "ffff",
+  //   "sldkfjskljdfkl",
+  //   name,
+  //   "name"
+  // );
+
   return (
     <div className="TextEditor " style={{ padding: "1rem" }}>
-      {!isNameFocused ? (
+      {/* {!isNameFocused ? (
         <Typography
           //   className={classes.name}
           onClick={() => {
@@ -51,35 +71,73 @@ export default function TextEditor({
         >
           {name || "-"}
         </Typography>
-      ) : (
-        <input
-          autoFocus
-          //   inputProps={{ className: classes.name }}
-          value={name}
-          style={{
-            border: "none",
-            outline: "none",
-            fontSize: "14px",
-            width: "5rem",
-            backgroundColor: "#ede7f6",
-            padding: "7px",
-          }}
-          onChange={(event) => setName(event.target.value)}
-          onBlur={(event) => {
-            setIsNamedFocused(false);
-            if (name !== "-") {
+      ) : ( */}
+      {/* <input
+        autoFocus
+        //   inputProps={{ className: classes.name }}
+        value={name}
+        style={{
+          border: "none",
+          outline: "none",
+          fontSize: "14px",
+          width: "5rem",
+          backgroundColor: "#ede7f6",
+          padding: "7px",
+          paddingRight: 0,
+        }}
+        onChange={(event) => setName(event.target.value)}
+        onBlur={(event) => {
+          setIsNamedFocused(false);
+          if (name !== "-") {
+            handleChange(
+              name,
+              date,
+              field,
+              dayjs(date, "DD/MM/YYYY").add(1, "day").format("DD/MM/YYYY")
+            );
+          }
+        }}
+        // type={type || "time"}
+
+        type={field.toLowerCase().includes("time") ? "time" : type || "text"}
+        onSubmit={(event) => setIsNamedFocused(false)}
+        step="60"
+      /> */}
+      {/* )} */}
+
+      {field === "status" || field === "date" ? (
+        <Typography>{name || "-"}</Typography>
+      ) : field.toLowerCase().includes("time") ? (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <TimePicker
+            ampm={false}
+            value={name ? dayjs(name, "HH:mm") : null}
+            onChange={(d) => {
+              setName(d ? d.format("HH:mm") : "");
               handleChange(
-                name,
+                dayjs(d).format("HH:mm"),
                 date,
                 field,
                 dayjs(date, "DD/MM/YYYY").add(1, "day").format("DD/MM/YYYY")
               );
-            }
+              console.log(d, "date");
+            }}
+          />
+        </LocalizationProvider>
+      ) : (
+        <TextField
+          value={name}
+          onChange={(event) => {
+            setName(event.target.value);
+            handleChange(
+              event.target.value,
+              date,
+              field,
+              dayjs(date, "DD/MM/YYYY").add(1, "day").format("DD/MM/YYYY")
+            );
           }}
-          // type={type || "time"}
-
-          type={field.toLowerCase().includes("time") ? "time" : type || "text"}
-          onSubmit={(event) => setIsNamedFocused(false)}
+          type={type || "text"}
+          style={{ width: "100%" }}
         />
       )}
     </div>
