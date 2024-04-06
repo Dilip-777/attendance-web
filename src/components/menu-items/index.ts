@@ -10,6 +10,7 @@ import safety from "./safety";
 import automobile from "./automobile";
 import civil from "./civil";
 import management from "./manager";
+import fixed from "./fixed";
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -61,6 +62,10 @@ const managerItems = {
   items: [management],
 };
 
+const fixedItems = {
+  items: [fixed],
+};
+
 export {
   menuItems,
   adminItems,
@@ -74,4 +79,5 @@ export {
   automobileItems,
   civilItems,
   managerItems,
+  fixedItems,
 };

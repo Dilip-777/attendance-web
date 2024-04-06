@@ -27,6 +27,7 @@ export default function AutoComplete({
         clearIcon={null}
         disableClearable={true}
         renderInput={(params) => <TextField {...params} />}
+        sx={{ maxWidth: { xs: 250, xl: 300 } }}
       />
     </Box>
   );

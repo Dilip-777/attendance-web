@@ -16,6 +16,7 @@ import { Contractor, Vehicle } from "@prisma/client";
 import FormInput from "@/components/FormikComponents/FormInput";
 import prisma from "@/lib/prisma";
 import FormSelect from "@/components/FormikComponents/FormSelect";
+import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 
 const numberType = Yup.number().required("Required");
 
@@ -28,10 +29,11 @@ const validationSchema = Yup.object().shape({
   paymentMode: Yup.string().required("Required"),
   paymentStructure: Yup.string().required("Required"),
   shiftduraion: numberType,
-  mainenanceTime: Yup.string().required("Required"),
+  maintenanceDaysAllowed: numberType,
   deployment: Yup.string().required("Required"),
   eligibleForOvertime: Yup.boolean(),
   hsdProvidedBy: Yup.string().required("Required"),
+  hsdDeduction: Yup.boolean(),
   gst: numberType,
 });
 
@@ -53,10 +55,11 @@ export default function AddVehicle({
     paymentMode: vehicle?.paymentMode || "",
     paymentStructure: vehicle?.paymentStructure || "",
     shiftduraion: vehicle?.shiftduraion || 0,
-    mainenanceTime: vehicle?.mainenanceTime || "",
+    maintenanceDaysAllowed: vehicle?.maintenanceDaysAllowed || 0,
     deployment: vehicle?.deployment || "",
     eligibleForOvertime: vehicle?.eligibleForOvertime || false,
     hsdProvidedBy: vehicle?.hsdProvidedBy || "",
+    hsdDeduction: vehicle?.hsdDeduction || false,
     gst: vehicle?.gst || 0,
   };
 
@@ -110,7 +113,7 @@ export default function AddVehicle({
               <Grid container>
                 <Grid item xs={12} sm={6} md={4}>
                   {/* Contractor Select */}
-                  <FormSelect
+                  <AutoCompleteSelect
                     name="contractorId"
                     label="Contractor"
                     placeHolder="Select Contractor"
@@ -206,10 +209,11 @@ export default function AddVehicle({
 
                 <Grid item xs={12} sm={6} md={4}>
                   <FormInput
-                    name="mainenanceTime"
-                    label="Maintenance Days"
-                    placeHolder="Enter Maintenance Days"
+                    name="maintenanceDaysAllowed"
+                    label="Allowed Maintenance Days"
+                    placeHolder="Enter Allowed Maintenance Days"
                     disabled={false}
+                    type="number"
                   />
                 </Grid>
 
@@ -242,6 +246,19 @@ export default function AddVehicle({
                     label="HSD Provided By"
                     placeHolder="Enter HSD Provided By"
                     disabled={false}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={4}>
+                  <FormSelect
+                    name="hsdDeduction"
+                    label="HSD Deduction"
+                    placeHolder="Select"
+                    disabled={false}
+                    options={[
+                      { value: true, label: "Yes" },
+                      { value: false, label: "No" },
+                    ]}
                   />
                 </Grid>
 

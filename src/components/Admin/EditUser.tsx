@@ -114,6 +114,7 @@ export default function EditUser({
                     },
                     { value: "Corporate", label: "Corporate" },
                     { value: "Automobile", label: "Automobile" },
+                    { value: "Fixed", label: "Fixed" },
                   ]}
                 />
                 <FormSelect

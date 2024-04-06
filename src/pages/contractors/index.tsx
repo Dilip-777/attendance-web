@@ -12,6 +12,8 @@ const ContractorModal = dynamic(() => import("@/components/contractors/modal"));
 // import ImportData from "@/components/importContractors";
 import _ from "lodash";
 import PersonaliseColumns from "@/components/Timekeeper/PersonaliseColumn";
+import DeleteModal from "@/ui-component/DeleteModal";
+import axios from "axios";
 // import ContractorModal from "@/components/contractors/modal";
 
 interface Column {
@@ -111,7 +113,11 @@ export default function Contractors({
   const { data: session } = useSession();
   const [contractorId, setContractorId] = React.useState("");
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+
+  const [contractor, setContractor] = React.useState<Contractor | null>(null);
+  const [open1, setOpen1] = React.useState(false);
+  const router = useRouter();
+
   const [departments, setDepartments] = React.useState<Department[]>([]);
 
   // React.useEffect(() => {
@@ -317,6 +323,13 @@ export default function Contractors({
         orderby={orderby}
         setOrderby={setOrderby}
         handleOpen1={() => setOpenColumn(true)}
+        handleDelete={
+          session?.user?.role === "Corporate"
+            ? (row) => {
+                setContractor(row);
+              }
+            : undefined
+        }
       />
 
       <ContractorModal
@@ -332,6 +345,17 @@ export default function Contractors({
         open={openColumn}
         updateColumns={updateColumns}
         handleReset={handleReset}
+      />
+      <DeleteModal
+        openModal={contractor !== null}
+        title="Delete Contractor"
+        message={`Are you sure you want to delete ${contractor?.contractorname} ?`}
+        cancelText="Cancel"
+        confirmText="Delete"
+        deleteApi={`/api/hr/contractors?contractorId=${contractor?.contractorId}`}
+        snackbarMessage="Contractor Deleted Successfully"
+        onClose={() => setContractor(null)}
+        fetchData={() => router.replace(router.asPath)}
       />
     </Box>
   );

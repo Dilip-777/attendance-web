@@ -5,6 +5,7 @@ import Support from "@mui/icons-material/Support";
 import Inventory from "@mui/icons-material/Inventory";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Assignment from "@mui/icons-material/Assignment";
+import RateReviewIcon from "@mui/icons-material/RateReview";
 
 // constant
 const icons = {
@@ -15,6 +16,7 @@ const icons = {
   Support,
   LocalShippingIcon,
   Assignment,
+  RateReviewIcon,
 };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
@@ -101,6 +103,14 @@ const plantCommercial = {
       type: "item",
       url: "/vehiclelogbook",
       icon: icons.LocalShippingIcon,
+      breadcrumbs: false,
+    },
+    {
+      id: "/data-entry",
+      title: "Data Entry",
+      type: "item",
+      url: "/data-entry",
+      icon: icons.RateReviewIcon,
       breadcrumbs: false,
     },
   ],

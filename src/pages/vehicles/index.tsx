@@ -25,14 +25,20 @@ const headCells1 = [
   createHeadCells("contractor.contractorname", "Contractor Name", false, false),
   createHeadCells("vehicleNo", "Vehicle Number", false, false),
   createHeadCells("vehicleType", "Vehicle Type", false, false),
-  createHeadCells("mileage", "Mileage", true, false),
-  createHeadCells("charges", "Charges", true, false),
+  createHeadCells("mileage", "Mandatory Mileage Km/Ltr.", true, false),
+  createHeadCells("charges", "Vehicle Charges", true, false),
   createHeadCells("paymentMode", "Payment Mode", false, false),
   createHeadCells("shiftduraion", "Shift Duration", false, false),
-  createHeadCells("mainenanceTime", "Maintenance Time", false, false),
-  createHeadCells("deployment", "Deployment", false, false),
+  createHeadCells(
+    "maintenanceDaysAllowed",
+    "Allowed Maintenance Time",
+    true,
+    false
+  ),
+  createHeadCells("deployment", "Manpower Deployment", false, false),
   createHeadCells("eligibleForOvertime", "Eligible For Overtime", false, false),
   createHeadCells("hsdProvidedBy", "HSD Provided By", false, false),
+  createHeadCells("hsdDeduction", "HSD Deduction", true, false),
   createHeadCells("gst", "GST", true, false),
 ];
 
@@ -71,7 +77,7 @@ export default function Vehicles({ vehicles }: { vehicles: Vehicle[] }) {
           item.charges?.toString() || "-",
           item.paymentMode || "-",
           item.shiftduraion.toString() || "-",
-          item.mainenanceTime || "-",
+          item.maintenanceDaysAllowed.toString() || "-",
           item.deployment || "-",
           item.eligibleForOvertime ? "Yes" : "No",
           item.hsdProvidedBy || "-",

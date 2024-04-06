@@ -22,10 +22,8 @@ import dayjs from "dayjs";
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().required("Required"),
   month: Yup.string().required("Required"),
-  recoverableRate: Yup.number()
-    .required("Required")
-    .integer("Must be an integer"),
-  payableRate: Yup.number().required("Required").integer("Must be an integer"),
+  recoverableRate: Yup.number().required("Required"),
+  payableRate: Yup.number().required("Required"),
 });
 
 export default function AddHsd({

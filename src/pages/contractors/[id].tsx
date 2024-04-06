@@ -19,7 +19,6 @@ import { Contractor } from "@prisma/client";
 import { CircularProgress } from "@mui/material";
 import FormDate from "@/components/FormikComponents/FormDate";
 import dayjs from "dayjs";
-import { G } from "@react-pdf/renderer";
 // import { Contractor } from "@prisma/client"
 
 const fileType = Yup.string().optional();

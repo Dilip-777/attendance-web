@@ -107,9 +107,9 @@ model TimeKeeper {
 }
 
 model Contractor {
-  id                          String           @id @default(cuid())
+  id                          String               @id @default(cuid())
   contractorname              String
-  contractorId                String           @unique
+  contractorId                String               @unique
   servicedetail               String
   supplierdetail              String
   officeaddress               String?
@@ -134,12 +134,12 @@ model Contractor {
   uploadutilitybill           String?
   organisationtype            String?
   dateofincorporation         String?
-  associationwithcompetitor   Boolean          @default(false)
+  associationwithcompetitor   Boolean              @default(false)
   memorandam_of_associate     String?
   listofdirector              String?
   profileofkeyperson          String?
   competitorname              String?
-  isocertified                Boolean          @default(false)
+  isocertified                Boolean              @default(false)
   turnoverlastyear            String?
   turnover2yearback           String?
   uploadbranchdetail          String?
@@ -149,7 +149,7 @@ model Contractor {
   first_registration_number   String?
   latest_mnth_gst1_filed      String?
   latest_mnth_gst2b_filed     String?
-  comply_regulatory           Boolean          @default(false)
+  comply_regulatory           Boolean              @default(false)
   upload_registration_cert    String?
   upload_licence1             String?
   upload_licence2             String?
@@ -181,11 +181,15 @@ model Contractor {
   upload_certificate_services String?
   upload_doc1                 String?
   upload_doc2                 String?
-  salarymen8hr                Int              @default(0)
-  salarywomen8hr              Int              @default(0)
-  salarymen12hr               Int              @default(0)
-  salarysvr8hr                Int              @default(0)
-  salarysvr12hr               Int              @default(0)
+  salarymen8hr                Int                  @default(0)
+  salarywomen8hr              Int                  @default(0)
+  salarymen12hr               Int                  @default(0)
+  salarysvr8hr                Int                  @default(0)
+  salarysvr12hr               Int                  @default(0)
+  deployment                  Boolean              @default(false)
+  minManpower                 Boolean              @default(false)
+  minHeadcount                Int                  @default(0)
+  workorderhighlights         String?
   employee                    Employee[]
   safety                      Safety[]
   bills                       bills[]
@@ -199,6 +203,10 @@ model Contractor {
   fixedSalary                 FixedSalary[]
   vehicle                     Vehicle[]
   hsd                         Hsd[]
+  fixedworks                  FixedWork[]
+  hiredFixedWork              HiredFixedWork[]
+  saveHiredFixedWork          SaveHiredFixedWork[]
+  finalCalculations           FinalCalculations[]
 }
 
 model bills {
@@ -454,32 +462,33 @@ model Deductions {
 }
 
 model Vehicle {
-  id                  String       @id @default(cuid())
-  contractorId        String
-  vehicleNo           String
-  vehicleType         String
-  mileage             Float
-  charges             Float
-  paymentMode         String
-  paymentStructure    String?
-  rate                String?
-  shiftduraion        Int
-  mainenanceTime      String
-  deployment          String
-  eligibleForOvertime Boolean      @default(false)
-  hsdDeduction        Boolean      @default(false)
-  hsdProvidedBy       String
-  gst                 Float
-  automobile          Automobile[]
-  contractor          Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+  id                     String       @id @default(cuid())
+  contractorId           String
+  vehicleNo              String
+  vehicleType            String
+  mileage                Float
+  charges                Float
+  paymentMode            String
+  paymentStructure       String?
+  rate                   String?
+  shiftduraion           Int
+  mainenanceTime         String?
+  maintenanceDaysAllowed Int          @default(0)
+  deployment             String
+  eligibleForOvertime    Boolean      @default(false)
+  hsdDeduction           Boolean      @default(false)
+  hsdProvidedBy          String
+  gst                    Float
+  automobile             Automobile[]
+  contractor             Contractor   @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
 model Hsd {
   id              String     @id @default(cuid())
   contractorId    String
   month           String
-  recoverableRate Int
-  payableRate     Int
+  recoverableRate Float
+  payableRate     Float
   contractor      Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
 
@@ -489,17 +498,17 @@ model Automobile {
   workorderId          String?
   vehicleId            String
   date                 String?
-  openingMeterReading  Int?
-  closingMeterReading  Int?
+  openingMeterReading  Float?
+  closingMeterReading  Float?
   startTime            String?
   endTime              String?
-  totalRunning         Int?
+  totalRunning         Float?
   totalRunningTime     String?
-  hsdIssuedOrConsumed  Int?
-  maintenanceDays      Int?
-  breakDownDaysCounted Int?
-  trips                Int?
-  idealStandingDays    Int?
+  hsdIssuedOrConsumed  Float?
+  maintenanceDays      Float?
+  breakDownDaysCounted Float?
+  trips                Float?
+  idealStandingDays    Float?
   remarks              String?
   status               Status  @default(Pending)
   rejectionReason      String?
@@ -508,23 +517,37 @@ model Automobile {
   @@unique([date, contractorId, vehicleId])
 }
 
+model FinalCalculations {
+  id             String     @id @default(cuid())
+  contractorId   String
+  month          String
+  hiringCharged  Float
+  hsdConsumed    Float
+  hsdRateCharged Float
+  hsdCost        Float
+  totalCost      Float
+  contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+
+  @@unique([month, contractorId])
+}
+
 model SaveAutomobile {
   id                   String  @id @default(cuid())
   contractorId         String
   workorderId          String?
   vehicleId            String
   date                 String?
-  openingMeterReading  Int?
-  closingMeterReading  Int?
+  openingMeterReading  Float?
+  closingMeterReading  Float?
   startTime            String?
   endTime              String?
-  totalRunning         Int?
+  totalRunning         Float?
   totalRunningTime     String?
-  hsdIssuedOrConsumed  Int?
-  maintenanceDays      Int?
-  breakDownDaysCounted Int?
-  trips                Int?
-  idealStandingDays    Int?
+  hsdIssuedOrConsumed  Float?
+  maintenanceDays      Float?
+  breakDownDaysCounted Float?
+  trips                Float?
+  idealStandingDays    Float?
   remarks              String?
   status               Status  @default(Pending)
   rejectionReason      String?
@@ -577,6 +600,41 @@ model BarBending {
   barbendingItems BarBendingItem[]
   workorder       Workorder        @relation(fields: [workorderId], references: [id], onDelete: Cascade)
   contractor      Contractor       @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model FixedWork {
+  id           String     @id @default(cuid())
+  description  String
+  contractorid String
+  rate         Float      @default(0)
+  createdAt    DateTime   @default(now())
+  contractor   Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model HiredFixedWork {
+  id           String     @id @default(cuid())
+  description  String
+  month        String
+  contractorid String
+  rate         Float      @default(0)
+  quantity     Float      @default(0)
+  totalAmount  Float      @default(0)
+  status       Status     @default(NoChanges)
+  createdAt    DateTime   @default(now())
+  contractor   Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model SaveHiredFixedWork {
+  id           String     @id @default(cuid())
+  description  String
+  month        String
+  contractorid String
+  rate         Float      @default(0)
+  quantity     Float      @default(0)
+  totalAmount  Float      @default(0)
+  status       Status     @default(NoChanges)
+  createdAt    DateTime   @default(now())
+  contractor   Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 
 model Attendance_Log {
@@ -641,4 +699,5 @@ enum Role {
   Automobile
   Civil
   Manager
+  Fixed
 }

@@ -33,6 +33,7 @@ export const handleAutomobileprint = ({
   workorder,
   month,
   calRows,
+  cost,
 }: {
   total: number;
   contractor: Contractor;
@@ -43,6 +44,23 @@ export const handleAutomobileprint = ({
     headcells: any[];
     data: any[];
   }[];
+  cost: {
+    ytdHiringCost: number;
+    ytdHsdCost: number;
+    ytdHsdConsumed: number;
+    ytdHsdRate: number;
+    ytdCost: number;
+    prevHiringCost: number;
+    monthHiringCost: number;
+    prevHsdCost: number;
+    monthHsdCost: number;
+    prevHsdConsumed: number;
+    monthHsdConsumed: number;
+    prevHsdRate: number;
+    monthHsdRate: number;
+    prevCost: number;
+    monthCost: number;
+  };
 }) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sheet 1");
@@ -391,33 +409,33 @@ export const handleAutomobileprint = ({
   const data = [
     {
       description: "• Hiring Cost Charged In P & L",
-      costprev: 0,
-      costmonth: 0,
-      costupto: total - 0 - 0,
+      costprev: cost.prevHiringCost,
+      costmonth: cost.monthHiringCost,
+      costupto: cost.ytdHiringCost,
     },
     {
       description: "• HSD consumed (in Ltr.)",
-      costprev: 0,
-      costmonth: 0,
-      costupto: total - 0 - 0,
+      costprev: cost.prevHsdConsumed,
+      costmonth: cost.monthHsdConsumed,
+      costupto: cost.ytdHsdConsumed,
     },
     {
       description: "• HSD Rate charged (per Ltr.)",
-      costprev: 0,
-      costmonth: 0,
-      costupto: total - 0 - 0,
+      costprev: cost.prevHsdRate,
+      costmonth: cost.monthHsdRate,
+      costupto: cost.ytdHsdRate,
     },
     {
       description: "• Cost of HSD",
-      costprev: 0,
-      costmonth: 0,
-      costupto: total - 0 - 0,
+      costprev: cost.prevHsdCost,
+      costmonth: cost.monthHsdCost,
+      costupto: cost.ytdHsdCost,
     },
     {
       description: "• Cost borned (Hiring + HSD) by the Compnay",
-      costprev: 0,
-      costmonth: 0,
-      costupto: total - 0 - 0,
+      costprev: cost.prevCost,
+      costmonth: cost.monthCost,
+      costupto: cost.ytdCost,
     },
   ];
 
@@ -799,6 +817,57 @@ const table = ({
           worksheet.mergeCells(`M${r.number}:N${r.number}`);
         }
       });
+    } else if (index === 2) {
+      const datarow1 = worksheet.addRow(
+        heads.map((h, i) => {
+          if (h.id === "mileagefortheMonth") {
+            return "In Km per Ltr.";
+          } else if (i !== 0 && heads[i - 1].id === "mileagefortheMonth") {
+            return s.mileagefortheMonth.kmperltr || `0 km/ltr`;
+          } else {
+            return "";
+          }
+        })
+      );
+      const datarow2 = worksheet.addRow(
+        heads.map((h, i) => {
+          if (h.id === "mileagefortheMonth") {
+            return "In Ltr. Per Hr.";
+          } else if (i !== 0 && heads[i - 1].id === "mileagefortheMonth") {
+            return s.mileagefortheMonth.ltperhr || `0 ltr/hr`;
+          } else {
+            return s[h.id] ?? "-";
+          }
+        })
+      );
+
+      [datarow1, datarow2].forEach((c, index) => {
+        c.eachCell((cell: any) => {
+          cell.alignment = {
+            wrapText: true,
+            vertical: "middle",
+            horizontal: "center",
+          };
+          if (index === 0) {
+            cell.border = {
+              top: { style: "thick", color: { argb: "black" } },
+              left: { style: "thick", color: { argb: "black" } },
+              right: { style: "thick", color: { argb: "black" } },
+            };
+          } else {
+            cell.border = {
+              bottom: { style: "thick", color: { argb: "black" } },
+              left: { style: "thick", color: { argb: "black" } },
+              right: { style: "thick", color: { argb: "black" } },
+            };
+          }
+          cell.font = { size: 12, wrapText: true };
+        });
+      });
+      [datarow1, datarow2].forEach((datarow) => {
+        worksheet.mergeCells(`K${datarow.number}:L${datarow.number}`);
+        worksheet.mergeCells(`M${datarow.number}:N${datarow.number}`);
+      });
     } else {
       const datarow = worksheet.addRow(
         heads.map((h) => {
@@ -815,11 +884,6 @@ const table = ({
         cell.font = { size: 12, wrapText: true };
       });
       datarow.height = 36;
-      if (index === 2) {
-        worksheet.mergeCells(`C${datarow.number}:D${datarow.number}`);
-        worksheet.mergeCells(`K${datarow.number}:L${datarow.number}`);
-        worksheet.mergeCells(`M${datarow.number}:N${datarow.number}`);
-      }
       if (index === 3) {
         worksheet.mergeCells(`B${datarow.number}:C${datarow.number}`);
         worksheet.mergeCells(`M${datarow.number}:N${datarow.number}`);
@@ -834,111 +898,4 @@ const table = ({
     // datarow1.height = 30;
     // datarow2.height = 30;
   });
-};
-
-const totalstable = ({
-  createHeading,
-  worksheet,
-  totals,
-  departments,
-}: {
-  createHeading: ({
-    header,
-    colSpan,
-    bgcolor,
-    font,
-    height,
-  }: {
-    header: string[];
-    colSpan?: number;
-    bgcolor?: string;
-    font?: any;
-    height: number;
-  }) => void;
-  worksheet: any;
-  totals: any;
-  departments: d[];
-}) => {
-  createHeading({
-    header: [""],
-    height: 30,
-  });
-  createHeading({
-    header: ["Total"],
-    colSpan: 10,
-    bgcolor: "fafafa",
-    font: { size: 14, bold: true },
-    height: 40,
-  });
-
-  const headers = [
-    "Total Man days",
-    "Man Days Amount",
-    "Overtime Hrs.",
-    "OT Amount",
-    "Total Amount",
-    "Service Charge Rate",
-    "Service Charge Amount",
-    "Taxable",
-    "GST",
-    "Bill Amount",
-    "TDS",
-    "Net Payable",
-  ];
-
-  const tableheader = worksheet.addRow(["Department", "", "", "", ...headers]);
-
-  tableheader.eachCell((cell: any) => {
-    cell.alignment = {
-      wrapText: true,
-      vertical: "middle",
-      horizontal: "center",
-    };
-    cell.font = { bold: true, size: 11, wrapText: true };
-    cell.border = border;
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
-    };
-  });
-
-  // worksheet.mergeCells(`A${tableheader.number}:B${tableheader.number}`);
-
-  departments.forEach((s) => {
-    const data: any[] = [s.department, "", "", ""];
-    // const data: any[] = [s.main];
-    // data.push(s.sub || "-");
-    headers.forEach((h) => {
-      data.push(getRoundOff(_.get(totals, [h, s.department]) || 0));
-    });
-
-    // data.push(
-    //   department.designations.find((d: any) => d.designationid === s.id)
-    //     ?.allowed_wrking_hr_per_day || "-"
-    // );
-    // const restdata = totals.map((r: any) => {
-    //   return getRoundOff(_.get(r, s.id, "-"));
-    // });
-
-    const datarow = worksheet.addRow(data);
-    datarow.eachCell((cell: any) => {
-      cell.alignment = {
-        wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
-      };
-      cell.border = border;
-      cell.font = { size: 12, wrapText: true };
-    });
-    datarow.height = 36;
-    worksheet.mergeCells(`A${datarow.number}:D${datarow.number}`);
-    // if (department?.basicsalary_in_duration === "Monthly") {
-    //   worksheet.mergeCells(`A${datarow.number}:B${datarow.number}`);
-    //   //   worksheet.mergeCells(`D${datarow.number}:E${datarow.number}`);
-    //   //   worksheet.mergeCells(`H${datarow.number}:I${datarow.number}`);
-    //   worksheet.mergeCells(`M${datarow.number}:P${datarow.number}`);
-    // }
-  });
-  worksheet.mergeCells(`A${tableheader.number}:D${tableheader.number}`);
 };

@@ -12,6 +12,7 @@ import Support from "@mui/icons-material/Support";
 import AccountBalanceWallet from "@mui/icons-material/AccountBalanceWallet";
 import MonetizationOn from "@mui/icons-material/MonetizationOn";
 import LocalShipping from "@mui/icons-material/LocalShipping";
+import GroupWorkIcon from "@mui/icons-material/GroupWork";
 
 // constant
 const icons = {
@@ -27,6 +28,7 @@ const icons = {
   Inventory,
   AccountBalanceWallet,
   LocalShipping,
+  GroupWorkIcon,
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -106,6 +108,30 @@ const corporator = {
       ],
     },
     {
+      id: "works",
+      title: "Works",
+      type: "collapse",
+      icon: icons.GroupWorkIcon,
+
+      children: [
+        {
+          id: "/works",
+          title: "Works",
+          type: "item",
+          url: "/works",
+          target: true,
+        },
+        {
+          id: "/works/[id]",
+          title: "Add Works",
+          type: "item",
+          url: "/works/add",
+          target: true,
+        },
+      ],
+    },
+
+    {
       id: "/store",
       title: "Stores",
       type: "item",
@@ -151,6 +177,14 @@ const corporator = {
       type: "item",
       url: "/automobile-finalsheet",
       icon: icons.LocalShipping,
+      breadcrumbs: false,
+    },
+    {
+      id: "/fixedfinalsheet",
+      title: "Fixed Final Sheet",
+      type: "item",
+      url: "/fixedfinalsheet",
+      icon: icons.Description,
       breadcrumbs: false,
     },
     {

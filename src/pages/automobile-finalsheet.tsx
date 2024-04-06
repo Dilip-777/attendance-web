@@ -1,7 +1,5 @@
 import prisma from "@/lib/prisma";
-import FormSelect from "@/ui-component/FormSelect";
 import MonthSelect from "@/ui-component/MonthSelect";
-import getTotalAmountAndRows from "@/utils/getmonthlycount";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -16,12 +14,9 @@ import {
   Department,
   Designations,
   Employee,
+  FinalCalculations,
   Hsd,
-  Safety,
   SeperateSalary,
-  Shifts,
-  Stores,
-  TimeKeeper,
   Vehicle,
   Workorder,
 } from "@prisma/client";
@@ -30,30 +25,28 @@ import dayjs, { Dayjs } from "dayjs";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import FinalSheetta from "@/components/Table/finalsheet";
-import { print } from "@/components/PrintFinalSheet";
 import Details from "@/components/Table/details";
 // import PrintModal from "@/components/PrintFinalSheet/PrintModal";
 import dynamic from "next/dynamic";
+import { Chip, Grid } from "@mui/material";
 import {
-  Autocomplete,
-  Chip,
-  FormControl,
-  FormLabel,
-  Grid,
-  TextField,
-} from "@mui/material";
-import { gethourlycount } from "@/utils/getfinalhourlycount";
-import { HourlyPrint } from "@/components/PrintFinalSheet/printhourlyexcel";
-import { printMonthly } from "@/components/PrintFinalSheet/printmonthly";
-import { getAutomobileFinalSheet } from "@/utils/getautomobilefinalsheet";
+  getAutomobileFinalSheet,
+  getYTDCost,
+} from "@/utils/getautomobilefinalsheet";
 import AutoComplete from "@/ui-component/Autocomplete";
 import FinalSheetTable from "@/components/Automobile/FinalSheetTable";
 import { handleAutomobileprint } from "@/components/PrintFinalSheet/printAutomobile";
 import { useRouter } from "next/router";
+import SaveButton from "@/components/Automobile/SaveButton";
 
 const headcells = [
-  { id: "vehicleNo", label: "Vehicle No", cell: (row: any) => row.vehicleNo },
+  {
+    id: "vehicleNo",
+    label: "Vehicle No",
+    cell: (row: any) => (
+      <Typography sx={{ minWidth: "6rem" }}>{row.vehicleNo}</Typography>
+    ),
+  },
   {
     id: "vehicleType",
     label: "Vehicle Type",
@@ -126,7 +119,13 @@ const headcells = [
 ];
 
 const headcells1 = [
-  { id: "vehicleNo", label: "Vehicle No", cell: (row: any) => row.vehicleNo },
+  {
+    id: "vehicleNo",
+    label: "Vehicle No",
+    cell: (row: any) => (
+      <Typography sx={{ minWidth: "6rem" }}>{row.vehicleNo}</Typography>
+    ),
+  },
   {
     id: "hsdIssuedOrConsumed",
     label: "HSD Issued/Consumed",
@@ -135,16 +134,43 @@ const headcells1 = [
   {
     id: "mileagefortheMonth",
     label: "Mileage for the Month",
-    cell: (row: any) => row.mileagefortheMonth,
+    cell: (row: any) => (
+      <Grid container columnSpacing={4} sx={{ minWidth: "16rem" }}>
+        <Grid item xs={6} sx={{ whiteSpace: "nowrap" }}>
+          In Km per Ltr.
+        </Grid>
+        <Grid item xs={6}>
+          {row.mileagefortheMonth.kmperltr}
+        </Grid>
+        <Grid item xs={6}>
+          In Ltr. Per Hr.
+        </Grid>
+        <Grid item xs={6}>
+          {row.mileagefortheMonth.ltperhr}
+        </Grid>
+      </Grid>
+    ),
   },
-  { id: "mileage", label: "Mileage", cell: (row: any) => row.mileage },
+  {
+    id: "mileage",
+    label: "Mileage as per W/O",
+    cell: (row: any) => row.mileage,
+  },
   {
     id: "hsdOverAbove",
-    label: "HSD Over Above",
+    label: "HSD Taken – Above / Below",
     cell: (row: any) => row.hsdOverAbove,
   },
-  { id: "hsdrate", label: "HSD Rate", cell: (row: any) => row.hsdrate },
-  { id: "hsdCost", label: "HSD Cost", cell: (row: any) => row.hsdCost },
+  {
+    id: "hsdrate",
+    label: "HSD Rate for Payable / Recoverable",
+    cell: (row: any) => row.hsdrate,
+  },
+  {
+    id: "hsdCost",
+    label: "HSD Cost impact on bill",
+    cell: (row: any) => row.hsdCost,
+  },
   {
     id: "idealStandingDays",
     label: "Ideal Standing Days",
@@ -162,13 +188,19 @@ const headcells1 = [
   },
   {
     id: "avgMileage",
-    label: "Average Mileage",
+    label: "Y.T.D Average Mileage",
     cell: (row: any) => row.avgMileage,
   },
 ];
 
 const headcells2 = [
-  { id: "vehicleNo", label: "Vehicle No", cell: (row: any) => row.vehicleNo },
+  {
+    id: "vehicleNo",
+    label: "Vehicle No",
+    cell: (row: any) => (
+      <Typography sx={{ minWidth: "6rem" }}>{row.vehicleNo}</Typography>
+    ),
+  },
   {
     id: "vehicleType",
     label: "Vehicle Type",
@@ -228,6 +260,7 @@ interface ContractorwithVehicle extends Contractor {
     automobile: Automobile[];
   })[];
   hsd: Hsd[];
+  finalCalculations: FinalCalculations[];
 }
 
 export default function FinalSheet({
@@ -244,10 +277,28 @@ export default function FinalSheet({
     contractor.contractorId
   );
   const [loading, setLoading] = useState<boolean>(false);
+  const [deduction, setDeduction] = useState<Deductions | null>(null);
   const [details, setDetails] = useState<any>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [total, setTotal] = useState(0);
   const [hsdcost, setHsdCost] = useState(0);
+  const [cost, setCost] = useState({
+    ytdHiringCost: 0,
+    ytdHsdCost: 0,
+    ytdHsdConsumed: 0,
+    ytdHsdRate: 0,
+    ytdCost: 0,
+    prevHiringCost: 0,
+    monthHiringCost: 0,
+    prevHsdCost: 0,
+    monthHsdCost: 0,
+    prevHsdConsumed: 0,
+    monthHsdConsumed: 0,
+    prevHsdRate: 0,
+    monthHsdRate: 0,
+    prevCost: 0,
+    monthCost: 0,
+  });
   const [calRows, setCalRows] = useState<
     { heading: string; headcells: any[]; data: any[] }[]
   >([]);
@@ -264,10 +315,18 @@ export default function FinalSheet({
   const router = useRouter();
   const { month } = router.query;
 
+  console.log(contractor.finalCalculations);
+
   useEffect(() => {
     if (contractor?.vehicle) {
-      const { data, kpidata, overtimedata, totals, total, hsdcost } =
-        getAutomobileFinalSheet(selectedVehicles, contractor?.hsd[0], value);
+      const { data, kpidata, overtimedata, totals, total, hsdcost, cost } =
+        getAutomobileFinalSheet(
+          selectedVehicles,
+          contractor?.hsd[0],
+          (month as string) || dayjs().format("MM/YYYY"),
+          contractor
+        );
+      console.log(selectedVehicles, contractor, month);
       setTotal(total);
       setHsdCost(hsdcost);
       setCalRows([
@@ -276,12 +335,56 @@ export default function FinalSheet({
         { heading: "KPI Information", headcells: headcells1, data: kpidata },
         { heading: "Total Information", headcells: headcells2, data: totals },
       ]);
+
+      const { cost: prevcost } = getAutomobileFinalSheet(
+        selectedVehicles,
+        contractor?.hsd[0],
+        month
+          ? dayjs(month as string, "MM/YYYY")
+              .subtract(1, "month")
+              .format("MM/YYYY")
+          : dayjs().subtract(1, "month").format("MM/YYYY"),
+        contractor
+      );
+      const { ytdCost, ytdHiringCost, ytdHsdConsumed, ytdHsdCost, ytdHsdRate } =
+        getYTDCost(contractor);
+      setCost((pre) => ({
+        ytdCost: ytdCost,
+        ytdHiringCost: ytdHiringCost,
+        ytdHsdConsumed: ytdHsdConsumed,
+        ytdHsdCost: ytdHsdCost,
+        ytdHsdRate: ytdHsdRate,
+
+        monthCost: cost.total,
+        monthHiringCost: cost.totalhiringcharges,
+        monthHsdCost: cost.hsdcost,
+        monthHsdConsumed: cost.hsdconsumed,
+        monthHsdRate: cost.hsdrate,
+        prevCost: prevcost.total,
+        prevHiringCost: prevcost.totalhiringcharges,
+        prevHsdCost: prevcost.hsdcost,
+        prevHsdConsumed: prevcost.hsdconsumed,
+        prevHsdRate: prevcost.hsdrate,
+      }));
     }
   }, [selectedContractor, value, selectedVehicles]);
 
   const handleClose = () => {
     setOpen(false);
   };
+
+  const fetchDeductions = async () => {
+    const res = await axios.get(
+      `/api/deductions?contractorId=${contractor.contractorId}&date=${
+        month || dayjs().format("MM/YYYY")
+      }`
+    );
+    setDeduction(res.data);
+  };
+
+  useEffect(() => {
+    fetchDeductions();
+  }, [contractor, month]);
 
   useEffect(() => {
     if (contractor?.vehicle) {
@@ -398,22 +501,30 @@ export default function FinalSheet({
           >
             Freeze
           </Button> */}
+          <Stack direction="row" spacing={2}>
+            <SaveButton
+              contractorId={contractor.contractorId}
+              month={(month as string) || dayjs().format("MM/YYYY")}
+              cost={cost}
+            />
 
-          <Button
-            variant="contained"
-            onClick={() =>
-              handleAutomobileprint({
-                calRows,
-                contractor: contractor as Contractor,
-                month: value,
-                total: total,
-                workorder: w,
-              })
-            }
-            color="secondary"
-          >
-            Print
-          </Button>
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleAutomobileprint({
+                  calRows,
+                  contractor: contractor as Contractor,
+                  month: value,
+                  total: total,
+                  workorder: w,
+                  cost: cost,
+                })
+              }
+              color="secondary"
+            >
+              Print
+            </Button>
+          </Stack>
         </Box>
         <Divider sx={{ my: 2 }} />
         <Stack direction="row" spacing={2} rowGap={2} flexWrap="wrap">
@@ -483,7 +594,13 @@ export default function FinalSheet({
           <CircularProgress sx={{ color: "#673ab7" }} />
         </Box>
       ) : (
-        <FinalSheetTable data={calRows} total={total} hsdcost={hsdcost} />
+        <FinalSheetTable
+          data={calRows}
+          total={total}
+          hsdcost={hsdcost}
+          cost={cost}
+          deduction={deduction}
+        />
       )}
       <Divider sx={{ my: 2 }} />
 
@@ -540,40 +657,32 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  // if (!(session.user?.role === "Corporate")) {
-  //   return {
-  //     redirect: {
-  //       destination: "/",
-  //       permanent: false,
-  //     },
-  //   };
-  // }
-
   const contractors = await prisma.contractor.findMany({
     orderBy: { contractorname: "asc" },
-    // include: {
-    //   vehicle: {
-    //     where: {
-    //       vehicleNo: {
-    //         in: (vehicles as string)?.split(","),
-    //       },
-    //     },
-    //     include: {
-    //       automobile: {
-    //         where: {
-    //           date: {
-    //             contains: (month as string) || dayjs().format("MM/YYYY"),
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    //   hsd: true,
-    // },
+
     where: {
       servicedetail: "Equipment / Vehicle Hiring",
     },
   });
+
+  const dateRanges = Array.from({ length: 12 }).map((_, index) => {
+    const currentDate = month ? dayjs(month as string, "MM/YYYY") : dayjs();
+    const startDate = currentDate
+      .subtract(index, "month")
+      .startOf("month")
+      .format("DD/MM/YYYY");
+    const endDate = currentDate
+      .subtract(index, "month")
+      .endOf("month")
+      .format("DD/MM/YYYY");
+    return { startDate, endDate };
+  });
+
+  const orConditions = dateRanges.map(({ startDate, endDate }) => ({
+    date: {
+      contains: `${startDate.split("/")[1]}/${startDate.split("/")[2]}`,
+    },
+  }));
 
   let contractor =
     contractorId &&
@@ -581,19 +690,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       where: {
         contractorId: contractorId as string,
       },
+
       include: {
         vehicle: {
           include: {
             automobile: {
               where: {
-                date: {
-                  contains: (month as string) || dayjs().format("MM/YYYY"),
-                },
+                OR: orConditions,
               },
             },
           },
         },
         hsd: true,
+        finalCalculations: true,
       },
     }));
 
@@ -602,22 +711,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       orderBy: { contractorname: "asc" },
       include: {
         vehicle: {
-          where: {
-            vehicleNo: {
-              in: (vehicles as string)?.split(","),
-            },
-          },
           include: {
             automobile: {
               where: {
-                date: {
-                  contains: (month as string) || dayjs().format("MM/YYYY"),
-                },
+                OR: orConditions,
               },
             },
           },
         },
         hsd: true,
+        finalCalculations: true,
       },
       where: {
         servicedetail: "Equipment / Vehicle Hiring",

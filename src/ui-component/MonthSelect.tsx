@@ -16,7 +16,7 @@ export default function MonthSelect({ value, onChange, label }: props) {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         {value ? (
           <DatePicker
-            sx={{ minWidth: "15rem" }}
+            sx={{ minWidth: "15rem", maxWidth: { xs: 250, xl: 300 } }}
             views={["month", "year"]}
             value={value}
             onChange={(newValue) => onChange(newValue)}

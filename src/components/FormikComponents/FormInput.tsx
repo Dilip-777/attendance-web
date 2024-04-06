@@ -32,7 +32,7 @@ const OutlineInputStyle: any = styled(OutlinedInput, { shouldForwardProp })(
 
 interface Props extends InputProps {
   name: string;
-  label: string;
+  label?: string;
   placeHolder: string;
   disabled?: boolean;
   sx?: Object;
@@ -56,7 +56,9 @@ const FormInput: React.FC<Props> = ({
       disabled={disabled}
       sx={{ my: 2 }}
     >
-      <FormLabel sx={{ fontWeight: "700", my: 0.5 }}>{label}</FormLabel>
+      {label && (
+        <FormLabel sx={{ fontWeight: "700", my: 0.5 }}>{label}</FormLabel>
+      )}
       <OutlineInputStyle
         sx={{ maxWidth: { xs: 250, xl: 300 }, width: "100%", ...sx }}
         id="input-search-header"

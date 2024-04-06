@@ -100,6 +100,7 @@ export default function Vehiclelogbook({
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [approvalLoading, setApprovalLoading] = React.useState(false);
   const [selectedWorkorder, setSelectedWorkorder] = React.useState<
     string | undefined
   >(undefined);
@@ -109,6 +110,19 @@ export default function Vehiclelogbook({
   const [rows, setRows] = React.useState<any[]>([]);
   const [discard, setDiscard] = React.useState(false);
   const { data: session } = useSession();
+  const [totalRunning, setTotalRunning] = React.useState<number>(0);
+  const [totalRunningTime, setTotalRunningTime] = React.useState(0);
+  const [hsdIssuedOrConsumed, setHsdIssuedOrConsumed] =
+    React.useState<number>(0);
+  const [subTotals, setSubTotals] = React.useState({
+    totalRunning: 0,
+    totalRunningTime: 0,
+    hsdIssuedOrConsumed: 0,
+    maintainenceDays: 0,
+    breakdownDays: 0,
+    idealStandingDays: 0,
+    trips: 0,
+  });
   const [contractor, setContractor] = React.useState<string | undefined>(
     contractors.length > 0 ? contractors[0]?.contractorId : undefined
   );
@@ -158,7 +172,7 @@ export default function Vehiclelogbook({
   };
 
   const handleApprove = async (data: any) => {
-    setLoading(true);
+    setApprovalLoading(true);
     try {
       await axios.put("/api/vehiclelogbook", {
         ...data,
@@ -169,11 +183,11 @@ export default function Vehiclelogbook({
     }
     await fetchAutomobiles();
 
-    setLoading(false);
+    setApprovalLoading(false);
   };
 
   const handleReject = async (data: any) => {
-    setLoading(true);
+    setApprovalLoading(true);
 
     try {
       await axios.put("/api/vehiclelogbook", {
@@ -187,7 +201,7 @@ export default function Vehiclelogbook({
       console.log(error);
     }
     await fetchAutomobiles();
-    setLoading(false);
+    setApprovalLoading(false);
   };
 
   const handleDiscard = () => {
@@ -195,6 +209,58 @@ export default function Vehiclelogbook({
     fetchAutomobiles();
     setDiscard(true);
   };
+
+  const onChanges = () => {
+    let totalhsdconsumed = 0;
+    let totalrunning = 0;
+    let totalrunningtime = 0;
+    let totalmaintainencedays = 0;
+    let totalbreakdowndays = 0;
+    let totalidealstandingdays = 0;
+    let totaltrips = 0;
+
+    rows.map((change) => {
+      if (change.hsdIssuedOrConsumed) {
+        totalhsdconsumed += change.hsdIssuedOrConsumed;
+      }
+      if (change.totalRunning) {
+        totalrunning += change.totalRunning;
+      }
+      if (change.totalRunningTime) {
+        const time = change.totalRunningTime.split(":");
+        totalrunningtime += parseInt(time[0]) + parseInt(time[1]) / 60;
+      }
+      if (change.maintenanceDays) {
+        totalmaintainencedays += change.maintenanceDays;
+      }
+      if (change.breakDownDaysCounted) {
+        totalbreakdowndays += change.breakDownDaysCounted;
+      }
+      if (change.idealStandingDays) {
+        totalidealstandingdays += change.idealStandingDays;
+      }
+      if (change.trips) {
+        totaltrips += change.trips;
+      }
+    });
+
+    // setTotalRunning(parseFloat(totalrunning.toFixed(2)));
+    // setTotalRunningTime(parseFloat(totalrunningtime.toFixed(2)));
+    // setHsdIssuedOrConsumed(parseFloat(totalhsdconsumed.toFixed(2)));
+    setSubTotals({
+      totalRunning: parseFloat(totalrunning.toFixed(2)),
+      totalRunningTime: totalrunningtime,
+      hsdIssuedOrConsumed: totalhsdconsumed,
+      maintainenceDays: totalmaintainencedays,
+      breakdownDays: totalbreakdowndays,
+      idealStandingDays: totalidealstandingdays,
+      trips: totaltrips,
+    });
+  };
+
+  React.useEffect(() => {
+    onChanges();
+  }, [rows]);
 
   const handleChange = (
     value: string,
@@ -207,14 +273,16 @@ export default function Vehiclelogbook({
     }
     let v: string | number = value;
     if (
-      field === "openingMeterReading" ||
-      field === "closingMeterReading" ||
-      field === "breakDownDaysCounted" ||
-      field === "totalRunning" ||
-      field === "hsdIssuedOrConsumed" ||
-      field === "idealStandingDays" ||
-      field === "maintenanceDays" ||
-      field === "trips"
+      [
+        "openingMeterReading",
+        "closingMeterReading",
+        "breakDownDaysCounted",
+        "totalRunning",
+        "hsdIssuedOrConsumed",
+        "idealStandingDays",
+        "maintenanceDays",
+        "trips",
+      ].includes(field)
     ) {
       v = value ? Number(value) : "";
     }
@@ -226,6 +294,9 @@ export default function Vehiclelogbook({
       if (e.date === date) {
         if (e.closingMeterReading && field === "openingMeterReading") {
           e.totalRunning = e.closingMeterReading - (v as number);
+        }
+        if (e.openingMeterReading && field === "closingMeterReading") {
+          e.totalRunning = (v as number) - e.openingMeterReading;
         }
         if (e.startTime && field === "endTime") {
           const start = dayjs(e.startTime, "HH:mm");
@@ -239,14 +310,30 @@ export default function Vehiclelogbook({
 
           e.totalRunningTime = `${formattedHours}:${formattedMinutes}`;
         }
+        if (e.endTime && field === "startTime") {
+          const end = dayjs(e.endTime, "HH:mm");
+          const start = dayjs(v, "HH:mm");
+          const diff = end.diff(start, "minute");
+          const hours = Math.floor(diff / 60);
+          const minutes = diff % 60;
+
+          const formattedHours = String(hours).padStart(2, "0");
+          const formattedMinutes = String(minutes).padStart(2, "0");
+
+          e.totalRunningTime = `${formattedHours}:${formattedMinutes}`;
+        }
         if (e.openingMeterReading && field === "closingMeterReading")
-          e.totalRunning = (v as number) - e.openingMeterReading;
+          e.totalRunning = parseFloat(
+            ((v as number) - e.openingMeterReading).toFixed(2)
+          );
         if (e[field] || v) e[field] = v;
         flag1 = true;
       }
       if (e.date === nextdate && field === "closingMeterReading") {
         if (e.openingMeterReading) {
-          e.totalRunning = e.closingMeterReading - (v as number);
+          e.totalRunning = parseFloat(
+            (e.closingMeterReading - (v as number)).toFixed(2)
+          );
         }
         if (field === "closingMeterReading") e.openingMeterReading = v;
         flag2 = true;
@@ -403,7 +490,7 @@ export default function Vehiclelogbook({
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", pb: 2 }}>
+      <Paper sx={{ width: "100%", pb: 2, overflow: "auto" }}>
         <Toolbar
           sx={{
             pl: { sm: 2 },
@@ -473,7 +560,7 @@ export default function Vehiclelogbook({
         {vehicle ? (
           <TableContainer
             sx={{
-              maxHeight: "68vh",
+              maxHeight: "55vh",
               scrollBehavior: "smooth",
               "&::-webkit-scrollbar": {
                 height: 10,
@@ -489,6 +576,7 @@ export default function Vehiclelogbook({
               sx={{ minWidth: 750 }}
               aria-labelledby="tableTitle"
               size="medium"
+              stickyHeader
             >
               <EnhancedTableHead
                 numSelected={selected.length}
@@ -498,7 +586,7 @@ export default function Vehiclelogbook({
                 nocheckbox={true}
                 align="center"
               />
-              {!loading && (
+              {(!loading || approvalLoading) && (
                 <TableBody>
                   {rows.map((row, index) => {
                     const isItemSelected = isSelected(row.id as string);
@@ -556,12 +644,21 @@ export default function Vehiclelogbook({
                                 alignItems="center"
                                 sx={{ color: "#673AB7" }}
                               >
-                                <Button onClick={() => handleApprove(row)}>
-                                  <Done sx={{ color: "#673AB7" }} />
-                                </Button>
-                                <Button onClick={() => handleReject(row)}>
-                                  <Close sx={{ color: "#673AB7" }} />
-                                </Button>
+                                {approvalLoading ? (
+                                  <CircularProgress
+                                    size={15}
+                                    sx={{ ml: 1, color: "#364152" }}
+                                  />
+                                ) : (
+                                  <>
+                                    <Button onClick={() => handleApprove(row)}>
+                                      <Done sx={{ color: "#673AB7" }} />
+                                    </Button>
+                                    <Button onClick={() => handleReject(row)}>
+                                      <Close sx={{ color: "#673AB7" }} />
+                                    </Button>
+                                  </>
+                                )}
                               </Box>
                             </TableCell>
                           )}
@@ -584,6 +681,46 @@ export default function Vehiclelogbook({
             No Vehicle Found
           </Typography>
         )}
+        <Stack direction="row" spacing={5} sx={{ pt: 2, px: 2 }}>
+          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
+            Total Running:{" "}
+            <span style={{ fontWeight: "500" }}> {subTotals.totalRunning}</span>
+          </Typography>
+          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
+            Total Running Time:{" "}
+            <span style={{ fontWeight: "500" }}>
+              {subTotals.totalRunningTime.toFixed(2)} Hours
+            </span>
+          </Typography>
+          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
+            HSD Issued Or Consumed:{" "}
+            <span style={{ fontWeight: "500" }}>
+              {subTotals.hsdIssuedOrConsumed}
+            </span>
+          </Typography>
+        </Stack>
+        <Stack direction="row" spacing={5} sx={{ p: 2 }}>
+          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
+            Total Maintenance Days:{" "}
+            <span style={{ fontWeight: "500" }}>
+              {subTotals.maintainenceDays}
+            </span>
+          </Typography>
+          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
+            Total Breakdown Days:{" "}
+            <span style={{ fontWeight: "500" }}>{subTotals.breakdownDays}</span>
+          </Typography>
+          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
+            Total Ideal Standing Days:{" "}
+            <span style={{ fontWeight: "500" }}>
+              {subTotals.idealStandingDays}
+            </span>
+          </Typography>
+          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
+            Total Trips:{" "}
+            <span style={{ fontWeight: "500" }}>{subTotals.trips}</span>
+          </Typography>
+        </Stack>
         {/* <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

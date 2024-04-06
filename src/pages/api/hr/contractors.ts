@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
 import shortid from "shortid";
 
 export default async function contractors(
@@ -78,10 +79,17 @@ export default async function contractors(
   }
 
   if (req.method === "DELETE") {
-    const { id } = req.body;
+    const { contractorId } = req.query;
+    const session = await getSession({ req });
+    console.log(session);
+
+    if (!session || session.user?.role !== "Corporate") {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
     const contractorexists = await prisma.contractor.findUnique({
       where: {
-        id: id,
+        contractorId: contractorId as string,
       },
     });
     if (!contractorexists) {
@@ -90,7 +98,7 @@ export default async function contractors(
 
     const contractor = await prisma.contractor.delete({
       where: {
-        id: id,
+        contractorId: contractorId as string,
       },
     });
     res.status(200).json(contractor);

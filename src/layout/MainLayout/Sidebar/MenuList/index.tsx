@@ -16,6 +16,7 @@ import {
   automobileItems,
   civilItems,
   managerItems,
+  fixedItems,
 } from "@/components/menu-items";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -43,6 +44,7 @@ const MenuList = () => {
       items = automobileItems.items;
     else if (session?.user?.role === "Civil") items = civilItems.items;
     else if (session?.user?.role === "Manager") items = managerItems.items;
+    else if (session?.user?.role === "Fixed") items = fixedItems.items;
     else items = timekeeperItems.items;
 
     const navItems1 = items?.map((item) => {

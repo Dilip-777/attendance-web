@@ -18,6 +18,7 @@ import EnhancedTableHead from "./EnhancedTableHead";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import Download from "@mui/icons-material/Download";
 import { useSession } from "next-auth/react";
+import Delete from "@mui/icons-material/Delete";
 
 interface HeadCells {
   id: string;
@@ -41,6 +42,7 @@ interface Props {
   orderby?: string;
   setOrderby?: React.Dispatch<React.SetStateAction<string>>;
   handleOpen1?: () => void;
+  handleDelete?: (row: any) => void;
 }
 
 const CustomTable = (props: Props) => {
@@ -193,9 +195,12 @@ const CustomTable = (props: Props) => {
                           <TableCell sx={{ minWidth: "10rem" }}>
                             {_.get(row, headCell.id) === true && "Yes"}
                             {_.get(row, headCell.id) === false && "No"}
-                            {(typeof _.get(row, headCell.id) !== "boolean" &&
-                              getValue(row, headCell.id)) ||
-                              "-"}
+                            {(!(
+                              _.get(row, headCell.id) === true ||
+                              _.get(row, headCell.id) === false
+                            ) &&
+                              getValue(row, headCell.id)) ??
+                              ""}
                           </TableCell>
                         ))}
                       {props.setContractorId && props.handleOpen && (
@@ -233,7 +238,11 @@ const CustomTable = (props: Props) => {
                           )}
                         </>
                       )}
-                      <TableCell size="small" align="center">
+                      <TableCell
+                        size="small"
+                        align="center"
+                        sx={{ display: "flex" }}
+                      >
                         <IconButton
                           onClick={() =>
                             router.push(`${props.editLink}/${row.id}`)
@@ -242,6 +251,16 @@ const CustomTable = (props: Props) => {
                         >
                           <Edit fontSize="small" />
                         </IconButton>
+                        {props.handleDelete && (
+                          <IconButton
+                            onClick={() =>
+                              props.handleDelete && props.handleDelete(row)
+                            }
+                            sx={{ m: 0 }}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

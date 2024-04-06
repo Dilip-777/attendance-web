@@ -53,6 +53,10 @@ export default function TextEditor({
     }
   }, [changes]);
 
+  React.useEffect(() => {
+    setName(value || "");
+  }, [value]);
+
   // console.log(
   //   name ? dayjs(name, "HH:MM") : "ffff",
   //   "sldkfjskljdfkl",

@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { Deductions } from "@prisma/client";
 
 const headcells = [
   { id: "vehicleNo", label: "Vehicle No", cell: (row: any) => row.vehicleNo },
@@ -77,41 +78,69 @@ interface Props {
     headcells: any[];
     data: any[];
   }[];
+  colspans?: number[];
   total: number;
   hsdcost: number;
+  cost?: {
+    ytdHiringCost: number;
+    ytdHsdCost: number;
+    ytdHsdConsumed: number;
+    ytdHsdRate: number;
+    ytdCost: number;
+    prevHiringCost: number;
+    monthHiringCost: number;
+    prevHsdCost: number;
+    monthHsdCost: number;
+    prevHsdConsumed: number;
+    monthHsdConsumed: number;
+    prevHsdRate: number;
+    monthHsdRate: number;
+    prevCost: number;
+    monthCost: number;
+  };
+  deduction: Deductions | null;
+  fixed?: boolean;
 }
 
-export default function FinalSheetTable({ data, total, hsdcost }: Props) {
+export default function FinalSheetTable({
+  data,
+  total,
+  hsdcost,
+  cost,
+  colspans,
+  deduction,
+  fixed,
+}: Props) {
   const data1 = [
     {
       description: "• Hiring Cost Charged In P & L",
-      costprev: 0,
-      costmonth: 0,
-      costupto: 0,
+      costprev: cost?.prevHiringCost,
+      costmonth: cost?.monthHiringCost,
+      costupto: cost?.ytdHiringCost,
     },
     {
       description: "• HSD consumed (in Ltr.)",
-      costprev: 0,
-      costmonth: 0,
-      costupto: 0,
+      costprev: cost?.prevHsdConsumed,
+      costmonth: cost?.monthHsdConsumed,
+      costupto: cost?.ytdHsdConsumed,
     },
     {
       description: "• HSD Rate charged (per Ltr.)",
-      costprev: 0,
-      costmonth: 0,
-      costupto: 0,
+      costprev: cost?.prevHsdRate,
+      costmonth: cost?.monthHsdRate,
+      costupto: cost?.ytdHsdRate,
     },
     {
       description: "• Cost of HSD",
-      costprev: 0,
-      costmonth: 0,
-      costupto: hsdcost,
+      costprev: cost?.prevHsdCost,
+      costmonth: cost?.monthHsdCost,
+      costupto: cost?.ytdHsdCost,
     },
     {
       description: "• Cost borned (Hiring + HSD) by the Compnay",
-      costprev: 0,
-      costmonth: 0,
-      costupto: total + hsdcost,
+      costprev: cost?.prevCost,
+      costmonth: cost?.monthCost,
+      costupto: cost?.ytdCost,
     },
   ];
   return (
@@ -137,8 +166,11 @@ export default function FinalSheetTable({ data, total, hsdcost }: Props) {
             <Table>
               <TableHead sx={{ bgcolor: "#eeeeee" }}>
                 <TableRow>
-                  {sheet.headcells.map((headcell) => (
-                    <TableCell sx={{ fontWeight: 600 }} key={headcell.id}>
+                  {sheet.headcells.map((headcell, index) => (
+                    <TableCell
+                      sx={{ fontWeight: 600 }}
+                      key={headcell.id + index.toString()}
+                    >
                       {headcell.label}
                     </TableCell>
                   ))}
@@ -149,7 +181,7 @@ export default function FinalSheetTable({ data, total, hsdcost }: Props) {
                   <TableRow key={index}>
                     {sheet.headcells.map((headcell) => (
                       <TableCell key={headcell.id}>
-                        {headcell.cell(row)}
+                        {headcell.cell(row) ?? ""}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -169,49 +201,75 @@ export default function FinalSheetTable({ data, total, hsdcost }: Props) {
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={7}></TableCell>
+                      <TableCell
+                        colSpan={colspans ? colspans[0] : 7}
+                      ></TableCell>
                       <TableCell sx={{ fontWeight: "600" }} colSpan={4}>
                         Net Amount Payable
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>{total}</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={7}></TableCell>
+                      <TableCell
+                        colSpan={colspans ? colspans[0] : 7}
+                      ></TableCell>
                       <TableCell sx={{ fontWeight: "600" }} colSpan={4}>
                         GST Hold (if any)
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "600" }}>0</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }}>
+                        {(deduction?.gstrelease || 0) -
+                          (deduction?.gsthold || 0) || 0}
+                      </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={7}></TableCell>
+                      <TableCell
+                        colSpan={colspans ? colspans[0] : 7}
+                      ></TableCell>
                       <TableCell sx={{ fontWeight: "600" }} colSpan={4}>
-                        Consumables / Charageable Items
+                        Consumables / Chargeable Items
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
                         {hsdcost}
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={7}></TableCell>
+                      <TableCell
+                        colSpan={colspans ? colspans[0] : 7}
+                      ></TableCell>
                       <TableCell sx={{ fontWeight: "600" }} colSpan={4}>
                         Adjustment of Advance Amount
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "600" }}>0</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }}>
+                        {deduction?.advance || 0}
+                      </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={7}></TableCell>
+                      <TableCell
+                        colSpan={colspans ? colspans[0] : 7}
+                      ></TableCell>
                       <TableCell sx={{ fontWeight: "600" }} colSpan={4}>
                         Any Other Deductions (If any)
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "600" }}>0</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }}>
+                        {deduction?.anyother}
+                      </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={7}></TableCell>
+                      <TableCell
+                        colSpan={colspans ? colspans[0] : 7}
+                      ></TableCell>
                       <TableCell sx={{ fontWeight: "700" }} colSpan={4}>
                         Final Payable
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
-                        {total + hsdcost}
+                        {Math.round(
+                          total +
+                            hsdcost +
+                            ((deduction?.gstrelease || 0) -
+                              (deduction?.gsthold || 0) || 0) -
+                            (deduction?.advance || 0) -
+                            (deduction?.anyother || 0)
+                        )}
                       </TableCell>
                     </TableRow>
                   </>
@@ -221,42 +279,44 @@ export default function FinalSheetTable({ data, total, hsdcost }: Props) {
           </TableContainer>
         </Stack>
       ))}
-      <Stack spacing={1}>
-        <Typography variant="h4">
-          CONTRACTOR MONTHLY COST CHARGED IN PROFIT & LOSS A/C FOR THE CURRENT
-          FINANCIAL YEAR
-        </Typography>
-        <TableContainer>
-          <Table>
-            <TableHead sx={{ bgcolor: "#eeeeee" }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600 }} align="center">
-                  Descriptions
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="center">
-                  Cost for the previous Month
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="center">
-                  Cost for the Month (MTD)
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="center">
-                  Cost upto this month (YTD)
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data1.map((row, index) => (
+      {!fixed && (
+        <Stack spacing={1}>
+          <Typography variant="h4">
+            CONTRACTOR MONTHLY COST CHARGED IN PROFIT & LOSS A/C FOR THE CURRENT
+            FINANCIAL YEAR
+          </Typography>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ bgcolor: "#eeeeee" }}>
                 <TableRow>
-                  <TableCell align="center">{row.description}</TableCell>
-                  <TableCell align="center">{row.costprev}</TableCell>
-                  <TableCell align="center">{row.costmonth}</TableCell>
-                  <TableCell align="center">{row.costupto}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                    Descriptions
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                    Cost for the previous Month
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                    Cost for the Month (MTD)
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">
+                    Cost upto this month (YTD)
+                  </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Stack>
+              </TableHead>
+              <TableBody>
+                {data1.map((row, index) => (
+                  <TableRow>
+                    <TableCell align="center">{row.description}</TableCell>
+                    <TableCell align="center">{row.costprev}</TableCell>
+                    <TableCell align="center">{row.costmonth}</TableCell>
+                    <TableCell align="center">{row.costupto}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Stack>
+      )}
     </Stack>
   );
 }
