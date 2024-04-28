@@ -73,6 +73,10 @@ export default async function getTimeKeeper(
         wh.attendance = {
           in: ["1", "0.5"],
         };
+      } else if (attendance === "all") {
+        wh.attendance = {
+          in: ["1", "0.5", "0"],
+        };
       } else {
         wh.attendance = attendance as string;
       }
@@ -98,6 +102,16 @@ export default async function getTimeKeeper(
       },
       _sum: {
         manualovertime: true,
+      },
+    });
+
+    const machineOvertime = await prisma.timeKeeper.aggregate({
+      where: {
+        ...wh,
+        manualovertime: null,
+      },
+      _sum: {
+        overtime: true,
       },
     });
 
@@ -128,7 +142,9 @@ export default async function getTimeKeeper(
       res.status(200).json({
         data: [...savedTimekeeper, ...timekeepers],
         count,
-        overtime: overtime._sum.manualovertime || 0,
+        overtime:
+          (overtime._sum.manualovertime || 0) +
+          (machineOvertime._sum.overtime || 0),
         attendance: fullattendance + halfattendance / 2,
       });
     } else {
@@ -159,7 +175,9 @@ export default async function getTimeKeeper(
       res.status(200).json({
         data: timekeepers,
         count,
-        overtime: overtime._sum.manualovertime || 0,
+        overtime:
+          (overtime._sum.manualovertime || 0) +
+          (machineOvertime._sum.overtime || 0),
         attendance:
           attendance === "0" ? 0 : fullattendance + halfattendance / 2,
       });

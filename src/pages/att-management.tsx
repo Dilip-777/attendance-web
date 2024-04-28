@@ -157,6 +157,7 @@ export default function AttedanceManagement({
           label="Status"
           options={[
             { label: "Approved", value: "Approved" },
+            { label: "Pending", value: "Pending" },
             { label: "Rejected", value: "Rejected" },
             { label: "No Changes", value: "NoChanges" },
           ]}

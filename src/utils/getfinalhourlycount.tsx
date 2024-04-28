@@ -89,61 +89,6 @@ export const gethourlycount = (
       return gender.toLowerCase() === item.gender?.toLowerCase();
     } else return true;
   };
-  const rate: Record<string, string | number> = {
-    date: "Rate",
-  };
-
-  const totalovertime: Record<string, string | number> = {
-    date: "Overtime Hrs.",
-    total: 0,
-  };
-  const attendancecount: Record<string, string | number> = {
-    date: "Total Man days",
-    total: 0,
-  };
-  const totalManDayAmount: Record<string, string | number> = {
-    date: "Man Days Amount",
-    total: 0,
-  };
-
-  const otamount: Record<string, string | number> = {
-    date: "OT Amount",
-    total: 0,
-  };
-
-  const totalnetamount: Record<string, string | number> = {
-    date: "Total Amount",
-  };
-
-  const cprate: Record<string, string | number> = {
-    date: "Service Charge Rate",
-    total: 0,
-  };
-
-  const cpamount: Record<string, string | number> = {
-    date: "Service Charge Amount",
-    total: 0,
-  };
-
-  const total: Record<string, string | number> = {
-    date: "Taxable",
-  };
-
-  const gst1: Record<string, string | number> = {
-    date: "GST",
-  };
-
-  const billAmount1: Record<string, string | number> = {
-    date: "Bill Amount",
-  };
-
-  const tds1: Record<string, string | number> = {
-    date: "TDS",
-  };
-
-  const netPayable1: Record<string, string | number> = {
-    date: "Net Payable",
-  };
 
   const rows1: Record<string, string | number>[] = [];
   const rows2: Record<string, string | number>[] = [];

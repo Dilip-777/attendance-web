@@ -18,6 +18,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Delete from "@mui/icons-material/Delete";
 import Edit from "@mui/icons-material/Edit";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
+import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import Search from "@mui/icons-material/Search";
 import Backdrop from "@mui/material/Backdrop";
 import Button from "@mui/material/Button";
@@ -100,10 +101,11 @@ interface EnhancedTableToolbarProps {
   filter: string;
   handleOpen: () => void;
   fetchDepartments: () => void;
+  handleReport: () => void;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, filter, setFilter, handleOpen } = props;
+  const { numSelected, filter, setFilter, handleOpen, handleReport } = props;
 
   return (
     <Toolbar
@@ -150,6 +152,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Tooltip>
       ) : (
         <Stack direction="row" spacing={2}>
+          <IconButton onClick={() => handleReport()}>
+            <LocalPrintshopIcon />
+          </IconButton>
           <ImportDepartments fetchDepartments={props.fetchDepartments} />
           <Button
             variant="contained"
@@ -297,6 +302,38 @@ export default function Departments({
     setPage(0);
   };
 
+  const handleReport = () => {
+    const tableRows = [["ID", "Department", "Salary Duration", "Designations"]];
+
+    try {
+      departments.forEach((item) => {
+        tableRows.push([
+          item.id,
+          item.department,
+          item.basicsalary_in_duration || "",
+          designations
+            .filter((d) => d.departmentname === item.department)
+            .map((d) => d.designation)
+            .join(","),
+        ]);
+      });
+
+      const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "Departments.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const fetchDepartments = async () => {
     const res = await fetch("/api/admin/department");
     const data = await res.json();
@@ -325,6 +362,7 @@ export default function Departments({
             setDepartment("");
           }}
           fetchDepartments={fetchDepartments}
+          handleReport={handleReport}
         />
         <TableContainer
           sx={{

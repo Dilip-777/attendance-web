@@ -1,9 +1,10 @@
 // assets
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import DescriptionIcon from "@mui/icons-material/Description";
+import LocalShipping from "@mui/icons-material/LocalShipping";
 
 // constant
-const icons = { LocalShippingIcon, DescriptionIcon };
+const icons = { LocalShippingIcon, DescriptionIcon, LocalShipping };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -64,6 +65,14 @@ const automobile = {
       type: "item",
       url: "/vehiclelogbook",
       icon: icons.DescriptionIcon,
+      breadcrumbs: false,
+    },
+    {
+      id: "/automobile-finalsheet",
+      title: "FinalSheet Hiring",
+      type: "item",
+      url: "/automobile-finalsheet",
+      icon: icons.LocalShipping,
       breadcrumbs: false,
     },
   ],

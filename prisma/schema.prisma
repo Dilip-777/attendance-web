@@ -124,6 +124,7 @@ model Contractor {
   expirationDate              String?
   servicecharge               Float?
   tds                         Float?
+  gst                         Float?
   bankaccountnumber           String?
   ifscno                      String?
   beneficialname              String?
@@ -188,7 +189,7 @@ model Contractor {
   salarysvr12hr               Int                  @default(0)
   deployment                  Boolean              @default(false)
   minManpower                 Boolean              @default(false)
-  minHeadcount                Int                  @default(0)
+  minHeadcount                Float                @default(0)
   workorderhighlights         String?
   employee                    Employee[]
   safety                      Safety[]
@@ -459,6 +460,12 @@ model Deductions {
   anyother       Int        @default(0)
   remarks        String?
   contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
+}
+
+model Shift {
+  id   String @id @default(cuid())
+  name String @unique
+  code String @unique
 }
 
 model Vehicle {

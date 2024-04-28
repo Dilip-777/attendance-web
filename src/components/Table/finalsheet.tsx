@@ -184,13 +184,13 @@ export default function FinalSheetta({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {departments?.map((d) => (
+                {departments.map((d, index) => (
                   <TableRow key={d.id}>
                     <TableCell align="center" sx={{ fontWeight: "600" }}>
                       {d.department}
                     </TableCell>
                     {headers.map((header, index) => (
-                      <TableCell key={index} align="center">
+                      <TableCell key={index + header} align="center">
                         {getRoundOff(
                           _.get(totals, [header, d.department]) || 0
                         )}
@@ -348,20 +348,24 @@ export default function FinalSheetta({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {departments?.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell align="center" sx={{ fontWeight: "600" }}>
-                      {d.department}
-                    </TableCell>
-                    {headers.map((header, index) => (
-                      <TableCell key={index} align="center">
-                        {getRoundOff(
-                          _.get(totals, [header, d.department]) || 0
-                        )}
+                {departments
+                  ?.filter((d) => {
+                    return _.get(totals, [headers[0], d.department]) > 0;
+                  })
+                  .map((d) => (
+                    <TableRow key={d.id}>
+                      <TableCell align="center" sx={{ fontWeight: "600" }}>
+                        {d.department}
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
+                      {headers.map((header, index) => (
+                        <TableCell key={index} align="center">
+                          {getRoundOff(
+                            _.get(totals, [header, d.department]) || 0
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
                 {/* {headers.map((header, index) => (
               <TableRow key={index}>
                 {Object.values(totals).find((t: any) => t.date === header)}

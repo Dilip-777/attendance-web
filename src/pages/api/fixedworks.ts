@@ -42,6 +42,15 @@ export default async function works(req: NextApiRequest, res: NextApiResponse) {
         },
       });
 
+    await prisma.hiredFixedWork.deleteMany({
+      where: {
+        contractorid: contractorId,
+        description: {
+          notIn: fixedworks.map((work: any) => work.description),
+        },
+      },
+    });
+
     await prisma.contractor.update({
       where: {
         contractorId: contractorId,

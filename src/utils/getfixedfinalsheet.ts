@@ -24,6 +24,8 @@ export const getWorksCalculations = (
 ) => {
   const totals = {
     totalAmount: 0,
+    taxable: 0,
+    servicecharge: 0,
     gst: 0,
     billamount: 0,
     tds: 0,
@@ -32,15 +34,26 @@ export const getWorksCalculations = (
   const rows = works.map((work, index) => {
     const { id, description, rate, quantity, totalAmount } = work;
 
-    const gst = parseFloat((totalAmount * 0.18).toFixed(2));
+    const servicechargeRate = contractor.servicecharge ?? 0;
+
+    const servicecharge = (totalAmount * servicechargeRate) / 100;
+    const taxable = totalAmount + servicecharge;
+
+    const gst = parseFloat(
+      ((taxable * (contractor?.gst || 0)) / 100).toFixed(2)
+    );
     totals.totalAmount += totalAmount;
+    totals.taxable += taxable;
+
     totals.gst += gst;
-    const billamount = parseFloat((totalAmount + gst).toFixed(2));
+
+    const billamount = parseFloat((taxable + gst).toFixed(2));
     totals.billamount += billamount;
 
     const tds = parseFloat(
-      ((billamount * (Number(contractor.tds) || 0)) / 100).toFixed(2)
+      ((taxable * (Number(contractor.tds) || 0)) / 100).toFixed(2)
     );
+    totals.servicecharge += servicecharge;
     totals.tds += tds;
     const netPayable = billamount - tds;
     totals.netPayable += netPayable;
@@ -50,6 +63,9 @@ export const getWorksCalculations = (
       rate: rate as number | string,
       quantity: quantity as number | string,
       totalAmount,
+      taxable,
+      servicechargeRate,
+      servicecharge,
       gst,
       billamount,
       tds,
@@ -61,7 +77,11 @@ export const getWorksCalculations = (
     description: "",
     rate: "",
     quantity: "",
+
     totalAmount: totals.totalAmount,
+    taxable: totals.taxable,
+    servicechargeRate: 0,
+    servicecharge: totals.servicecharge,
     gst: totals.gst,
     billamount: totals.billamount,
     tds: totals.tds,
@@ -124,14 +144,15 @@ export const getAttendanceCalculations = (
     const servicechargeAmount = (totalManDayAmount * servicechargeRate) / 100;
 
     const taxable = totalManDayAmount + otamount + servicechargeAmount;
-    const gst = (taxable * (employee.gst ?? 0)) / 100;
+    const gst = (taxable * (contractor?.gst || 0)) / 100;
 
     const billAmount = taxable + gst;
-    const tds = (taxable * (employee.tds ?? 0)) / 100;
+    const tds = (taxable * (contractor.tds ?? 0)) / 100;
     const netPayable = billAmount - tds;
 
     totals.servicechargeRate += servicechargeRate;
     totals.servicechargeAmount += servicechargeAmount;
+
     totals.taxable += taxable;
     totals.gst += gst;
     totals.billAmount += billAmount;
@@ -190,12 +211,10 @@ export const getHourlyCalculation = (
 ) => {
   const noofdays = dayjs(month, "MM/YYYY").daysInMonth();
 
-  let salary = 0;
   let shifthrs = 0;
   contractor.departments.forEach((department) => {
     department.designations.forEach((designation) => {
       if (designation.designation.toLowerCase().trim() === "fixed") {
-        salary = designation.basicsalary ?? 0;
         shifthrs = designation.allowed_wrking_hr_per_day;
       }
     });
@@ -209,18 +228,21 @@ export const getHourlyCalculation = (
     fullTime.reduce(
       (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
       0
-    ) / shifthrs || 0;
+    ) / (shifthrs || 1);
 
   const totalManDays = count + overtime || 0;
-  const noofEmployees = contractor.employee.length;
-  const requiredManDays = noofdays * noofEmployees;
-  const shortage = requiredManDays - totalManDays;
-  const rate = salary;
-  const taxable = totalManDays * salary;
-  const gst = (taxable * 18) / 100;
+  const noofEmployees = Math.round(totalManDays / noofdays);
+  const requiredManDays = Math.round(contractor.minHeadcount * noofdays);
+  const shortage = Math.min(0, totalManDays - requiredManDays);
+  let t = contractor.hiredFixedWork[0]?.totalAmount || 0;
+  t = t + (t * (contractor.servicecharge || 0)) / 100;
+  const rate = Math.round(t / ((contractor.minHeadcount || 1) * noofdays));
+
+  const taxable = shortage * rate;
+  const gst = Math.round((taxable * (contractor?.gst || 0)) / 100);
   const billAmount = taxable + gst;
 
-  const tds = (taxable * (contractor.tds ?? 0)) / 100;
+  const tds = Math.round((taxable * (contractor.tds ?? 0)) / 100);
 
   const netPayable = billAmount - tds;
 

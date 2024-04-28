@@ -1,7 +1,10 @@
-import prisma from '@/lib/prisma';
-import { NextApiRequest, NextApiResponse } from 'next';
+import prisma from "@/lib/prisma";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function gettimekeeper(req: NextApiRequest, res: NextApiResponse) {
+export default async function gettimekeeper(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const { month, contractor, department, departments } = req.query;
 
   // await prisma.timeKeeper.deleteMany()
@@ -13,7 +16,7 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
           endsWith: month as string,
         },
         attendance: {
-          not: '0',
+          not: "0",
         },
 
         approvedByTimekeeper: true,
@@ -39,7 +42,7 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
         // },
         department: department as string,
         attendance: {
-          not: '0',
+          not: "0",
         },
         approvedByTimekeeper: true,
       },
@@ -60,10 +63,10 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
         //     in: departments
         // },
         department: {
-          in: (departments as string).split(','),
+          in: (departments as string).split(","),
         },
         attendance: {
-          not: '0',
+          not: "0",
         },
         approvedByTimekeeper: true,
       },
@@ -83,8 +86,9 @@ export default async function gettimekeeper(req: NextApiRequest, res: NextApiRes
       //     in: departments
       // },
       attendance: {
-        not: '0',
+        in: ["1", "0.5"],
       },
+
       approvedByTimekeeper: true,
     },
   });

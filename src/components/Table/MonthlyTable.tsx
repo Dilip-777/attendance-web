@@ -23,11 +23,13 @@ export default function MonthlyTable({
   department: Department | undefined;
   designations: DesignationsWithEmployees[];
 }) {
+  console.log(designations, "designations");
+
   const sidebar = designations
     .filter((d) => d.departmentname === department?.department)
     .filter((d) => d.employees.length > 0)
     .map((d) => {
-      if (d.basicsalary_in_duration !== "Hourly")
+      if (d.basicsalary_in_duration !== "Houly")
         return { main: d.designation, id: d.id };
       if (d.gender === "Male")
         return { main: d.designation, sub: "M", id: d.id };
@@ -60,6 +62,8 @@ export default function MonthlyTable({
     "TDS",
     "Net Payable",
   ];
+
+  console.log(sidebar, "sidebar");
 
   return (
     <Paper
@@ -128,22 +132,28 @@ export default function MonthlyTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {sidebar.map((item) => (
-              <TableRow hover role="checkbox" tabIndex={-1} key={item.id}>
-                <TableCell align="center" sx={{ fontWeight: "600" }}>
-                  {item.main}
-                </TableCell>
-                {item.sub && <TableCell align="center">{item.sub}</TableCell>}
-                {rows.map((row, index) => (
-                  <TableCell key={index} align="center">
-                    {row.date === "Service Charge Rate"
-                      ? _.get(row, item.id)
-                      : getRoundOff(_.get(row, item.id) || 0)}
-                    {/* {getRoundOff(_.get(row, item.id) || 0)} */}
+            {sidebar
+              .filter((item) => {
+                if (item.main === "Total") return true;
+                if (rows[0]) return rows[0][item.id] !== 0;
+                else return true;
+              })
+              .map((item) => (
+                <TableRow hover role="checkbox" tabIndex={-1} key={item.id}>
+                  <TableCell align="center" sx={{ fontWeight: "600" }}>
+                    {item.main}
                   </TableCell>
-                ))}
-              </TableRow>
-            ))}
+                  {item.sub && <TableCell align="center">{item.sub}</TableCell>}
+                  {rows.map((row, index) => (
+                    <TableCell key={index} align="center">
+                      {row.date === "Service Charge Rate"
+                        ? _.get(row, item.id)
+                        : getRoundOff(_.get(row, item.id) || 0)}
+                      {/* {getRoundOff(_.get(row, item.id) || 0)} */}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>

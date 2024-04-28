@@ -16,7 +16,9 @@ import {
   Employee,
   HiredFixedWork,
   Hsd,
+  Safety,
   SeperateSalary,
+  Stores,
   TimeKeeper,
   Vehicle,
   Workorder,
@@ -25,7 +27,7 @@ import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Details from "@/components/Table/details";
 // import PrintModal from "@/components/PrintFinalSheet/PrintModal";
 import dynamic from "next/dynamic";
@@ -40,6 +42,7 @@ import {
   getHourlyCalculation,
   getWorksCalculations,
 } from "@/utils/getfixedfinalsheet";
+import { handleFixedPrint } from "@/components/PrintFinalSheet/printFixed";
 
 const headcells = [
   {
@@ -67,6 +70,17 @@ const headcells = [
     label: "Amount",
     cell: (row: any) => row.totalAmount,
   },
+  {
+    id: "servicechargeRate",
+    label: "Service Charge Rate",
+    cell: (row: any) => row.servicechargeRate,
+  },
+  {
+    id: "servicecharge",
+    label: "Service Charge",
+    cell: (row: any) => row.servicecharge,
+  },
+  { id: "taxable", label: "Taxable", cell: (row: any) => row.taxable },
   { id: "gst", label: "GST", cell: (row: any) => row.gst },
   {
     id: "billamount",
@@ -79,21 +93,6 @@ const headcells = [
     label: "Net Payable",
     cell: (row: any) => row.netPayable,
   },
-];
-
-const headers = [
-  "Total Man days",
-  "Man Days Amount",
-  "Overtime Hrs.",
-  "OT Amount",
-  "Total Amount",
-  "Service Charge Rate",
-  "Service Charge Amount",
-  "Taxable",
-  "GST",
-  "Bill Amount",
-  "TDS",
-  "Net Payable",
 ];
 
 const headcells1 = [
@@ -201,6 +200,11 @@ const headcells2 = [
     cell: (row: any) => row.shortage,
   },
   {
+    id: "rate",
+    label: "Rate",
+    cell: (row: any) => row.rate,
+  },
+  {
     id: "taxable",
     label: "Taxable",
     cell: (row: any) => row.taxable,
@@ -252,6 +256,7 @@ export default function FinalSheet({
   workorders,
   contractor,
   timekeeper,
+  safety,
 }: {
   contractors: Contractor[];
   workorders: Workorder[];
@@ -265,6 +270,7 @@ export default function FinalSheet({
     hiredFixedWork: HiredFixedWork[];
   };
   timekeeper: TimeKeeper[];
+  safety: Safety | null;
 }) {
   const [value, setValue] = useState<string>(dayjs().format("MM/YYYY"));
   const [selectedContractor, setSelectedContractor] = useState<string>(
@@ -274,34 +280,13 @@ export default function FinalSheet({
   const [details, setDetails] = useState<any>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [total, setTotal] = useState(0);
-  const [hsdcost, setHsdCost] = useState(0);
-  const [cost, setCost] = useState({
-    prevHiringCost: 0,
-    monthHiringCost: 0,
-    prevHsdCost: 0,
-    monthHsdCost: 0,
-    prevHsdConsumed: 0,
-    monthHsdConsumed: 0,
-    prevHsdRate: 0,
-    monthHsdRate: 0,
-    prevCost: 0,
-    monthCost: 0,
-  });
+
   const [calRows, setCalRows] = useState<
     { heading: string; headcells: any[]; data: any[] }[]
   >([]);
   const [colSpans, setColSpans] = useState<number[]>([]);
-  const [vehicles, setVehicles] = useState<
-    (Vehicle & {
-      automobile: Automobile[];
-    })[]
-  >([]);
+  const [store, setStore] = useState<Stores | null>(null);
   const [deduction, setDeduction] = useState<Deductions | null>(null);
-  const [selectedVehicles, setSelectedVehicles] = useState<
-    (Vehicle & {
-      automobile: Automobile[];
-    })[]
-  >([]);
 
   const router = useRouter();
   const { month } = router.query;
@@ -336,10 +321,7 @@ export default function FinalSheet({
       contractor
     );
 
-    if (
-      contractor.departments[0]?.basicsalary_in_duration?.toLowerCase() ===
-      "monthly"
-    ) {
+    if (contractor.deployment) {
       const data: any[] = getAttendanceCalculations(
         contractor,
         timekeeper,
@@ -396,7 +378,7 @@ export default function FinalSheet({
       ]);
       setTotal(data[0].netPayable + totals.netPayable);
       setColSpans([9]);
-    } else {
+    } else if (contractor.minManpower) {
       const calobj = getHourlyCalculation(
         contractor,
         timekeeper,
@@ -432,7 +414,17 @@ export default function FinalSheet({
         },
       ]);
       setTotal(calobj.netPayable + totals.netPayable);
-      setColSpans([6]);
+      setColSpans([7]);
+    } else {
+      setCalRows([
+        {
+          headcells: headcells,
+          heading: "Fixed Works",
+          data: rows,
+        },
+      ]);
+      setTotal(totals.netPayable);
+      setColSpans([4]);
     }
 
     // const data = getAttendanceCalculations(
@@ -460,7 +452,21 @@ export default function FinalSheet({
       c.contractorId === contractor?.contractorId && c.startDate.includes(value)
   );
 
-  console.log(calRows);
+  const fetchStoreAndSafety = async () => {
+    setLoading(true);
+    const res = await axios.get(
+      `/api/stores?contractorid=${contractor.contractorId}&month=${
+        month || dayjs().format("MM/YYYY")
+      }`
+    );
+    setStore(res.data);
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchStoreAndSafety();
+  }, []);
 
   return loading ? (
     <Box
@@ -526,21 +532,24 @@ export default function FinalSheet({
             />
           </Stack>
 
-          {/* <Button
+          <Button
             variant="contained"
             onClick={() =>
-              handleAutomobileprint({
+              handleFixedPrint({
                 calRows,
                 contractor: contractor as Contractor,
                 month: value,
                 total: total,
                 workorder: w,
+                safetAmount: safety?.totalAmount || 0,
+                storesAmount: store?.totalAmount || 0,
+                deduction,
               })
             }
             color="secondary"
           >
             Print
-          </Button> */}
+          </Button>
         </Box>
         <Divider sx={{ my: 2 }} />
 
@@ -599,7 +608,8 @@ export default function FinalSheet({
         <FinalSheetTable
           data={calRows}
           total={total}
-          hsdcost={hsdcost}
+          hsdcost={store?.totalAmount || 0}
+          safetyAmount={safety?.totalAmount || 0}
           colspans={colSpans}
           deduction={deduction}
           fixed={true}
@@ -617,7 +627,7 @@ export default function FinalSheet({
           },
           {
             label: "Cost of the Month",
-            value: "0",
+            value: total.toString(),
           },
           {
             label: "Cost Upto This Month",
@@ -756,16 +766,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           },
         },
         departments: {
-          where: {
-            designations: {
-              some: {
-                designation: {
-                  equals: "fixed",
-                  mode: "insensitive",
-                },
-              },
-            },
-          },
           include: {
             designations: true,
           },
@@ -773,7 +773,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
 
       where: {
-        servicedetail: "Equipment / Vehicle Hiring",
+        servicedetail: "Fixed",
       },
     });
   }
@@ -787,9 +787,29 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
+  console.log(
+    contractor?.contractorId,
+    (month as string) || dayjs().format("MM/YYYY")
+  );
+
+  const safety = await prisma.safety.findFirst({
+    where: {
+      contractorid: contractor?.contractorId,
+      month: (month as string) || dayjs().format("MM/YYYY"),
+    },
+  });
+
+  console.log(safety);
+
   const workorders = await prisma.workorder.findMany();
 
   return {
-    props: { contractors, workorders, contractor: contractor, timekeeper },
+    props: {
+      contractors,
+      workorders,
+      contractor: contractor,
+      timekeeper,
+      safety,
+    },
   };
 };

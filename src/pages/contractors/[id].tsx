@@ -48,7 +48,7 @@ const validationSchema = Yup.object().shape({
   expirationDate: stringtype,
   servicecharge: Yup.number().required("Rquired"),
   tds: Yup.number().required("Rquired"),
-
+  gst: Yup.number().required("Rquired"),
   bankaccountnumber: stringtype.required("Required"),
   ifscno: stringtype.required("Required"),
   pancardno: stringtype,
@@ -147,6 +147,7 @@ export default function EditContractor({
     expirationDate: contractor?.expirationDate || "",
     servicecharge: contractor?.servicecharge || 0,
     tds: contractor?.tds || 0,
+    gst: contractor?.gst || 0,
     bankaccountnumber: contractor?.bankaccountnumber || "",
     ifscno: contractor?.ifscno || "",
     beneficialname: contractor?.beneficialname || "",
@@ -423,6 +424,15 @@ export default function EditContractor({
                         name="tds"
                         label="TDS*"
                         placeHolder="Enter the TDS"
+                        disabled={false}
+                        type="number"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} lg={4}>
+                      <FormInput
+                        name="gst"
+                        label="GST*"
+                        placeHolder="Enter the GST"
                         disabled={false}
                         type="number"
                       />

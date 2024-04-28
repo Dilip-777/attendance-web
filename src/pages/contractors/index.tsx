@@ -387,10 +387,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  let where: any = {};
+
+  if (session?.user?.role === "TimeKeeper" || session?.user?.role === "HR") {
+    where = {
+      servicedetail: {
+        not: "Equipment / Vehicle Hiring",
+      },
+    };
+  }
+
   const contractors = await prisma.contractor.findMany({
     include: {
       departments: true,
     },
+    where,
   });
   return {
     props: {

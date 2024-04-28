@@ -9,69 +9,6 @@ import {
 } from "@mui/material";
 import { Deductions } from "@prisma/client";
 
-const headcells = [
-  { id: "vehicleNo", label: "Vehicle No", cell: (row: any) => row.vehicleNo },
-  {
-    id: "vehicleType",
-    label: "Vehicle Type",
-    cell: (row: any) => row.vehicleType,
-  },
-  { id: "charges", label: "Vehicle Charges", cell: (row: any) => row.charges },
-  {
-    id: "paymentMode",
-    label: "Payment Calculate Structure",
-    cell: (row: any) => row.paymentMode,
-  },
-  {
-    id: "rate",
-    label: "Payment Calculation Rate",
-    cell: (row: any) => row.rate,
-  },
-  {
-    id: "running",
-    label: "Running (Duration/Distance)",
-    cell: (row: any) => (
-      <Grid container columnSpacing={4}>
-        {row.running.hrs && (
-          <>
-            <Grid item xs={6}>
-              HRS
-            </Grid>
-            <Grid item xs={6}>
-              {row.running.hrs}
-            </Grid>
-          </>
-        )}
-        <Grid item xs={6}>
-          Days
-        </Grid>
-        <Grid item xs={6}>
-          {row.running.days}
-        </Grid>
-        {row.running.kms && (
-          <>
-            <Grid item xs={6}>
-              KMS
-            </Grid>
-            <Grid item xs={6}>
-              {row.running.kms}
-            </Grid>
-          </>
-        )}
-      </Grid>
-    ),
-  },
-  { id: "taxable", label: "Taxable Amount", cell: (row: any) => row.taxable },
-  { id: "gst", label: "GST", cell: (row: any) => row.gst },
-  {
-    id: "billamount",
-    label: "Bill Amount",
-    cell: (row: any) => row.billamount,
-  },
-  { id: "tds", label: "TDS", cell: (row: any) => row.tds },
-  { id: "netamount", label: "Net Amount", cell: (row: any) => row.netamount },
-];
-
 interface Props {
   data: {
     heading: string;
@@ -100,6 +37,7 @@ interface Props {
   };
   deduction: Deductions | null;
   fixed?: boolean;
+  safetyAmount?: number;
 }
 
 export default function FinalSheetTable({
@@ -110,6 +48,7 @@ export default function FinalSheetTable({
   colspans,
   deduction,
   fixed,
+  safetyAmount,
 }: Props) {
   const data1 = [
     {
@@ -221,6 +160,19 @@ export default function FinalSheetTable({
                           (deduction?.gsthold || 0) || 0}
                       </TableCell>
                     </TableRow>
+                    {(safetyAmount || safetyAmount === 0) && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={colspans ? colspans[0] : 7}
+                        ></TableCell>
+                        <TableCell sx={{ fontWeight: "600" }} colSpan={4}>
+                          Safety Penalty / Extra PPE / Extra Helment
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: "600" }}>
+                          {safetyAmount || 0}
+                        </TableCell>
+                      </TableRow>
+                    )}
                     <TableRow>
                       <TableCell
                         colSpan={colspans ? colspans[0] : 7}
@@ -251,7 +203,7 @@ export default function FinalSheetTable({
                         Any Other Deductions (If any)
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
-                        {deduction?.anyother}
+                        {deduction?.anyother || 0}
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -263,7 +215,8 @@ export default function FinalSheetTable({
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
                         {Math.round(
-                          total +
+                          total -
+                            (safetyAmount || 0) -
                             hsdcost +
                             ((deduction?.gstrelease || 0) -
                               (deduction?.gsthold || 0) || 0) -
@@ -307,9 +260,15 @@ export default function FinalSheetTable({
                 {data1.map((row, index) => (
                   <TableRow>
                     <TableCell align="center">{row.description}</TableCell>
-                    <TableCell align="center">{row.costprev}</TableCell>
-                    <TableCell align="center">{row.costmonth}</TableCell>
-                    <TableCell align="center">{row.costupto}</TableCell>
+                    <TableCell align="center">
+                      {Math.round(row.costprev || 0)}
+                    </TableCell>
+                    <TableCell align="center">
+                      {Math.round(row.costmonth || 0)}
+                    </TableCell>
+                    <TableCell align="center">
+                      {Math.round(row.costupto || 0)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

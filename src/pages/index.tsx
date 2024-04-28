@@ -87,6 +87,7 @@ const handleClickReport = async (data: TimeKeeper[]) => {
       "Designation",
       "Gender",
       "Status",
+      "Final OT Hours",
     ],
   ];
 
@@ -115,6 +116,7 @@ const handleClickReport = async (data: TimeKeeper[]) => {
         item.designation?.toString() || "-",
         item?.gender || "-",
         item.status || "-",
+        item.manualovertime?.toString() ?? item.overtime.toString() ?? "-",
       ]);
     });
 
@@ -514,6 +516,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 </Box>
                 <FormSelect
                   options={[
+                    { label: "All", value: "all" },
                     { label: "All Present", value: "1.5" },
                     { label: "Present", value: "1" },
                     { label: "Half Present", value: "0.5" },
@@ -794,16 +797,6 @@ export default function TimeKeeperTable({}: // contractors,
         console.log(err);
         setLoading(false);
       });
-    // await axios
-    //   .delete(`/api/timekeeper/${id}`)
-    //   .then((res) => {
-    //     fetchTimeKeeper();
-    //     setLoading(false);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //     setLoading(false);
-    //   });
   };
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -843,8 +836,13 @@ export default function TimeKeeperTable({}: // contractors,
   }, [filter]);
 
   const fetchTimeKeeper = async () => {
+    const startDate = localStorage.getItem("startDate") as string;
+    let endDate: any = localStorage.getItem("endDate") as string;
+    endDate = endDate ? dayjs(endDate) : dayjs();
+    const attendance = (localStorage.getItem("attendance") as string) ?? "1.5";
+    const contractorName = localStorage.getItem("contractorName") as string;
     let dateArray = [];
-    let currentDate = startDate;
+    let currentDate = startDate ? dayjs(startDate) : dayjs().startOf("month");
     while (currentDate?.isBefore(endDate) || currentDate?.isSame(endDate)) {
       dateArray.push(currentDate.format("DD/MM/YYYY"));
       currentDate = currentDate.add(1, "day");
@@ -854,7 +852,7 @@ export default function TimeKeeperTable({}: // contractors,
       contractors.find((c) => c.contractorname === contractorName)
         ?.contractorId || "all";
 
-    const queryString = `/api/timekeeper/gettimekeepers?role=${role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${contractorId}&orderBy=${orderBy}&filter=${debouncedFilter}&attendance=${att}&dateArray=${dateArray}`;
+    const queryString = `/api/timekeeper/gettimekeepers?role=${role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${contractorId}&orderBy=${orderBy}&filter=${debouncedFilter}&attendance=${attendance}&dateArray=${dateArray}`;
     if (!debouncedFilter) setLoading(true);
     else setLoading(false);
     await axios
@@ -942,12 +940,14 @@ export default function TimeKeeperTable({}: // contractors,
         dateArray.push(currentDate.format("DD/MM/YYYY"));
         currentDate = currentDate.add(1, "day");
       }
+
       const role = session?.user?.role;
+      20;
       const contractorId =
         contractors.find((c) => c.contractorname === contractorName)
           ?.contractorId || "all";
 
-      const queryString = `/api/timekeeper/gettimekeepers?role=${role}&contractorname=${contractorId}&filter=${debouncedFilter}&attendance=${att}&dateArray=${dateArray}`;
+      const queryString = `/api/timekeeper/gettimekeepers?role=${role}&contractorname=${contractorId}&filter=${debouncedFilter}&attendance=${att}&dateArray=${dateArray}&orderBy=${orderBy}`;
       const res = await axios.get(queryString);
       handleClickReport(res.data.data);
     } catch (error) {
@@ -956,11 +956,10 @@ export default function TimeKeeperTable({}: // contractors,
   };
 
   const editOption = (comments: any[]) => {
-    const comment = comments.find(
+    const comment = comments?.find(
       (c) => c.role === "Corporate" || c.role === "HoCommercialAuditor"
     );
     if (comment && session?.user?.role === "PlantCommercial") return false;
-
     return true;
   };
 
@@ -1021,7 +1020,6 @@ export default function TimeKeeperTable({}: // contractors,
             )}
             {(row.status === "NoChanges" ||
               session?.user?.role !== "TimeKeeper") &&
-              session?.user?.role !== "HR" &&
               editOption(row.comment as any) && (
                 <TableCell size="small">
                   <IconButton
@@ -1129,7 +1127,6 @@ export default function TimeKeeperTable({}: // contractors,
             >
               <EnhancedTableHead
                 numSelected={0}
-                // onSelectAllClick={handleSelectAllClick}
                 rowCount={
                   timekeeper.filter(
                     (t) =>

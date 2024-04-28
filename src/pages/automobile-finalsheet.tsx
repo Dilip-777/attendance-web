@@ -16,14 +16,16 @@ import {
   Employee,
   FinalCalculations,
   Hsd,
+  Safety,
   SeperateSalary,
+  Stores,
   Vehicle,
   Workorder,
 } from "@prisma/client";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Details from "@/components/Table/details";
 // import PrintModal from "@/components/PrintFinalSheet/PrintModal";
@@ -282,6 +284,8 @@ export default function FinalSheet({
   const [open, setOpen] = useState<boolean>(false);
   const [total, setTotal] = useState(0);
   const [hsdcost, setHsdCost] = useState(0);
+  const [store, setStore] = useState<Stores | null>(null);
+  const [safety, setSafety] = useState<Safety[]>([]);
   const [cost, setCost] = useState({
     ytdHiringCost: 0,
     ytdHsdCost: 0,
@@ -315,7 +319,24 @@ export default function FinalSheet({
   const router = useRouter();
   const { month } = router.query;
 
-  console.log(contractor.finalCalculations);
+  const { data: session } = useSession();
+
+  const fetchStoreAndSafety = async () => {
+    setLoading(true);
+    const res = await axios.get(
+      `/api/stores?contractorid=${contractor.contractorId}&month=${
+        month || dayjs().format("MM/YYYY")
+      }`
+    );
+    setStore(res.data);
+    const res1 = await axios.get(
+      `/api/safety?contractorid=${contractor.contractorId}&month=${
+        month || dayjs().format("MM/YYYY")
+      }`
+    );
+    setSafety(res1.data);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (contractor?.vehicle) {
@@ -326,7 +347,6 @@ export default function FinalSheet({
           (month as string) || dayjs().format("MM/YYYY"),
           contractor
         );
-      console.log(selectedVehicles, contractor, month);
       setTotal(total);
       setHsdCost(hsdcost);
       setCalRows([
@@ -412,6 +432,12 @@ export default function FinalSheet({
     (c) =>
       c.contractorId === contractor?.contractorId && c.startDate.includes(value)
   );
+
+  useEffect(() => {
+    fetchStoreAndSafety();
+  }, []);
+
+  console.log(hsdcost, store, "hsd");
 
   return loading ? (
     <Box
@@ -501,30 +527,32 @@ export default function FinalSheet({
           >
             Freeze
           </Button> */}
-          <Stack direction="row" spacing={2}>
-            <SaveButton
-              contractorId={contractor.contractorId}
-              month={(month as string) || dayjs().format("MM/YYYY")}
-              cost={cost}
-            />
+          {session?.user?.role === "Corporate" && (
+            <Stack direction="row" spacing={2}>
+              <SaveButton
+                contractorId={contractor.contractorId}
+                month={(month as string) || dayjs().format("MM/YYYY")}
+                cost={cost}
+              />
 
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleAutomobileprint({
-                  calRows,
-                  contractor: contractor as Contractor,
-                  month: value,
-                  total: total,
-                  workorder: w,
-                  cost: cost,
-                })
-              }
-              color="secondary"
-            >
-              Print
-            </Button>
-          </Stack>
+              <Button
+                variant="contained"
+                onClick={() =>
+                  handleAutomobileprint({
+                    calRows,
+                    contractor: contractor as Contractor,
+                    month: value,
+                    total: total,
+                    workorder: w,
+                    cost: cost,
+                  })
+                }
+                color="secondary"
+              >
+                Print
+              </Button>
+            </Stack>
+          )}
         </Box>
         <Divider sx={{ my: 2 }} />
         <Stack direction="row" spacing={2} rowGap={2} flexWrap="wrap">
@@ -597,42 +625,48 @@ export default function FinalSheet({
         <FinalSheetTable
           data={calRows}
           total={total}
-          hsdcost={hsdcost}
+          hsdcost={hsdcost + (store?.totalAmount || 0)}
           cost={cost}
           deduction={deduction}
+          fixed={session?.user?.role === "Automobile"}
         />
       )}
       <Divider sx={{ my: 2 }} />
 
-      <Divider sx={{ my: 2 }} />
-      <Typography variant="h4" sx={{ mt: 2, mb: 4 }}>
-        Bank Account Information :
-      </Typography>
-      <Details
-        rows={[
-          {
-            label: "Beneficial Name",
-            value: contractor?.beneficialname as string,
-          },
-          {
-            label: "Account Number",
-            value: contractor?.bankaccountnumber as string,
-          },
-          { label: "IFSC Code", value: contractor?.ifscno as string },
-          {
-            label: "Payment Date",
-            value: details?.payoutracker?.month || ("-" as string),
-          },
-          {
-            label: "Payment Reference Number",
-            value: details?.payoutracker?.id || "-",
-          },
-          {
-            label: "Paid Amount",
-            value: Math.ceil(details?.payoutracker?.actualpaidoutmoney) || "-",
-          },
-        ]}
-      />
+      {session?.user?.role === "Corporate" && (
+        <>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="h4" sx={{ mt: 2, mb: 4 }}>
+            Bank Account Information :
+          </Typography>
+          <Details
+            rows={[
+              {
+                label: "Beneficial Name",
+                value: contractor?.beneficialname as string,
+              },
+              {
+                label: "Account Number",
+                value: contractor?.bankaccountnumber as string,
+              },
+              { label: "IFSC Code", value: contractor?.ifscno as string },
+              {
+                label: "Payment Date",
+                value: details?.payoutracker?.month || ("-" as string),
+              },
+              {
+                label: "Payment Reference Number",
+                value: details?.payoutracker?.id || "-",
+              },
+              {
+                label: "Paid Amount",
+                value:
+                  Math.ceil(details?.payoutracker?.actualpaidoutmoney) || "-",
+              },
+            ]}
+          />
+        </>
+      )}
       <PrintModal
         contractor={contractor as Contractor}
         date={value}

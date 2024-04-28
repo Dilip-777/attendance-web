@@ -3,8 +3,11 @@ import {
   Button,
   CircularProgress,
   Divider,
+  FormControl,
+  FormLabel,
   Grid,
   Paper,
+  Stack,
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/router";
@@ -20,6 +23,9 @@ import { getSession, useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
 import FormDate from "@/components/FormikComponents/FormDate";
+import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().optional(),
@@ -102,6 +108,19 @@ export default function EditTimkeeper({
     gender: timekeeper?.gender || "",
     comment: "",
     uploadDocument: undefined,
+  };
+
+  const getDifference = (start: string, end: string) => {
+    const startTime = dayjs(start, "HH:mm");
+    const endTime = dayjs(end, "HH:mm");
+    const diff = endTime.diff(startTime, "minute");
+    const hours = Math.floor(diff / 60);
+    const minutes = diff % 60;
+
+    const formattedHours = String(hours).padStart(2, "0");
+    const formattedMinutes = String(minutes).padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes}`;
   };
 
   return loading ? (
@@ -234,7 +253,13 @@ export default function EditTimkeeper({
             setSubmitting(false);
           }}
         >
-          {({ handleSubmit, values, initialValues, isSubmitting }) => {
+          {({
+            handleSubmit,
+            values,
+            initialValues,
+            isSubmitting,
+            setFieldValue,
+          }) => {
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={6} mt={2} container>
@@ -337,20 +362,82 @@ export default function EditTimkeeper({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormInput
-                      name="manualintime"
-                      label="Manual In Time"
-                      placeHolder="Manual In Time"
-                      disabled={false}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <FormControl
+                        sx={{
+                          maxWidth: { xs: 250, xl: 300 },
+                          width: "100%",
+                          my: 2,
+                        }}
+                      >
+                        <FormLabel sx={{ fontWeight: "700", mb: 0.5 }}>
+                          Manual In Time
+                        </FormLabel>
+                        <TimePicker
+                          ampm={false}
+                          value={
+                            values.manualintime
+                              ? dayjs(values.manualintime, "HH:mm")
+                              : null
+                          }
+                          onChange={(d) => {
+                            setFieldValue(
+                              "manualintime",
+                              d ? d.format("HH:mm") : ""
+                            );
+                            if (values.manualouttime && values.manualintime) {
+                              setFieldValue(
+                                "manualduration",
+                                getDifference(
+                                  d ? d.format("HH:mm") : "",
+                                  values.manualouttime
+                                )
+                              );
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </LocalizationProvider>
                   </Grid>
+
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormInput
-                      name="manualouttime"
-                      label="Manual Out Time"
-                      placeHolder="Manual Out Time"
-                      disabled={false}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <FormControl
+                        sx={{
+                          maxWidth: { xs: 250, xl: 300 },
+                          width: "100%",
+                          my: 2,
+                        }}
+                      >
+                        <FormLabel sx={{ fontWeight: "700", mb: 0.5 }}>
+                          Manual Out Time
+                        </FormLabel>
+                        <TimePicker
+                          ampm={false}
+                          value={
+                            values.manualouttime
+                              ? dayjs(values.manualouttime, "HH:mm")
+                              : null
+                          }
+                          onChange={(d) => {
+                            setFieldValue(
+                              "manualouttime",
+                              d ? d.format("HH:mm") : ""
+                            );
+
+                            if (values.manualouttime && values.manualintime) {
+                              setFieldValue(
+                                "manualduration",
+                                getDifference(
+                                  values.manualintime,
+                                  d ? d.format("HH:mm") : ""
+                                )
+                              );
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </LocalizationProvider>
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
                     <FormInput
@@ -430,6 +517,7 @@ export default function EditTimkeeper({
                   variant="contained"
                   sx={{ float: "right", mr: 10 }}
                   disabled={isSubmitting}
+                  color="secondary"
                 >
                   Submit
                   {isSubmitting && (

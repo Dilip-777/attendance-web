@@ -1,3 +1,5 @@
+import AutoComplete from "@/ui-component/Autocomplete";
+import FormInput from "@/ui-component/FormInput";
 import FormSelect from "@/ui-component/FormSelect";
 import MonthSelect from "@/ui-component/MonthSelect";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
@@ -104,7 +106,7 @@ export default function AddDeductions({
         >
           <Box
             p={{ xs: 0, sm: 2 }}
-            width={{ xs: "100%", sm: 400, md: 500 }}
+            width={{ xs: "100%", sm: 400 }}
             height={{ xs: "70%", sm: "100%" }}
             top={{ xs: "30%", sm: "0" }}
             sx={style}
@@ -129,13 +131,15 @@ export default function AddDeductions({
               <Divider />
               <FormControl fullWidth sx={{ mt: 2 }} color="secondary">
                 <Stack width="100%" spacing={4}>
-                  <FormSelect
+                  <AutoComplete
                     options={contractors.map((contractor) => ({
                       label: contractor.contractorname,
                       value: contractor.contractorId,
                     }))}
-                    handleChange={(e) => setContractorId(e as string)}
+                    // ={(e) => setContractorId(e as string)}
                     value={contractorId}
+                    setValue={(e) => setContractorId(e as string)}
+                    label="Contractor"
                   />
                   <MonthSelect
                     value={dayjs(month, "MM/YYYY")}
@@ -143,37 +147,33 @@ export default function AddDeductions({
                       setMonth(value?.format("MM/YYYY") || "")
                     }
                   />
-                  <TextField
+                  <FormInput
                     label="GST Hold"
-                    variant="outlined"
                     fullWidth
                     value={gsthold}
                     onChange={(e) => setGsthold(Number(e.target.value))}
                   />
-                  <TextField
+
+                  <FormInput
                     label="GST Release"
-                    variant="outlined"
                     fullWidth
                     value={gstrelease}
                     onChange={(e) => setGstrelease(Number(e.target.value))}
                   />
-                  <TextField
+                  <FormInput
                     label="Advance"
-                    variant="outlined"
                     fullWidth
                     value={advance}
                     onChange={(e) => setAdvance(Number(e.target.value))}
                   />
-                  <TextField
+                  <FormInput
                     label="Any Other"
-                    variant="outlined"
                     fullWidth
                     value={anyother}
                     onChange={(e) => setAnyother(Number(e.target.value))}
                   />
-                  <TextField
+                  <FormInput
                     label="Remarks"
-                    variant="outlined"
                     fullWidth
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}

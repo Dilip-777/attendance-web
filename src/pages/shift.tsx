@@ -15,7 +15,6 @@ import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import Delete from "@mui/icons-material/Delete";
 import Edit from "@mui/icons-material/Edit";
 import Search from "@mui/icons-material/Search";
@@ -25,20 +24,23 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Modal from "@mui/material/Modal";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Slide from "@mui/material/Slide";
-import { Stack, styled } from "@mui/material/";
+import { CircularProgress, FormControl, Stack, styled } from "@mui/material/";
 import { useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, Department, Designations, User } from "@prisma/client";
+import { Department, Shift, User } from "@prisma/client";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
 import EditDesignation from "@/components/Admin/EditDesignation";
-import _, { size } from "lodash";
+import _ from "lodash";
 import ImportDesignations from "@/components/importDesignations";
-import Add from "@mui/icons-material/Add";
-import AddSalary from "@/components/Admin/AddSalary";
+import StyledSearch from "@/ui-component/stylesearch";
+import SearchInput from "@/ui-component/stylesearch";
+import EditShift from "@/components/Admin/EditShift";
+import FormInput from "@/ui-component/FormInput";
+import Close from "@mui/icons-material/Close";
 
 const style = {
   position: "absolute",
@@ -47,17 +49,6 @@ const style = {
   bgcolor: "background.paper",
   boxShadow: 24,
 };
-
-const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
-  width: 300,
-  height: 40,
-  marginRight: 30,
-
-  "& fieldset": {
-    borderWidth: `1px !important`,
-    borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
-  },
-}));
 
 const createHeadCells = (
   id: string,
@@ -77,25 +68,9 @@ const createHeadCells = (
 
 const headCells = [
   createHeadCells("id", "Id", false, false),
-  createHeadCells("departmentname", "Department", false, false),
-  createHeadCells("designation", "Designation", false, false),
-  createHeadCells("gender", "Gender", false, false),
-  createHeadCells("basicsalary", "Basic Salary", false, false),
-  createHeadCells(
-    "allowed_wrking_hr_per_day",
-    "Allowed Working Hours",
-    false,
-    false
-  ),
-  createHeadCells(
-    "basicsalary_in_duration",
-    "Basic Salary In Duration",
-    false,
-    false
-  ),
-  createHeadCells("servicecharge", "Service Charge", false, false),
-  createHeadCells("contractorsalary", "Contractor Salary", false, false),
-  createHeadCells("action", "Action", false, false, 2),
+  createHeadCells("name", "Shift Name", false, false),
+  createHeadCells("code", "Shift Code", false, false),
+  createHeadCells("edit", "Action", false, false, 2),
 ];
 
 interface EnhancedTableToolbarProps {
@@ -103,14 +78,11 @@ interface EnhancedTableToolbarProps {
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   filter: string;
   handleOpen: () => void;
-  fetchDesignations: () => void;
-  departments: Department[];
-  handleReport: () => void;
+  fetchShifts: () => void;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, filter, setFilter, handleOpen, handleReport } = props;
-  const router = useRouter();
+  const { numSelected, filter, setFilter, handleOpen } = props;
 
   return (
     <Toolbar
@@ -138,10 +110,10 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           {numSelected} selected
         </Typography>
       ) : (
-        <StyledSearch
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Search designations..."
+        <SearchInput
+          filter={filter}
+          setFilter={setFilter}
+          placeholder="Search Shifts..."
           startAdornment={
             <InputAdornment position="start">
               <Search />
@@ -157,13 +129,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Tooltip>
       ) : (
         <Stack direction="row" spacing={2}>
-          <IconButton onClick={() => handleReport()}>
-            <LocalPrintshopIcon />
-          </IconButton>
-          <ImportDesignations
-            fetchDesignations={props.fetchDesignations}
-            departments={props.departments}
-          />
           <Button
             variant="contained"
             sx={{
@@ -173,7 +138,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             onClick={handleOpen}
           >
             {" "}
-            + Add Designation
+            + Add Shift
           </Button>
         </Stack>
       )}
@@ -181,36 +146,55 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function TimeKeeper({
-  departments,
-  contractors,
-}: {
-  departments: Department[];
-  contractors: Contractor[];
-}) {
-  const [orderby, setOrderby] = React.useState("id");
+export default function Shifts({ shifts }: { shifts: Shift[] }) {
+  const [orderby, setOrderby] = React.useState("name");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
   const [filter, setFilter] = React.useState("");
-  const [designations, setDesignations] = React.useState<Designations[]>([]);
-  const [designation, setDesignation] = React.useState<
-    Designations | undefined
-  >();
+  const [shift, setShift] = React.useState<Shift | undefined>();
   const matches = useMediaQuery("(min-width:600px)");
   const [loading, setLoading] = React.useState(false);
-  const [type, setType] = React.useState("");
+  const router = useRouter();
+  const [formValues, setFormValues] = React.useState({
+    name: "",
+    code: "",
+  });
+
+  React.useEffect(() => {
+    setFormValues({
+      name: shift?.name || "",
+      code: shift?.code || "",
+    });
+  }, [shift]);
+
+  const handleSubmit = async (e: any) => {
+    setLoading(true);
+    try {
+      if (shift) {
+        await axios.put("/api/shifts", {
+          id: shift.id,
+          ...formValues,
+        });
+      } else {
+        await axios.post("/api/shifts", formValues);
+      }
+      router.replace(router.asPath);
+    } catch (error) {
+      console.log(error);
+    }
+    setLoading(false);
+  };
 
   const handleClose = () => {
     setOpen(false);
-    setDesignation(undefined);
-    setType("");
+    setShift(undefined);
   };
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = designations.map((n) => n.id);
+      const newSelected = shifts.map((n) => n.id);
       setSelected(newSelected);
       return;
     }
@@ -247,67 +231,11 @@ export default function TimeKeeper({
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-  const fetchDesignations = async () => {
-    setLoading(true);
-    const res = await fetch("/api/admin/designations");
-    const data = await res.json();
-    setDesignations(data);
-    setLoading(false);
-  };
-
-  React.useEffect(() => {
-    fetchDesignations();
-  }, []);
-
-  const handleReport = () => {
-    const tableRows = [
-      [
-        "ID",
-        "Department",
-        "Designation",
-        "Gender",
-        "Salary",
-        "Allowed Working Hours",
-        "Basic Salary In Duration",
-        "Service Charge",
-      ],
-    ];
-
-    try {
-      designations.forEach((item) => {
-        tableRows.push([
-          item.id,
-          item.departmentname,
-          item.designation,
-          item.gender,
-          item.basicsalary.toString(),
-          item.allowed_wrking_hr_per_day.toString(),
-          item.basicsalary_in_duration,
-          item.servicecharge?.toString() || "0",
-        ]);
-      });
-
-      const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
-
-      // Download CSV file
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "Designations.csv");
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - designations.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - shifts.length) : 0;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -318,12 +246,11 @@ export default function TimeKeeper({
           setFilter={setFilter}
           handleOpen={() => {
             setOpen(true);
-            setDesignation(undefined);
-            setType("designation");
+            setShift(undefined);
           }}
-          fetchDesignations={fetchDesignations}
-          departments={departments}
-          handleReport={handleReport}
+          fetchShifts={() => {
+            router.replace(router.asPath);
+          }}
         />
         <TableContainer
           sx={{
@@ -348,16 +275,16 @@ export default function TimeKeeper({
             <EnhancedTableHead
               numSelected={selected.length}
               onSelectAllClick={handleSelectAllClick}
-              rowCount={designations.length}
+              rowCount={shifts.length}
               headCells={headCells}
               orderby={orderby}
               setOrderby={setOrderby}
               align="center"
             />
             <TableBody>
-              {designations
-                .filter((designation) =>
-                  _.get(designation, orderby, "designation")
+              {shifts
+                .filter((shift) =>
+                  _.get(shift, orderby, "name")
                     .toString()
                     .toLowerCase()
                     .includes(filter.toLowerCase())
@@ -389,41 +316,22 @@ export default function TimeKeeper({
                           }}
                         />
                       </TableCell>
-                      <TableCell id={labelId} scope="row" padding="none">
+                      <TableCell
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                        align="center"
+                      >
                         {row?.id}
                       </TableCell>
-                      <TableCell>{row.departmentname}</TableCell>
-                      <TableCell>{row.designation}</TableCell>
-                      <TableCell>{row.gender}</TableCell>
-                      <TableCell>{row.basicsalary}</TableCell>
-                      <TableCell>{row.allowed_wrking_hr_per_day}</TableCell>
-                      <TableCell>{row.basicsalary_in_duration}</TableCell>
-                      <TableCell>{row.servicecharge}</TableCell>
-                      <TableCell align="center" sx={{ fontSize: "5px" }}>
-                        <Button
-                          onClick={() => {
-                            setOpen(true);
-                            setType("salary");
-                            setDesignation(row);
-                          }}
-                          sx={{
-                            width: "100%",
-                            whiteSpace: "nowrap",
-                            fontSize: "13px",
-                          }}
-                          color="secondary"
-                        >
-                          <Add fontSize="small" />
-                          Add Salary
-                        </Button>
-                      </TableCell>
+                      <TableCell align="center">{row.name}</TableCell>
+                      <TableCell align="center">{row.code}</TableCell>
 
                       <TableCell size="small" align="left">
                         <IconButton
                           onClick={() => {
                             setOpen(true);
-                            setType("designation");
-                            setDesignation(row);
+                            setShift(row);
                           }}
                           sx={{ m: 0 }}
                         >
@@ -434,10 +342,10 @@ export default function TimeKeeper({
                       <TableCell size="small" align="left">
                         <IconButton
                           onClick={async () => {
-                            await axios.delete("/api/admin/designations", {
+                            await axios.delete("/api/shifts", {
                               data: { id: row.id },
                             });
-                            fetchDesignations();
+                            router.replace(router.asPath);
                           }}
                           sx={{ m: 0 }}
                         >
@@ -462,7 +370,7 @@ export default function TimeKeeper({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={designations.length}
+          count={shifts.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -495,22 +403,55 @@ export default function TimeKeeper({
             top={{ xs: "30%", sm: "0" }}
             sx={style}
           >
-            {type === "salary" && (
-              <AddSalary
-                handleClose={handleClose}
-                contractors={contractors}
-                designation={designation?.id || ""}
-                fetchDesignations={fetchDesignations}
+            <FormControl sx={{ p: "1rem" }} fullWidth>
+              <IconButton
+                onClick={handleClose}
+                sx={{ position: "absolute", top: 13, right: 23 }}
+              >
+                <Close />
+              </IconButton>
+              <Typography variant="h3"> Add Shift </Typography>
+              <FormInput
+                label="Shift Name"
+                placeholder="Enter Shift Name"
+                value={formValues.name}
+                onChange={(e) =>
+                  setFormValues((v) => ({
+                    ...v,
+                    name: e.target.value,
+                  }))
+                }
+                sx={{ maxWidth: "100%" }}
               />
-            )}
-            {type === "designation" && (
-              <EditDesignation
-                handleClose={handleClose}
-                selectedDesignation={designation}
-                departments={departments}
-                fetchDesignations={fetchDesignations}
+              <FormInput
+                label="Shift Code"
+                placeholder="Enter Shift Code"
+                value={formValues.code}
+                onChange={(e) =>
+                  setFormValues((v) => ({
+                    ...v,
+                    code: e.target.value,
+                  }))
+                }
+                sx={{ maxWidth: "100%" }}
               />
-            )}
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+                onClick={handleSubmit}
+                color="secondary"
+                sx={{ mt: 2 }}
+              >
+                Submit
+                {loading && (
+                  <CircularProgress
+                    size={15}
+                    sx={{ ml: 1, color: "#364152" }}
+                  />
+                )}
+              </Button>
+            </FormControl>
           </Box>
         </Slide>
       </Modal>
@@ -521,30 +462,19 @@ export default function TimeKeeper({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
 
-  const contractors = await prisma.contractor.findMany();
+  const shifts = await prisma.shift.findMany();
 
-  const departments = await prisma.department.findMany();
-
-  if (!(session?.user?.role === "Admin" || session?.user?.role === "HR")) {
+  if (session?.user?.role !== "Manager") {
     return {
       redirect: {
         destination: "/",
         permanent: false,
       },
     };
-  } else {
-    return {
-      props: {
-        departments,
-        contractors,
-      },
-    };
   }
+  return {
+    props: {
+      shifts,
+    },
+  };
 };
-
-// <Head>
-//   <title>Attendance</title>
-//   <meta name="description" content="Generated by create next app" />
-//   <meta name="viewport" content="width=device-width, initial-scale=1" />
-//   <link rel="icon" href="/favicon.ico" />
-// </Head>

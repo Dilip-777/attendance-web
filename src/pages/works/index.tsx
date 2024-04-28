@@ -221,7 +221,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (!contractorId) {
     contractorId = await prisma.contractor
-      .findFirst()
+      .findFirst({
+        where: {
+          servicedetail: "Fixed",
+        },
+      })
       .then((contractor) => contractor?.contractorId);
   }
 
@@ -234,7 +238,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    where: {
+      servicedetail: "Fixed",
+    },
+  });
   return {
     props: {
       contractors,

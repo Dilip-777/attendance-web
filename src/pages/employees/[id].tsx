@@ -1,41 +1,42 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import { useRouter } from 'next/router';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import { useRouter } from "next/router";
 // import {  useState } from "react";
-import FormInput from '@/components/FormikComponents/FormInput';
-import * as Yup from 'yup';
-import { Formik } from 'formik';
-import FormSelect from '@/components/FormikComponents/FormSelect';
-import { GetServerSideProps } from 'next';
-import { getSession } from 'next-auth/react';
-import prisma from '@/lib/prisma';
-import { Contractor, Department, Designations, Employee } from '@prisma/client';
-import axios from 'axios';
-import { CircularProgress } from '@mui/material';
+import FormInput from "@/components/FormikComponents/FormInput";
+import * as Yup from "yup";
+import { Formik } from "formik";
+import FormSelect from "@/components/FormikComponents/FormSelect";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
+import { Contractor, Department, Designations, Employee } from "@prisma/client";
+import axios from "axios";
+import { CircularProgress } from "@mui/material";
+import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 
-const numberType = Yup.number().required('Required');
+const numberType = Yup.number().required("Required");
 
 const mobilenumbertype = Yup.string().matches(
   /^(?:\+91[1-9]\d{9}|0[1-9]\d{9}|[1-9]\d{9})$/,
-  'Please enter a valid mobile number'
+  "Please enter a valid mobile number"
 );
 
 const validationSchema = Yup.object().shape({
-  contractorId: Yup.string().required('Required'),
-  employeeId: Yup.string().required('Required'),
+  contractorId: Yup.string().required("Required"),
+  employeeId: Yup.string().required("Required"),
   employeename: Yup.string()
-    .required('Required')
-    .matches(/^[A-Za-z ]+$/, 'Please enter only letters and spaces'),
-  designationId: Yup.string().required('Required'),
-  departmentId: Yup.string().required('Required'),
-  gender: Yup.string().required('Required'),
-  phone: mobilenumbertype.required('Required'),
-  emailid: Yup.string().required('Required').email().optional(),
-  basicsalary_in_duration: Yup.string().required('Required'),
+    .required("Required")
+    .matches(/^[A-Za-z ]+$/, "Please enter only letters and spaces"),
+  designationId: Yup.string().required("Required"),
+  departmentId: Yup.string().required("Required"),
+  gender: Yup.string().required("Required"),
+  phone: mobilenumbertype.required("Required"),
+  emailid: Yup.string().required("Required").email().optional(),
+  basicsalary_in_duration: Yup.string().required("Required"),
   basicsalary: numberType,
   allowed_wrking_hr_per_day: numberType,
   servicecharge: numberType.optional(),
@@ -51,26 +52,26 @@ interface EmployeeDesignationDepartment extends Employee {
 export default function Edit({
   contractors,
   employee,
-  departments,
   designations,
 }: {
-  contractors: Contractor[];
+  contractors: (Contractor & {
+    departments: Department[];
+  })[];
   employee: EmployeeDesignationDepartment;
-  departments: Department[];
   designations: Designations[];
 }) {
   const router = useRouter();
 
   const initialValues = {
-    contractorId: employee?.contractorId || '',
-    employeeId: employee?.employeeId || '',
-    employeename: employee?.employeename || '',
-    designationId: employee?.designationId || '',
-    departmentId: employee?.departmentId || '',
-    gender: employee?.gender || '',
+    contractorId: employee?.contractorId || "",
+    employeeId: employee?.employeeId || "",
+    employeename: employee?.employeename || "",
+    designationId: employee?.designationId || "",
+    departmentId: employee?.departmentId || "",
+    gender: employee?.gender || "",
     phone: employee?.phone || 0,
-    emailid: employee?.emailid || '',
-    basicsalary_in_duration: employee?.basicsalary_in_duration || '',
+    emailid: employee?.emailid || "",
+    basicsalary_in_duration: employee?.basicsalary_in_duration || "",
     basicsalary: employee?.basicsalary || 0,
     allowed_wrking_hr_per_day: employee?.allowed_wrking_hr_per_day || 0,
     servicecharge: employee?.servicecharge || 0,
@@ -98,25 +99,32 @@ export default function Edit({
     return unique;
   };
 
+  const getDepartments = (contractorId: string) => {
+    return (
+      contractors.find((c) => c.contractorId === contractorId)?.departments ||
+      []
+    );
+  };
+
   return (
     <>
       <Paper
         sx={{
-          height: '83.7vh',
-          pt: '1rem',
-          pb: '8rem',
-          overflow: 'hidden auto',
-          scrollBehavior: 'smooth',
-          '&::-webkit-scrollbar': {
+          height: "83.7vh",
+          pt: "1rem",
+          pb: "8rem",
+          overflow: "hidden auto",
+          scrollBehavior: "smooth",
+          "&::-webkit-scrollbar": {
             width: 7,
           },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#bdbdbd',
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#bdbdbd",
             borderRadius: 2,
           },
         }}
       >
-        <Box sx={{ height: '3rem', display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ height: "3rem", display: "flex", alignItems: "center" }}>
           <Typography variant="h4" ml={5} my="auto">
             Add Employee
           </Typography>
@@ -130,7 +138,7 @@ export default function Edit({
 
             setSubmitting(true);
             axios
-              .post('/api/hr/employee', {
+              .post("/api/hr/employee", {
                 id: employee ? employee.id : undefined,
                 ...rest,
                 contractorId: rest.contractorId,
@@ -138,12 +146,12 @@ export default function Edit({
                 phone: String(phone),
               })
               .then((res) => {
-                router.push('/employees');
+                router.push("/employees");
               })
               .catch((err) => {
-                if (err.response.data.message === 'Employee already exists') {
-                  alert('Employee Id already exists');
-                  setErrors({ employeeId: 'Employee Id already exists' });
+                if (err.response.data.message === "Employee already exists") {
+                  alert("Employee Id already exists");
+                  setErrors({ employeeId: "Employee Id already exists" });
                 }
               });
             setSubmitting(false);
@@ -154,7 +162,7 @@ export default function Edit({
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={3} mt={2} container>
                   <Grid item xs={12} sm={6} xl={4}>
-                    <FormSelect
+                    <AutoCompleteSelect
                       name="contractorId"
                       label="Contractor Name*"
                       placeHolder="Contractor Name"
@@ -184,12 +192,12 @@ export default function Edit({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} xl={4}>
-                    <FormSelect
+                    <AutoCompleteSelect
                       name="departmentId"
                       label="Department*"
                       placeHolder="Enter the Department"
                       disabled={false}
-                      options={departments.map((d) => ({
+                      options={getDepartments(values.contractorId).map((d) => ({
                         value: d.id,
                         label: d.department,
                       }))}
@@ -202,14 +210,14 @@ export default function Edit({
                       placeHolder="Gender"
                       disabled={false}
                       options={[
-                        { value: 'Male', label: 'Male' },
-                        { value: 'Female', label: 'Female' },
-                        { value: 'Other', label: 'Other' },
+                        { value: "Male", label: "Male" },
+                        { value: "Female", label: "Female" },
+                        { value: "Other", label: "Other" },
                       ]}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} xl={4}>
-                    <FormSelect
+                    <AutoCompleteSelect
                       name="designationId"
                       label="Designation*"
                       placeHolder="Enter the Designation"
@@ -226,7 +234,12 @@ export default function Edit({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} xl={4}>
-                    <FormInput name="emailid" label="Email*" placeHolder="Enter the Email" disabled={false} />
+                    <FormInput
+                      name="emailid"
+                      label="Email*"
+                      placeHolder="Enter the Email"
+                      disabled={false}
+                    />
                   </Grid>
                   <Grid item xs={12} sm={6} xl={4}>
                     <FormSelect
@@ -235,8 +248,8 @@ export default function Edit({
                       placeHolder="Basic Salary in Duration"
                       disabled={false}
                       options={[
-                        { value: 'Hourly', label: 'Hourly' },
-                        { value: 'Monthly', label: 'Monthly' },
+                        { value: "Hourly", label: "Hourly" },
+                        { value: "Monthly", label: "Monthly" },
                       ]}
                     />
                   </Grid>
@@ -268,15 +281,37 @@ export default function Edit({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} xl={4}>
-                    <FormInput name="gst" label="GST*" placeHolder="GST" type="number" disabled={false} />
+                    <FormInput
+                      name="gst"
+                      label="GST*"
+                      placeHolder="GST"
+                      type="number"
+                      disabled={false}
+                    />
                   </Grid>
                   <Grid item xs={12} sm={6} xl={4}>
-                    <FormInput name="tds" label="TDS*" placeHolder="TDS" disabled={false} type="number" />
+                    <FormInput
+                      name="tds"
+                      label="TDS*"
+                      placeHolder="TDS"
+                      disabled={false}
+                      type="number"
+                    />
                   </Grid>
                 </Grid>
-                <Button type="submit" variant="contained" sx={{ float: 'right', mr: 10 }} disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ float: "right", mr: 10 }}
+                  disabled={isSubmitting}
+                >
                   Submit
-                  {isSubmitting && <CircularProgress size={15} sx={{ ml: 1, color: '#364152' }} />}
+                  {isSubmitting && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: "#364152" }}
+                    />
+                  )}
                 </Button>
               </form>
             );
@@ -293,16 +328,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session) {
     return {
       redirect: {
-        destination: '/login',
+        destination: "/login",
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === 'Admin') {
+  if (session.user?.role === "Admin") {
     return {
       redirect: {
-        destination: '/admin',
+        destination: "/admin",
         permanent: false,
       },
     };
@@ -313,9 +348,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: id as string,
     },
   });
-  const departments = await prisma.department.findMany();
 
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    include: {
+      departments: true,
+    },
+  });
 
   const designations = await prisma.designations.findMany();
 
@@ -323,7 +361,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {
       contractors,
       employee,
-      departments,
       designations,
     },
   };

@@ -75,7 +75,7 @@ const CustomTable = (props: Props) => {
       }
     }
 
-    return propertyValue || "";
+    return propertyValue ?? "";
   };
 
   const handleClick = (

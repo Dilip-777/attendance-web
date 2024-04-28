@@ -1,6 +1,5 @@
 import Edit from "@mui/icons-material/Edit";
-import Launch from "@mui/icons-material/Launch";
-import Visibility from "@mui/icons-material/Visibility";
+
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
@@ -23,6 +22,7 @@ import { Button, Stack } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
 import MonthSelect from "@/ui-component/MonthSelect";
 import dayjs, { Dayjs } from "dayjs";
+import AutoComplete from "@/ui-component/Autocomplete";
 
 const headCells = [
   {
@@ -144,7 +144,7 @@ export default function Deduction({
           sx={{ p: 2 }}
         >
           <Stack direction="row" alignItems="center" spacing={4}>
-            <FormSelect
+            <AutoComplete
               options={[
                 { label: "All", value: "all" },
                 ...contractors.map((contractor) => ({
@@ -152,8 +152,9 @@ export default function Deduction({
                   value: contractor.contractorId,
                 })),
               ]}
-              handleChange={(e) => setContractorId(e as string)}
+              setValue={(e) => setContractorId(e as string)}
               value={contractorId}
+              label=""
             />
             <MonthSelect
               value={month ? dayjs(month, "MM/YYYY") : null}

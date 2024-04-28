@@ -40,7 +40,7 @@ const getData = (
     // taxable = Math.round(
     //   (totalAuto.days / (m * vehicle.shiftduraion || 1)) * vehicle.charges
     // );
-    const rateperhr = vehicle.charges / (vehicle.shiftduraion * m || 1);
+    const rateperhr = vehicle.charges / (vehicle.shiftduraion * m ?? 1);
     taxable = Math.round(
       Math.min(totalAuto.hrs, vehicle.shiftduraion) * rateperhr
     );
@@ -200,11 +200,7 @@ export const getAutomobileFinalSheet = (
     );
 
     const hsdRate =
-      totalAuto.kms === 0
-        ? 0
-        : hsdOverAbove >= 0
-        ? hsd?.payableRate || 0
-        : hsd?.recoverableRate || 0;
+      hsdOverAbove >= 0 ? hsd?.payableRate || 0 : hsd?.recoverableRate || 0;
 
     const hsdCost = parseFloat((hsdOverAbove * hsdRate).toFixed(2));
 
@@ -233,10 +229,9 @@ export const getAutomobileFinalSheet = (
 
     const avgMileage = getAverageMileage(vehicle.automobile, vehicle);
 
+    hsdrate += hsdRate;
     if (vehicle.hsdDeduction) {
-      hsdrate += hsdRate;
       hsdcost += parseFloat(hsdCost.toFixed(2));
-
       kpidata.push({
         vehicleNo: vehicle.vehicleNo,
         hsdIssuedOrConsumed: hsdConsumed,
@@ -257,7 +252,7 @@ export const getAutomobileFinalSheet = (
         mileagefortheMonth,
         mileage: vehicle.mileage,
         hsdOverAbove,
-        hsdrate: 0,
+        hsdrate: hsdRate,
         hsdCost: 0,
         idealStandingDays,
         actualWorkingDays: totalAuto.days,
@@ -415,13 +410,14 @@ export const getAutomobileFinalSheet = (
     kpidata,
     totals,
     total,
-    hsdcost: parseFloat((hsdconsumed * hsdrate + hsdcost).toFixed(2)),
+    hsdcost: parseFloat(hsdcost.toFixed(2)),
     cost: {
       totalhiringcharges,
       hsdconsumed,
       hsdrate,
-      hsdcost: parseFloat((hsdconsumed * hsdrate + hsdcost).toFixed(2)),
-      total: totalhiringcharges + hsdcost,
+      hsdcost: parseFloat((hsdconsumed * hsdrate).toFixed(2)),
+      total:
+        totalhiringcharges + parseFloat((hsdconsumed * hsdrate).toFixed(2)),
     },
   };
 };

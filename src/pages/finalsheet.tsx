@@ -573,6 +573,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const contractors = await prisma.contractor.findMany({
     orderBy: { contractorname: "asc" },
+    where: {
+      servicedetail: {
+        notIn: ["Fixed", "Equipment / Vehicle Hiring"],
+      },
+    },
     include: {
       departments: {
         include: {

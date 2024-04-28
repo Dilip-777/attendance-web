@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { Contractor, Hsd } from "@prisma/client";
 import _ from "lodash";
 import CustomTable from "@/components/Table/Table";
+import DeleteModal from "@/ui-component/DeleteModal";
+import { useRouter } from "next/router";
 
 const createHeadCells = (
   id: string,
@@ -31,22 +33,38 @@ const headCells1 = [
 export default function HsdEntries({ hsds }: { hsds: Hsd[] }) {
   const [filterName, setFilterName] = React.useState("");
   const [orderby, setOrderby] = React.useState("month");
+  const [hsdId, setHsdId] = React.useState<string>("");
+  const router = useRouter();
 
   return (
-    <CustomTable
-      headcells={headCells1}
-      rows={hsds.filter((hsd) =>
-        _.get(hsd, orderby, "month")
-          .toString()
-          .toLowerCase()
-          .includes(filterName.toLowerCase())
-      )}
-      filterName={filterName}
-      setFilterName={setFilterName}
-      editLink="/hsd"
-      orderby={orderby}
-      setOrderby={setOrderby}
-    />
+    <>
+      <CustomTable
+        headcells={headCells1}
+        rows={hsds.filter((hsd) =>
+          _.get(hsd, orderby, "month")
+            .toString()
+            .toLowerCase()
+            .includes(filterName.toLowerCase())
+        )}
+        filterName={filterName}
+        setFilterName={setFilterName}
+        editLink="/hsd"
+        handleDelete={(row) => setHsdId(row.id)}
+        orderby={orderby}
+        setOrderby={setOrderby}
+      />
+      <DeleteModal
+        openModal={hsdId ? true : false}
+        title="Delete HSD"
+        message={`Are you sure you want to delete selected HSD?`}
+        cancelText="Cancel"
+        confirmText="Delete"
+        deleteApi={`/api/hsd?id=${hsdId}`}
+        snackbarMessage="HSD Deleted Successfully"
+        onClose={() => setHsdId("")}
+        fetchData={() => router.replace(router.asPath)}
+      />
+    </>
   );
 }
 

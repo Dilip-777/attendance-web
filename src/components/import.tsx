@@ -183,6 +183,7 @@ function ImportData({
         machineOutTime: _.get(data, "Out Time", "00:00"),
         machineshift: _.get(data, "Shift Code") || "-",
         attendance: getAttendance(_.get(data, "Att Status")) || "0",
+        // attendance: _.get(data, "Att Status")?.toString() || "0",
         attendancedate: getDate(_.get(data, "Attendance Date"))?.toString(),
         overtime:
           parseFloat(_.get(data, "Over Time", "00:00")?.slice(0, 2)) || 0,

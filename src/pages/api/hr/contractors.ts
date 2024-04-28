@@ -8,10 +8,20 @@ export default async function contractors(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
+    let where: any = {};
+    const session = await getSession({ req });
+    if (session?.user?.role === "TimeKeeper" || session?.user?.role === "HR") {
+      where = {
+        servicedetail: {
+          not: "Equipment / Vehicle Hiring",
+        },
+      };
+    }
     const contractors = await prisma.contractor.findMany({
       include: {
         departments: true,
       },
+      where,
       orderBy: {
         contractorname: "asc",
       },
