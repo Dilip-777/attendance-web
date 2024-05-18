@@ -65,7 +65,7 @@ export default function FinalSheetTable({
       </Tooltip>
       {hourlyrows.map((row, index) => (
         <TableContainer
-          key={index}
+          key={index + row[0].department}
           sx={{
             maxWidth: "100%",
             scrollBehavior: "smooth",

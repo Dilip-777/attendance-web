@@ -13,7 +13,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { FieldArray, Formik } from "formik";
 import * as Yup from "yup";
 import FormInput from "@/components/FormikComponents/FormInput";
-import { Contractor, WorkItem, Workorder, Works } from "@prisma/client";
+import {
+  Contractor,
+  MeasurementItem,
+  Workorder,
+  Measurement,
+  Project,
+} from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -36,12 +42,12 @@ const workItemSchema = Yup.object().shape({
 const validationSchema = Yup.object().shape({
   description: Yup.string().required("Required"),
   contractorid: Yup.string().required("Required"),
-  workorderId: Yup.string().required("Required"),
-  workItems: Yup.array().of(workItemSchema).required("Required"),
+  projectId: Yup.string().required("Required"),
+  measurementItems: Yup.array().of(workItemSchema).required("Required"),
 });
 
-interface worktypes extends Works {
-  workItems: WorkItem[];
+interface worktypes extends Measurement {
+  measurementItems: MeasurementItem[];
   contractor: Contractor;
 }
 
@@ -49,12 +55,12 @@ const Addworkitem = ({
   work,
   contractors,
   works,
-  workorders,
+  projects,
 }: {
   work: worktypes;
   contractors: Contractor[];
-  works: Works[];
-  workorders: Workorder[];
+  works: Measurement[];
+  projects: Project[];
 }) => {
   const router = useRouter();
   //   const validationSchema = Yup.object().shape({
@@ -82,9 +88,9 @@ const Addworkitem = ({
   const initialValues = {
     description: work?.description || "",
     contractorid: work?.contractorid || "",
-    workorderId: work?.workorderId || "",
-    workItems: work
-      ? work?.workItems.map((w) => ({
+    projectId: work?.projectId || "",
+    measurementItems: work
+      ? work?.measurementItems.map((w) => ({
           unit: w.unit,
           unitrate: w.unitrate,
           referenceWorkId: w.referenceWorkId,
@@ -137,8 +143,8 @@ const Addworkitem = ({
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={async (values, { setSubmitting }) => {
-          let workItems: any[] = [];
-          values.workItems.forEach((workItem) => {
+          let measurementItems: any[] = [];
+          values.measurementItems.forEach((workItem) => {
             let quantity =
               workItem.nos *
               workItem.length *
@@ -150,7 +156,7 @@ const Addworkitem = ({
             );
             const totalQuantity = quantity;
             const valueofTotalBill = valueofcurrentBill;
-            workItems.push({
+            measurementItems.push({
               ...workItem,
               quantity: parseFloat(quantity.toFixed(3)),
               valueofcurrentBill: parseFloat(valueofcurrentBill.toFixed(3)),
@@ -159,19 +165,19 @@ const Addworkitem = ({
             });
           });
 
-          console.log(workItems, values);
+          console.log(measurementItems, values);
 
           setSubmitting(true);
           if (work) {
             await axios.put(`/api/works`, {
               ...values,
-              workItems,
+              measurementItems,
               id: work.id,
             });
           } else {
             await axios.post("/api/works", {
               ...values,
-              workItems,
+              measurementItems,
             });
           }
 
@@ -193,23 +199,23 @@ const Addworkitem = ({
           setFieldValue,
         }) => {
           if (
-            workorders.filter((w) => w.contractorId === values.contractorid)
+            projects.filter((w) => w.contractorId === values.contractorid)
               .length === 0 &&
-            !errors.workorderId
+            !errors.projectId
           ) {
-            // errors.workorderId = "No Work Order for this Contractor";
-            setFieldError("workorderId", "No Work Order for this Contractor");
+            // errors.projectId = "No Work Order for this Contractor";
+            setFieldError("projectId", "No Work Order for this Contractor");
           }
 
           // if (
-          //   workorders.find(
+          //   project.find(
           //     (w) =>
-          //       w.id === values.workorderId &&
+          //       w.id === values.projectId &&
           //       w.contractorId === values.contractorid
           //   ) &&
-          //   !values.workorderId
+          //   !values.projectId
           // ) {
-          //   setFieldValue("workorderId", "");
+          //   setFieldValue("projectId", "");
           // }
 
           console.log(values);
@@ -229,13 +235,13 @@ const Addworkitem = ({
                     }))}
                   />
                   <FormSelect
-                    name="workorderId"
+                    name="projectId"
                     label="Select Work Order"
                     placeHolder="Work Order"
                     sx={{ width: "100%", maxWidth: "100%" }}
-                    options={workorders
+                    options={projects
                       .filter((w) => w.contractorId === values.contractorid)
-                      .map((work) => ({ value: work.id, label: work.nature }))}
+                      .map((work) => ({ value: work.id, label: work.name }))}
                   />
                   <FormInput
                     name="description"
@@ -246,9 +252,9 @@ const Addworkitem = ({
                 </Stack>
                 <Divider sx={{ my: 3 }} />
                 <FieldArray
-                  name="workItems"
+                  name="measurementItems"
                   render={({ form, push, remove }) => {
-                    const { workItems } = form.values;
+                    const { measurementItems } = form.values;
                     return (
                       <Stack>
                         <Box
@@ -280,117 +286,119 @@ const Addworkitem = ({
                             Add
                           </Button>
                         </Box>
-                        {workItems.map((workItem: any, index: number) => (
-                          <Grid container columnGap={8}>
-                            <Grid item xs={12} sm={10}>
-                              <FormInput
-                                name={`workItems.${index}.description`}
-                                label="Description"
-                                placeHolder="Description"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            {workItems.length > 1 && (
-                              <Grid item xs={12} sm={1}>
-                                <IconButton
-                                  sx={{
-                                    mt: "2rem",
-                                    ml: "1rem",
-                                    color: "white",
-                                    bgcolor: "red",
-                                    ":hover": {
-                                      bgcolor: "#e53935",
-                                    },
-                                  }}
-                                  onClick={() => remove(index)}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
+                        {measurementItems.map(
+                          (workItem: any, index: number) => (
+                            <Grid container columnGap={8}>
+                              <Grid item xs={12} sm={10}>
+                                <FormInput
+                                  name={`measurementItems.${index}.description`}
+                                  label="Description"
+                                  placeHolder="Description"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
                               </Grid>
-                            )}
+                              {measurementItems.length > 1 && (
+                                <Grid item xs={12} sm={1}>
+                                  <IconButton
+                                    sx={{
+                                      mt: "2rem",
+                                      ml: "1rem",
+                                      color: "white",
+                                      bgcolor: "red",
+                                      ":hover": {
+                                        bgcolor: "#e53935",
+                                      },
+                                    }}
+                                    onClick={() => remove(index)}
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Grid>
+                              )}
 
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormSelect
-                                name={`workItems.${index}.referenceWorkId`}
-                                label="References Work Id (Optional)"
-                                placeHolder="References Work Id (Optional)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                                type="number"
-                                options={works.map((work) => ({
-                                  value: work.id,
-                                  label: work.description,
-                                }))}
-                              />
-                            </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormSelect
+                                  name={`measurementItems.${index}.referenceWorkId`}
+                                  label="References Work Id (Optional)"
+                                  placeHolder="References Work Id (Optional)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                  type="number"
+                                  options={works.map((work) => ({
+                                    value: work.id,
+                                    label: work.description,
+                                  }))}
+                                />
+                              </Grid>
 
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`workItems.${index}.unit`}
-                                label="Unit"
-                                type="text"
-                                placeHolder="Unit"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`workItems.${index}.unitrate`}
-                                label="Unit Rate"
-                                placeHolder="Unit Rate"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                                type="number"
-                              />
-                            </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`measurementItems.${index}.unit`}
+                                  label="Unit"
+                                  type="text"
+                                  placeHolder="Unit"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`measurementItems.${index}.unitrate`}
+                                  label="Unit Rate"
+                                  placeHolder="Unit Rate"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                  type="number"
+                                />
+                              </Grid>
 
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`workItems.${index}.nos`}
-                                label="Nos"
-                                type="number"
-                                placeHolder="Nos"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`measurementItems.${index}.nos`}
+                                  label="Nos"
+                                  type="number"
+                                  placeHolder="Nos"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`measurementItems.${index}.length`}
+                                  label="Length"
+                                  type="number"
+                                  placeHolder="Length"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`measurementItems.${index}.breadth`}
+                                  label="Breadth"
+                                  type="number"
+                                  placeHolder="Breadth"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`measurementItems.${index}.height`}
+                                  label="Height"
+                                  type="number"
+                                  placeHolder="Height"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`measurementItems.${index}.remarks`}
+                                  label="Remarks"
+                                  placeHolder="Remarks"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12}>
+                                <Divider sx={{ my: 3 }} />
+                              </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`workItems.${index}.length`}
-                                label="Length"
-                                type="number"
-                                placeHolder="Length"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`workItems.${index}.breadth`}
-                                label="Breadth"
-                                type="number"
-                                placeHolder="Breadth"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`workItems.${index}.height`}
-                                label="Height"
-                                type="number"
-                                placeHolder="Height"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`workItems.${index}.remarks`}
-                                label="Remarks"
-                                placeHolder="Remarks"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Divider sx={{ my: 3 }} />
-                            </Grid>
-                          </Grid>
-                        ))}
+                          )
+                        )}
                       </Stack>
                     );
                   }}
@@ -428,12 +436,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.query;
   let work = null;
   if (id !== "add") {
-    work = await prisma.works.findUnique({
+    work = await prisma.measurement.findUnique({
       where: { id: id as string },
-      include: { workItems: true, contractor: true },
+      include: { measurementItems: true, contractor: true },
     });
   }
-  const works = await prisma.works.findMany({
+  const works = await prisma.measurement.findMany({
     where: {
       NOT: {
         id: id as string,
@@ -441,13 +449,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
   const contractors = await prisma.contractor.findMany();
-  const workorders = await prisma.workorder.findMany();
+  const projects = await prisma.project.findMany();
   return {
     props: {
       work,
       contractors,
       works,
-      workorders,
+      projects,
     },
   };
 };

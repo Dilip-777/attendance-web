@@ -228,14 +228,18 @@ const getTotalAmountAndRows = (
       let otRate = 0;
       if (designation.basicsalary_in_duration === "Monthly") {
         otRate = getRoundOff(
-          Number(_.get(rate, id, 0)) / designation.allowed_wrking_hr_per_day / m
+          Number(_.get(rate, id, 0)) /
+            (designation.allowed_wrking_hr_per_day || 1) /
+            m
         );
       } else {
         otRate = getRoundOff(
           Number(_.get(rate, id, 0)) / designation.allowed_wrking_hr_per_day
         );
       }
-      otamount[id] = getRoundOff(Number(_.get(totalovertime, id, 0)) * otRate);
+      otamount[id] = getRoundOff(
+        Number(_.get(totalovertime, id, 0) || 0) * otRate
+      );
       otamount["total"] = getRoundOff(
         (otamount.total as number) + Number(_.get(otamount, id, 0))
       );

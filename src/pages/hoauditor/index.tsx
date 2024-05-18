@@ -9,17 +9,16 @@ import TableContainer from "@mui/material/TableContainer";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import InputAdornment from "@mui/material/InputAdornment";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import { styled } from "@mui/material/";
+import { Stack, styled } from "@mui/material/";
 
-import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import PrintIcon from "@mui/icons-material/Print";
 import Search from "@mui/icons-material/Search";
 
 import { useRouter } from "next/router";
@@ -27,28 +26,21 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { HOAuditor } from "@prisma/client";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
+import MonthSelect from "@/ui-component/MonthSelect";
+import _ from "lodash";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
-  height: 40,
-  marginRight: 30,
+  height: "100%",
+  marginRight: 20,
 
   "& fieldset": {
     borderWidth: `1px !important`,
     borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
   },
 }));
-
-interface Data {
-  calories: number;
-  carbs: number;
-  fat: number;
-  name: string;
-  protein: number;
-}
-
 interface Data1 {
   contractorname: string;
   employeeid: string;
@@ -66,69 +58,7 @@ interface Data1 {
   servicecharge: string;
 }
 
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number
-): Data {
-  return {
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
-  };
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
 type Order = "asc" | "desc";
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<HOAuditor>(
-  array: readonly HOAuditor[],
-  comparator: (a: HOAuditor, b: HOAuditor) => number
-) {
-  const stabilizedThis = array.map(
-    (el, index) => [el, index] as [HOAuditor, number]
-  );
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
-}
 
 const createHeadCells = (
   id: string,
@@ -191,137 +121,53 @@ const headCells = [
   ),
 ];
 
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data1
-  ) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-}
+const handleClickReport = async (data: HOAuditor[]) => {
+  const tableRows: string[][] = [headCells.map((headCell) => headCell.label)];
 
-// function EnhancedTableHead(props: EnhancedTableProps) {
-//   const {
-//     onSelectAllClick,
-//     order,
-//     orderBy,
-//     numSelected,
-//     rowCount,
-//     onRequestSort,
-//   } = props;
-//   const createSortHandler =
-//     (property: keyof Data1) => (event: React.MouseEvent<unknown>) => {
-//       onRequestSort(event, property);
-//     };
+  try {
+    data.forEach((item: HOAuditor) => {
+      tableRows.push([
+        item.contractorname,
+        item.workDescription,
+        item.fromDate,
+        item.toDate,
+        dayjs(item.monthOfInvoice, "MM-DD-YYYY").format("MMMM").toString() ||
+          "-",
+        item.basicbillamount.toString(),
+        item.serviceCharges.toString(),
+        item.netbillAmount.toString(),
+        item.bankDetails,
+        item.onetimeInvoice ? "Yes" : "No",
+        item.verifiedComplainces ? "Yes" : "No",
+        item.workOrderAvailable ? "Yes" : "No",
+        item.licensesInPlace ? "Yes" : "No",
+        item.previousPayVerified ? "Yes" : "No",
+        item.detailsSentToAuditAndHo ? "Yes" : "No",
+        item.gstChallanAttached ? "Yes" : "No",
+        item.deductions?.toString() || "-",
+        item.variationsInManpower?.toString() || "-",
+        item.manchineOrRegisterMode,
+      ]);
+    });
 
-//   return (
-//     <TableHead>
-//       <TableRow>
-//         <TableCell padding="checkbox">
-//           <Checkbox
-//             color="primary"
-//             indeterminate={numSelected > 0 && numSelected < rowCount}
-//             checked={rowCount > 0 && numSelected === rowCount}
-//             onChange={onSelectAllClick}
-//             inputProps={{
-//               "aria-label": "select all desserts",
-//             }}
-//           />
-//         </TableCell>
-//         {headCells1.map((headCell) => (
-//           <TableCell
-//             key={headCell.id}
-//             align={"center"}
-//             padding={headCell.disablePadding ? "none" : "normal"}
-//             sortDirection={orderBy === headCell.id ? order : false}
-//             sx={{ fontWeight: "700" }}
-//           >
-//             <TableSortLabel
-//               active={orderBy === headCell.id}
-//               direction={orderBy === headCell.id ? order : "asc"}
-//               onClick={createSortHandler(headCell.id as keyof Data1)}
-//             >
-//               {headCell.label}
-//               {orderBy === headCell.id ? (
-//                 <Box component="span" sx={visuallyHidden}>
-//                   {order === "desc" ? "sorted descending" : "sorted ascending"}
-//                 </Box>
-//               ) : null}
-//             </TableSortLabel>
-//           </TableCell>
-//         ))}
-//       </TableRow>
-//     </TableHead>
-//   );
-// }
+    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
 
-interface EnhancedTableToolbarProps {
-  numSelected: number;
-  filtername: string;
-  setFilterName: React.Dispatch<React.SetStateAction<string>>;
-}
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "HoAuditor.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, filtername, setFilterName } = props;
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        display: "flex",
-        justifyContent: "space-between",
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.secondary.main,
-              theme.palette.action.activatedOpacity
-            ),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <StyledSearch
-          value={filtername}
-          onChange={(e) => setFilterName(e.target.value)}
-          placeholder="Search Contactor..."
-          startAdornment={
-            <InputAdornment position="start">
-              <Search />
-            </InputAdornment>
-          }
-        />
-      )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
-  );
-}
-
-export default function Employees({
+export default function HOAuditorPage({
   hocommercial,
 }: {
   hocommercial: HOAuditor[];
@@ -334,15 +180,7 @@ export default function Employees({
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterName, setFilterName] = React.useState("");
   const router = useRouter();
-
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data1
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
+  const { month } = router.query;
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -387,10 +225,6 @@ export default function Employees({
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
   const isSelected = (contractorname: string) =>
     selected.indexOf(contractorname) !== -1;
 
@@ -401,16 +235,51 @@ export default function Employees({
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar
-          numSelected={selected.length}
-          filtername={filterName}
-          setFilterName={setFilterName}
-        />
+        <Toolbar
+          sx={{
+            pl: { sm: 2 },
+            pr: { xs: 1, sm: 1 },
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Stack direction="row">
+            <StyledSearch
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              placeholder="Search Contactor..."
+              startAdornment={
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              }
+            />
+            <MonthSelect
+              value={month ? dayjs(month as string, "MM/YYYY") : dayjs()}
+              onChange={(e) => {
+                if (e)
+                  router.push({
+                    query: { month: e?.format("MM/YYYY") },
+                  });
+              }}
+              maxDate={null}
+            />
+          </Stack>
+
+          <Tooltip title="Print">
+            <IconButton onClick={() => handleClickReport(hocommercial)}>
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
         <TableContainer
           sx={{
+            maxHeight: "calc(100vh - 16rem)",
+            overflowY: "auto",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,
+              width: 10,
             },
             "&::-webkit-scrollbar-thumb": {
               backgroundColor: "#bdbdbd",
@@ -419,6 +288,7 @@ export default function Employees({
           }}
         >
           <Table
+            stickyHeader
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
             size="medium"
@@ -431,8 +301,8 @@ export default function Employees({
             />
             <TableBody>
               {hocommercial
-                .filter((employee) =>
-                  employee.contractorname
+                .filter((ho) =>
+                  ho.contractorname
                     .toLowerCase()
                     .includes(filterName.toLowerCase())
                 )
@@ -579,7 +449,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const hocommercial = await prisma.hOAuditor.findMany();
+
+  const { month } = context.query;
+  const m = (month || dayjs().format("MM/YYYY"))?.toString().split("/");
+  console.log(m, "month");
+
+  const hocommercial = await prisma.hOAuditor.findMany({
+    where: {
+      monthOfInvoice: {
+        // contains: month as string,
+        startsWith: m[0],
+        endsWith: m[1],
+      },
+    },
+  });
+
+  console.log(month, "lsdj");
+
   return {
     props: {
       hocommercial,

@@ -5,6 +5,7 @@ import {
   TableCell,
   Table,
   TableContainerProps,
+  Checkbox,
 } from "@mui/material";
 import EnhancedTableHead from "./EnhancedTableHead";
 
@@ -20,9 +21,15 @@ interface HeadCell {
 interface Props extends TableContainerProps {
   headCells: HeadCell[];
   data: any[];
+  nocheckbox?: boolean;
 }
 
-export default function CustomTable({ headCells, data, ...props }: Props) {
+export default function CustomTable({
+  headCells,
+  data,
+  nocheckbox = true,
+  ...props
+}: Props) {
   return (
     <TableContainer
       sx={{
@@ -46,11 +53,17 @@ export default function CustomTable({ headCells, data, ...props }: Props) {
           headCells={headCells}
           numSelected={0}
           rowCount={0}
-          nocheckbox
+          nocheckbox={nocheckbox}
+          onSelectAllClick={() => {}}
         />
         <TableBody>
           {data.map((row, index) => (
             <TableRow key={index}>
+              {!nocheckbox && (
+                <TableCell padding="checkbox">
+                  <Checkbox color="secondary" />
+                </TableCell>
+              )}
               {headCells.map((headcell) => (
                 <TableCell key={headcell.id}>{headcell.cell(row)}</TableCell>
               ))}

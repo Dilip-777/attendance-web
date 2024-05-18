@@ -1376,6 +1376,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  if (session.user?.role === "GM") {
+    return {
+      redirect: {
+        destination: "/workorder",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {},
   };

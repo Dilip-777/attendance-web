@@ -50,6 +50,7 @@ import axios from "axios";
 import Close from "@mui/icons-material/Close";
 import MonthSelect from "@/ui-component/MonthSelect";
 import dayjs, { Dayjs } from "dayjs";
+import Done from "@mui/icons-material/Done";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -85,113 +86,21 @@ const headCells = [
   createHeadCells("location", "Location", false, false),
   createHeadCells("workdescription", "Work Descrition", false, false),
   createHeadCells("repeatedOronetime", "Repeated Or one time", false, false),
+  createHeadCells("status", "Status", false, false),
   createHeadCells("amendmentdocument", "Amendment Document", true, false),
   createHeadCells("addendumDocument", "Addendum Document", false, false),
   createHeadCells("document", "Document", false, false),
+  createHeadCells("actions", "Action", false, false),
 ];
-
-interface EnhancedTableToolbarProps {
-  numSelected: number;
-  filtername: string;
-  setFilterName: React.Dispatch<React.SetStateAction<string>>;
-  contractors: Contractor[];
-  selectedContractor: string;
-  setSelectedContractor: React.Dispatch<React.SetStateAction<string>>;
-}
-
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const {
-    numSelected,
-    contractors,
-    selectedContractor,
-    setSelectedContractor,
-  } = props;
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        display: "flex",
-        justifyContent: "space-between",
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.secondary.main,
-              theme.palette.action.activatedOpacity
-            ),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        // <StyledSearch
-        //   value={filtername}
-        //   onChange={(e) => setFilterName(e.target.value)}
-        //   placeholder="Search Workorder..."
-        //   startAdornment={
-        //     <InputAdornment position="start">
-        //       <Search />
-        //     </InputAdornment>
-        //   }
-        // />
-        <Stack
-          direction="row"
-          flexWrap="wrap"
-          alignItems="center"
-          spacing={2}
-          sx={{ width: "100%" }}
-        >
-          <Box sx={{ minWidth: 240 }}>
-            <FormLabel sx={{ fontWeight: "700" }}>Select Contractor</FormLabel>
-            <Autocomplete
-              options={contractors.map((c) => ({
-                value: c.contractorId || "",
-                label: c.contractorname,
-              }))}
-              value={contractors
-                .map((c) => ({
-                  value: c.contractorId || "",
-                  label: c.contractorname,
-                }))
-                .find((c) => c.value === selectedContractor)}
-              onChange={(e, value) =>
-                setSelectedContractor(value?.value as string)
-              }
-              renderInput={(params) => <TextField {...params} />}
-            />
-          </Box>
-        </Stack>
-      )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
-  );
-}
 
 export default function WorkOrder({
   contractors,
+  workorders,
+  pendingWorkorders,
 }: {
   contractors: Contractor[];
+  workorders: Workorder[];
+  pendingWorkorders: Workorder[];
 }) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
@@ -200,38 +109,21 @@ export default function WorkOrder({
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [workorder, setWorkOrder] = React.useState<Workorder[]>([]);
   const [selectedWorkorder, setSelectedWorkorder] = React.useState<
     string | undefined
   >(undefined);
   const theme = useTheme();
   const { data: session } = useSession();
-  const [selectedContractor, setSelectedContractor] =
-    React.useState<string>("");
+  const { contractorId } = router.query;
 
   const handleClose = () => {
     setOpen(false);
     setSelectedWorkorder(undefined);
   };
 
-  const fetchWorkorder = async () => {
-    const res = await axios
-      .get("/api/workorder?contractorId=" + selectedContractor)
-      .then((res) => {
-        setWorkOrder(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  React.useEffect(() => {
-    fetchWorkorder();
-  }, [selectedContractor]);
-
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = workorder.map((n) => n.contractorName);
+      const newSelected = workorders.map((n) => n.contractorName);
       setSelected(newSelected);
       return;
     }
@@ -288,21 +180,69 @@ export default function WorkOrder({
     setLoading(false);
   };
 
+  const handleUpdate = async (workorder: Workorder, status: string) => {
+    setLoading(true);
+    const res = await axios
+      .put("/api/workorder", {
+        ...workorder,
+        status: status,
+      })
+      .then((res) => {
+        router.replace(router.asPath);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setLoading(false);
+  };
+
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - workorder.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - workorders.length) : 0;
 
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar
-          numSelected={selected.length}
-          filtername={filterName}
-          setFilterName={setFilterName}
-          contractors={contractors}
-          selectedContractor={selectedContractor}
-          setSelectedContractor={setSelectedContractor}
-        />
+        <Toolbar
+          sx={{
+            pl: { sm: 2 },
+            pr: { xs: 1, sm: 1 },
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            alignItems="center"
+            spacing={2}
+            sx={{ width: "100%" }}
+          >
+            <Box sx={{ minWidth: 240 }}>
+              <FormLabel sx={{ fontWeight: "700" }}>
+                Select Contractor
+              </FormLabel>
+              <Autocomplete
+                placeholder="Select Contractor"
+                options={contractors.map((c) => ({
+                  value: c.contractorId || "",
+                  label: c.contractorname,
+                }))}
+                value={contractors
+                  .map((c) => ({
+                    value: c.contractorId || "",
+                    label: c.contractorname,
+                  }))
+                  .find((c) => c.value === contractorId)}
+                onChange={(e, value) => {
+                  if (!value?.value) router.push(`/workorder`);
+                  else router.push(`/workorder?contractorId=${value?.value}`);
+                }}
+                renderInput={(params) => <TextField {...params} />}
+              />
+            </Box>
+          </Stack>
+        </Toolbar>
         <TableContainer
           sx={{
             maxHeight: 440,
@@ -325,11 +265,11 @@ export default function WorkOrder({
             <EnhancedTableHead
               numSelected={selected.length}
               onSelectAllClick={handleSelectAllClick}
-              rowCount={workorder.length}
+              rowCount={workorders.length}
               headCells={headCells}
             />
             <TableBody>
-              {workorder
+              {workorders
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.id as string);
@@ -366,27 +306,27 @@ export default function WorkOrder({
                       >
                         {row.id}
                       </TableCell>
-                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                      <TableCell sx={{ minWidth: 150 }}>
                         {row.contractorName}
                       </TableCell>
-                      <TableCell align="center" sx={{ minWidth: 150 }}>
-                        {row.nature}
-                      </TableCell>
-                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                      <TableCell sx={{ minWidth: 150 }}>{row.nature}</TableCell>
+                      <TableCell sx={{ minWidth: 150 }}>
                         {row.startDate}
                       </TableCell>
-                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                      <TableCell sx={{ minWidth: 150 }}>
                         {row.endDate}
                       </TableCell>
-                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                      <TableCell sx={{ minWidth: 150 }}>
                         {row.location}
                       </TableCell>
-                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                      <TableCell sx={{ minWidth: 150 }}>
                         {row.workDescription}
                       </TableCell>
-                      <TableCell align="center" sx={{ minWidth: 150 }}>
+                      <TableCell sx={{ minWidth: 150 }}>
                         {row.repeatOrOneTime}
                       </TableCell>
+
+                      <TableCell sx={{ minWidth: 150 }}>{row.status}</TableCell>
 
                       <TableCell align="center" sx={{ minWidth: 150 }}>
                         {row.amendmentDocument ? (
@@ -473,6 +413,29 @@ export default function WorkOrder({
                           </TableCell>
                         </>
                       )}
+                      {session?.user?.role === "GM" &&
+                        row.status === "Pending" && (
+                          <>
+                            <TableCell size="small" align="center">
+                              <Stack direction="row" spacing={1}>
+                                <IconButton
+                                  color="success"
+                                  onClick={() => handleUpdate(row, "Approved")}
+                                  sx={{ m: 0 }}
+                                >
+                                  <Done fontSize="small" color="success" />
+                                </IconButton>
+                                <IconButton
+                                  onClick={() => handleUpdate(row, "Rejected")}
+                                  sx={{ m: 0 }}
+                                  color="error"
+                                >
+                                  <Close fontSize="small" color="error" />
+                                </IconButton>
+                              </Stack>
+                            </TableCell>
+                          </>
+                        )}
                     </TableRow>
                   );
                 })}
@@ -481,7 +444,7 @@ export default function WorkOrder({
                   <TableCell colSpan={6} />
                 </TableRow>
               )}
-              {workorder.length === 0 && (
+              {workorders.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6}>No Data</TableCell>
                 </TableRow>
@@ -492,7 +455,7 @@ export default function WorkOrder({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={workorder.length}
+          count={workorders.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -563,13 +526,43 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const workorder = await prisma.workorder.findMany();
+  const { contractorId } = context.query;
+
+  let where: any = {};
+  if (contractorId) {
+    where = {
+      contractorId: contractorId as string,
+    };
+  }
+
+  let pendingWorkorders: Workorder[] = [];
+
+  if (session.user?.role === "GM") {
+    pendingWorkorders = await prisma.workorder.findMany({
+      where: {
+        ...where,
+        status: "Pending",
+      },
+    });
+  }
+
+  const workorders = await prisma.workorder.findMany({
+    where: {
+      ...where,
+      status: {
+        not: "Pending",
+      },
+    },
+    orderBy: {
+      status: "asc",
+    },
+  });
 
   const contractors = await prisma.contractor.findMany();
 
   return {
     props: {
-      workorder,
+      workorders: [...pendingWorkorders, ...workorders],
       contractors,
     },
   };

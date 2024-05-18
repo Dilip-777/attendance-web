@@ -55,7 +55,7 @@ export const getWorksCalculations = (
     );
     totals.servicecharge += servicecharge;
     totals.tds += tds;
-    const netPayable = billamount - tds;
+    const netPayable = parseFloat((billamount - tds).toFixed(2));
     totals.netPayable += netPayable;
     return {
       id: (index + 1) as number | string,
@@ -89,10 +89,6 @@ export const getWorksCalculations = (
   });
   return { rows, totals };
 };
-
-interface EmployeeDepartmentDesignation extends Employee {
-  designation: Designations | null;
-}
 
 export const getAttendanceCalculations = (
   contractor: Contractor & {

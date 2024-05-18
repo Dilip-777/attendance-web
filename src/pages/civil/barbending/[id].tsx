@@ -17,9 +17,8 @@ import {
   BarBending,
   BarBendingItem,
   Contractor,
-  WorkItem,
+  Project,
   Workorder,
-  Works,
 } from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import axios from "axios";
@@ -48,7 +47,7 @@ const workItemSchema = Yup.object().shape({
 const validationSchema = Yup.object().shape({
   description: Yup.string().required("Required"),
   contractorid: Yup.string().required("Required"),
-  workorderId: Yup.string().required("Required"),
+  projectId: Yup.string().required("Required"),
   barbendingItems: Yup.array().of(workItemSchema).required("Required"),
 });
 
@@ -60,41 +59,18 @@ interface barbendingtypes extends BarBending {
 const AddBarBending = ({
   barbending,
   contractors,
-  works,
-  workorders,
+  projects,
 }: {
   barbending: barbendingtypes;
   contractors: Contractor[];
-  works: Works[];
-  workorders: Workorder[];
+  projects: Project[];
 }) => {
   const router = useRouter();
-  //   const validationSchema = Yup.object().shape({
-  //     workId: Yup.string().required("Required"),
-  //     unit: Yup.string().required("Required"),
-  //     diamark: Yup.number().required("Required"),
-  //     description: Yup.string().required("Required"),
-  //     noofequipments: Yup.number().required("Required"),
-  //     costperequipment: Yup.number().required("Required"),
-  //     a: Yup.number().required("Required"),
-  //     b: Yup.number().required("Required"),
-  //   });
-
-  //   const initialValues = {
-  //     workId: "",
-  //     unit: "",
-  //     diamark: 0,
-  //     description: "",
-  //     noofequipments: 0,
-  //     costperequipment: 0,
-  //     a: 0,
-  //     b: 0,
-  //   };
 
   const initialValues = {
     description: barbending?.description || "",
     contractorid: barbending?.contractorid || "",
-    workorderId: barbending?.workorderId || "",
+    projectId: barbending?.projectId || "",
 
     barbendingItems: barbending
       ? barbending?.barbendingItems.map((w) => ({
@@ -203,13 +179,6 @@ const AddBarBending = ({
             0
           );
 
-          // const quantity =
-          //   values.noofequipments * values.costperequipment * values.a * values.b;
-          // const item = {
-          //   ...values,
-          //   quantity: parseFloat(quantity.toFixed(3)),
-          // };
-
           setSubmitting(true);
           if (barbending) {
             await axios.put(`/api/barbending`, {
@@ -226,21 +195,17 @@ const AddBarBending = ({
             });
           }
 
-          // await axios.post("/api/works", {
-          //   item,
-          // });
           setSubmitting(false);
           router.push("/civil/barbending");
         }}
       >
         {({ errors, isSubmitting, handleSubmit, values, setFieldError }) => {
           if (
-            workorders.filter((w) => w.contractorId === values.contractorid)
+            projects.filter((w) => w.contractorId === values.contractorid)
               .length === 0 &&
-            !errors.workorderId
+            !errors.projectId
           ) {
-            // errors.workorderId = "No Work Order for this Contractor";
-            setFieldError("workorderId", "No Work Order for this Contractor");
+            setFieldError("projectId", "No Project for this Contractor");
           }
           return (
             <form noValidate onSubmit={handleSubmit}>
@@ -257,13 +222,13 @@ const AddBarBending = ({
                     }))}
                   />
                   <FormSelect
-                    name="workorderId"
+                    name="projectId"
                     label="Select Work Order"
                     placeHolder="Work Order"
                     sx={{ width: "100%", maxWidth: "100%" }}
-                    options={workorders
+                    options={projects
                       .filter((w) => w.contractorId === values.contractorid)
-                      .map((work) => ({ value: work.id, label: work.nature }))}
+                      .map((work) => ({ value: work.id, label: work.name }))}
                   />
                   <FormInput
                     name="description"
@@ -357,7 +322,7 @@ const AddBarBending = ({
                                 label="Bar Mark"
                                 placeHolder="Bar Mark"
                                 sx={{ width: "100%", maxWidth: "100%" }}
-                                type="number"
+                                // type="number"
                               />
                             </Grid>
 
@@ -505,21 +470,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     include: { barbendingItems: true, contractor: true },
   });
   const contractors = await prisma.contractor.findMany();
-  const works = await prisma.works.findMany({
-    where: {
-      id: {
-        not: id as string,
-      },
-    },
-  });
-  const workorders = await prisma.workorder.findMany();
+
+  const projects = await prisma.project.findMany();
 
   return {
     props: {
       barbending,
       contractors,
-      works,
-      workorders,
+      projects,
     },
   };
 };

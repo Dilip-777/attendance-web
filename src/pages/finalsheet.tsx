@@ -155,6 +155,7 @@ export default function FinalSheet({
 
     let totalrows: any[] = [];
     const totals: any = {};
+
     setTotalPayable(0);
 
     let r1 = { ...rows };
@@ -194,7 +195,15 @@ export default function FinalSheet({
 
     setRows(r1);
 
+    const totalOfTotal: any = { date: "Total", total: 0 };
+    Object.keys(totals).forEach((key) => {
+      totalOfTotal[key] = totals[key].total;
+      totalOfTotal.total += totals[key].total;
+    });
+
     setTotalsRows(totals);
+    console.log(totals);
+
     setTimekeepers(res.data);
     setLoading(false);
   };

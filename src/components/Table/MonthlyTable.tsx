@@ -23,8 +23,6 @@ export default function MonthlyTable({
   department: Department | undefined;
   designations: DesignationsWithEmployees[];
 }) {
-  console.log(designations, "designations");
-
   const sidebar = designations
     .filter((d) => d.departmentname === department?.department)
     .filter((d) => d.employees.length > 0)
@@ -62,8 +60,6 @@ export default function MonthlyTable({
     "TDS",
     "Net Payable",
   ];
-
-  console.log(sidebar, "sidebar");
 
   return (
     <Paper

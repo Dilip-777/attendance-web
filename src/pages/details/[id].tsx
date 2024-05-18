@@ -15,7 +15,13 @@ import { useEffect, useState } from "react";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
 import { Formik } from "formik";
-import { Department, Role, TimeKeeper } from "@prisma/client";
+import {
+  Contractor,
+  Department,
+  Role,
+  Shift,
+  TimeKeeper,
+} from "@prisma/client";
 import axios from "axios";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import FileUpload from "@/components/FormikComponents/FileUpload";
@@ -55,9 +61,13 @@ const validationSchema = Yup.object().shape({
 export default function EditTimkeeper({
   role,
   departments,
+  shifts,
 }: {
   role: Role | undefined;
-  departments: Department[];
+  departments: (Department & {
+    contractors: Contractor[];
+  })[];
+  shifts: Shift[];
 }) {
   const router = useRouter();
   const { id } = router.query;
@@ -96,7 +106,7 @@ export default function EditTimkeeper({
     machineshift: timekeeper?.machineshift || "Day",
     attendance: timekeeper?.attendance || 0,
     attendancedate: timekeeper?.attendancedate || "",
-    overtime: timekeeper?.overtime || 2,
+    overtime: timekeeper?.overtime || 0,
     eleave: timekeeper?.eleave || 0,
     manualintime: timekeeper?.manualintime || null,
     manualouttime: timekeeper?.manualouttime || null,
@@ -448,11 +458,15 @@ export default function EditTimkeeper({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormInput
+                    <FormSelect
                       name="manualshift"
                       label="Manual Shift"
-                      placeHolder="Manual Shift"
+                      placeHolder="Select a Shift"
                       disabled={false}
+                      options={shifts.map((s) => ({
+                        value: s.code,
+                        label: s.name,
+                      }))}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -477,10 +491,16 @@ export default function EditTimkeeper({
                       label="Department"
                       placeHolder="Department"
                       disabled={false}
-                      options={departments.map((d) => ({
-                        value: d.department,
-                        label: d.department,
-                      }))}
+                      options={departments
+                        .filter((d) =>
+                          d.contractors.find(
+                            (v) => v.contractorId === values.contractorId
+                          )
+                        )
+                        .map((d) => ({
+                          value: d.department,
+                          label: d.department,
+                        }))}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -548,11 +568,19 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     };
   }
 
-  const departments = await prisma.department.findMany();
+  const departments = await prisma.department.findMany({
+    include: {
+      contractors: true,
+    },
+  });
+
+  const shifts = await prisma.shift.findMany();
+
   return {
     props: {
       role: session?.user?.role,
       departments,
+      shifts,
     },
   };
 };

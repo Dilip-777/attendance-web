@@ -7,9 +7,15 @@ interface props {
   value: Dayjs | null;
   onChange: (value: Dayjs | null) => void;
   label?: string;
+  maxDate?: Dayjs | null;
 }
 
-export default function MonthSelect({ value, onChange, label }: props) {
+export default function MonthSelect({
+  value,
+  onChange,
+  label,
+  maxDate = dayjs(),
+}: props) {
   return (
     <Box display="flex" flexDirection="column">
       {label && <FormLabel sx={{ fontWeight: "700" }}>{label}</FormLabel>}
@@ -20,7 +26,7 @@ export default function MonthSelect({ value, onChange, label }: props) {
             views={["month", "year"]}
             value={value}
             onChange={(newValue) => onChange(newValue)}
-            maxDate={dayjs()}
+            maxDate={maxDate}
           />
         ) : (
           <DatePicker
@@ -28,7 +34,7 @@ export default function MonthSelect({ value, onChange, label }: props) {
             views={["month", "year"]}
             // value={value}
             onChange={(newValue) => onChange(newValue)}
-            maxDate={dayjs()}
+            maxDate={maxDate}
           />
         )}
       </LocalizationProvider>

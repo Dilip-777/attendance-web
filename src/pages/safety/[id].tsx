@@ -13,7 +13,6 @@ import { useRouter } from "next/router";
 import FormInput from "@/components/FormikComponents/FormInput";
 import * as Yup from "yup";
 import { FieldArray, Formik } from "formik";
-import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
@@ -26,15 +25,13 @@ import {
 } from "@prisma/client";
 import axios from "axios";
 import shortid from "shortid";
-import FormDate from "@/components/FormikComponents/FormDate";
 import dayjs from "dayjs";
-import MonthSelect from "@/ui-component/MonthSelect";
 import SelectMonth from "@/components/FormikComponents/FormMonth";
 import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 
 const numberType = Yup.number().required("Required");
 
-const SafetyItem = Yup.object().shape({
+const FormSafetyItem = Yup.object().shape({
   chargeableItemIssued: Yup.string().required("Required"),
   division: Yup.string().required("Required"),
   quantity: numberType,
@@ -42,7 +39,7 @@ const SafetyItem = Yup.object().shape({
   netchargeableamount: numberType,
 });
 
-const UnsafeActs = Yup.object().shape({
+const FormUnsafeActs = Yup.object().shape({
   unsafeacts: Yup.string().required("Required"),
   division: Yup.string().required("Required"),
   frequency: numberType,
@@ -53,8 +50,8 @@ const UnsafeActs = Yup.object().shape({
 const validationSchema = Yup.object().shape({
   contractorid: Yup.string().required("Required"),
   month: Yup.string().required("Required"),
-  safetyItems: Yup.array().of(SafetyItem),
-  unsafeActs: Yup.array().of(UnsafeActs),
+  safetyItems: Yup.array().of(FormSafetyItem),
+  unsafeActs: Yup.array().of(FormUnsafeActs),
   totalAmount: numberType.test(
     "sumOfChargeableAmounts",
     "Total amount should be equal to sum of chargeable amounts",
@@ -378,6 +375,9 @@ function FieldArray1({
                               value: "Safety Googles",
                               label: "Safety Googles",
                             },
+                            { value: "Shirt", label: "Shirt" },
+                            { value: "Pant", label: "Pant" },
+                            { value: "Jacket", label: "Jacket" },
                             { value: "Others", label: "Others" },
                           ]}
                         />

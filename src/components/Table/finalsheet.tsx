@@ -198,6 +198,16 @@ export default function FinalSheetta({
                     ))}
                   </TableRow>
                 ))}
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: "600" }}>
+                    Total
+                  </TableCell>
+                  {headers.map((header, index) => (
+                    <TableCell key={index + header} align="center">
+                      {getRoundOff(_.get(totals, [header, "total"]) || 0)}
+                    </TableCell>
+                  ))}
+                </TableRow>
                 {/* {headers.map((header, index) => (
               <TableRow key={index}>
                 {Object.values(totals).find((t: any) => t.date === header)}
@@ -340,7 +350,7 @@ export default function FinalSheetta({
                       align="center"
                       sx={{ fontWeight: "700" }}
                       colSpan={1}
-                      key={index}
+                      key={index + header.toString()}
                     >
                       {header}
                     </TableCell>
@@ -366,6 +376,16 @@ export default function FinalSheetta({
                       ))}
                     </TableRow>
                   ))}
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: "600" }}>
+                    Total
+                  </TableCell>
+                  {headers.map((header, index) => (
+                    <TableCell key={index + header} align="center">
+                      {getRoundOff(_.get(totals, [header, "total"]) || 0)}
+                    </TableCell>
+                  ))}
+                </TableRow>
                 {/* {headers.map((header, index) => (
               <TableRow key={index}>
                 {Object.values(totals).find((t: any) => t.date === header)}

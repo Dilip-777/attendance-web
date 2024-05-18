@@ -46,7 +46,14 @@ import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, User, WorkItem, Workorder, Works } from "@prisma/client";
+import {
+  Contractor,
+  User,
+  MeasurementItem,
+  Workorder,
+  Measurement,
+  Project,
+} from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 // import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import axios from "axios";
@@ -194,19 +201,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   return (
     <TableHead sx={{ bgcolor: "#eeeeee" }}>
       <TableRow sx={{ bgcolor: "#eeeeee" }}>
-        <TableCell sx={{ bgcolor: "#eeeeee" }} padding="checkbox">
-          {onSelectAllClick && !nocheckbox && (
-            <Checkbox
-              color="secondary"
-              indeterminate={numSelected > 0 && numSelected < rowCount}
-              checked={rowCount > 0 && numSelected === rowCount}
-              onChange={onSelectAllClick}
-              inputProps={{
-                "aria-label": "select all desserts",
-              }}
-            />
-          )}
-        </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -226,13 +220,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-interface worktype extends Works {
-  workItems: WorkItem[];
+interface worktype extends Measurement {
+  measurementItems: MeasurementItem[];
   contractor: Contractor;
 }
 
 interface contractors extends Contractor {
-  workorders: Workorder[];
+  projects: Project[];
 }
 
 export default function AbstractSheet({
@@ -246,42 +240,14 @@ export default function AbstractSheet({
 }) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
-  const [filter, setFilter] = React.useState("");
   const [selectedUser, setSelectedUser] = React.useState<worktype | null>(null);
-  const matches = useMediaQuery("(min-width:600px)");
-  const [value, setValue] = React.useState(0);
-  const [password, setPassword] = React.useState("");
+
   const [contractor, setContractor] = React.useState<string | undefined>(
     contractors.length > 0 ? contractors[0].contractorId : undefined
   );
   const [workitems, setWorkItems] = React.useState<worktype[]>([]);
-
-  const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value);
-  };
-
-  const resetPassword = async () => {
-    await axios
-      .post("/api/admin/resetpassword", {
-        id: selectedUser?.id,
-        password,
-      })
-      .then((res) => {
-        handleClose();
-        setPassword("");
-        setValue(0);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
 
   const handleClose = () => {
     setOpen(false);
@@ -329,18 +295,20 @@ export default function AbstractSheet({
   };
 
   const contractor1 = contractors.find((v) => v.contractorId === contractor);
-  const workorder =
-    contractor1 && contractor1?.workorders.length > 0
-      ? contractor1?.workorders[0]
+  const project =
+    contractor1 && contractor1?.projects.length > 0
+      ? contractor1?.projects[0]
       : undefined;
   const info = [
     { value: contractor1?.contractorname, label: "Name of Contractor" },
-    { value: workorder?.nature, label: "Nature of Work" },
-    { value: workorder?.location, label: "Location" },
+    { value: project?.name, label: "Nature of Work" },
+    { value: project?.place, label: "Location" },
   ];
 
   const fetchWorkItems = async () => {
-    const res = await axios.get("/api/workitem?contractorId=" + contractor);
+    const res = await axios.get(
+      "/api/measurementItem?contractorId=" + contractor
+    );
     console.log(res.data);
     setWorkItems(res.data);
   };
@@ -399,7 +367,7 @@ export default function AbstractSheet({
                 (contractors.length > 0 ? contractors[0].contractorId : "")
               }
             />
-            {contractor1 && contractor1?.workorders?.length > 0 && (
+            {contractor1 && contractor1?.projects?.length > 0 && (
               <Stack direction="column" spacing={2}>
                 {info.map((v) => (
                   <Stack direction="row" spacing={2}>
@@ -430,12 +398,12 @@ export default function AbstractSheet({
           >
             Print
           </Button> */}
-          <PrintExcel
+          {/* <PrintExcel
             works={workitems}
             headcells={headCells}
             info={info}
             // contractor={contractor}
-          />
+          /> */}
         </Box>
         <TableContainer
           sx={{
@@ -469,18 +437,6 @@ export default function AbstractSheet({
               {workitems.map((row) => (
                 <>
                   <TableRow>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        onClick={(event) =>
-                          handleClick(event, row.id as string)
-                        }
-                        color="secondary"
-                        // checked={isItemSelected}
-                        // inputProps={{
-                        //   "aria-labelledby": labelId,
-                        // }}
-                      />
-                    </TableCell>
                     <TableCell
                       sx={{ fontWeight: "700" }}
                       // colSpan={10}
@@ -498,27 +454,15 @@ export default function AbstractSheet({
                       {row.description}
                     </TableCell>
                   </TableRow>
-                  {row.workItems.map((item) => (
+                  {row.measurementItems.map((item) => (
                     <TableRow>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          onClick={(event) =>
-                            handleClick(event, item.id as string)
-                          }
-                          color="secondary"
-                          sx={{ mt: "auto" }}
-                          // checked={isItemSelected}
-                          // inputProps={{
-                          //   "aria-labelledby": labelId,
-                          // }}
-                        />
-                      </TableCell>
                       {headCells.map((cell) => (
                         <TableCell
                           sx={{
                             maxHeight: "3rem",
                             width: cell.id === "description" ? "15rem" : "5rem",
                           }}
+                          align="center"
                         >
                           {_.get(item, cell.id, "-")}
                         </TableCell>
@@ -556,12 +500,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const workitems = await prisma.workItem.findMany();
+  const workitems = await prisma.measurementItem.findMany();
 
   const workorders = await prisma.workorder.findMany();
   const contractors = await prisma.contractor.findMany({
     include: {
-      workorders: true,
+      projects: true,
     },
   });
 

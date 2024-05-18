@@ -11,6 +11,7 @@ import automobile from "./automobile";
 import civil from "./civil";
 import management from "./manager";
 import fixed from "./fixed";
+import workorder from "./workorder";
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -66,6 +67,10 @@ const fixedItems = {
   items: [fixed],
 };
 
+const workorderItems = {
+  items: [workorder],
+};
+
 export {
   menuItems,
   adminItems,
@@ -80,4 +85,5 @@ export {
   civilItems,
   managerItems,
   fixedItems,
+  workorderItems,
 };

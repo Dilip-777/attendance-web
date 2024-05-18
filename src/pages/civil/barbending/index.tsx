@@ -14,12 +14,11 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import Edit from "@mui/icons-material/Edit";
 import Add from "@mui/icons-material/Add";
 import {
-  Works,
-  WorkItem,
   Contractor,
   BarBending,
   BarBendingItem,
   Workorder,
+  Project,
 } from "@prisma/client";
 import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
@@ -82,37 +81,7 @@ const headcells1 = [
 ];
 
 interface contractors extends Contractor {
-  workorders: Workorder[];
-}
-
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number,
-  price: number
-) {
-  return {
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
-    price,
-    history: [
-      {
-        date: "2020-01-05",
-        customerId: "11091700",
-        amount: 3,
-      },
-      {
-        date: "2020-01-02",
-        customerId: "Anonymous",
-        amount: 1,
-      },
-    ],
-  };
+  projects: Project[];
 }
 
 function Row(props: {
@@ -175,9 +144,30 @@ function Row(props: {
         <TableCell align="right">{row.protein}</TableCell> */}
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell
+          style={{
+            paddingBottom: 0,
+            paddingTop: 0,
+          }}
+          colSpan={6}
+        >
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1 }}>
+            <Box
+              sx={{
+                my: 1,
+                overflowX: "auto",
+                maxWidth: "calc(100vw - 400px)",
+                scrollBehavior: "smooth",
+                "&::-webkit-scrollbar": {
+                  height: 10,
+                  width: 10,
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#bdbdbd",
+                  borderRadius: 2,
+                },
+              }}
+            >
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow sx={{ bgcolor: "#eeeeee", overflowX: "auto" }}>
@@ -220,7 +210,6 @@ export default function Measurement({
 }: {
   contractors: contractors[];
 }) {
-  // const [contractors, setContractors] = React.useState<Contractor[]>([]);
   const [open, setOpen] = React.useState(false);
   const [contractor, setContractor] = React.useState<string | undefined>(
     contractors.length > 0 ? contractors[0].contractorId : undefined
@@ -232,21 +221,15 @@ export default function Measurement({
 
   const router = useRouter();
 
-  // const fetchContractors = async () => {
-  //   const res = await axios.get("/api/hr/contractors");
-  //   setContractors(res.data);
-  //   setContractor(res.data[0]?.id);
-  // };
-
   const contractor1 = contractors.find((v) => v.contractorId === contractor);
   const workorder =
-    contractor1 && contractor1?.workorders.length > 0
-      ? contractor1?.workorders[0]
+    contractor1 && contractor1?.projects.length > 0
+      ? contractor1?.projects[0]
       : undefined;
   const info = [
     { value: contractor1?.contractorname, label: "Name of Contractor" },
-    { value: workorder?.nature, label: "Nature of Work" },
-    { value: workorder?.location, label: "Location" },
+    { value: workorder?.name, label: "Nature of Work" },
+    { value: workorder?.place, label: "Location" },
   ];
 
   const fetchBarBending = async () => {
@@ -258,7 +241,13 @@ export default function Measurement({
     fetchBarBending();
   }, [contractor]);
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box
+      sx={{
+        width: "100%",
+        overflowY: "auto",
+        maxHeight: "calc(100vh - 100px)",
+      }}
+    >
       <Paper sx={{ width: "100%", mb: 2 }}>
         {/* <EnhancedTableToolbar
           numSelected={selected.length}
@@ -289,7 +278,7 @@ export default function Measurement({
                 (contractors.length > 0 ? contractors[0].contractorId : "")
               }
             />
-            {contractor1 && contractor1?.workorders.length > 0 && (
+            {contractor1 && contractor1?.projects.length > 0 && (
               <Stack direction="column" spacing={2}>
                 {info.map((v) => (
                   <Stack direction="row" spacing={2}>
@@ -317,9 +306,11 @@ export default function Measurement({
         </Box>
         <TableContainer
           sx={{
-            maxHeight: "calc(100vh - 11rem)",
+            // maxHeight: "calc(100vh - 11rem)",
             pb: 10,
-            overflowY: "auto",
+            px: 2,
+            // overflowY: "auto",
+            // overflowX: "hidden",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
               height: 10,
@@ -362,7 +353,7 @@ export default function Measurement({
                   />
                 ))
               ) : contractors.find((v) => v.contractorId === contractor)
-                  ?.workorders.length === 0 ? (
+                  ?.projects.length === 0 ? (
                 <TableRow>
                   <TableCell align="left" colSpan={6}>
                     No Work Orders
@@ -406,7 +397,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const contractors = await prisma.contractor.findMany({
     include: {
-      workorders: true,
+      projects: true,
     },
   });
 

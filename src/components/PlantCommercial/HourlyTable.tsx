@@ -124,6 +124,19 @@ const HourlyTable = ({
     { label: "Total", id: "totalnetamount" },
   ];
 
+  const row = rows.find((r) => r.date === "Total Man days");
+
+  const filteredDepartments = departments
+    .map((d) => {
+      return {
+        ...d,
+        designations: d.designations.filter((a) => {
+          return row ? (row[a.id] as number) > 0 : false;
+        }),
+      };
+    })
+    .filter((d) => d.designations.length > 0);
+
   return (
     <Stack spacing={3} p={3} pt={0}>
       <Stack
@@ -185,20 +198,18 @@ const HourlyTable = ({
               >
                 Date
               </TableCell>
-              {departments
-                .filter((d) => d.designations.length > 0)
-                .map((department) => {
-                  return (
-                    <TableCell
-                      key={department.id}
-                      align="center"
-                      sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
-                      colSpan={department.designations.length}
-                    >
-                      {department.department}
-                    </TableCell>
-                  );
-                })}
+              {filteredDepartments.map((department) => {
+                return (
+                  <TableCell
+                    key={department.id}
+                    align="center"
+                    sx={{ fontWeight: "700", bgcolor: "#e0e0e0" }}
+                    colSpan={department.designations.length}
+                  >
+                    {department.department}
+                  </TableCell>
+                );
+              })}
               {colspan1 !== 0 && (
                 <TableCell
                   align="center"
@@ -218,20 +229,18 @@ const HourlyTable = ({
               <TableCell align="center" sx={{ fontWeight: "700" }} colSpan={1}>
                 -
               </TableCell>
-              {departments
-                .filter((d) => d.designations.length !== 0)
-                .map((department) =>
-                  department.designations.map((designation) => (
-                    <TableCell
-                      key={designation.id}
-                      align="center"
-                      sx={{ fontWeight: "700" }}
-                      colSpan={1}
-                    >
-                      {designation.designation}
-                    </TableCell>
-                  ))
-                )}
+              {filteredDepartments.map((department) =>
+                department.designations.map((designation) => (
+                  <TableCell
+                    key={designation.id}
+                    align="center"
+                    sx={{ fontWeight: "700" }}
+                    colSpan={1}
+                  >
+                    {designation.designation}
+                  </TableCell>
+                ))
+              )}
               {colspan1 !== 0 && <TableCell colSpan={colspan1}></TableCell>}
               <TableCell align="center" sx={{ fontWeight: "700" }} colSpan={1}>
                 -
@@ -243,22 +252,10 @@ const HourlyTable = ({
               rows.map((row, index) => {
                 return (
                   <TableRow hover role="checkbox" tabIndex={-1} key={row.f8mw}>
-                    {/* {columns.map((column) => {
-                      const value = _.get(row, column.id, '-');
-                      const value1 = _.get(row, 'date', '-');
-
-                      return (
-                        <TableCell key={column.id} align={'center'}>
-                          {column.id === 'date' || value1 === 'Total Man days' || value1 === 'Overtime Hrs.'
-                            ? value
-                            : Math.ceil(value as number)}
-                        </TableCell>
-                      );
-                    })} */}
                     <TableCell key={row.date} align={"center"}>
                       {row.date}
                     </TableCell>
-                    {departments.map((department) =>
+                    {filteredDepartments.map((department) =>
                       department.designations.map((designation) => (
                         <TableCell
                           key={designation.id}

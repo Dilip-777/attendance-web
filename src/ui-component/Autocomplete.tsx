@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 interface AutocompleteProps {
   value: string;
   setValue: React.Dispatch<React.SetStateAction<any>>;
-  label: string;
+  label?: string;
   options: { value: string; label: string }[];
 }
 

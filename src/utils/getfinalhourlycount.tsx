@@ -69,7 +69,6 @@ export const gethourlycount = (
     const s = shifts?.find(
       (s) => s.shift === (item.manualshift || item.machineshift)
     );
-    if (s && item.gender === "Female") console.log(s?.totalhours, wrkhrs, item);
 
     if (!s && wrkhrs === 8) return true;
     if (s?.totalhours !== wrkhrs) return false;
@@ -77,8 +76,6 @@ export const gethourlycount = (
   };
 
   const filter = ({ item, designation, attendance, gender }: filterProps) => {
-    console.log(designation, "designation", gender, "gender", item);
-
     if (item.attendance === attendance) return false;
     if (designation) {
       if (designation.toLowerCase() !== item.designation.toLowerCase())

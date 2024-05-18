@@ -26,7 +26,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import FormInput from "../FormikComponents/FormInput";
 import { useState } from "react";
-import { Works } from "@prisma/client";
+import { Measurement } from "@prisma/client";
 import FormSelect from "../FormikComponents/FormSelect";
 import axios from "axios";
 
@@ -42,7 +42,7 @@ interface Props {
   open: boolean;
   handleClose: () => void;
   selected: any;
-  works: Works[];
+  works: Measurement[];
   contractor: string;
   selectedWork: string;
   fetchWorks: () => Promise<void>;
@@ -112,7 +112,7 @@ export default function AddMeasurement({
               >
                 <NavigateBefore fontSize="large" />
               </IconButton>
-              Add Work Item
+              Add Measurement Item
             </Typography>
             <Divider />
             <Box sx={{ borderBottom: 1, borderColor: "divider", pl: 5 }}>
@@ -127,7 +127,7 @@ export default function AddMeasurement({
                 onChange={handleChange}
                 aria-label="basic tabs example"
               >
-                <Tab label="Add Work" {...a11yProps(0)} />
+                <Tab label="Add Measurement" {...a11yProps(0)} />
                 <Tab label="Add Work Item" {...a11yProps(1)} />
               </Tabs> */}
             </Box>
@@ -154,13 +154,13 @@ const Addworkitem = ({
   selectedWork,
   fetchWorks,
 }: {
-  works: Works[];
+  works: Measurement[];
   handleClose: () => void;
   selectedWork: string;
   fetchWorks: () => Promise<void>;
 }) => {
   const validationSchema = Yup.object().shape({
-    workId: Yup.string().required("Required"),
+    measurementId: Yup.string().required("Required"),
     unit: Yup.string().required("Required"),
     unitrate: Yup.number().required("Required"),
     description: Yup.string().required("Required"),
@@ -171,7 +171,7 @@ const Addworkitem = ({
   });
 
   const initialValues = {
-    workId: selectedWork || "",
+    measurementId: selectedWork || "",
     unit: "",
     unitrate: 0,
     description: "",
@@ -194,7 +194,7 @@ const Addworkitem = ({
 
         const totalAmount = valueofcurrentBill;
 
-        const workItem = {
+        const measurementItem = {
           ...values,
           quantity: parseFloat(quantity.toFixed(3)),
           valueofcurrentBill: parseFloat(valueofcurrentBill.toFixed(3)),
@@ -202,8 +202,8 @@ const Addworkitem = ({
           valueofTotalBill: parseFloat(valueofTotalBill.toFixed(3)),
         };
         setSubmitting(true);
-        await axios.post("/api/workitem", {
-          workItem,
+        await axios.post("/api/measurementItem", {
+          measurementItem,
           totalAmount,
         });
         await fetchWorks();
@@ -225,7 +225,7 @@ const Addworkitem = ({
               </Grid>
               <Grid item xs={12} sm={5}>
                 <FormSelect
-                  name="workId"
+                  name="measurementId"
                   label="Select Work"
                   type="text"
                   placeHolder="Work"

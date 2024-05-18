@@ -13,6 +13,7 @@ import AccountBalanceWallet from "@mui/icons-material/AccountBalanceWallet";
 import MonetizationOn from "@mui/icons-material/MonetizationOn";
 import LocalShipping from "@mui/icons-material/LocalShipping";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 
 // constant
 const icons = {
@@ -29,6 +30,7 @@ const icons = {
   AccountBalanceWallet,
   LocalShipping,
   GroupWorkIcon,
+  FactCheckIcon,
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -126,6 +128,29 @@ const corporator = {
           title: "Add Works",
           type: "item",
           url: "/works/add",
+          target: true,
+        },
+      ],
+    },
+    {
+      id: "qcs",
+      title: "QCS",
+      type: "collapse",
+      icon: icons.FactCheckIcon,
+
+      children: [
+        {
+          id: "/qcs",
+          title: "QCS",
+          type: "item",
+          url: "/qcs",
+          target: true,
+        },
+        {
+          id: "/qcs/[id]",
+          title: "Add QCS",
+          type: "item",
+          url: "/qcs/add",
           target: true,
         },
       ],

@@ -387,12 +387,18 @@ export default function PlantCommercial({
                 minWidth: 250,
               }}
               onChange={(event: any, newValue: string | null) => {
-                if (
-                  !selectedDepartments.find((d) => d.department === newValue)
-                ) {
-                  const d = departments.find((d) => d.department === newValue);
-                  if (d) {
-                    setSelectedDepartments([...selectedDepartments, d]);
+                if (newValue === "All departments") {
+                  setSelectedDepartments(departments);
+                } else {
+                  if (
+                    !selectedDepartments.find((d) => d.department === newValue)
+                  ) {
+                    const d = departments.find(
+                      (d) => d.department === newValue
+                    );
+                    if (d) {
+                      setSelectedDepartments([...selectedDepartments, d]);
+                    }
                   }
                 }
                 setInputValue("");
@@ -403,7 +409,10 @@ export default function PlantCommercial({
                 setInputValue(newInputValue);
               }}
               id="controllable-states-demo"
-              options={[...departments.map((d) => d.department)]}
+              options={[
+                "All departments",
+                ...departments.map((d) => d.department),
+              ]}
               renderInput={(params) => (
                 <TextField {...params} placeholder="Select a Department" />
               )}
@@ -448,7 +457,7 @@ export default function PlantCommercial({
         </Stack>
       </Box>
 
-      <Stack direction="row" spacing={2} px={5} pb={2}>
+      <Stack direction="row" spacing={2} rowGap={2} p={2} flexWrap="wrap">
         {selectedDepartments.map((d) => (
           <Chip
             key={d.department}
