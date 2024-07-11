@@ -15,6 +15,7 @@ import {
   Designations,
   Employee,
   FinalCalculations,
+  HOAuditor,
   Hsd,
   Safety,
   SeperateSalary,
@@ -267,12 +268,14 @@ interface ContractorwithVehicle extends Contractor {
 
 export default function FinalSheet({
   contractors,
-  workorders,
+  workorder,
   contractor,
+  hoCommercial,
 }: {
   contractors: Contractor[];
-  workorders: Workorder[];
+  workorder: Workorder | null;
   contractor: ContractorwithVehicle;
+  hoCommercial: HOAuditor | null;
 }) {
   const [value, setValue] = useState<string>(dayjs().format("MM/YYYY"));
   const [selectedContractor, setSelectedContractor] = useState<string>(
@@ -286,6 +289,7 @@ export default function FinalSheet({
   const [hsdcost, setHsdCost] = useState(0);
   const [store, setStore] = useState<Stores | null>(null);
   const [safety, setSafety] = useState<Safety[]>([]);
+  // const [hoCommercial, setHoCommercial] = useState<Department | null>(null);
   const [cost, setCost] = useState({
     ytdHiringCost: 0,
     ytdHsdCost: 0,
@@ -338,12 +342,16 @@ export default function FinalSheet({
     setLoading(false);
   };
 
+  // const fetchHoCommercial = async () => {
+  //   const res = await axios.get(`/api/hocommercial?contractorId=${contractor.contractorId}&month=${month || dayjs().format("MM/YYYY")}`);
+  // }
+
   useEffect(() => {
     if (contractor?.vehicle) {
       const { data, kpidata, overtimedata, totals, total, hsdcost, cost } =
         getAutomobileFinalSheet(
           selectedVehicles,
-          contractor?.hsd[0],
+          contractor?.hsd.find((d) => d.month === month) || null,
           (month as string) || dayjs().format("MM/YYYY"),
           contractor
         );
@@ -428,16 +436,14 @@ export default function FinalSheet({
       }`
     );
 
-  const w = workorders.find(
-    (c) =>
-      c.contractorId === contractor?.contractorId && c.startDate.includes(value)
-  );
+  // const w = workorders.find(
+  //   (c) =>
+  //     c.contractorId === contractor?.contractorId && c.startDate.includes(value)
+  // );
 
   useEffect(() => {
     fetchStoreAndSafety();
   }, []);
-
-  console.log(hsdcost, store, "hsd");
 
   return loading ? (
     <Box
@@ -543,8 +549,11 @@ export default function FinalSheet({
                     contractor: contractor as Contractor,
                     month: value,
                     total: total,
-                    workorder: w,
+                    workorder: workorder as Workorder,
                     cost: cost,
+                    hoCommercial: hoCommercial,
+                    deduction: deduction,
+                    hsdcost: hsdcost + (store?.totalAmount || 0),
                   })
                 }
                 color="secondary"
@@ -602,11 +611,11 @@ export default function FinalSheet({
         </Typography>
         <Details
           rows={[
-            { label: "Work Order Id", value: w?.id as string },
-            { label: "Nature of Work", value: w?.nature as string },
-            { label: "Location", value: w?.location as string },
-            { label: "Start Date", value: w?.startDate as string },
-            { label: "End Date", value: w?.endDate as string },
+            { label: "Work Order Id", value: workorder?.id as string },
+            { label: "Nature of Work", value: workorder?.nature as string },
+            { label: "Location", value: workorder?.location as string },
+            { label: "Start Date", value: workorder?.startDate as string },
+            { label: "End Date", value: workorder?.endDate as string },
           ]}
         />
       </Box>
@@ -762,9 +771,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     });
   }
 
-  const workorders = await prisma.workorder.findMany();
+  const workorder = await prisma.workorder.findFirst({
+    where: {
+      contractorId: contractor?.contractorId,
+    },
+  });
+  const hoCommercial = await prisma.hOAuditor.findFirst({
+    where: {
+      contractorId: contractor?.contractorId,
+    },
+  });
 
   return {
-    props: { contractors, workorders, contractor: contractor },
+    props: { contractors, workorder, contractor: contractor, hoCommercial },
   };
 };

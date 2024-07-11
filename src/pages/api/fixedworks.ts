@@ -5,22 +5,22 @@ export default async function works(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const { contractorid: id } = req.query;
     if (id) {
-      const works = await prisma.works.findMany({
+      const works = await prisma.measurement.findMany({
         where: {
           contractorid: id as string,
         },
         include: {
           contractor: true,
-          workItems: true,
+          measurementItems: true,
         },
       });
       res.status(200).json(works);
       return;
     }
-    const works = await prisma.works.findMany({
+    const works = await prisma.measurement.findMany({
       include: {
         contractor: true,
-        workItems: true,
+        measurementItems: true,
       },
     });
     res.status(200).json(works);

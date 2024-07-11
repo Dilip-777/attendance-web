@@ -89,7 +89,7 @@ export default async function measurement(
     const work = await prisma.measurement.create({
       data: {
         ...rest,
-        totalAmount,
+        totalAmount: 0,
         totalQuantity,
         measurementItems: {
           createMany: {
@@ -165,10 +165,6 @@ export default async function measurement(
       }
     });
 
-    const totalAmount = measurementitems.reduce((acc, item) => {
-      return acc + item.valueofcurrentBill;
-    }, 0);
-
     const totalQuantity = measurementitems.reduce((acc, item) => {
       return acc + item.quantity;
     }, 0);
@@ -179,7 +175,7 @@ export default async function measurement(
       },
       data: {
         ...rest,
-        totalAmount: parseFloat(totalAmount.toFixed(3)),
+        totalAmount: 0,
         totalQuantity: parseFloat(totalQuantity.toFixed(3)),
         measurementItems: {
           createMany: {
@@ -188,10 +184,6 @@ export default async function measurement(
         },
       },
     });
-
-    console.log(totalAmount, measurementitems);
-
-    console.log("lsjdflskjfkl");
 
     res.status(200).json({ success: true });
 

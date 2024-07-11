@@ -255,12 +255,16 @@ export default function HOAuditorPage({
               }
             />
             <MonthSelect
-              value={month ? dayjs(month as string, "MM/YYYY") : dayjs()}
+              value={month ? dayjs(month as string, "MM/YYYY") : null}
               onChange={(e) => {
-                if (e)
-                  router.push({
-                    query: { month: e?.format("MM/YYYY") },
-                  });
+                console.log(e, "month");
+
+                if (e?.format("MM/YYYY") !== "Invalid Date")
+                  if (e)
+                    router.push({
+                      query: { month: e?.format("MM/YYYY") },
+                    });
+                  else router.push("/hoauditor");
               }}
               maxDate={null}
             />
@@ -354,7 +358,12 @@ export default function HOAuditorPage({
                         {row.toDate}
                       </TableCell>
                       <TableCell align="center" sx={{ minWidth: 150 }}>
-                        {dayjs(row.monthOfInvoice, "MM-DD-YYYY")
+                        {dayjs(
+                          row.monthOfInvoice,
+                          row.monthOfInvoice.length === 10
+                            ? "DD/MM/YYYY"
+                            : "MM/YYYY"
+                        )
                           .format("MMMM")
                           .toString() || "-"}
                       </TableCell>
@@ -451,15 +460,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   const { month } = context.query;
-  const m = (month || dayjs().format("MM/YYYY"))?.toString().split("/");
-  console.log(m, "month");
 
   const hocommercial = await prisma.hOAuditor.findMany({
     where: {
       monthOfInvoice: {
-        // contains: month as string,
-        startsWith: m[0],
-        endsWith: m[1],
+        // // contains: month as string,
+        // startsWith: m[0],
+        // endsWith: m[1],
+        endsWith: month as string,
       },
     },
   });

@@ -2,7 +2,7 @@ import { Button, Grid, CircularProgress } from "@mui/material";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import FormInput from "../FormikComponents/FormInput";
-import { WorkItem, Works } from "@prisma/client";
+import { MeasurementItem, Measurement } from "@prisma/client";
 import FormSelect from "../FormikComponents/FormSelect";
 import axios from "axios";
 
@@ -11,9 +11,9 @@ const Addworkitem = ({
   handleClose,
   workItem,
 }: {
-  works: Works[];
+  works: Measurement[];
   handleClose: () => void;
-  workItem?: WorkItem;
+  workItem?: MeasurementItem;
 }) => {
   const validationSchema = Yup.object().shape({
     workId: Yup.string().required("Required"),
@@ -26,7 +26,7 @@ const Addworkitem = ({
   });
 
   const initialValues = {
-    workId: workItem?.workId || "",
+    workId: workItem?.measurementId || "",
     unit: workItem?.unit || "",
     description: workItem?.description || "",
     nos: 0,

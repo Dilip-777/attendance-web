@@ -1,13 +1,18 @@
 import { plantname } from "@/constants";
 import { Button } from "@mui/material";
-import { Department, Designations, WorkItem, Works } from "@prisma/client";
+import {
+  Department,
+  Designations,
+  MeasurementItem,
+  Measurement,
+} from "@prisma/client";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 // const ExcelJS = require("exceljs");
 import ExcelJS from "exceljs";
 
-interface worktype extends Works {
-  workItems: WorkItem[];
+interface worktype extends Measurement {
+  workItems: MeasurementItem[];
 }
 
 export default function PrintExcel({

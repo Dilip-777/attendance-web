@@ -47,7 +47,7 @@ export default function Projects({
   projectId,
 }: {
   qcs: (Qcs & { contractor: Contractor; project: Project })[];
-  contractors: (Contractor & { projects: Project[] })[];
+  contractors: (Contractor & { Qcs: (Qcs & { project: Project })[] })[];
   contractorId: string;
   projectId: string;
 }) {
@@ -122,21 +122,23 @@ export default function Projects({
               }))}
               setValue={(value) => {
                 router.push(
-                  "/qcs?contractorId" + value + "&projectId=" + projectId
+                  "/qcs?contractorId=" + value + "&projectId=" + projectId
                 );
               }}
             />
             <AutoComplete
               value={projectId}
               options={
-                contractor?.projects.map((project) => ({
-                  label: project.name,
-                  value: project.id,
+                contractor?.Qcs.map((q) => ({
+                  label: q.project.name,
+                  value: q.projectId,
                 })) || []
               }
               setValue={(value) => {
+                // console.log(value);
+
                 router.push(
-                  "/qcs?contractorId" + value + "&projectId=" + projectId
+                  "/qcs?contractorId=" + contractorId + "&projectId=" + value
                 );
               }}
             />
@@ -183,16 +185,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const contractors = await prisma.contractor.findMany({
     include: {
-      projects: true,
+      Qcs: {
+        include: {
+          project: true,
+        },
+      },
     },
   });
 
   if (!contractorId || !projectId) {
     const contractor = contractors.find(
-      (contractor) => contractor.projects.length > 0
+      (contractor) => contractor.Qcs.length > 0
     );
     contractorId = contractor?.contractorId;
-    projectId = contractor?.projects[0].id;
+    projectId = contractor?.Qcs[0].projectId;
   }
 
   const qcs = await prisma.qcs.findMany({

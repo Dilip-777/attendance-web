@@ -13,29 +13,21 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import {
-  Contractor,
-  Department,
-  Designations,
-  Employee,
-  Project,
-} from "@prisma/client";
+import { Contractor, Project } from "@prisma/client";
 import axios from "axios";
 import { CircularProgress } from "@mui/material";
 import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
-
-const numberType = Yup.number().required("Required");
-
-const mobilenumbertype = Yup.string().matches(
-  /^(?:\+91[1-9]\d{9}|0[1-9]\d{9}|[1-9]\d{9})$/,
-  "Please enter a valid mobile number"
-);
+import FileUpload from "@/components/FormikComponents/FileUpload";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
   type: Yup.string().required("Required"),
   place: Yup.string().required("Required"),
-  contractorId: Yup.string().required("Required"),
+  consultant: Yup.string().required("Required"),
+  email: Yup.string().email("Invalid email").required("Required"),
+  phone: Yup.string().required("Required"),
+  description: Yup.string(),
+  document: Yup.string(),
 });
 
 export default function AddProject({
@@ -51,7 +43,11 @@ export default function AddProject({
     name: project?.name || "",
     type: project?.type || "",
     place: project?.place || "",
-    contractorId: project?.contractorId || "",
+    consultant: project?.consultant || "",
+    email: project?.email || "",
+    phone: project?.phone || "",
+    description: project?.description || "",
+    document: project?.document || "",
   };
 
   console.log(initialValues);
@@ -108,20 +104,6 @@ export default function AddProject({
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={3} mt={2} container>
                   <Grid item xs={12} sm={6} xl={4}>
-                    <AutoCompleteSelect
-                      name="contractorId"
-                      label="Contractor Name*"
-                      placeHolder="Contractor Name"
-                      disabled={false}
-                      options={
-                        contractors?.map((contractor) => ({
-                          value: contractor.contractorId,
-                          label: contractor.contractorname,
-                        })) || []
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} xl={4}>
                     <FormInput
                       name="name"
                       label="Project Name*"
@@ -148,6 +130,47 @@ export default function AddProject({
                       name="place"
                       label="Place*"
                       placeHolder="Enter Place"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} xl={4}>
+                    <FormInput
+                      name="consultant"
+                      label="Consultant Name*"
+                      placeHolder="Enter Consultant Name"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} xl={4}>
+                    <FormInput
+                      name="email"
+                      label="Email*"
+                      placeHolder="Enter Email"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} xl={4}>
+                    <FormInput
+                      name="phone"
+                      label="Phone number*"
+                      placeHolder="Enter Phone number"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} xl={4}>
+                    <FormInput
+                      name="description"
+                      label="Description"
+                      placeHolder="Enter Description"
+                      disabled={false}
+                      multiline
+                      minRows={4}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} xl={4}>
+                    <FileUpload
+                      label="Document"
+                      name="document"
                       disabled={false}
                     />
                   </Grid>
@@ -203,7 +226,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    where: {
+      servicedetail: "Civil",
+    },
+  });
 
   return {
     props: {

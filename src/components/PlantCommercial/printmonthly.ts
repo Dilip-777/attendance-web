@@ -85,10 +85,10 @@ const handleprint = ({
   if (!ot) headcells.push(...extraheadcells);
 
   const border = {
-    top: { style: "thick", color: { argb: "black" } },
-    left: { style: "thick", color: { argb: "black" } },
-    bottom: { style: "thick", color: { argb: "black" } },
-    right: { style: "thick", color: { argb: "black" } },
+    top: { style: "thin", color: { argb: "black" } },
+    left: { style: "thin", color: { argb: "black" } },
+    bottom: { style: "thin", color: { argb: "black" } },
+    right: { style: "thin", color: { argb: "black" } },
   };
 
   const headings = [

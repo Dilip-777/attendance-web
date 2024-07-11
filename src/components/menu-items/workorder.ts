@@ -85,6 +85,13 @@ const workorder = {
           url: "/civil/boq/add",
           target: true,
         },
+        {
+          id: "/civil/boq/boqformat",
+          title: "BOQ Format",
+          type: "item",
+          url: "/civil/boq/boqformat",
+          target: true,
+        },
       ],
     },
   ],

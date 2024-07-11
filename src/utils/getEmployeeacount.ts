@@ -102,7 +102,7 @@ const getEmployeesCalculation = (
 
     obj["total"] = count;
     if (ot) {
-      const othrs = f.reduce(
+      const othrs = [...f, ...hf].reduce(
         (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
         0
       );

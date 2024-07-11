@@ -380,6 +380,7 @@ export const getAutomobileFinalSheet = (
         hrs: parseFloat(totalAuto.hrs.toFixed(2)),
         days: parseFloat(totalAuto.days.toFixed(2)),
         kms: parseFloat(totalAuto.kms.toFixed(2)),
+        trips: parseFloat(totalAuto.trips.toFixed(2)),
       },
       taxable,
       gst: Math.round(taxable * (vehicle.gst / 100)),

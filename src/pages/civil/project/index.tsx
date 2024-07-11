@@ -2,15 +2,8 @@ import * as React from "react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import {
-  Contractor,
-  Department,
-  Designations,
-  Employee,
-  Project,
-} from "@prisma/client";
-import _, { ceil } from "lodash";
-import ImportData from "@/components/employeeImport";
+import { Project } from "@prisma/client";
+import _, { identity } from "lodash";
 import {
   Box,
   Button,
@@ -41,13 +34,7 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   },
 }));
 
-export default function Projects({
-  contractors,
-  contractor,
-}: {
-  contractor: Contractor & { projects: Project[] };
-  contractors: Contractor[];
-}) {
+export default function Projects({ projects }: { projects: Project[] }) {
   const [filterName, setFilterName] = React.useState("");
   const [orderby, setOrderby] = React.useState("name");
   const [open, setOpen] = React.useState(false);
@@ -57,6 +44,14 @@ export default function Projects({
     { id: "name", label: "Project Name", cell: (row: Project) => row.name },
     { id: "type", label: "Project Type", cell: (row: Project) => row.type },
     { id: "place", label: "Place", cell: (row: Project) => row.place },
+    {
+      id: "consultant",
+      label: "Consultant",
+      cell: (row: Project) => row.consultant || "-",
+    },
+    { id: "email", label: "Email", cell: (row: Project) => row.email || "-" },
+    { id: "phone", label: "Phone", cell: (row: Project) => row.phone || "-" },
+
     {
       id: "action",
       label: "Action",
@@ -161,16 +156,6 @@ export default function Projects({
                 </InputAdornment>
               }
             />
-            <AutoComplete
-              value={contractor.contractorId}
-              options={contractors.map((contractor) => ({
-                label: contractor.contractorname,
-                value: contractor.contractorId,
-              }))}
-              setValue={(value) => {
-                router.push("/contractor/" + value);
-              }}
-            />
           </Stack>
           <Stack direction="row" spacing={2}>
             <Button
@@ -184,8 +169,9 @@ export default function Projects({
           </Stack>
         </Toolbar>
         <CustomTable
+          nocheckbox={false}
           headCells={headcells}
-          data={contractor.projects.filter((project) =>
+          data={projects.filter((project) =>
             project.name.toLowerCase().includes(filterName.toLowerCase())
           )}
         />
@@ -215,36 +201,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const { contractorId } = context.query;
-  let contractor = contractorId
-    ? await prisma.contractor.findUnique({
-        where: {
-          contractorId: contractorId as string,
-        },
-        include: {
-          projects: true,
-        },
-      })
-    : await prisma.contractor.findFirst({
-        include: {
-          projects: true,
-        },
-      });
-
-  if (!contractor) {
-    contractor = await prisma.contractor.findFirst({
-      include: {
-        projects: true,
-      },
-    });
-  }
-
-  const contractors = await prisma.contractor.findMany();
+  const projects = await prisma.project.findMany();
 
   return {
     props: {
-      contractor,
-      contractors,
+      projects,
     },
   };
 };

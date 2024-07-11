@@ -208,8 +208,6 @@ model Contractor {
   hiredFixedWork              HiredFixedWork[]
   saveHiredFixedWork          SaveHiredFixedWork[]
   finalCalculations           FinalCalculations[]
-  projects                    Project[]
-  BOQs                        BOQ[]
   Qcs                         Qcs[]
 }
 
@@ -301,11 +299,16 @@ model Workorder {
   id                String     @id @default(cuid())
   contractorId      String
   contractorName    String
+  projectId         String?
   nature            String
   startDate         String
   endDate           String
   location          String
   workDescription   String
+  workorderno       String?
+  remarks           String?
+  schedule          String?
+  paymentTerms      String?
   repeatOrOneTime   String
   alert1Month       Boolean
   alert15days       Boolean
@@ -314,6 +317,7 @@ model Workorder {
   uploadDocument    String?
   contractor        Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
   status            Status     @default(Pending)
+  project           Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Department {
@@ -400,7 +404,7 @@ model Stores {
   contractorid   String
   contractorName String
   storeItems     StoreItem[]
-  totalAmount    Int
+  totalAmount    Float
   contractor     Contractor  @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 
@@ -409,10 +413,10 @@ model StoreItem {
   storeId              String
   division             String
   chargeableItemIssued String
-  quantity             Int
+  quantity             Float
   units                String
-  rate                 Int
-  chargeableamount     Int
+  rate                 Float
+  chargeableamount     Float
   remarks              String?
   store                Stores  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
@@ -424,7 +428,7 @@ model Safety {
   contractorName String
   safetyItems    SafetyItem[]
   unsafeActs     UnsafeActs[]
-  totalAmount    Int
+  totalAmount    Float
   contractor     Contractor   @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
 }
 
@@ -433,9 +437,9 @@ model SafetyItem {
   safetyId             String
   division             String
   chargeableItemIssued String
-  quantity             Int     @default(0)
-  rate                 Int     @default(0)
-  netchargeableamount  Int
+  quantity             Float   @default(0)
+  rate                 Float   @default(0)
+  netchargeableamount  Float
   remarks              String?
   safety               Safety  @relation(fields: [safetyId], references: [id], onDelete: Cascade)
 }
@@ -460,6 +464,7 @@ model Deductions {
   gstrelease     Int        @default(0)
   advance        Int        @default(0)
   anyother       Int        @default(0)
+  addition       Int        @default(0)
   remarks        String?
   contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 }
@@ -571,77 +576,156 @@ model Qcs {
   contractorid String
   project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   contractor   Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+  BOQ          QcsBoq[]
+}
+
+model QcsBoq {
+  id            String        @id @default(cuid())
+  itemcode      Int           @unique @default(autoincrement())
+  boqId         String
+  qcsId         String
+  description   String
+  totalAmount   Float         @default(0)
+  totalQuantity Float         @default(0)
+  measurements  Measurement[]
+  barBendings   BarBending[]
+  BOQItems      QcsBoqItem[]
+  Qcs           Qcs           @relation(fields: [qcsId], references: [id], onDelete: Cascade)
+}
+
+model QcsBoqItem {
+  id               String            @id @default(cuid())
+  boqId            String
+  description      String
+  unit             String
+  startDate        String?
+  endDate          String?
+  unitrate         Float             @default(0)
+  totalQuantity    Float             @default(0)
+  valueofTotalBill Float             @default(0)
+  nos              Int
+  length           Float
+  breadth          Float
+  height           Float?
+  quantity         Float
+  remarks          String?
+  BOQ              QcsBoq            @relation(fields: [boqId], references: [id], onDelete: Cascade)
+  measurementItems MeasurementItem[]
+  barBendingItems  BarBendingItem[]
 }
 
 model BOQ {
-  id            String     @id @default(cuid())
-  itemcode      Int        @unique @default(autoincrement())
+  id            String  @id @default(cuid())
+  itemcode      Int     @unique @default(autoincrement())
   projectId     String
+  boqId         String?
   description   String
-  contractorid  String
-  totalAmount   Float      @default(0)
-  totalQuantity Float      @default(0)
-  project       Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contractor    Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+  totalAmount   Float   @default(0)
+  totalQuantity Float   @default(0)
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  BOQItems BOQItem[]
+}
+
+model BOQItem {
+  id               String  @id @default(cuid())
+  boqId            String
+  description      String
+  unit             String
+  unitrate         Float   @default(0)
+  totalQuantity    Float   @default(0)
+  valueofTotalBill Float   @default(0)
+  nos              Int
+  length           Float
+  breadth          Float
+  height           Float?
+  quantity         Float
+  remarks          String?
+  BOQ              BOQ     @relation(fields: [boqId], references: [id], onDelete: Cascade)
 }
 
 model Measurement {
-  id                   String     @id @default(cuid())
-  itemcode             Int        @unique @default(autoincrement())
-  projectId            String
+  id               String            @id @default(cuid())
+  itemcode         Int               @unique @default(autoincrement())
+  projectId        String
+  startDate        String
+  endDate          String
+  boqId            String
+  description      String
+  contractorid     String
+  totalAmount      Float             @default(0)
+  totalQuantity    Float             @default(0)
+  measurementItems MeasurementItem[]
+  BOQ              QcsBoq            @relation(fields: [boqId], references: [id], onDelete: Cascade)
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contractor       Contractor        @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+}
+
+model MeasurementItem {
+  id                   String      @id @default(cuid())
+  measurementId        String
+  boqItemId            String
+  referenceWorkId      String?
   description          String
   unit                 String
-  unitrate             Float      @default(0)
-  previousBillQuantity Float      @default(0)
-  currentBillQuantity  Float      @default(0)
-  totalQuantity        Float      @default(0)
-  valueofpreviousBill  Float      @default(0)
-  valueofcurrentBill   Float      @default(0)
-  valueofTotalBill     Float      @default(0)
+  unitrate             Float       @default(0)
+  previousBillQuantity Float       @default(0)
+  currentBillQuantity  Float       @default(0)
+  totalQuantity        Float       @default(0)
+  valueofpreviousBill  Float       @default(0)
+  valueofcurrentBill   Float       @default(0)
+  valueofTotalBill     Float       @default(0)
   nos                  Int
   length               Float
   breadth              Float
   height               Float?
   quantity             Float
   remarks              String?
-  contractorid         String
-  totalAmount          Float      @default(0)
-  project              Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contractor           Contractor @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+  boqItem              QcsBoqItem  @relation(fields: [boqItemId], references: [id])
+  measurement          Measurement @relation(fields: [measurementId], references: [id], onDelete: Cascade)
 }
-
-// model MeasurementItem {
-//   id                   String      @id @default(cuid())
-//   measurementId        String
-//   referenceWorkId      String?
-//   description          String
-//   unit                 String
-//   unitrate             Float       @default(0)
-//   previousBillQuantity Float       @default(0)
-//   currentBillQuantity  Float       @default(0)
-//   totalQuantity        Float       @default(0)
-//   valueofpreviousBill  Float       @default(0)
-//   valueofcurrentBill   Float       @default(0)
-//   valueofTotalBill     Float       @default(0)
-//   nos                  Int
-//   length               Float
-//   breadth              Float
-//   height               Float?
-//   quantity             Float
-//   remarks              String?
-//   measurement          Measurement @relation(fields: [measurementId], references: [id], onDelete: Cascade)
-// }
 
 model BarBending {
   id              String           @id @default(cuid())
   itemcode        Int              @unique @default(autoincrement())
   projectId       String
+  startDate       String
+  endDate         String
+  boqId           String
   description     String
   contractorid    String
   totalAmount     Float            @default(0)
   barbendingItems BarBendingItem[]
   project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   contractor      Contractor       @relation(fields: [contractorid], references: [contractorId], onDelete: Cascade)
+  boq             QcsBoq           @relation(fields: [boqId], references: [id], onDelete: Cascade)
+}
+
+model BarBendingItem {
+  id               String     @id @default(cuid())
+  barBendingId     String
+  boqItemId        String
+  description      String
+  barmark          String?
+  diamark          Int
+  noofequipments   Int
+  costperequipment Float
+  totalcost        Float
+  a                Float      @default(0)
+  b                Float      @default(0)
+  c                Float      @default(0)
+  d                Float      @default(0)
+  e                Float      @default(0)
+  f                Float      @default(0)
+  g                Float      @default(0)
+  h                Float      @default(0)
+  cuttinglength    Float
+  totalLength      Float
+  unitweight       Float
+  totalweight      Float
+  remarks          String?
+  barBending       BarBending @relation(fields: [barBendingId], references: [id], onDelete: Cascade)
+  boqItem          QcsBoqItem @relation(fields: [boqItemId], references: [id])
 }
 
 model FixedWork {
@@ -696,42 +780,21 @@ model Attendance_Log {
   @@id([employeeid, attendancedate])
 }
 
-model BarBendingItem {
-  id               String     @id @default(cuid())
-  barBendingId     String
-  description      String
-  barmark          String?
-  diamark          Int
-  noofequipments   Int
-  costperequipment Float
-  totalcost        Float
-  a                Float      @default(0)
-  b                Float      @default(0)
-  c                Float      @default(0)
-  d                Float      @default(0)
-  e                Float      @default(0)
-  f                Float      @default(0)
-  g                Float      @default(0)
-  h                Float      @default(0)
-  cuttinglength    Float
-  totalLength      Float
-  unitweight       Float
-  totalweight      Float
-  remarks          String?
-  barBending       BarBending @relation(fields: [barBendingId], references: [id], onDelete: Cascade)
-}
-
 model Project {
-  id           String        @id @default(cuid())
-  name         String
-  place        String
-  type         String
-  contractorId String
-  contractor   Contractor    @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
-  barBending   BarBending[]
-  measurement  Measurement[]
-  BOQ          BOQ[]
-  Qcs          Qcs[]
+  id          String        @id @default(cuid())
+  name        String
+  place       String
+  type        String
+  consultant  String?
+  email       String?
+  phone       String?
+  description String?
+  document    String?
+  barBending  BarBending[]
+  measurement Measurement[]
+  BOQ         BOQ[]
+  Qcs         Qcs[]
+  workorder   Workorder[]
 }
 
 enum Status {

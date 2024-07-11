@@ -14,6 +14,7 @@ import {
   Department,
   Designations,
   Employee,
+  HOAuditor,
   HiredFixedWork,
   Hsd,
   Safety,
@@ -253,13 +254,13 @@ interface ContractorwithVehicle extends Contractor {
 
 export default function FinalSheet({
   contractors,
-  workorders,
+  workorder,
   contractor,
   timekeeper,
   safety,
+  hoCommercial,
 }: {
   contractors: Contractor[];
-  workorders: Workorder[];
   contractor: Contractor & {
     employee: (Employee & {
       designation: Designations | null;
@@ -271,6 +272,8 @@ export default function FinalSheet({
   };
   timekeeper: TimeKeeper[];
   safety: Safety | null;
+  workorder: Workorder | null;
+  hoCommercial: HOAuditor | null;
 }) {
   const [value, setValue] = useState<string>(dayjs().format("MM/YYYY"));
   const [selectedContractor, setSelectedContractor] = useState<string>(
@@ -447,11 +450,6 @@ export default function FinalSheet({
     // ]);
   }, [month, contractor]);
 
-  const w = workorders.find(
-    (c) =>
-      c.contractorId === contractor?.contractorId && c.startDate.includes(value)
-  );
-
   const fetchStoreAndSafety = async () => {
     setLoading(true);
     const res = await axios.get(
@@ -540,10 +538,11 @@ export default function FinalSheet({
                 contractor: contractor as Contractor,
                 month: value,
                 total: total,
-                workorder: w,
+                workorder: workorder as Workorder,
                 safetAmount: safety?.totalAmount || 0,
                 storesAmount: store?.totalAmount || 0,
                 deduction,
+                hoCommercial,
               })
             }
             color="secondary"
@@ -585,11 +584,11 @@ export default function FinalSheet({
         </Typography>
         <Details
           rows={[
-            { label: "Work Order Id", value: w?.id as string },
-            { label: "Nature of Work", value: w?.nature as string },
-            { label: "Location", value: w?.location as string },
-            { label: "Start Date", value: w?.startDate as string },
-            { label: "End Date", value: w?.endDate as string },
+            { label: "Work Order Id", value: workorder?.id as string },
+            { label: "Nature of Work", value: workorder?.nature as string },
+            { label: "Location", value: workorder?.location as string },
+            { label: "Start Date", value: workorder?.startDate as string },
+            { label: "End Date", value: workorder?.endDate as string },
           ]}
         />
       </Box>
@@ -799,17 +798,26 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  console.log(safety);
+  const workorder = await prisma.workorder.findFirst({
+    where: {
+      contractorId: contractor?.contractorId,
+    },
+  });
 
-  const workorders = await prisma.workorder.findMany();
+  const hoCommercial = await prisma.hOAuditor.findFirst({
+    where: {
+      contractorId: contractor?.id,
+    },
+  });
 
   return {
     props: {
       contractors,
-      workorders,
+      workorder,
       contractor: contractor,
       timekeeper,
       safety,
+      hoCommercial,
     },
   };
 };

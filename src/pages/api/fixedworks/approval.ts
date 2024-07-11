@@ -3,30 +3,6 @@ import _ from "lodash";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function works(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "GET") {
-    const { contractorid: id } = req.query;
-    if (id) {
-      const works = await prisma.works.findMany({
-        where: {
-          contractorid: id as string,
-        },
-        include: {
-          contractor: true,
-          workItems: true,
-        },
-      });
-      res.status(200).json(works);
-      return;
-    }
-    const works = await prisma.works.findMany({
-      include: {
-        contractor: true,
-        workItems: true,
-      },
-    });
-    res.status(200).json(works);
-  }
-
   if (req.method === "POST") {
     const { month, contractorId, description, status } = req.body;
 

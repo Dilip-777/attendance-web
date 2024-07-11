@@ -14,10 +14,13 @@ import { FieldArray, Formik } from "formik";
 import * as Yup from "yup";
 import FormInput from "@/components/FormikComponents/FormInput";
 import {
+  BOQ,
+  BOQItem,
   BarBending,
   BarBendingItem,
   Contractor,
   Project,
+  Qcs,
   Workorder,
 } from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
@@ -26,6 +29,9 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { useRouter } from "next/router";
+import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
+import FormDate from "@/components/FormikComponents/FormDate";
+import dayjs from "dayjs";
 
 const workItemSchema = Yup.object().shape({
   diamark: Yup.number(),
@@ -45,9 +51,12 @@ const workItemSchema = Yup.object().shape({
 });
 
 const validationSchema = Yup.object().shape({
+  boqId: Yup.string(),
   description: Yup.string().required("Required"),
   contractorid: Yup.string().required("Required"),
   projectId: Yup.string().required("Required"),
+  startDate: Yup.string().required("Required"),
+  endDate: Yup.string().required("Required"),
   barbendingItems: Yup.array().of(workItemSchema).required("Required"),
 });
 
@@ -63,23 +72,30 @@ const AddBarBending = ({
 }: {
   barbending: barbendingtypes;
   contractors: Contractor[];
-  projects: Project[];
+  projects: (Project & {
+    Qcs: (Qcs & {
+      BOQ: (BOQ & {
+        BOQItems: BOQItem[];
+      })[];
+    })[];
+  })[];
 }) => {
   const router = useRouter();
 
   const initialValues = {
+    boqId: barbending?.boqId || "",
     description: barbending?.description || "",
     contractorid: barbending?.contractorid || "",
     projectId: barbending?.projectId || "",
+    startDate: barbending?.startDate || dayjs().format("DD/MM/YYYY"),
+    endDate: barbending?.endDate || dayjs().format("DD/MM/YYYY"),
 
     barbendingItems: barbending
       ? barbending?.barbendingItems.map((w) => ({
           barmark: w.barmark || "",
           diamark: w.diamark,
           description: w.description,
-
           noofequipments: w.noofequipments,
-
           costperequipment: w.costperequipment,
           a: w.a,
           b: w.b,
@@ -91,24 +107,7 @@ const AddBarBending = ({
           h: w.h,
           remarks: w.remarks,
         }))
-      : [
-          {
-            barmark: "",
-            diamark: 0,
-            description: "",
-            noofequipments: 0,
-            costperequipment: 0,
-            a: 0,
-            b: 0,
-            c: 0,
-            d: 0,
-            e: 0,
-            f: 0,
-            g: 0,
-            h: 0,
-            remarks: "",
-          },
-        ],
+      : [],
   };
 
   return (
@@ -199,44 +198,116 @@ const AddBarBending = ({
           router.push("/civil/barbending");
         }}
       >
-        {({ errors, isSubmitting, handleSubmit, values, setFieldError }) => {
+        {({
+          errors,
+          isSubmitting,
+          handleSubmit,
+          values,
+          setFieldError,
+          setFieldValue,
+        }) => {
+          console.log(errors);
+
           if (
-            projects.filter((w) => w.contractorId === values.contractorid)
-              .length === 0 &&
+            projects.filter((w) =>
+              w.Qcs.find((q) => q.contractorid === values.contractorid)
+            ).length === 0 &&
             !errors.projectId
           ) {
             setFieldError("projectId", "No Project for this Contractor");
           }
+
+          const qcs =
+            projects.find((w) => w.id === values.projectId)?.Qcs || [];
+
+          const boqs =
+            qcs.find((w) => w.contractorid === values.contractorid)?.BOQ || [];
+
+          const boq = boqs?.find((w) => w.id === values.boqId);
+
+          const boqItems =
+            (boq
+              ? boq.BOQItems
+              : boqs.find((w) => w.id === values.boqId)?.BOQItems) || [];
+
+          if (boq?.description !== values.description) {
+            setFieldValue("description", boq?.description);
+            setFieldValue(
+              "barbendingItems",
+              boqItems.map((w) => ({
+                boqItemId: w.id,
+                description: w.description,
+                // unit: w.unit,
+                // unitrate: w.unitrate,
+                // nos: 0,
+                // length: 0,
+                // breadth: 0,
+                // height: 0,
+                // remarks: "",
+              }))
+            );
+          }
+
           return (
             <form noValidate onSubmit={handleSubmit}>
               <Box sx={{ padding: "2rem" }}>
-                <Stack direction="row" columnGap={5}>
-                  <FormSelect
-                    name="contractorid"
-                    label="Select Contractor"
-                    placeHolder="Contractor"
-                    sx={{ width: "100%", maxWidth: "100%" }}
-                    options={contractors.map((barbending) => ({
-                      value: barbending.contractorId,
-                      label: barbending.contractorname,
-                    }))}
-                  />
-                  <FormSelect
-                    name="projectId"
-                    label="Select Work Order"
-                    placeHolder="Work Order"
-                    sx={{ width: "100%", maxWidth: "100%" }}
-                    options={projects
-                      .filter((w) => w.contractorId === values.contractorid)
-                      .map((work) => ({ value: work.id, label: work.name }))}
-                  />
-                  <FormInput
-                    name="description"
-                    label="Description"
-                    placeHolder="Description"
-                    sx={{ width: "100%", maxWidth: "100%" }}
-                  />
-                </Stack>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} md={4}>
+                    <AutoCompleteSelect
+                      name="contractorid"
+                      label="Select Contractor"
+                      placeHolder="Contractor"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                      options={contractors.map((work) => ({
+                        value: work.contractorId,
+                        label: work.contractorname,
+                      }))}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <AutoCompleteSelect
+                      name="projectId"
+                      label="Select a Project"
+                      placeHolder="Select a Project"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                      options={projects
+                        .filter((w) =>
+                          w.Qcs.find(
+                            (q) => q.contractorid === values.contractorid
+                          )
+                        )
+                        .map((work) => ({ value: work.id, label: work.name }))}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <AutoCompleteSelect
+                      name="boqId"
+                      label="Select BOQ"
+                      placeHolder="Select a BOQ"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                      options={boqs.map((work) => ({
+                        value: work.id,
+                        label: work.description,
+                      }))}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <FormDate
+                      name="startDate"
+                      label="Select Start Date"
+                      placeHolder="Select Start Date"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <FormDate
+                      name="endDate"
+                      label="Select End Date"
+                      placeHolder="Select End Date"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                    />
+                  </Grid>
+                </Grid>
                 <Divider sx={{ my: 3 }} />
                 <FieldArray
                   name="barbendingItems"
@@ -469,9 +540,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     where: { id: id as string },
     include: { barbendingItems: true, contractor: true },
   });
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    where: {
+      servicedetail: "Civil",
+    },
+  });
 
-  const projects = await prisma.project.findMany();
+  const projects = await prisma.project.findMany({
+    include: {
+      Qcs: {
+        include: {
+          BOQ: {
+            include: {
+              BOQItems: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
   return {
     props: {

@@ -49,6 +49,7 @@ export default function AddDeductions({
   const [advance, setAdvance] = useState<number>(0);
   const [anyother, setAnyother] = useState<number>(0);
   const [remarks, setRemarks] = useState<string>("");
+  const [addition, setAddition] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async () => {
@@ -61,6 +62,7 @@ export default function AddDeductions({
         gstrelease: gstrelease,
         advance: advance,
         anyother: anyother,
+        addition: addition,
         remarks: remarks,
       });
       handleClose();
@@ -80,6 +82,7 @@ export default function AddDeductions({
       setAdvance(deduction.advance);
       setAnyother(deduction.anyother);
       setRemarks(deduction?.remarks || "");
+      setAddition(deduction.addition);
     }
   }, [deduction]);
 
@@ -171,6 +174,12 @@ export default function AddDeductions({
                     fullWidth
                     value={anyother}
                     onChange={(e) => setAnyother(Number(e.target.value))}
+                  />
+                  <FormInput
+                    label="Any Other Addition"
+                    fullWidth
+                    value={addition}
+                    onChange={(e) => setAddition(Number(e.target.value))}
                   />
                   <FormInput
                     label="Remarks"

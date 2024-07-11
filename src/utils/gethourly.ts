@@ -75,15 +75,7 @@ const getTotalAmountAndRows = (
     else if (!shift) return workinghrs === 8;
     else return false;
   };
-
-  console.log(wrkhrs, shifts, "wrkhrs");
-
   const timekeeper = timekeeper1.filter((f) => filterByShift(f, wrkhrs));
-
-  const m = dayjs(`${year}-${month}`).daysInMonth();
-
-  console.log(designations, "designations");
-
   let filtered: TimeKeeper[] = [];
 
   const malecount: Record<string, string | number> = {
@@ -143,30 +135,8 @@ const getTotalAmountAndRows = (
     date: "Total Amount",
   };
 
-  const cprate: Record<string, string | number> = {
-    date: "Service Charge Rate",
-    total: 0,
-  };
-
-  const cpamount: Record<string, string | number> = {
-    date: "Service Charge Amount",
-    total: 0,
-  };
-
   const total: Record<string, string | number> = {
     date: "Taxable",
-  };
-
-  const gst1: Record<string, string | number> = {
-    date: "GST",
-  };
-
-  const billAmount1: Record<string, string | number> = {
-    date: "Bill Amount",
-  };
-
-  const tds1: Record<string, string | number> = {
-    date: "TDS",
   };
 
   const netPayable1: Record<string, string | number> = {
@@ -214,8 +184,6 @@ const getTotalAmountAndRows = (
     return num;
   };
 
-  const rows2: any[] = [];
-
   const rows: any[] = [];
 
   const startDate = new Date(year, month - 1, 1);
@@ -236,8 +204,6 @@ const getTotalAmountAndRows = (
 
     department.designations.forEach((designation) => {
       const id = designation.id;
-      // attendancecount[id] = filtered.length + filtered1.length / 2;
-      // attendancecount['total'] = (attendancecount.total as number) + (Number(_.get(attendancecount, id, 0)) || 0);
       const fulltime = f1.filter((item) => filter(item, designation, "0.5"));
       const halftime = f1.filter((item) => filter(item, designation, "1"));
 
@@ -245,11 +211,7 @@ const getTotalAmountAndRows = (
       const f12 = fulltime.filter((item) => filterByShift(item, 12));
       const h8 = halftime.filter((item) => filterByShift(item, 8));
       const h12 = halftime.filter((item) => filterByShift(item, 12));
-      // rows.forEach((r) => {
-      //   attendancecount[id] =
-      //     ((attendancecount[id] as number) || 0) +
-      //     (Number(_.get(r, id, 0)) || 0);
-      // });
+
       const count = rows.reduce((acc, curr) => acc + Number(curr[id] || 0), 0);
 
       attendancecount[id] = count;
@@ -273,7 +235,7 @@ const getTotalAmountAndRows = (
           rate[id] = contractor.salarysvr8hr as number;
         else if (designation.gender === "Female")
           rate[id] = contractor.salarywomen8hr as number;
-        else rate[id] = contractor.salarymen12hr as number;
+        else rate[id] = contractor.salarymen8hr as number;
       } else if (wrkhrs === 12) {
         if (designation.designation.toLowerCase() === "supervisor")
           rate[id] = contractor.salarysvr12hr as number;
@@ -299,14 +261,11 @@ const getTotalAmountAndRows = (
           Number(_.get(totalManDayAmount, id, 0))
       );
 
-      const o8 = f8.reduce((acc, curr) => {
+      const o8 = [...f8, ...h8].reduce((acc, curr) => {
         return acc + (curr.manualovertime ?? curr.overtime);
       }, 0);
 
-      let c = 0;
-      let d = 12;
-
-      const o12 = f12.reduce(
+      const o12 = [...f12, ...h12].reduce(
         (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
         0
       );
@@ -358,7 +317,9 @@ const getTotalAmountAndRows = (
   }
 
   const t =
-    totalnetamount["total"] + (totalManDayAmount["total"] as number) * 0.1;
+    totalnetamount["total"] +
+    ((totalManDayAmount["total"] as number) * (contractor.servicecharge || 0)) /
+      100;
 
   malecount["label"] = "Total";
   malecount["value"] = t;

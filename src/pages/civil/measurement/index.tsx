@@ -19,6 +19,7 @@ import {
   Contractor,
   Workorder,
   Project,
+  Qcs,
 } from "@prisma/client";
 import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
@@ -30,6 +31,7 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { useRouter } from "next/router";
+import AutoComplete from "@/ui-component/Autocomplete";
 
 interface worktypes extends Measurement {
   measurementItems: MeasurementItem[];
@@ -37,7 +39,7 @@ interface worktypes extends Measurement {
 }
 
 interface contractor extends Contractor {
-  projects: Project[];
+  Qcs: (Qcs & { project: Project })[];
 }
 
 const createHeadCells = (
@@ -57,6 +59,8 @@ const createHeadCells = (
 const headCells = [
   createHeadCells("description", "Work Description", false, false),
   createHeadCells("contractorid", "Contractor", false, false),
+  createHeadCells("startDate", "Start Date", false, false),
+  createHeadCells("endDate", "End Date", false, false),
   createHeadCells("totalQuantity", "Total Quantity", true, false),
   createHeadCells("totalAmount", "Total Amount", true, false),
   createHeadCells("action", "Action", false, true),
@@ -124,6 +128,8 @@ function Row(props: { row: worktypes; handleOpen: (id: string) => void }) {
           {row.description}
         </TableCell>
         <TableCell align="center">{row.contractor.contractorname}</TableCell>
+        <TableCell align="center">{row.startDate}</TableCell>
+        <TableCell align="center">{row.endDate}</TableCell>
         <TableCell align="center">{row.totalQuantity}</TableCell>
         <TableCell align="center">{row.totalAmount}</TableCell>
         <TableCell size="small" align="right">
@@ -139,19 +145,11 @@ function Row(props: { row: worktypes; handleOpen: (id: string) => void }) {
             >
               <Edit fontSize="small" />
             </IconButton>
-            <Tooltip title="Add Measurement Item">
-              <IconButton
-                onClick={() => props.handleOpen(row.id)}
-                sx={{ m: 0 }}
-              >
-                <Add fontSize="small" />
-              </IconButton>
-            </Tooltip>
           </Stack>
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Table size="small" aria-label="purchases">
@@ -194,38 +192,35 @@ function Row(props: { row: worktypes; handleOpen: (id: string) => void }) {
 
 export default function Measurements({
   contractors,
+  contractorId,
+  projectId,
+  measurements,
 }: {
   contractors: contractor[];
+  contractorId: string;
+  projectId: string;
+  measurements: worktypes[];
 }) {
   // const [contractors, setContractors] = React.useState<Contractor[]>([]);
   const [open, setOpen] = React.useState(false);
-  const [contractor, setContractor] = React.useState<string | undefined>(
-    contractors.length > 0 ? contractors[0].contractorId : undefined
-  );
 
   const [selected, setSelected] = React.useState("");
 
-  const [works, setWorks] = React.useState<worktypes[]>([]);
+  // const [measurements, setWorks] = React.useState<worktypes[]>([]);
 
   const router = useRouter();
 
-  const fetchWorks = async () => {
-    const res = await axios.get("/api/works?contractorid=" + contractor);
-    setWorks(res.data);
-  };
-  const contractor1 = contractors.find((v) => v.contractorId === contractor);
-  const project =
-    contractor1 && contractor1?.projects.length > 0
-      ? contractor1?.projects[0]
+  const contractor1 = contractors.find((v) => v.contractorId === contractorId);
+  const qcs =
+    contractor1 && contractor1?.Qcs?.length > 0
+      ? contractor1?.Qcs?.find((v) => v.projectId === projectId)
       : undefined;
   const info = [
     { value: contractor1?.contractorname, label: "Name of Contractor" },
-    { value: project?.name, label: "Nature of Work" },
-    { value: project?.place, label: "Location" },
+    { value: qcs?.project.name, label: "Nature of Work" },
+    { value: qcs?.project?.place, label: "Location" },
   ];
-  React.useEffect(() => {
-    fetchWorks();
-  }, [contractor]);
+
   return (
     <Box sx={{ width: "100%" }}>
       <Paper
@@ -255,19 +250,41 @@ export default function Measurements({
           }}
         >
           <Stack direction="column" spacing={3}>
-            <FormSelect
-              handleChange={(v) => setContractor(v as string)}
-              options={contractors.map((v) => ({
-                label: v.contractorname,
-                value: v.contractorId,
-              }))}
-              label="Contractor"
-              value={
-                (contractor as string) ||
-                (contractors.length > 0 ? contractors[0].contractorId : "")
-              }
-            />
-            {contractor1 && contractor1?.projects.length > 0 && (
+            <Stack direction="row" spacing={2}>
+              <AutoComplete
+                setValue={(v) => {
+                  const c = contractors.find((f) => f.contractorId === v);
+                  router.push(
+                    `/civil/measurement?contractorId=${v}&projectId=${c?.Qcs[0]?.projectId}`
+                  );
+                }}
+                options={contractors.map((v) => ({
+                  label: v.contractorname,
+                  value: v.contractorId,
+                }))}
+                label="Contractor"
+                value={
+                  (contractorId as string) ||
+                  (contractors.length > 0 ? contractors[0].contractorId : "")
+                }
+              />
+              <AutoComplete
+                setValue={(v) => {
+                  router.push(
+                    `/civil/measurement?contractorId=${contractorId}&projectId=${v}`
+                  );
+                }}
+                options={
+                  contractor1?.Qcs?.map((v) => ({
+                    label: v.project.name,
+                    value: v.projectId,
+                  })) ?? []
+                }
+                label="Project"
+                value={projectId}
+              />
+            </Stack>
+            {contractor1 && contractor1?.Qcs?.length > 0 && (
               <Stack direction="column" spacing={2}>
                 {info.map((v) => (
                   <Stack direction="row" spacing={2}>
@@ -303,8 +320,8 @@ export default function Measurements({
               align="center"
             />
             <TableBody>
-              {works.length > 0 ? (
-                works.map((row) => (
+              {measurements.length > 0 ? (
+                measurements.map((row) => (
                   <Row
                     key={row.description}
                     row={row}
@@ -314,8 +331,8 @@ export default function Measurements({
                     }}
                   />
                 ))
-              ) : contractors.find((v) => v.contractorId === contractor)
-                  ?.projects.length === 0 ? (
+              ) : contractors.find((v) => v.contractorId === contractorId)?.Qcs
+                  .length === 0 ? (
                 <TableRow>
                   <TableCell align="left" colSpan={6}>
                     No projects
@@ -332,22 +349,22 @@ export default function Measurements({
           </Table>
         </TableContainer>
       </Paper>
-      <AddMeasurement
+      {/* <AddMeasurement
         open={open}
         handleClose={() => setOpen(false)}
         selected={contractor}
-        works={works}
+        measurements={measurements}
         contractor={contractor as string}
         selectedWork={selected}
         fetchWorks={fetchWorks}
-      />
+      /> */}
     </Box>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
-  const { id } = context.query;
+  let { contractorId, projectId } = context.query;
 
   if (session?.user?.role !== "Civil") {
     return {
@@ -360,13 +377,48 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const contractors = await prisma.contractor.findMany({
     include: {
-      projects: true,
+      Qcs: {
+        include: {
+          project: true,
+        },
+      },
+    },
+    where: {
+      servicedetail: "Civil",
     },
   });
+
+  if (!contractorId) {
+    contractorId = contractors.filter((c) => c.Qcs.length > 0)[0]?.contractorId;
+    projectId = contractors.filter((c) => c.Qcs.length > 0)[0]?.Qcs[0]?.id;
+  }
+
+  const measurements = await prisma.measurement.findMany({
+    where: {
+      contractorid: contractorId as string,
+      projectId: projectId as string,
+    },
+    include: {
+      measurementItems: true,
+      contractor: true,
+    },
+  });
+
+  if (!contractorId || !projectId) {
+    return {
+      redirect: {
+        destination: "/civil/project",
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
       contractors,
+      contractorId,
+      projectId,
+      measurements,
     },
   };
 };

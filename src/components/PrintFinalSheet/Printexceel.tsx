@@ -14,10 +14,10 @@ import React, { useEffect, useState } from "react";
 const ExcelJS = require("exceljs");
 
 const border = {
-  top: { style: "thick", color: { argb: "black" } },
-  left: { style: "thick", color: { argb: "black" } },
-  bottom: { style: "thick", color: { argb: "black" } },
-  right: { style: "thick", color: { argb: "black" } },
+  top: { style: "thin", color: { argb: "black" } },
+  left: { style: "thin", color: { argb: "black" } },
+  bottom: { style: "thin", color: { argb: "black" } },
+  right: { style: "thin", color: { argb: "black" } },
 };
 
 const getRoundOff = (num: number) => {
@@ -61,15 +61,29 @@ export default function PrintExcel({
   month: string;
   totals: any;
 }) {
-  const handleExport = () => {
+  const handleExport = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Sheet 1");
 
+    const response = await fetch("/logo.png");
+
+    const imageBuffer = await response.arrayBuffer();
+
+    const imageId = workbook.addImage({
+      buffer: imageBuffer,
+      extension: "jpeg",
+    });
+
+    worksheet.addImage(imageId, {
+      tl: { col: 0, row: 0 },
+      ext: { width: 90, height: 90 },
+    });
+
     const border = {
-      top: { style: "thick", color: { argb: "black" } },
-      left: { style: "thick", color: { argb: "black" } },
-      bottom: { style: "thick", color: { argb: "black" } },
-      right: { style: "thick", color: { argb: "black" } },
+      top: { style: "thin", color: { argb: "black" } },
+      left: { style: "thin", color: { argb: "black" } },
+      bottom: { style: "thin", color: { argb: "black" } },
+      right: { style: "thin", color: { argb: "black" } },
     };
 
     const headings = [
@@ -254,6 +268,33 @@ export default function PrintExcel({
       "",
       `${contractor.areaofwork || "-"}`,
     ]);
+
+    createHeading({
+      header: [""],
+      height: 30,
+    });
+
+    createHeading({
+      header: ["Work Order Information"],
+      colSpan: 10,
+      bgcolor: "fafafa",
+      font: { size: 14, bold: true },
+      height: 40,
+    });
+
+    const textrow = worksheet.addRow([workorder?.remarks || "-"]);
+    textrow.height = 45;
+    textrow.eachCell((cell: any) => {
+      cell.alignment = {
+        wrapText: true,
+        vertical: "middle",
+      };
+    });
+    textrow.eachCell((cell: any) => {
+      cell.border = border;
+    });
+
+    worksheet.mergeCells(`A${textrow.number}:P${textrow.number}`);
 
     createHeading({
       header: [""],
@@ -485,10 +526,11 @@ export default function PrintExcel({
       ["CONSUMABLES/ CHARGABLE ITEMS", getRoundOff(store?.totalAmount || 0)],
       ["ADJUSTMENT OF ADVANCE AMOUNT", 0],
       ["ANY OTHER DEDUCTIONS (IF ANY)", 0],
+      ["ANY OTHER ADDITION (IF ANY)", 0],
       [
         "FINAL PAYABLE",
         getRoundOff(
-          total - (safety?.totalAmount || 0) - (store?.totalAmount || 0)
+          total - (safety?.totalAmount || 0) + (store?.totalAmount || 0)
         ),
       ],
     ];
@@ -499,7 +541,7 @@ export default function PrintExcel({
         "",
         "",
         "",
-        "",
+        f[2] ?? "",
         "",
         "",
         "",
@@ -521,7 +563,10 @@ export default function PrintExcel({
         cell.border = border;
         cell.font = { size: 11, wrapText: true, bold: true };
       });
-      worksheet.mergeCells(`A${row.number}:H${row.number}`);
+      if (f[2]) {
+        worksheet.mergeCells(`A${row.number}:D${row.number}`);
+        worksheet.mergeCells(`E${row.number}:H${row.number}`);
+      } else worksheet.mergeCells(`A${row.number}:H${row.number}`);
       worksheet.mergeCells(`I${row.number}:M${row.number}`);
       worksheet.mergeCells(`N${row.number}:P${row.number}`);
       row.height = 30;
@@ -704,16 +749,6 @@ export default function PrintExcel({
     });
 
     createHeading({
-      header: [
-        "Key Comments Sheet as enclosed (For any comments please use attached sheet only)",
-      ],
-      colSpan: 10,
-      bgcolor: "fafafa",
-      font: { size: 9, bold: false },
-      height: 27,
-    });
-
-    createHeading({
       header: ["Requested By  Central Processing Team"],
       colSpan: 10,
       bgcolor: "fafafa",
@@ -726,19 +761,19 @@ export default function PrintExcel({
     //   worksheet.addRow(row);
 
     //   worksheet.getRow(rownumber).border = {
-    //     top: { style: "thick", color: { argb: "black" } },
-    //     left: { style: "thick", color: { argb: "black" } },
-    //     bottom: { style: "thick", color: { argb: "black" } },
-    //     right: { style: "thick", color: { argb: "black" } },
+    //     top: { style: "thin", color: { argb: "black" } },
+    //     left: { style: "thin", color: { argb: "black" } },
+    //     bottom: { style: "thin", color: { argb: "black" } },
+    //     right: { style: "thin", color: { argb: "black" } },
     //   };
     //   rownumber = rownumber + 1;
     // });
 
     // worksheet.getRow(6).border = {
-    //   top: { style: "thick", color: { argb: "black" } },
-    //   left: { style: "thick", color: { argb: "black" } },
-    //   bottom: { style: "thick", color: { argb: "black" } },
-    //   right: { style: "thick", color: { argb: "black" } },
+    //   top: { style: "thin", color: { argb: "black" } },
+    //   left: { style: "thin", color: { argb: "black" } },
+    //   bottom: { style: "thin", color: { argb: "black" } },
+    //   right: { style: "thin", color: { argb: "black" } },
     // };
 
     // Save the workbook as an Excel file

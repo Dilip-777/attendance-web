@@ -7,18 +7,19 @@ import {
   Paper,
   Typography,
   Stack,
-  IconButton,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { FieldArray, Formik } from "formik";
 import * as Yup from "yup";
-import FormInput from "@/components/FormikComponents/FormInput";
 import {
   Contractor,
   MeasurementItem,
-  Workorder,
   Measurement,
   Project,
+  BOQ,
+  BOQItem,
+  Qcs,
+  QcsBoq,
+  QcsBoqItem,
 } from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import axios from "axios";
@@ -26,6 +27,10 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { useRouter } from "next/router";
+import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
+import AddMeasurementItem from "@/components/Civil/MeasurementItem";
+import dayjs from "dayjs";
+import FormDate from "@/components/FormikComponents/FormDate";
 
 const workItemSchema = Yup.object().shape({
   unit: Yup.string(),
@@ -40,13 +45,16 @@ const workItemSchema = Yup.object().shape({
 });
 
 const validationSchema = Yup.object().shape({
+  boqId: Yup.string(),
   description: Yup.string().required("Required"),
   contractorid: Yup.string().required("Required"),
   projectId: Yup.string().required("Required"),
+  startDate: Yup.string().required("Required"),
+  endDate: Yup.string().required("Required"),
   measurementItems: Yup.array().of(workItemSchema).required("Required"),
 });
 
-interface worktypes extends Measurement {
+interface MeasurementWithItems extends Measurement {
   measurementItems: MeasurementItem[];
   contractor: Contractor;
 }
@@ -57,36 +65,24 @@ const Addworkitem = ({
   works,
   projects,
 }: {
-  work: worktypes;
+  work: MeasurementWithItems;
   contractors: Contractor[];
   works: Measurement[];
-  projects: Project[];
+  projects: (Project & {
+    Qcs: (Qcs & {
+      BOQ: (QcsBoq & {
+        BOQItems: QcsBoqItem[];
+      })[];
+    })[];
+  })[];
 }) => {
   const router = useRouter();
-  //   const validationSchema = Yup.object().shape({
-  //     workId: Yup.string().required("Required"),
-  //     unit: Yup.string().required("Required"),
-  //     unitrate: Yup.number().required("Required"),
-  //     description: Yup.string().required("Required"),
-  //     nos: Yup.number().required("Required"),
-  //     length: Yup.number().required("Required"),
-  //     breadth: Yup.number().required("Required"),
-  //     height: Yup.number().required("Required"),
-  //   });
-
-  //   const initialValues = {
-  //     workId: "",
-  //     unit: "",
-  //     unitrate: 0,
-  //     description: "",
-  //     nos: 0,
-  //     length: 0,
-  //     breadth: 0,
-  //     height: 0,
-  //   };
 
   const initialValues = {
+    boqId: work?.boqId || "",
     description: work?.description || "",
+    startDate: work?.startDate || dayjs().format("DD/MM/YYYY"),
+    endDate: work?.endDate || dayjs().format("DD/MM/YYYY"),
     contractorid: work?.contractorid || "",
     projectId: work?.projectId || "",
     measurementItems: work
@@ -101,19 +97,7 @@ const Addworkitem = ({
           height: w.height,
           remarks: w.remarks || "",
         }))
-      : [
-          {
-            unit: "",
-            referenceWorkId: "",
-            unitrate: 0,
-            description: "",
-            nos: 0,
-            length: 0,
-            breadth: 0,
-            height: 0,
-            remarks: "",
-          },
-        ],
+      : [],
   };
 
   return (
@@ -125,7 +109,7 @@ const Addworkitem = ({
         overflow: "hidden auto",
         scrollBehavior: "smooth",
         "&::-webkit-scrollbar": {
-          width: 7,
+          width: 9,
         },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: "#bdbdbd",
@@ -151,21 +135,14 @@ const Addworkitem = ({
               workItem.breadth *
               (workItem?.height || 1);
 
-            const valueofcurrentBill = parseFloat(
-              (quantity * workItem.unitrate).toFixed(3)
-            );
-            const totalQuantity = quantity;
-            const valueofTotalBill = valueofcurrentBill;
             measurementItems.push({
               ...workItem,
               quantity: parseFloat(quantity.toFixed(3)),
-              valueofcurrentBill: parseFloat(valueofcurrentBill.toFixed(3)),
-              totalQuantity: parseFloat(totalQuantity.toFixed(3)),
-              valueofTotalBill: parseFloat(valueofTotalBill.toFixed(3)),
+              // valueofcurrentBill: parseFloat(valueofcurrentBill.toFixed(3)),
+              // totalQuantity: parseFloat(totalQuantity.toFixed(3)),
+              // valueofTotalBill: parseFloat(valueofTotalBill.toFixed(3)),
             });
           });
-
-          console.log(measurementItems, values);
 
           setSubmitting(true);
           if (work) {
@@ -181,17 +158,12 @@ const Addworkitem = ({
             });
           }
 
-          // await axios.post("/api/works", {
-          //   ...values,
-          //   workItem,
-          // });
           setSubmitting(false);
           router.push("/civil/measurement");
         }}
       >
         {({
           errors,
-          touched,
           isSubmitting,
           handleSubmit,
           values,
@@ -199,57 +171,105 @@ const Addworkitem = ({
           setFieldValue,
         }) => {
           if (
-            projects.filter((w) => w.contractorId === values.contractorid)
-              .length === 0 &&
+            projects.filter((w) =>
+              w.Qcs.find((q) => q.contractorid === values.contractorid)
+            ).length === 0 &&
             !errors.projectId
           ) {
-            // errors.projectId = "No Work Order for this Contractor";
-            setFieldError("projectId", "No Work Order for this Contractor");
+            setFieldError("projectId", "No Project for this Contractor");
           }
 
-          // if (
-          //   project.find(
-          //     (w) =>
-          //       w.id === values.projectId &&
-          //       w.contractorId === values.contractorid
-          //   ) &&
-          //   !values.projectId
-          // ) {
-          //   setFieldValue("projectId", "");
-          // }
+          const qcs =
+            projects.find((w) => w.id === values.projectId)?.Qcs || [];
 
-          console.log(values);
+          const boqs =
+            qcs.find((w) => w.contractorid === values.contractorid)?.BOQ || [];
+
+          const boq = boqs?.find((w) => w.id === values.boqId);
+
+          const boqItems =
+            (boq
+              ? boq.BOQItems
+              : boqs.find((w) => w.id === values.boqId)?.BOQItems) || [];
+
+          if (boq?.description !== values.description) {
+            setFieldValue("description", boq?.description);
+            setFieldValue(
+              "measurementItems",
+              boqItems.map((w) => ({
+                boqItemId: w.id,
+                description: w.description,
+                unit: w.unit,
+                nos: 0,
+                length: 0,
+                breadth: 0,
+                height: 0,
+                remarks: "",
+              }))
+            );
+          }
 
           return (
             <form noValidate onSubmit={handleSubmit}>
               <Box sx={{ px: "2rem" }}>
-                <Stack direction="row" columnGap={5}>
-                  <FormSelect
-                    name="contractorid"
-                    label="Select Contractor"
-                    placeHolder="Contractor"
-                    sx={{ width: "100%", maxWidth: "100%" }}
-                    options={contractors.map((work) => ({
-                      value: work.contractorId,
-                      label: work.contractorname,
-                    }))}
-                  />
-                  <FormSelect
-                    name="projectId"
-                    label="Select Work Order"
-                    placeHolder="Work Order"
-                    sx={{ width: "100%", maxWidth: "100%" }}
-                    options={projects
-                      .filter((w) => w.contractorId === values.contractorid)
-                      .map((work) => ({ value: work.id, label: work.name }))}
-                  />
-                  <FormInput
-                    name="description"
-                    label="Description"
-                    placeHolder="Description"
-                    sx={{ width: "100%", maxWidth: "100%" }}
-                  />
-                </Stack>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} md={4}>
+                    <AutoCompleteSelect
+                      name="contractorid"
+                      label="Select Contractor"
+                      placeHolder="Contractor"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                      options={contractors.map((work) => ({
+                        value: work.contractorId,
+                        label: work.contractorname,
+                      }))}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <AutoCompleteSelect
+                      name="projectId"
+                      label="Select a Project"
+                      placeHolder="Select a Project"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                      options={projects
+                        .filter((w) =>
+                          w.Qcs.find(
+                            (q) => q.contractorid === values.contractorid
+                          )
+                        )
+                        .map((work) => ({ value: work.id, label: work.name }))}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <AutoCompleteSelect
+                      name="boqId"
+                      label="Select BOQ"
+                      placeHolder="Select a BOQ"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                      options={boqs.map((work) => ({
+                        value: work.id,
+                        label: work.description,
+                      }))}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <FormDate
+                      name="startDate"
+                      label="Select Start Date"
+                      placeHolder="Select Start Date"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <FormDate
+                      name="endDate"
+                      label="Select End Date"
+                      placeHolder="Select End Date"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                    />
+                  </Grid>
+                </Grid>
+
                 <Divider sx={{ my: 3 }} />
                 <FieldArray
                   name="measurementItems"
@@ -266,137 +286,17 @@ const Addworkitem = ({
                           <Typography
                             sx={{ fontSize: "1rem", fontWeight: "600" }}
                           >
-                            Work Items
+                            Measurement Items
                           </Typography>
-                          <Button
-                            variant="contained"
-                            onClick={() =>
-                              push({
-                                description: "",
-                                unit: "",
-                                unitrate: 0,
-                                nos: 0,
-                                length: 0,
-                                breadth: 0,
-                                height: 0,
-                                remarks: "",
-                              })
-                            }
-                          >
-                            Add
-                          </Button>
                         </Box>
                         {measurementItems.map(
                           (workItem: any, index: number) => (
-                            <Grid container columnGap={8}>
-                              <Grid item xs={12} sm={10}>
-                                <FormInput
-                                  name={`measurementItems.${index}.description`}
-                                  label="Description"
-                                  placeHolder="Description"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                />
-                              </Grid>
-                              {measurementItems.length > 1 && (
-                                <Grid item xs={12} sm={1}>
-                                  <IconButton
-                                    sx={{
-                                      mt: "2rem",
-                                      ml: "1rem",
-                                      color: "white",
-                                      bgcolor: "red",
-                                      ":hover": {
-                                        bgcolor: "#e53935",
-                                      },
-                                    }}
-                                    onClick={() => remove(index)}
-                                  >
-                                    <DeleteIcon />
-                                  </IconButton>
-                                </Grid>
-                              )}
-
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormSelect
-                                  name={`measurementItems.${index}.referenceWorkId`}
-                                  label="References Work Id (Optional)"
-                                  placeHolder="References Work Id (Optional)"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                  type="number"
-                                  options={works.map((work) => ({
-                                    value: work.id,
-                                    label: work.description,
-                                  }))}
-                                />
-                              </Grid>
-
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormInput
-                                  name={`measurementItems.${index}.unit`}
-                                  label="Unit"
-                                  type="text"
-                                  placeHolder="Unit"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                />
-                              </Grid>
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormInput
-                                  name={`measurementItems.${index}.unitrate`}
-                                  label="Unit Rate"
-                                  placeHolder="Unit Rate"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                  type="number"
-                                />
-                              </Grid>
-
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormInput
-                                  name={`measurementItems.${index}.nos`}
-                                  label="Nos"
-                                  type="number"
-                                  placeHolder="Nos"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                />
-                              </Grid>
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormInput
-                                  name={`measurementItems.${index}.length`}
-                                  label="Length"
-                                  type="number"
-                                  placeHolder="Length"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                />
-                              </Grid>
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormInput
-                                  name={`measurementItems.${index}.breadth`}
-                                  label="Breadth"
-                                  type="number"
-                                  placeHolder="Breadth"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                />
-                              </Grid>
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormInput
-                                  name={`measurementItems.${index}.height`}
-                                  label="Height"
-                                  type="number"
-                                  placeHolder="Height"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                />
-                              </Grid>
-                              <Grid item xs={12} sm={5} md={4} lg={3}>
-                                <FormInput
-                                  name={`measurementItems.${index}.remarks`}
-                                  label="Remarks"
-                                  placeHolder="Remarks"
-                                  sx={{ width: "100%", maxWidth: "100%" }}
-                                />
-                              </Grid>
-                              <Grid item xs={12}>
-                                <Divider sx={{ my: 3 }} />
-                              </Grid>
-                            </Grid>
+                            <AddMeasurementItem
+                              key={index}
+                              index={index}
+                              workItem={workItem}
+                              boqItems={boqItems}
+                            />
                           )
                         )}
                       </Stack>
@@ -408,6 +308,7 @@ const Addworkitem = ({
                   variant="contained"
                   sx={{ mt: 3 }}
                   disabled={isSubmitting}
+                  color="secondary"
                 >
                   Submit {isSubmitting && <CircularProgress size={20} />}
                 </Button>
@@ -448,8 +349,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     },
   });
-  const contractors = await prisma.contractor.findMany();
-  const projects = await prisma.project.findMany();
+  const contractors = await prisma.contractor.findMany({
+    where: {
+      servicedetail: "Civil",
+    },
+  });
+  const projects = await prisma.project.findMany({
+    include: {
+      Qcs: {
+        include: {
+          BOQ: {
+            include: {
+              BOQItems: true,
+            },
+          },
+        },
+      },
+    },
+  });
   return {
     props: {
       work,

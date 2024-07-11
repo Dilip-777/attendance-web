@@ -21,19 +21,25 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { Contractor, Workorder } from "@prisma/client";
+import { Contractor, Project, Qcs, Workorder } from "@prisma/client";
 import axios from "axios";
 import FormDate from "@/components/FormikComponents/FormDate";
 import FileUpload from "@/components/FormikComponents/FileUpload";
+import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 
 const fileType = Yup.string().optional();
 
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().required("Required"),
   nature: Yup.string().required("Required"),
+  projectId: Yup.string(),
   startDate: Yup.string().required("Required"),
   endDate: Yup.string().required("Required"),
   location: Yup.string().required("Required"),
+  remarks: Yup.string(),
+  schedule: Yup.string(),
+  workorderno: Yup.string(),
+  paymentTerms: Yup.string(),
   workDescription: Yup.string().required("Required"),
   repeatOrOneTime: Yup.string().required("Required"),
   alert1Month: Yup.boolean().required("Required"),
@@ -47,7 +53,11 @@ export default function AddWordOrder({
   contractors,
   workorder,
 }: {
-  contractors: Contractor[];
+  contractors: (Contractor & {
+    Qcs: (Qcs & {
+      project: Project;
+    })[];
+  })[];
   workorder: Workorder;
 }) {
   const router = useRouter();
@@ -56,11 +66,16 @@ export default function AddWordOrder({
   const initialValues = {
     contractorId: workorder?.contractorId || "",
     nature: workorder?.nature || "",
+    projectId: workorder?.projectId || "",
     startDate: workorder?.startDate || "",
     endDate: workorder?.endDate || "",
     location: workorder?.location || "",
+    remarks: workorder?.remarks || "",
+    schedule: workorder?.schedule || "",
+    paymentTerms: workorder?.paymentTerms || "",
     workDescription: workorder?.workDescription || "",
     repeatOrOneTime: workorder?.repeatOrOneTime || "",
+    workorderno: workorder?.workorderno || "WK12",
     alert1Month: workorder?.alert1Month || false,
     alert15days: workorder?.alert15days || false,
     amendmentDocument: workorder?.amendmentDocument
@@ -108,6 +123,7 @@ export default function AddWordOrder({
                 .put(`/api/workorder`, {
                   id: workorder.id,
                   ...values,
+                  projectId: values.projectId || null,
                 })
                 .then((res) => {
                   router.push("/workorder");
@@ -117,7 +133,10 @@ export default function AddWordOrder({
                 });
             } else {
               await axios
-                .post("/api/workorder", values)
+                .post("/api/workorder", {
+                  ...values,
+                  projectId: values.projectId || null,
+                })
                 .then((res) => {
                   console.log(res);
                   router.push("/workorder");
@@ -130,11 +149,14 @@ export default function AddWordOrder({
           }}
         >
           {({ handleSubmit, values, errors }) => {
+            const projects = contractors.find(
+              (contractor) => contractor.contractorId === values.contractorId
+            )?.Qcs;
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={6} mt={2} container>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormSelect
+                    <AutoCompleteSelect
                       name="contractorId"
                       label="Contractor Name*"
                       placeHolder="Contractor Name"
@@ -143,6 +165,20 @@ export default function AddWordOrder({
                         contractors?.map((contractor) => ({
                           value: contractor.contractorId,
                           label: contractor.contractorname,
+                        })) || []
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <AutoCompleteSelect
+                      name="projectId"
+                      label="Project"
+                      placeHolder="Project Name"
+                      disabled={false}
+                      options={
+                        projects?.map((p) => ({
+                          value: p.projectId,
+                          label: p.project.name,
                         })) || []
                       }
                     />
@@ -180,11 +216,29 @@ export default function AddWordOrder({
                       disabled={false}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={6} md={4}>
                     <FormInput
                       name="workDescription"
                       label="Work Description*"
                       placeHolder="Enter the Work Description"
+                      disabled={false}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="schedule"
+                      label="Schedule*"
+                      placeHolder="Enter the Schedule"
+                      disabled={false}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="paymentTerms"
+                      label="Payment Terms*"
+                      placeHolder="Enter the Payment Terms"
                       disabled={false}
                     />
                   </Grid>
@@ -222,6 +276,14 @@ export default function AddWordOrder({
                         { value: true, label: "Yes" },
                         { value: false, label: "No" },
                       ]}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <FormInput
+                      name="remarks"
+                      label="Remarks*"
+                      placeHolder="Enter the Remarks"
+                      disabled={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -291,7 +353,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const contractors = await prisma.contractor.findMany();
+  const contractors = await prisma.contractor.findMany({
+    include: {
+      Qcs: {
+        include: {
+          project: true,
+        },
+      },
+    },
+  });
   if (id !== "add") {
     const workorder = await prisma.workorder.findUnique({
       where: {

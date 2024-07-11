@@ -6,10 +6,10 @@ const handleExport = () => {
   const worksheet = workbook.addWorksheet("Sheet 1");
 
   const border = {
-    top: { style: "thick", color: { argb: "black" } },
-    left: { style: "thick", color: { argb: "black" } },
-    bottom: { style: "thick", color: { argb: "black" } },
-    right: { style: "thick", color: { argb: "black" } },
+    top: { style: "thin", color: { argb: "black" } },
+    left: { style: "thin", color: { argb: "black" } },
+    bottom: { style: "thin", color: { argb: "black" } },
+    right: { style: "thin", color: { argb: "black" } },
   };
 
   // Add data to the worksheet
@@ -353,19 +353,19 @@ const handleExport = () => {
   //   worksheet.addRow(row);
 
   //   worksheet.getRow(rownumber).border = {
-  //     top: { style: "thick", color: { argb: "black" } },
-  //     left: { style: "thick", color: { argb: "black" } },
-  //     bottom: { style: "thick", color: { argb: "black" } },
-  //     right: { style: "thick", color: { argb: "black" } },
+  //     top: { style: "thin", color: { argb: "black" } },
+  //     left: { style: "thin", color: { argb: "black" } },
+  //     bottom: { style: "thin", color: { argb: "black" } },
+  //     right: { style: "thin", color: { argb: "black" } },
   //   };
   //   rownumber = rownumber + 1;
   // });
 
   // worksheet.getRow(6).border = {
-  //   top: { style: "thick", color: { argb: "black" } },
-  //   left: { style: "thick", color: { argb: "black" } },
-  //   bottom: { style: "thick", color: { argb: "black" } },
-  //   right: { style: "thick", color: { argb: "black" } },
+  //   top: { style: "thin", color: { argb: "black" } },
+  //   left: { style: "thin", color: { argb: "black" } },
+  //   bottom: { style: "thin", color: { argb: "black" } },
+  //   right: { style: "thin", color: { argb: "black" } },
   // };
 
   // Save the workbook as an Excel file
@@ -435,10 +435,10 @@ export default function Test() {
 //     sheet.pageSetup.fitToWidth = true;
 
 //     sheet.getRow(1).border = {
-//       top: { style: "thick", color: { argb: "black" } },
-//       left: { style: "thick", color: { argb: "black" } },
-//       bottom: { style: "thick", color: { argb: "black" } },
-//       right: { style: "thick", color: { argb: "black" } },
+//       top: { style: "thin", color: { argb: "black" } },
+//       left: { style: "thin", color: { argb: "black" } },
+//       bottom: { style: "thin", color: { argb: "black" } },
+//       right: { style: "thin", color: { argb: "black" } },
 //     };
 
 //     // sheet.getRow(1).font = {
@@ -500,10 +500,10 @@ export default function Test() {
 //       //       rating: product?.rating,
 //       //     });
 //       //     sheet.getRow(rowNumber).border = {
-//       //       top: { style: "thick", color: { argb: "black" } },
-//       //       left: { style: "thick", color: { argb: "black" } },
-//       //       bottom: { style: "thick", color: { argb: "black" } },
-//       //       right: { style: "thick", color: { argb: "black" } },
+//       //       top: { style: "thin", color: { argb: "black" } },
+//       //       left: { style: "thin", color: { argb: "black" } },
+//       //       bottom: { style: "thin", color: { argb: "black" } },
+//       //       right: { style: "thin", color: { argb: "black" } },
 //       //     };
 
 //       //     sheet.getRow(rowNumber).height = 45;

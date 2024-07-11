@@ -46,7 +46,6 @@ const MenuList = () => {
     else if (session?.user?.role === "Civil") items = civilItems.items;
     else if (session?.user?.role === "Manager") items = managerItems.items;
     else if (session?.user?.role === "Fixed") items = fixedItems.items;
-    else if (session?.user?.role === "GM") items = workorderItems.items;
     else items = timekeeperItems.items;
 
     const navItems1 = items?.map((item) => {

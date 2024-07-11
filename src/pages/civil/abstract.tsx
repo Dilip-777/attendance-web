@@ -53,6 +53,13 @@ import {
   Workorder,
   Measurement,
   Project,
+  BOQItem,
+  BOQ,
+  Qcs,
+  BarBendingItem,
+  BarBending,
+  QcsBoq,
+  QcsBoqItem,
 } from "@prisma/client";
 import EditUser from "@/components/Admin/EditUser";
 // import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
@@ -60,6 +67,10 @@ import axios from "axios";
 import _ from "lodash";
 import FormSelect from "@/ui-component/FormSelect";
 import PrintExcel from "@/components/PrintAbstractSheet";
+import { getAbstractSheet } from "@/utils/civil/getAbstractSheet";
+import dayjs from "dayjs";
+import AutoComplete from "@/ui-component/Autocomplete";
+import MonthSelect from "@/ui-component/MonthSelect";
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -93,30 +104,14 @@ const headCells = [
   createHeadCells("description", "Item Description", false, false, 35),
   createHeadCells("unit", "Unit", false, false),
   createHeadCells("unitrate", "Unit Rate", false, false),
-  createHeadCells(
-    "previousBillQuantity",
-    "Previous Bill Quantity",
-    false,
-    false,
-    15
-  ),
-  createHeadCells("quantity", "Current Bill Quantity", false, false, 15),
+  createHeadCells("prevQuantity", "Previous Bill Quantity", false, false, 15),
+  createHeadCells("currentQuantity", "Current Bill Quantity", false, false, 15),
   createHeadCells("totalQuantity", "Total Quantity", false, false, 15),
-  createHeadCells(
-    "valueofpreviousBill",
-    "Value of Previous Bill",
-    false,
-    false,
-    15
-  ),
-  createHeadCells(
-    "valueofcurrentBill",
-    "Value of Current Bill",
-    false,
-    false,
-    15
-  ),
-  createHeadCells("valueofTotalBill", "Value of Total Bill", false, false, 15),
+  createHeadCells("balance", "Balance Quantity", false, false, 15),
+  createHeadCells("prevBill", "Value of Previous Bill", false, false, 15),
+  createHeadCells("currentBill", "Value of Current Bill", false, false, 15),
+  createHeadCells("totalBill", "Value of Total Bill", false, false, 15),
+  createHeadCells("balanceBill", "Balance Bill", false, false, 15),
   createHeadCells("remarks", "Remarks", false, false, 15),
 ];
 
@@ -220,68 +215,51 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-interface worktype extends Measurement {
+interface worktype extends QcsBoq {
   measurementItems: MeasurementItem[];
   contractor: Contractor;
 }
 
 interface contractors extends Contractor {
-  projects: Project[];
+  Qcs: (Qcs & { project: Project })[];
+}
+
+interface Boq extends QcsBoq {
+  BOQItems: (QcsBoqItem & {
+    measurementItems: (MeasurementItem & { measurement: Measurement })[];
+    barBendingItems: (BarBendingItem & { barBending: BarBending })[];
+  })[];
 }
 
 export default function AbstractSheet({
-  // workitems,
-  workorders,
   contractors,
+  contractorId,
+  projectId,
 }: {
-  // workitems: worktype[];
-  workorders: Workorder[];
   contractors: contractors[];
+  contractorId: string;
+  projectId: string;
 }) {
-  const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [open, setOpen] = React.useState(false);
-  const [selectedUser, setSelectedUser] = React.useState<worktype | null>(null);
+  const [month, setMonth] = React.useState(dayjs().format("MM/YYYY"));
+  const [boqs, setBoqs] = React.useState<Boq[]>([]);
 
-  const [contractor, setContractor] = React.useState<string | undefined>(
-    contractors.length > 0 ? contractors[0].contractorId : undefined
-  );
-  const [workitems, setWorkItems] = React.useState<worktype[]>([]);
+  const router = useRouter();
 
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedUser(null);
+  const fetchBoqs = async () => {
+    const res = await axios.get(
+      "/api/civil/abstract?contractorId=" +
+        contractorId +
+        "&projectId=" +
+        projectId
+    );
+    setBoqs(res.data?.BOQ ?? []);
   };
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = workitems.map((n) => n.id);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected: readonly string[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelected(newSelected);
-  };
+  React.useEffect(() => {
+    fetchBoqs();
+  }, [contractorId, projectId]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -294,34 +272,21 @@ export default function AbstractSheet({
     setPage(0);
   };
 
-  const contractor1 = contractors.find((v) => v.contractorId === contractor);
-  const project =
-    contractor1 && contractor1?.projects.length > 0
-      ? contractor1?.projects[0]
+  const contractor1 = contractors.find((v) => v.contractorId === contractorId);
+  const qcs =
+    contractor1 && contractor1?.Qcs.length > 0
+      ? contractor1?.Qcs.find((v) => v.projectId === projectId)
       : undefined;
   const info = [
     { value: contractor1?.contractorname, label: "Name of Contractor" },
-    { value: project?.name, label: "Nature of Work" },
-    { value: project?.place, label: "Location" },
+    { value: qcs?.project?.name, label: "Nature of Work" },
+    { value: qcs?.project?.place, label: "Location" },
   ];
 
-  const fetchWorkItems = async () => {
-    const res = await axios.get(
-      "/api/measurementItem?contractorId=" + contractor
-    );
-    console.log(res.data);
-    setWorkItems(res.data);
-  };
-
-  React.useEffect(() => {
-    fetchWorkItems();
-  }, [contractor]);
-
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
-
-  // Avoid a layout jump when reaching the last page with empty workitems.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - workitems.length) : 0;
+  const rows = React.useMemo(
+    () => getAbstractSheet({ boqs, month }),
+    [boqs, month]
+  );
 
   return (
     <Box
@@ -341,11 +306,6 @@ export default function AbstractSheet({
       }}
     >
       <Paper sx={{ width: "100%", mb: 2 }}>
-        {/* <EnhancedTableToolbar
-          numSelected={selected.length}
-          filter={filter}
-          setFilter={setFilter}
-        /> */}
         <Box
           sx={{
             display: "flex",
@@ -355,19 +315,46 @@ export default function AbstractSheet({
           }}
         >
           <Stack direction="column" spacing={3}>
-            <FormSelect
-              handleChange={(v) => setContractor(v as string)}
-              options={contractors.map((v) => ({
-                label: v.contractorname,
-                value: v.contractorId,
-              }))}
-              label="Contractor"
-              value={
-                (contractor as string) ||
-                (contractors.length > 0 ? contractors[0].contractorId : "")
-              }
-            />
-            {contractor1 && contractor1?.projects?.length > 0 && (
+            <Stack direction="row" spacing={3}>
+              <AutoComplete
+                setValue={(v) => {
+                  const c = contractors.find((f) => f.contractorId === v);
+                  router.push(
+                    `/civil/abstract?contractorId=${v}&projectId=${c?.Qcs[0]?.projectId}`
+                  );
+                }}
+                options={contractors.map((v) => ({
+                  label: v.contractorname,
+                  value: v.contractorId,
+                }))}
+                label="Contractor"
+                value={contractorId}
+              />
+              <AutoComplete
+                setValue={(v) => {
+                  router.push(
+                    `/civil/abstract?contractorId=${contractorId}&projectId=${v}`
+                  );
+                }}
+                options={
+                  contractor1?.Qcs.map((v) => ({
+                    label: v.project.name,
+                    value: v.projectId,
+                  })) ?? []
+                }
+                label="Project"
+                value={projectId}
+              />
+              <MonthSelect
+                label="Select Month"
+                value={dayjs(month, "MM/YYYY")}
+                onChange={(e) => {
+                  setMonth(e?.format("MM/YYYY") || "");
+                }}
+              />
+            </Stack>
+
+            {contractor1 && contractor1?.Qcs?.length > 0 && (
               <Stack direction="column" spacing={2}>
                 {info.map((v) => (
                   <Stack direction="row" spacing={2}>
@@ -386,28 +373,9 @@ export default function AbstractSheet({
               </Stack>
             )}
           </Stack>
-          {/* <Button
-            variant="contained"
-            onClick={() => {
-              PrintExcel({
-                works: workitems,
-                headcells: headCells,
-              });
-              console.log("clicked");
-            }}
-          >
-            Print
-          </Button> */}
-          {/* <PrintExcel
-            works={workitems}
-            headcells={headCells}
-            info={info}
-            // contractor={contractor}
-          /> */}
         </Box>
         <TableContainer
           sx={{
-            // maxHeight: "calc(100vh - 16rem)",
             overflow: "auto",
             scrollBehavior: "smooth",
             "&::-webkit-scrollbar": {
@@ -427,14 +395,14 @@ export default function AbstractSheet({
             stickyHeader
           >
             <EnhancedTableHead
-              numSelected={selected.length}
-              onSelectAllClick={handleSelectAllClick}
-              rowCount={workitems.length}
+              numSelected={0}
+              onSelectAllClick={() => {}}
+              rowCount={boqs.length}
               headCells={headCells}
               align="center"
             />
             <TableBody>
-              {workitems.map((row) => (
+              {rows.map((row) => (
                 <>
                   <TableRow>
                     <TableCell
@@ -454,7 +422,7 @@ export default function AbstractSheet({
                       {row.description}
                     </TableCell>
                   </TableRow>
-                  {row.measurementItems.map((item) => (
+                  {row.BOQItems.map((item) => (
                     <TableRow>
                       {headCells.map((cell) => (
                         <TableCell
@@ -477,7 +445,7 @@ export default function AbstractSheet({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={workitems.length}
+          count={boqs.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -500,36 +468,36 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const workitems = await prisma.measurementItem.findMany();
+  let { contractorId, projectId, month } = context.query;
 
-  const workorders = await prisma.workorder.findMany();
   const contractors = await prisma.contractor.findMany({
     include: {
-      projects: true,
+      Qcs: {
+        include: {
+          project: true,
+        },
+      },
     },
   });
 
-  //   if (session?.user?.role !== "Admin") {
-  //     return {
-  //       redirect: {
-  //         destination: "/",
-  //         permanent: false,
-  //       },
-  //     };
-  //   } else {
+  if (!contractorId) {
+    contractorId = contractors.filter((f) => f.Qcs.length > 0)[0]?.contractorId;
+  }
+
+  if (!projectId) {
+    projectId = contractors.find((f) => f.contractorId === contractorId)?.Qcs[0]
+      ?.projectId;
+  }
+
+  if (!month) {
+    month = dayjs().format("MM/YYYY");
+  }
+
   return {
     props: {
-      workitems: workitems,
-      workorders: workorders,
       contractors: contractors,
+      projectId: projectId || null,
+      contractorId: contractorId || null,
     },
   };
-  //   }
 };
-
-// <Head>
-//   <title>Attendance</title>
-//   <meta name="description" content="Generated by create next app" />
-//   <meta name="viewport" content="width=device-width, initial-scale=1" />
-//   <link rel="icon" href="/favicon.ico" />
-// </Head>

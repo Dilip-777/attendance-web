@@ -18,6 +18,7 @@ import { Formik } from "formik";
 import {
   Contractor,
   Department,
+  Designations,
   Role,
   Shift,
   TimeKeeper,
@@ -32,6 +33,7 @@ import FormDate from "@/components/FormikComponents/FormDate";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 
 const validationSchema = Yup.object().shape({
   contractorId: Yup.string().optional(),
@@ -62,12 +64,14 @@ export default function EditTimkeeper({
   role,
   departments,
   shifts,
+  designations,
 }: {
   role: Role | undefined;
   departments: (Department & {
     contractors: Contractor[];
   })[];
   shifts: Shift[];
+  designations: Designations[];
 }) {
   const router = useRouter();
   const { id } = router.query;
@@ -364,11 +368,17 @@ export default function EditTimkeeper({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormInput
+                    <AutoCompleteSelect
                       name="designation"
                       label="Designation"
                       placeHolder="Designation"
                       disabled={false}
+                      options={designations
+                        .filter((d) => d.departmentname === values.department)
+                        .map((d) => ({
+                          value: d.designation,
+                          label: d.designation,
+                        }))}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
@@ -486,7 +496,7 @@ export default function EditTimkeeper({
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={4}>
-                    <FormSelect
+                    <AutoCompleteSelect
                       name="department"
                       label="Department"
                       placeHolder="Department"
@@ -575,12 +585,14 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   });
 
   const shifts = await prisma.shift.findMany();
+  const designations = await prisma.designations.findMany();
 
   return {
     props: {
       role: session?.user?.role,
       departments,
       shifts,
+      designations,
     },
   };
 };

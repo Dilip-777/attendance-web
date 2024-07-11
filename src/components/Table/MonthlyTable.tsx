@@ -142,7 +142,8 @@ export default function MonthlyTable({
                   {item.sub && <TableCell align="center">{item.sub}</TableCell>}
                   {rows.map((row, index) => (
                     <TableCell key={index} align="center">
-                      {row.date === "Service Charge Rate"
+                      {row.date === "Service Charge Rate" ||
+                      row.date === "Total Man days"
                         ? _.get(row, item.id)
                         : getRoundOff(_.get(row, item.id) || 0)}
                       {/* {getRoundOff(_.get(row, item.id) || 0)} */}

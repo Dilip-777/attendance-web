@@ -1,13 +1,7 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import { useRouter } from "next/router";
-import {
-  Contractor,
-  Department,
-  FixedWork,
-  HiredFixedWork,
-  Works,
-} from "@prisma/client";
+import { Contractor, FixedWork } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";

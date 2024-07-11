@@ -15,6 +15,7 @@ import {
   Department,
   Designations,
   Employee,
+  HOAuditor,
   Safety,
   SeperateSalary,
   Shifts,
@@ -96,6 +97,7 @@ export default function FinalSheet({
   const [hourlyrows, setHourlyRows] = useState<any>([]);
   const [hourlytotals, setHourlyTotals] = useState<any>();
   const [deduction, setDeduction] = useState<Deductions | null>(null);
+  const [hoCommercial, setHoCommercial] = useState<HOAuditor | null>(null);
   const f = contractors.find((c) => c.contractorId === selectedContractor);
 
   const fetchHourlyRows = () => {
@@ -108,6 +110,16 @@ export default function FinalSheet({
     setHourlyRows(rows);
     setHourlyTotals(total);
   };
+
+  const fetchHoCommercial = async () => {
+    const c = contractors.find((c) => c.contractorId === selectedContractor);
+    const res = await axios.get(`/api/hoauditor?contractorId=${c?.id}`);
+    setHoCommercial(res.data);
+  };
+
+  useEffect(() => {
+    fetchHoCommercial();
+  }, [selectedContractor]);
 
   const fetchDeductions = async () => {
     const res = await axios.get(
@@ -240,10 +252,9 @@ export default function FinalSheet({
       safety: safety[0],
       store: store,
       totals: hourlytotals,
-      workorder: workorders.find(
-        (c) => c.contractorId === f?.contractorId && c.startDate.includes(value)
-      ),
+      workorder: w,
       deduction: deduction,
+      hoCommercial: hoCommercial,
     });
   };
 
@@ -267,6 +278,7 @@ export default function FinalSheet({
       prevYearAmount: Math.ceil(details?.prevYearAmount),
       totals: totalsRows,
       deduction: deduction,
+      hoCommercial: hoCommercial,
     });
   };
 
@@ -279,9 +291,7 @@ export default function FinalSheet({
   const onChange = (value: Dayjs | null) =>
     setValue(value?.format("MM/YYYY") || "");
 
-  const w = workorders.find(
-    (c) => c.contractorId === f?.contractorId && c.startDate.includes(value)
-  );
+  const w = workorders.find((c) => c.contractorId === f?.contractorId);
 
   return loading ? (
     <Box

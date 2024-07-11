@@ -14,6 +14,7 @@ import MonetizationOn from "@mui/icons-material/MonetizationOn";
 import LocalShipping from "@mui/icons-material/LocalShipping";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import EqualizerIcon from "@mui/icons-material/Equalizer";
 
 // constant
 const icons = {
@@ -31,6 +32,7 @@ const icons = {
   LocalShipping,
   GroupWorkIcon,
   FactCheckIcon,
+  EqualizerIcon,
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -189,7 +191,16 @@ const corporator = {
       breadcrumbs: false,
     },
     {
+      id: "/civil/workanalysis",
+      title: "Work Analysis",
+      type: "item",
+      url: "/civil/workanalysis",
+      icon: icons.EqualizerIcon,
+      breadcrumbs: false,
+    },
+    {
       id: "/finalsheet",
+
       title: "Final Sheet",
       type: "item",
       url: "/finalsheet",
@@ -209,6 +220,14 @@ const corporator = {
       title: "Fixed Final Sheet",
       type: "item",
       url: "/fixedfinalsheet",
+      icon: icons.Description,
+      breadcrumbs: false,
+    },
+    {
+      id: "/civil/finalsheet",
+      title: "Civil Final Sheet",
+      type: "item",
+      url: "/civil/finalsheet",
       icon: icons.Description,
       breadcrumbs: false,
     },

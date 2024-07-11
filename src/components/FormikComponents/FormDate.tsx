@@ -57,7 +57,7 @@ const FormDate: React.FC<Props> = ({
           }}
           onChange={(newValue) => {
             setValue(newValue);
-            setFieldValue(name, newValue.format("DD/MM/YYYY"));
+            setFieldValue(name, newValue.format(props?.format || "DD/MM/YYYY"));
           }}
           {...props}
         />

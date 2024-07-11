@@ -86,6 +86,9 @@ const headCells = [
   createHeadCells("location", "Location", false, false),
   createHeadCells("workdescription", "Work Descrition", false, false),
   createHeadCells("repeatedOronetime", "Repeated Or one time", false, false),
+  createHeadCells("schedule", "Schedule", false, false),
+  createHeadCells("paymentTerms", "Payment Terms", false, false),
+  createHeadCells("remarks", "Remarks", false, false),
   createHeadCells("status", "Status", false, false),
   createHeadCells("amendmentdocument", "Amendment Document", true, false),
   createHeadCells("addendumDocument", "Addendum Document", false, false),
@@ -325,6 +328,15 @@ export default function WorkOrder({
                       <TableCell sx={{ minWidth: 150 }}>
                         {row.repeatOrOneTime}
                       </TableCell>
+                      <TableCell sx={{ minWidth: 150 }}>
+                        {row.schedule || "-"}
+                      </TableCell>
+                      <TableCell sx={{ minWidth: 150 }}>
+                        {row.paymentTerms || "-"}
+                      </TableCell>
+                      <TableCell sx={{ minWidth: 150 }}>
+                        {row.remarks || "-"}
+                      </TableCell>
 
                       <TableCell sx={{ minWidth: 150 }}>{row.status}</TableCell>
 
@@ -413,7 +425,7 @@ export default function WorkOrder({
                           </TableCell>
                         </>
                       )}
-                      {session?.user?.role === "GM" &&
+                      {session?.user?.role === "Civil" &&
                         row.status === "Pending" && (
                           <>
                             <TableCell size="small" align="center">
@@ -537,7 +549,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   let pendingWorkorders: Workorder[] = [];
 
-  if (session.user?.role === "GM") {
+  if (session.user?.role === "Civil") {
     pendingWorkorders = await prisma.workorder.findMany({
       where: {
         ...where,

@@ -5,6 +5,7 @@ import {
   Deductions,
   Department,
   Designations,
+  HOAuditor,
   Safety,
   Stores,
   Workorder,
@@ -15,10 +16,10 @@ import React, { useEffect, useState } from "react";
 const ExcelJS = require("exceljs");
 
 const border = {
-  top: { style: "thick", color: { argb: "black" } },
-  left: { style: "thick", color: { argb: "black" } },
-  bottom: { style: "thick", color: { argb: "black" } },
-  right: { style: "thick", color: { argb: "black" } },
+  top: { style: "thin", color: { argb: "black" } },
+  left: { style: "thin", color: { argb: "black" } },
+  bottom: { style: "thin", color: { argb: "black" } },
+  right: { style: "thin", color: { argb: "black" } },
 };
 
 const getRoundOff = (num: number) => {
@@ -29,7 +30,7 @@ interface d extends Department {
   designations: Designations[];
 }
 
-export const printMonthly = ({
+export const printMonthly = async ({
   rows,
   total,
   departments,
@@ -46,6 +47,7 @@ export const printMonthly = ({
   month,
   totals,
   deduction,
+  hoCommercial,
 }: {
   rows: any;
   total: number;
@@ -63,15 +65,30 @@ export const printMonthly = ({
   month: string;
   totals: any;
   deduction: Deductions | null;
+  hoCommercial: HOAuditor | null;
 }) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sheet 1");
 
+  const response = await fetch("/logo.png");
+
+  const imageBuffer = await response.arrayBuffer();
+
+  const imageId = workbook.addImage({
+    buffer: imageBuffer,
+    extension: "jpeg",
+  });
+
+  worksheet.addImage(imageId, {
+    tl: { col: 0, row: 0 },
+    ext: { width: 90, height: 90 },
+  });
+
   const border = {
-    top: { style: "thick", color: { argb: "black" } },
-    left: { style: "thick", color: { argb: "black" } },
-    bottom: { style: "thick", color: { argb: "black" } },
-    right: { style: "thick", color: { argb: "black" } },
+    top: { style: "thin", color: { argb: "black" } },
+    left: { style: "thin", color: { argb: "black" } },
+    bottom: { style: "thin", color: { argb: "black" } },
+    right: { style: "thin", color: { argb: "black" } },
   };
 
   const headings = [
@@ -263,6 +280,33 @@ export const printMonthly = ({
   });
 
   createHeading({
+    header: ["Work Order Information"],
+    colSpan: 10,
+    bgcolor: "fafafa",
+    font: { size: 14, bold: true },
+    height: 40,
+  });
+
+  const textrow = worksheet.addRow([workorder?.remarks || "-"]);
+  textrow.height = 45;
+  textrow.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: "middle",
+    };
+  });
+  textrow.eachCell((cell: any) => {
+    cell.border = border;
+  });
+
+  worksheet.mergeCells(`A${textrow.number}:P${textrow.number}`);
+
+  createHeading({
+    header: [""],
+    height: 30,
+  });
+
+  createHeading({
     header: ["Invoice Information"],
     colSpan: 10,
     bgcolor: "fafafa",
@@ -273,43 +317,42 @@ export const printMonthly = ({
   createDetails([
     "Invoice No",
     "",
-    `-`,
+    `${hoCommercial?.invoiceNo || "-"}`,
     "",
     "Invoice Date",
     "",
-    `${new Date().toLocaleDateString()}`,
+    `${hoCommercial?.date || "-"}`,
     "",
     "Work Order No",
     "",
-    `${workorder?.id || "-"}`,
+    `${workorder?.workorderno || "-"}`,
     "",
     "Nature of Work",
     "",
     `${workorder?.nature || "-"}`,
   ]);
-
   createDetails([
     "Invoice Month",
     "",
-    `${month}`,
+    `${hoCommercial?.monthOfInvoice || "-"}`,
     "",
     "Date of Invoice Received",
     "",
-    "-",
+    `${hoCommercial?.date || "-"}`,
     "",
     "Effective Date of contractor",
     "",
-    "-",
+    `${hoCommercial?.fromDate || "-"}`,
     "",
     "Ending Date of contractor",
     "",
-    `${contractor.expirationDate || "-"}`,
+    `${hoCommercial?.toDate || "-"}`,
   ]);
 
   createDetails([
     "GST Compliance's Status - Month",
     "",
-    `${month}`,
+    `${hoCommercial?.monthOfInvoice || "-"}`,
     "",
     "",
     "",
@@ -377,7 +420,12 @@ export const printMonthly = ({
     ["SAFETY VIOLATION 'S PENALTY", getRoundOff(safety?.totalAmount || 0)],
     ["CONSUMABLES/ CHARGABLE ITEMS", getRoundOff(store?.totalAmount || 0)],
     ["ADJUSTMENT OF ADVANCE AMOUNT", getRoundOff(deduction?.advance || 0)],
-    ["ANY OTHER DEDUCTIONS (IF ANY)", getRoundOff(deduction?.anyother || 0)],
+    [
+      "ANY OTHER DEDUCTIONS (IF ANY)",
+      getRoundOff(deduction?.anyother || 0),
+      deduction?.remarks,
+    ],
+    ["ANY OTHER ADDITION (IF ANY)", deduction?.addition || 0],
     [
       "FINAL PAYABLE",
       getRoundOff(
@@ -397,7 +445,7 @@ export const printMonthly = ({
       "",
       "",
       "",
-      "",
+      f[2] ?? "",
       "",
       "",
       "",
@@ -419,7 +467,10 @@ export const printMonthly = ({
       cell.border = border;
       cell.font = { size: 11, wrapText: true, bold: true };
     });
-    worksheet.mergeCells(`A${row.number}:H${row.number}`);
+    if (f[2]) {
+      worksheet.mergeCells(`A${row.number}:D${row.number}`);
+      worksheet.mergeCells(`E${row.number}:H${row.number}`);
+    } else worksheet.mergeCells(`A${row.number}:H${row.number}`);
     worksheet.mergeCells(`I${row.number}:M${row.number}`);
     worksheet.mergeCells(`N${row.number}:P${row.number}`);
     row.height = 30;
@@ -517,18 +568,35 @@ export const printMonthly = ({
     "Prepared & Checked By :",
     "",
     "",
-    "C-DARC V/s Biomax Checked By:",
+    "Biomax Checked By: ",
     "",
     "Statutory Compliance  (GST & TDS) Checked By: ",
     "",
     "",
     "Department Leader's Approval",
     "",
-    "",
+
     "",
     "Top Management Approval",
     "",
     "",
+  ];
+
+  const approvalnames1 = [
+    "Intiator",
+    "",
+    "",
+    "HR",
+    "",
+    "Accounts / Taxation",
+    "",
+    "",
+    "HOD",
+    "",
+
+    "",
+    "Director",
+    "Managing Director",
     "",
   ];
 
@@ -553,62 +621,32 @@ export const printMonthly = ({
     `F${approvalheaderrow.number}:H${approvalheaderrow.number}`
   );
   worksheet.mergeCells(
-    `I${approvalheaderrow.number}:L${approvalheaderrow.number}`
+    `I${approvalheaderrow.number}:K${approvalheaderrow.number}`
   );
   worksheet.mergeCells(
-    `M${approvalheaderrow.number}:P${approvalheaderrow.number}`
+    `L${approvalheaderrow.number}:N${approvalheaderrow.number}`
   );
 
-  const approvalnames = [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ];
-  [...Array(5)].forEach((_, i) => {
-    const row = worksheet.addRow(approvalnames);
-    row.eachCell((cell: any) => {
-      cell.alignment = {
-        wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
-      };
-      cell.border = border;
-      cell.font = { size: 10, wrapText: true, bold: true };
-    });
-    row.height = 30;
-    worksheet.mergeCells(`A${row.number}:C${row.number}`);
-    worksheet.mergeCells(`D${row.number}:E${row.number}`);
-    worksheet.mergeCells(`F${row.number}:H${row.number}`);
-    worksheet.mergeCells(`I${row.number}:L${row.number}`);
-    worksheet.mergeCells(`M${row.number}:P${row.number}`);
+  const approvalnamerow = worksheet.addRow(approvalnames1);
+  approvalnamerow.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: "down",
+      horizontal: "center",
+    };
+    cell.border = border;
+    cell.font = { size: 10, wrapText: true, bold: true };
   });
+  approvalnamerow.height = 200;
+  worksheet.mergeCells(`A${approvalnamerow.number}:C${approvalnamerow.number}`);
+  worksheet.mergeCells(`D${approvalnamerow.number}:E${approvalnamerow.number}`);
+  worksheet.mergeCells(`F${approvalnamerow.number}:H${approvalnamerow.number}`);
+  worksheet.mergeCells(`I${approvalnamerow.number}:K${approvalnamerow.number}`);
+  worksheet.mergeCells(`M${approvalnamerow.number}:N${approvalnamerow.number}`);
 
   createHeading({
     header: [""],
     height: 30,
-  });
-
-  createHeading({
-    header: [
-      "Key Comments Sheet as enclosed (For any comments please use attached sheet only)",
-    ],
-    colSpan: 10,
-    bgcolor: "fafafa",
-    font: { size: 9, bold: false },
-    height: 27,
   });
 
   createHeading({
@@ -624,19 +662,19 @@ export const printMonthly = ({
   //   worksheet.addRow(row);
 
   //   worksheet.getRow(rownumber).border = {
-  //     top: { style: "thick", color: { argb: "black" } },
-  //     left: { style: "thick", color: { argb: "black" } },
-  //     bottom: { style: "thick", color: { argb: "black" } },
-  //     right: { style: "thick", color: { argb: "black" } },
+  //     top: { style: "thin", color: { argb: "black" } },
+  //     left: { style: "thin", color: { argb: "black" } },
+  //     bottom: { style: "thin", color: { argb: "black" } },
+  //     right: { style: "thin", color: { argb: "black" } },
   //   };
   //   rownumber = rownumber + 1;
   // });
 
   // worksheet.getRow(6).border = {
-  //   top: { style: "thick", color: { argb: "black" } },
-  //   left: { style: "thick", color: { argb: "black" } },
-  //   bottom: { style: "thick", color: { argb: "black" } },
-  //   right: { style: "thick", color: { argb: "black" } },
+  //   top: { style: "thin", color: { argb: "black" } },
+  //   left: { style: "thin", color: { argb: "black" } },
+  //   bottom: { style: "thin", color: { argb: "black" } },
+  //   right: { style: "thin", color: { argb: "black" } },
   // };
 
   // Save the workbook as an Excel file

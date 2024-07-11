@@ -6,28 +6,18 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const { name, type, place, contractorId } = req.body;
+    // const { name, type, place,  } = req.body;
     const project = await prisma.project.create({
-      data: {
-        name,
-        type,
-        place,
-        contractorId,
-      },
+      data: req.body,
     });
     res.status(200).json(project);
   } else if (req.method === "PUT") {
-    const { id, name, type, place, contractorId } = req.body;
+    const { id, ...rest } = req.body;
     const project = await prisma.project.update({
       where: {
         id: id,
       },
-      data: {
-        name,
-        type,
-        place,
-        contractorId,
-      },
+      data: rest,
     });
     res.status(200).json(project);
   } else {

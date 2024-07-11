@@ -156,6 +156,7 @@ export default function FinalSheetTable({
                         GST Hold (if any)
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
+                        -
                         {(deduction?.gstrelease || 0) -
                           (deduction?.gsthold || 0) || 0}
                       </TableCell>
@@ -169,7 +170,7 @@ export default function FinalSheetTable({
                           Safety Penalty / Extra PPE / Extra Helment
                         </TableCell>
                         <TableCell sx={{ fontWeight: "600" }}>
-                          {safetyAmount || 0}
+                          -{safetyAmount || 0}
                         </TableCell>
                       </TableRow>
                     )}
@@ -192,7 +193,7 @@ export default function FinalSheetTable({
                         Adjustment of Advance Amount
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
-                        {deduction?.advance || 0}
+                        -{deduction?.advance || 0}
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -203,7 +204,18 @@ export default function FinalSheetTable({
                         Any Other Deductions (If any)
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
-                        {deduction?.anyother || 0}
+                        -{deduction?.anyother || 0}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell
+                        colSpan={colspans ? colspans[0] : 7}
+                      ></TableCell>
+                      <TableCell sx={{ fontWeight: "600" }} colSpan={4}>
+                        Any Other Additions (If any)
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "600" }}>
+                        {deduction?.addition || 0}
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -216,12 +228,13 @@ export default function FinalSheetTable({
                       <TableCell sx={{ fontWeight: "600" }}>
                         {Math.round(
                           total -
-                            (safetyAmount || 0) -
+                            (safetyAmount || 0) +
                             hsdcost +
                             ((deduction?.gstrelease || 0) -
                               (deduction?.gsthold || 0) || 0) -
                             (deduction?.advance || 0) -
-                            (deduction?.anyother || 0)
+                            (deduction?.anyother || 0) +
+                            (deduction?.addition || 0)
                         )}
                       </TableCell>
                     </TableRow>

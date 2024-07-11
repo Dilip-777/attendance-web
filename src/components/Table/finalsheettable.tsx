@@ -190,20 +190,24 @@ export default function FinalSheetTable({
                     },
                     {
                       label: "SAFETY PENALTY / EXTRA PPE / EXTRA HELMET",
-                      value: safetydeduction,
+                      value: (safetydeduction || 0) * -1,
                     },
                     {
                       label: "CONSUMABLES / CHARGABLE ITEMS",
-                      value: storededuction,
+                      value: (storededuction || 0) * -1,
                     },
                     {
                       label: "ADJUSTMENT OF ADVANCE AMOUNT",
-                      value: deduction?.advance || 0,
+                      value: (deduction?.advance || 0) * -1,
                     },
                     {
                       label: "ANY OTHER DEDUCTIONS (IF ANY)",
-                      value: deduction?.anyother || 0,
+                      value: (deduction?.anyother || 0) * -1,
                       remarks: deduction?.remarks,
+                    },
+                    {
+                      label: "ANY OTHER ADDITIONS (IF ANY)",
+                      value: deduction?.addition || 0,
                     },
                     {
                       label: "FINAL PAYABLE",
@@ -214,7 +218,8 @@ export default function FinalSheetTable({
                         ((deduction?.gstrelease || 0) -
                           (deduction?.gsthold || 0) || 0) -
                         (deduction?.advance || 0) -
-                        (deduction?.anyother || 0),
+                        (deduction?.anyother || 0) +
+                        (deduction?.addition || 0),
                     },
                   ].map((d) => (
                     <TableRow>

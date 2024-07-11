@@ -27,6 +27,7 @@ const filter = (
 
   if (wrkhrs && s?.totalhours !== wrkhrs) return false;
   if (item.attendance === attendance) return false;
+
   if (designation.gender === "Male" || designation.gender === "M") {
     return (
       item.designation.toLowerCase() ===
@@ -219,9 +220,10 @@ const getTotalAmountAndRows = (
           Number(_.get(totalManDayAmount, id, 0))
       );
 
-      totalovertime[id] = filtered
-        .filter((f) => filter(f, designation, "0.5"))
-        .reduce((acc, curr) => acc + (curr.manualovertime ?? curr.overtime), 0);
+      totalovertime[id] = [...fulltime, ...halftime].reduce(
+        (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
+        0
+      );
       totalovertime["total"] = getRoundOff(
         (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
       );

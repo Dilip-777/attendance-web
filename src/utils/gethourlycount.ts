@@ -359,11 +359,6 @@ const getHourlyCount = (
           0
         );
 
-        console.log(
-          f8.filter((f) => f.designation === "Supervisor").length,
-          f8.length
-        );
-
         const o12 = f12.reduce(
           (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
           0
@@ -375,7 +370,6 @@ const getHourlyCount = (
           (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
         );
 
-        console.log(totalovertime, "totalovertime");
         const amount8 = getRoundOff((o8 * (rate[id] as number)) / 8);
         const amount12 = getRoundOff((o12 * (rate[id] as number)) / 12);
         otamount[id] = getRoundOff(amount8 + amount12);

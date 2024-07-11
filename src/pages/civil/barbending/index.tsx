@@ -19,6 +19,7 @@ import {
   BarBendingItem,
   Workorder,
   Project,
+  Qcs,
 } from "@prisma/client";
 import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
@@ -54,7 +55,9 @@ const createHeadCells = (
 const headCells = [
   createHeadCells("description", "Work Description", false, false),
   createHeadCells("contractorid", "Contractor", false, false),
+  createHeadCells("date", "Date", false, false),
   createHeadCells("totalAmount", "Total Amount", true, false),
+
   createHeadCells("action", "Action", false, true),
 ];
 
@@ -81,7 +84,7 @@ const headcells1 = [
 ];
 
 interface contractors extends Contractor {
-  projects: Project[];
+  Qcs: (Qcs & { project: Project })[];
 }
 
 function Row(props: {
@@ -108,6 +111,7 @@ function Row(props: {
           {row.description}
         </TableCell>
         <TableCell align="center">{row.contractor.contractorname}</TableCell>
+        <TableCell align="center">{row.date || "-"}</TableCell>
         <TableCell align="center">{row.totalAmount}</TableCell>
         <TableCell size="small" align="right">
           <Stack
@@ -122,14 +126,6 @@ function Row(props: {
             >
               <Edit fontSize="small" />
             </IconButton>
-            <Tooltip title="Add Work Item">
-              <IconButton
-                onClick={() => props.handleOpen(row.id)}
-                sx={{ m: 0 }}
-              >
-                <Add fontSize="small" />
-              </IconButton>
-            </Tooltip>
           </Stack>
         </TableCell>
 
@@ -222,14 +218,14 @@ export default function Measurement({
   const router = useRouter();
 
   const contractor1 = contractors.find((v) => v.contractorId === contractor);
-  const workorder =
-    contractor1 && contractor1?.projects.length > 0
-      ? contractor1?.projects[0]
+  const qcs =
+    contractor1 && contractor1?.Qcs.length > 0
+      ? contractor1?.Qcs[0]
       : undefined;
   const info = [
     { value: contractor1?.contractorname, label: "Name of Contractor" },
-    { value: workorder?.name, label: "Nature of Work" },
-    { value: workorder?.place, label: "Location" },
+    { value: qcs?.project?.name, label: "Nature of Work" },
+    { value: qcs?.project?.place, label: "Location" },
   ];
 
   const fetchBarBending = async () => {
@@ -249,14 +245,6 @@ export default function Measurement({
       }}
     >
       <Paper sx={{ width: "100%", mb: 2 }}>
-        {/* <EnhancedTableToolbar
-          numSelected={selected.length}
-          filtername={props.filterName}
-          setFilterName={props.setFilterName}
-          handleClickReport={props.handleClickReport}
-          type={props.type}
-          upload={props.upload}
-        /> */}
         <Box
           sx={{
             display: "flex",
@@ -278,7 +266,7 @@ export default function Measurement({
                 (contractors.length > 0 ? contractors[0].contractorId : "")
               }
             />
-            {contractor1 && contractor1?.projects.length > 0 && (
+            {contractor1 && contractor1?.Qcs.length > 0 && (
               <Stack direction="column" spacing={2}>
                 {info.map((v) => (
                   <Stack direction="row" spacing={2}>
@@ -324,16 +312,6 @@ export default function Measurement({
           component={Paper}
         >
           <Table aria-label="collapsible table">
-            {/* <TableHead>
-              <TableRow>
-                <TableCell />
-                <TableCell>Dessert (100g serving)</TableCell>
-                <TableCell align="right">Calories</TableCell>
-                <TableCell align="right">Fat&nbsp;(g)</TableCell>
-                <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-                <TableCell align="right">Protein&nbsp;(g)</TableCell>
-              </TableRow>
-            </TableHead> */}
             <EnhancedTableHead
               headCells={headCells}
               numSelected={0}
@@ -352,8 +330,8 @@ export default function Measurement({
                     }}
                   />
                 ))
-              ) : contractors.find((v) => v.contractorId === contractor)
-                  ?.projects.length === 0 ? (
+              ) : contractors.find((v) => v.contractorId === contractor)?.Qcs
+                  .length === 0 ? (
                 <TableRow>
                   <TableCell align="left" colSpan={6}>
                     No Work Orders
@@ -370,15 +348,6 @@ export default function Measurement({
           </Table>
         </TableContainer>
       </Paper>
-      <AddBarBending
-        open={open}
-        handleClose={() => setOpen(false)}
-        selected={contractor}
-        barbending={barbending}
-        contractor={contractor as string}
-        selectedWork={selected}
-        fetchBarBending={fetchBarBending}
-      />
     </Box>
   );
 }
@@ -396,8 +365,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   const contractors = await prisma.contractor.findMany({
+    where: {
+      servicedetail: "Civil",
+    },
     include: {
-      projects: true,
+      Qcs: {
+        include: {
+          project: true,
+        },
+      },
     },
   });
 

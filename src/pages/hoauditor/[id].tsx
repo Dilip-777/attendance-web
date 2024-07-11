@@ -69,9 +69,6 @@ export default function HoAuditorForm({
   contractor: Contractor;
 }) {
   const router = useRouter();
-  // const [contractor, setContractor] = useState<Contractor || null>()
-  const [value, setValue] = useState("");
-  const [value1, setValue1] = useState<string | null>("");
   const { id } = router.query;
 
   const initialValues = {
@@ -147,6 +144,7 @@ export default function HoAuditorForm({
               .catch((err) => {
                 console.log(err);
               });
+            console.log(values, "values");
           }}
         >
           {({ handleSubmit, errors, values }) => {

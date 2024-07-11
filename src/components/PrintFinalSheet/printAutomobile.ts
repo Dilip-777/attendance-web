@@ -2,8 +2,10 @@ import { plantname } from "@/constants";
 import { Button } from "@mui/material";
 import {
   Contractor,
+  Deductions,
   Department,
   Designations,
+  HOAuditor,
   Safety,
   Stores,
   Workorder,
@@ -13,10 +15,10 @@ import _ from "lodash";
 const ExcelJS = require("exceljs");
 
 const border = {
-  top: { style: "thick", color: { argb: "black" } },
-  left: { style: "thick", color: { argb: "black" } },
-  bottom: { style: "thick", color: { argb: "black" } },
-  right: { style: "thick", color: { argb: "black" } },
+  top: { style: "thin", color: { argb: "black" } },
+  left: { style: "thin", color: { argb: "black" } },
+  bottom: { style: "thin", color: { argb: "black" } },
+  right: { style: "thin", color: { argb: "black" } },
 };
 
 const getRoundOff = (num: number) => {
@@ -27,17 +29,20 @@ interface d extends Department {
   designations: Designations[];
 }
 
-export const handleAutomobileprint = ({
+export const handleAutomobileprint = async ({
   total,
   contractor,
   workorder,
   month,
   calRows,
   cost,
+  hoCommercial,
+  deduction,
+  hsdcost,
 }: {
   total: number;
   contractor: Contractor;
-  workorder: Workorder | undefined;
+  workorder: Workorder | null;
   month: string;
   calRows: {
     heading: string;
@@ -61,15 +66,32 @@ export const handleAutomobileprint = ({
     prevCost: number;
     monthCost: number;
   };
+  hoCommercial: HOAuditor | null;
+  deduction: Deductions | null;
+  hsdcost: number;
 }) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sheet 1");
 
+  const response = await fetch("/logo.png");
+
+  const imageBuffer = await response.arrayBuffer();
+
+  const imageId = workbook.addImage({
+    buffer: imageBuffer,
+    extension: "jpeg",
+  });
+
+  worksheet.addImage(imageId, {
+    tl: { col: 0, row: 0 },
+    ext: { width: 90, height: 90 },
+  });
+
   const border = {
-    top: { style: "thick", color: { argb: "black" } },
-    left: { style: "thick", color: { argb: "black" } },
-    bottom: { style: "thick", color: { argb: "black" } },
-    right: { style: "thick", color: { argb: "black" } },
+    top: { style: "thin", color: { argb: "black" } },
+    left: { style: "thin", color: { argb: "black" } },
+    bottom: { style: "thin", color: { argb: "black" } },
+    right: { style: "thin", color: { argb: "black" } },
   };
 
   const headings = [
@@ -147,7 +169,12 @@ export const handleAutomobileprint = ({
     height: 40,
   });
 
-  function createDetails(details: any[]) {
+  function createDetails(
+    details: any[],
+    mergeCells?: any[],
+    boldNumbers?: number[],
+    nonBoldNumbers?: number[]
+  ) {
     const textrow = worksheet.addRow(details);
     textrow.height = 45;
     textrow.eachCell((cell: any) => {
@@ -161,69 +188,99 @@ export const handleAutomobileprint = ({
     textrow.eachCell((cell: any) => {
       cell.border = border;
     });
-    [
-      { s: "A", e: "B" },
-      { s: "C", e: "C" },
-      { s: "D", e: "E" },
-      { s: "F", e: "F" },
-      { s: "G", e: "H" },
-      { s: "I", e: "J" },
-      { s: "K", e: "L" },
-      { s: "M", e: "N" },
-    ].forEach((cellnumber) => {
+    (
+      mergeCells || [
+        { s: "A", e: "A" },
+        { s: "B", e: "E" },
+        { s: "F", e: "F" },
+        { s: "G", e: "H" },
+        { s: "I", e: "I" },
+        { s: "J", e: "K" },
+        { s: "L", e: "L" },
+        { s: "M", e: "N" },
+      ]
+    ).forEach((cellnumber) => {
       worksheet.mergeCells(
         `${cellnumber.s}${textrow.number}:${cellnumber.e}${textrow.number}`
       );
     });
-    [1, 5, 9, 13].forEach((cellnumber) => {
+    (boldNumbers || [1, 6, 9, 12]).forEach((cellnumber) => {
       textrow.getCell(cellnumber).font = {
         bold: true,
         size: 11,
         wrapText: true,
       };
     });
-    [3, 7, 11, 15].forEach((cellnumber) => {
-      textrow.getCell(cellnumber).font = {
-        bold: false,
-        size: 11,
-        wrapText: true,
-      };
-    });
+    // (nonBoldNumbers || [3, 7, 11, 15]).forEach((cellnumber) => {
+    //   textrow.getCell(cellnumber).font = {
+    //     bold: false,
+    //     size: 11,
+    //     wrapText: true,
+    //   };
+    // });
   }
 
   createDetails([
     "Contractor Code",
-    "",
     `${contractor.contractorId}`,
     "",
-    "Contractor Name",
     "",
+    "",
+    "Contractor Name",
     `${contractor.contractorname}`,
     "",
     "Contact NO:",
-    "",
     `${contractor.mobilenumber}`,
-    "Type of Contractor",
     "",
+    "Type of Contractor",
     `${contractor.typeofcontractor}`,
+    "",
   ]);
 
   createDetails([
     "Contractor Address",
-    "",
     `${contractor.officeaddress || "-"}`,
     "",
-    "GSTIN",
     "",
+    "",
+    "GSTIN",
     `${contractor.gstin || "-"}`,
     "",
     "PAN",
-    "",
+
     `${contractor.pancardno || "-"}`,
-    "Area of Work",
     "",
+    "Area of Work",
     `${contractor.areaofwork || "-"}`,
+    "",
   ]);
+
+  createHeading({
+    header: [""],
+    height: 30,
+  });
+
+  createHeading({
+    header: ["Work Order Information"],
+    colSpan: 10,
+    bgcolor: "fafafa",
+    font: { size: 14, bold: true },
+    height: 40,
+  });
+
+  const textrow = worksheet.addRow([workorder?.remarks || "-"]);
+  textrow.height = 45;
+  textrow.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: "middle",
+    };
+  });
+  textrow.eachCell((cell: any) => {
+    cell.border = border;
+  });
+
+  worksheet.mergeCells(`A${textrow.number}:N${textrow.number}`);
 
   createHeading({
     header: [""],
@@ -238,56 +295,74 @@ export const handleAutomobileprint = ({
     height: 40,
   });
 
-  createDetails([
-    "Invoice No",
-    "",
-    `-`,
-    "",
-    "Invoice Date",
-    "",
-    `${new Date().toLocaleDateString()}`,
-    "",
-    "Work Order No",
-    "",
-    `${workorder?.id || "-"}`,
-    "Nature of Work",
-    "",
-    `${workorder?.nature || "-"}`,
-  ]);
+  createDetails(
+    [
+      "Invoice No",
+      hoCommercial?.invoiceNo || "-",
+      "Invoice Date",
+      "",
+      "",
+      `${hoCommercial?.date}`,
+      "Work Order No",
+      "",
+      `${workorder?.workorderno || "-"}`,
+      "",
+      "",
+      "Nature of Work",
+      `${contractor?.areaofwork || "-"}`,
+      "",
+    ],
+    [
+      { s: "C", e: "E" },
+      { s: "G", e: "H" },
+      { s: "I", e: "K" },
+      { s: "M", e: "N" },
+    ],
+    [1, 3, 7, 12]
+  );
 
-  createDetails([
-    "Invoice Month",
-    "",
-    `${month}`,
-    "",
-    "Date of Invoice Received",
-    "",
-    "-",
-    "",
-    "Effective Date of contractor",
-    "",
-    "-",
-    "Ending Date of contractor",
-    "",
-    `${contractor.expirationDate || "-"}`,
-  ]);
+  createDetails(
+    [
+      "Invoice Month",
+      `${hoCommercial?.monthOfInvoice || "-"}`,
+      "Effective Date of contractor",
+      "",
+      "",
+      workorder?.startDate || "-",
+      "Ending Date of contractor",
+      "",
+      `${workorder?.endDate || "-"}`,
+      "",
+      "",
+      "GST Compliance's Status - Month",
+      `${hoCommercial?.monthOfInvoice || "-"} `,
+      "",
+    ],
+    [
+      { s: "C", e: "E" },
+      { s: "G", e: "H" },
+      { s: "I", e: "K" },
+      { s: "M", e: "N" },
+    ],
+    [1, 3, 7, 12]
+  );
 
-  createDetails([
-    "GST Compliance's Status - Month",
-    "",
-    `${month}`,
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
+  // createDetails([
+  //   "GST Compliance's Status - Month",
+  //   "",
+  //   `${month}`,
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  // ]);
 
   createHeading({
     header: [""],
@@ -345,11 +420,26 @@ export const handleAutomobileprint = ({
   const finalinfo = [
     ["NET AMOUNT PAYABLE", `${getRoundOff(total)}`],
     ["GST Hold (if any)", 0],
-    ["SAFETY VIOLATION 'S PENALTY", getRoundOff(0)],
-    ["CONSUMABLES/ CHARGABLE ITEMS", getRoundOff(0)],
-    ["ADJUSTMENT OF ADVANCE AMOUNT", 0],
-    ["ANY OTHER DEDUCTIONS (IF ANY)", 0],
-    ["FINAL PAYABLE", getRoundOff(total - 0 - 0)],
+    // ["SAFETY VIOLATION 'S PENALTY", getRoundOff(safetyAmount || 0) * -1],
+    ["CONSUMABLES/ CHARGABLE ITEMS", getRoundOff(hsdcost || 0)],
+    ["ADJUSTMENT OF ADVANCE AMOUNT", getRoundOff(deduction?.advance || 0) * -1],
+    [
+      "ANY OTHER DEDUCTIONS (IF ANY)",
+      getRoundOff(deduction?.anyother || 0),
+      deduction?.remarks,
+    ],
+    ["ANY OTHER ADDITION (IF ANY)", deduction?.addition || 0],
+    [
+      "FINAL PAYABLE",
+      getRoundOff(
+        total +
+          hsdcost +
+          ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0) -
+          (deduction?.advance || 0) -
+          (deduction?.anyother || 0) +
+          (deduction?.addition || 0)
+      ),
+    ],
   ];
 
   finalinfo.forEach((f) => {
@@ -357,7 +447,7 @@ export const handleAutomobileprint = ({
       "",
       "",
       "",
-      "",
+      f[2] ?? "",
       "",
       "",
       "",
@@ -378,7 +468,10 @@ export const handleAutomobileprint = ({
       cell.border = border;
       cell.font = { size: 11, wrapText: true, bold: true };
     });
-    worksheet.mergeCells(`A${row.number}:G${row.number}`);
+    if (f[2]) {
+      worksheet.mergeCells(`A${row.number}:C${row.number}`);
+      worksheet.mergeCells(`D${row.number}:G${row.number}`);
+    } else worksheet.mergeCells(`A${row.number}:G${row.number}`);
     worksheet.mergeCells(`H${row.number}:K${row.number}`);
     worksheet.mergeCells(`L${row.number}:N${row.number}`);
     row.height = 30;
@@ -473,33 +566,57 @@ export const handleAutomobileprint = ({
     height: 35,
   });
 
-  createDetails([
-    "Beneficiary  Name:",
-    "",
-    contractor.beneficialname || "-",
-    "",
-    "Account Number:",
-    "",
-    contractor.bankaccountnumber || "-",
-    "",
-    "IFSC Code:",
-    contractor.ifscno || "-",
-    "",
-    "Date of Payment :",
-    "",
-    "-",
-  ]);
+  createDetails(
+    [
+      "Beneficiary  Name:",
+      "",
+      contractor.beneficialname || "-",
+      "",
+      "Account Number:",
+      "",
+      contractor.bankaccountnumber || "-",
+      "",
+      "IFSC Code:",
+      contractor.ifscno || "-",
+      "",
+      "Date of Payment :",
+      "",
+      "-",
+    ],
+    [
+      { s: "A", e: "B" },
+      { s: "C", e: "D" },
+      { s: "E", e: "F" },
+      { s: "G", e: "H" },
+      { s: "J", e: "K" },
+      { s: "L", e: "M" },
+    ]
+  );
 
-  createDetails([
-    "Payment Reference No:",
-    "",
-    "-",
-    "",
-    "Paid Amount:",
-    "",
-    "-",
-    "",
-  ]);
+  createDetails(
+    [
+      "Payment Reference No:",
+      "",
+      "-",
+      "",
+      "Paid Amount:",
+      "",
+      "-",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ],
+    [
+      { s: "A", e: "B" },
+      { s: "C", e: "D" },
+      { s: "E", e: "F" },
+      { s: "G", e: "H" },
+    ]
+  );
 
   createHeading({
     header: [""],
@@ -518,7 +635,7 @@ export const handleAutomobileprint = ({
     "Prepared & Checked By :",
     "",
     "",
-    "C-DARC V/s Biomax Checked By:",
+    "Biomax Checked By: ",
     "",
     "Statutory Compliance  (GST & TDS) Checked By: ",
     "",
@@ -529,6 +646,24 @@ export const handleAutomobileprint = ({
     "",
     "Top Management Approval",
     "",
+    "",
+  ];
+
+  const approvalnames1 = [
+    "Intiator",
+    "",
+    "",
+    "HR",
+    "",
+    "Accounts / Taxation",
+    "",
+    "",
+    "HOD",
+    "",
+
+    "",
+    "Director",
+    "Managing Director",
     "",
   ];
 
@@ -559,54 +694,61 @@ export const handleAutomobileprint = ({
     `L${approvalheaderrow.number}:N${approvalheaderrow.number}`
   );
 
-  const approvalnames = [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ];
-  [...Array(5)].forEach((_, i) => {
-    const row = worksheet.addRow(approvalnames);
-    row.eachCell((cell: any) => {
-      cell.alignment = {
-        wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
-      };
-      cell.border = border;
-      cell.font = { size: 10, wrapText: true, bold: true };
-    });
-    row.height = 30;
-    worksheet.mergeCells(`A${row.number}:C${row.number}`);
-    worksheet.mergeCells(`D${row.number}:E${row.number}`);
-    worksheet.mergeCells(`F${row.number}:H${row.number}`);
-    worksheet.mergeCells(`I${row.number}:K${row.number}`);
-    worksheet.mergeCells(`L${row.number}:N${row.number}`);
+  const approvalnamerow = worksheet.addRow(approvalnames1);
+  approvalnamerow.eachCell((cell: any) => {
+    cell.alignment = {
+      wrapText: true,
+      vertical: "down",
+      horizontal: "center",
+    };
+    cell.border = border;
+    cell.font = { size: 10, wrapText: true, bold: true };
   });
+  approvalnamerow.height = 200;
+  worksheet.mergeCells(`A${approvalnamerow.number}:C${approvalnamerow.number}`);
+  worksheet.mergeCells(`D${approvalnamerow.number}:E${approvalnamerow.number}`);
+  worksheet.mergeCells(`F${approvalnamerow.number}:H${approvalnamerow.number}`);
+  worksheet.mergeCells(`I${approvalnamerow.number}:K${approvalnamerow.number}`);
+  worksheet.mergeCells(`M${approvalnamerow.number}:N${approvalnamerow.number}`);
+
+  // const approvalnames = [
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  //   "",
+  // ];
+  // [...Array(5)].forEach((_, i) => {
+  //   const row = worksheet.addRow(approvalnames);
+  //   row.eachCell((cell: any) => {
+  //     cell.alignment = {
+  //       wrapText: true,
+  //       vertical: "middle",
+  //       horizontal: "center",
+  //     };
+  //     cell.border = border;
+  //     cell.font = { size: 10, wrapText: true, bold: true };
+  //   });
+  //   row.height = 30;
+  //   worksheet.mergeCells(`A${row.number}:C${row.number}`);
+  //   worksheet.mergeCells(`D${row.number}:E${row.number}`);
+  //   worksheet.mergeCells(`F${row.number}:H${row.number}`);
+  //   worksheet.mergeCells(`I${row.number}:K${row.number}`);
+  //   worksheet.mergeCells(`L${row.number}:N${row.number}`);
+  // });
 
   createHeading({
     header: [""],
     height: 30,
-  });
-
-  createHeading({
-    header: [
-      "Key Comments Sheet as enclosed (For any comments please use attached sheet only)",
-    ],
-    colSpan: 10,
-    bgcolor: "fafafa",
-    font: { size: 9, bold: false },
-    height: 27,
   });
 
   createHeading({
@@ -767,9 +909,9 @@ const table = ({
           horizontal: "center",
         };
         cell.border = {
-          top: { style: "thick", color: { argb: "black" } },
-          left: { style: "thick", color: { argb: "black" } },
-          right: { style: "thick", color: { argb: "black" } },
+          top: { style: "thin", color: { argb: "black" } },
+          left: { style: "thin", color: { argb: "black" } },
+          right: { style: "thin", color: { argb: "black" } },
         };
         cell.font = { size: 12, wrapText: true };
       });
@@ -780,8 +922,8 @@ const table = ({
           horizontal: "center",
         };
         cell.border = {
-          left: { style: "thick", color: { argb: "black" } },
-          right: { style: "thick", color: { argb: "black" } },
+          left: { style: "thin", color: { argb: "black" } },
+          right: { style: "thin", color: { argb: "black" } },
         };
         cell.font = { size: 12, wrapText: true };
       });
@@ -792,8 +934,8 @@ const table = ({
           horizontal: "center",
         };
         cell.border = {
-          left: { style: "thick", color: { argb: "black" } },
-          right: { style: "thick", color: { argb: "black" } },
+          left: { style: "thin", color: { argb: "black" } },
+          right: { style: "thin", color: { argb: "black" } },
         };
         cell.font = { size: 12, wrapText: true };
       });
@@ -804,9 +946,9 @@ const table = ({
           horizontal: "center",
         };
         cell.border = {
-          left: { style: "thick", color: { argb: "black" } },
-          right: { style: "thick", color: { argb: "black" } },
-          bottom: { style: "thick", color: { argb: "black" } },
+          left: { style: "thin", color: { argb: "black" } },
+          right: { style: "thin", color: { argb: "black" } },
+          bottom: { style: "thin", color: { argb: "black" } },
         };
         cell.font = { size: 12, wrapText: true };
       });
@@ -848,17 +990,20 @@ const table = ({
             vertical: "middle",
             horizontal: "center",
           };
+
           if (index === 0) {
             cell.border = {
-              top: { style: "thick", color: { argb: "black" } },
-              left: { style: "thick", color: { argb: "black" } },
-              right: { style: "thick", color: { argb: "black" } },
+              top: { style: "thin", color: { argb: "black" } },
+              left: { style: "thin", color: { argb: "black" } },
+              right: { style: "thin", color: { argb: "black" } },
+              bottom: {},
             };
           } else {
             cell.border = {
-              bottom: { style: "thick", color: { argb: "black" } },
-              left: { style: "thick", color: { argb: "black" } },
-              right: { style: "thick", color: { argb: "black" } },
+              top: {},
+              bottom: { style: "thin", color: { argb: "black" } },
+              left: { style: "thin", color: { argb: "black" } },
+              right: { style: "thin", color: { argb: "black" } },
             };
           }
           cell.font = { size: 12, wrapText: true };

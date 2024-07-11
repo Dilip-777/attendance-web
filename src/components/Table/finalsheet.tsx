@@ -240,7 +240,7 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Safety Violation's Penalty
                   </TableCell>
-                  <TableCell align="center">{safetydeduction}</TableCell>
+                  <TableCell align="center">-{safetydeduction}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -248,7 +248,7 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Consumables / Rechargeable Items
                   </TableCell>
-                  <TableCell align="center">{storededuction}</TableCell>
+                  <TableCell align="center">-{storededuction}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -257,7 +257,7 @@ export default function FinalSheetta({
                     Adjustment Of Advance Amount
                   </TableCell>
                   <TableCell align="center">
-                    {deduction?.advance || 0}
+                    -{deduction?.advance || 0}
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -266,7 +266,15 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Any Other Deductions
                   </TableCell>
-                  <TableCell align="center">{deduction?.anyother}</TableCell>
+                  <TableCell align="center">-{deduction?.anyother}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell />
+                  <TableCell colSpan={6}></TableCell>
+                  <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                    Any Other Addition
+                  </TableCell>
+                  <TableCell align="center">{deduction?.addition}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -283,7 +291,8 @@ export default function FinalSheetta({
                             ((deduction?.gstrelease || 0) -
                               (deduction?.gsthold || 0) || 0) -
                             (deduction?.advance || 0) -
-                            (deduction?.anyother || 0)
+                            (deduction?.anyother || 0) +
+                            (deduction?.addition || 0)
                         : 0
                     ).toLocaleString("en-IN")}
                   </TableCell>
@@ -418,7 +427,7 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Safety Violation's Penalty
                   </TableCell>
-                  <TableCell align="center">{safetydeduction}</TableCell>
+                  <TableCell align="center">-{safetydeduction}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -426,7 +435,7 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Consumables / Rechargeable Items
                   </TableCell>
-                  <TableCell align="center">{storededuction}</TableCell>
+                  <TableCell align="center">-{storededuction}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -435,7 +444,7 @@ export default function FinalSheetta({
                     Adjustment Of Advance Amount
                   </TableCell>
                   <TableCell align="center">
-                    {deduction?.advance || 0}
+                    -{deduction?.advance || 0}
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -444,7 +453,15 @@ export default function FinalSheetta({
                   <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
                     Any Other Deductions
                   </TableCell>
-                  <TableCell align="center">{deduction?.anyother}</TableCell>
+                  <TableCell align="center">-{deduction?.anyother}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell />
+                  <TableCell colSpan={6}></TableCell>
+                  <TableCell colSpan={5} sx={{ fontWeight: "600" }}>
+                    Any Other Addition
+                  </TableCell>
+                  <TableCell align="center">{deduction?.addition}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell />
@@ -461,7 +478,8 @@ export default function FinalSheetta({
                             ((deduction?.gstrelease || 0) -
                               (deduction?.gsthold || 0) || 0) -
                             (deduction?.advance || 0) -
-                            (deduction?.anyother || 0)
+                            (deduction?.anyother || 0) +
+                            (deduction?.addition || 0)
                         : 0
                     ).toLocaleString("en-IN")}
                   </TableCell>
