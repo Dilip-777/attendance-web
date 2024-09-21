@@ -21,6 +21,9 @@ import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { useRouter } from "next/router";
 import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
+import { start } from "nprogress";
+import dayjs from "dayjs";
+import FormDate from "@/components/FormikComponents/FormDate";
 
 const boqItemSchema = Yup.object().shape({
   id: Yup.string().optional(),
@@ -38,6 +41,8 @@ const validationSchema = Yup.object().shape({
   description: Yup.string().required("Required"),
   projectId: Yup.string().required("Required"),
   BOQItems: Yup.array().of(boqItemSchema).required("Required"),
+  startDate: Yup.string().required("Required"),
+  endDate: Yup.string().required("Required"),
 });
 
 interface BOQWithItems extends BOQ {
@@ -57,6 +62,8 @@ const Addworkitem = ({
   const initialValues = {
     description: work?.description || "",
     projectId: work?.projectId || "",
+    startDate: work?.startDate || dayjs().format("DD/MM/YYYY"),
+    endDate: work?.endDate || dayjs().format("DD/MM/YYYY"),
     BOQItems: work
       ? work?.BOQItems.map((w) => {
           return {
@@ -167,6 +174,24 @@ const Addworkitem = ({
                     sx={{ width: "100%", maxWidth: "100%" }}
                   />
                 </Stack>
+                <Grid container columnGap={8}>
+                  <Grid item xs={6} md={3}>
+                    <FormDate
+                      name="startDate"
+                      label="Select Start Date"
+                      placeHolder="Select Start Date"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} md={4}>
+                    <FormDate
+                      name="endDate"
+                      label="Select End Date"
+                      placeHolder="Select End Date"
+                      sx={{ width: "100%", maxWidth: "100%" }}
+                    />
+                  </Grid>
+                </Grid>
                 <Divider sx={{ my: 3 }} />
                 <FieldArray
                   name="BOQItems"
@@ -287,6 +312,7 @@ const Addworkitem = ({
                                 sx={{ width: "100%", maxWidth: "100%" }}
                               />
                             </Grid>
+
                             <Grid item xs={12}>
                               <Divider sx={{ my: 3 }} />
                             </Grid>

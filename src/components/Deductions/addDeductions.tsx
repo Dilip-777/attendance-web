@@ -129,7 +129,7 @@ export default function AddDeductions({
                 >
                   <NavigateBefore fontSize="large" />
                 </IconButton>
-                Deductions
+                GST Hold
               </Typography>
               <Divider />
               <FormControl fullWidth sx={{ mt: 2 }} color="secondary">
@@ -158,7 +158,7 @@ export default function AddDeductions({
                   />
 
                   <FormInput
-                    label="GST Release"
+                    label="Misc. Payment"
                     fullWidth
                     value={gstrelease}
                     onChange={(e) => setGstrelease(Number(e.target.value))}
@@ -170,7 +170,7 @@ export default function AddDeductions({
                     onChange={(e) => setAdvance(Number(e.target.value))}
                   />
                   <FormInput
-                    label="Any Other"
+                    label="Any Other Deduction"
                     fullWidth
                     value={anyother}
                     onChange={(e) => setAnyother(Number(e.target.value))}

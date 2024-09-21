@@ -5,6 +5,9 @@ import DesignServicesIcon from "@mui/icons-material/DesignServices";
 import EngineeringIcon from "@mui/icons-material/Engineering";
 import ArticleIcon from "@mui/icons-material/Article";
 import Assignment from "@mui/icons-material/Assignment";
+import EqualizerIcon from "@mui/icons-material/Equalizer";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import Description from "@mui/icons-material/Description";
 
 // constant
 const icons = {
@@ -13,6 +16,10 @@ const icons = {
   DesignServicesIcon,
   EngineeringIcon,
   Assignment,
+  EqualizerIcon,
+  FactCheckIcon,
+  Description,
+
   // AccountTreeIcon,
   // DesignServicesIcon,
 };
@@ -70,6 +77,7 @@ const civil = {
         },
       ],
     },
+
     {
       id: "/civil/boq",
       title: "BOQ Sheet",
@@ -92,10 +100,40 @@ const civil = {
           target: true,
         },
         {
+          id: "/civil/boq/extra",
+          title: "Add Extra BOQ",
+          type: "item",
+          url: "/civil/boq/extra",
+          target: true,
+        },
+        {
           id: "/civil/boq/boqformat",
           title: "BOQ Format",
           type: "item",
           url: "/civil/boq/boqformat",
+          target: true,
+        },
+      ],
+    },
+    {
+      id: "qcs",
+      title: "QCS",
+      type: "collapse",
+      icon: icons.FactCheckIcon,
+
+      children: [
+        {
+          id: "/qcs",
+          title: "QCS",
+          type: "item",
+          url: "/qcs",
+          target: true,
+        },
+        {
+          id: "/qcs/[id]",
+          title: "Add QCS",
+          type: "item",
+          url: "/qcs/add",
           target: true,
         },
       ],
@@ -153,6 +191,22 @@ const civil = {
           target: true,
         },
       ],
+    },
+    {
+      id: "/civil/workanalysis",
+      title: "Work Analysis",
+      type: "item",
+      url: "/civil/workanalysis",
+      icon: icons.EqualizerIcon,
+      breadcrumbs: false,
+    },
+    {
+      id: "/civil/finalsheet",
+      title: "Civil Final Sheet",
+      type: "item",
+      url: "/civil/finalsheet",
+      icon: icons.Description,
+      breadcrumbs: false,
     },
   ],
 };

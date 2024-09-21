@@ -1,11 +1,11 @@
-import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
-import EnhancedTableToolbar from "@/components/Table/EnhancedTableToolbar";
-import CustomTable from "@/components/Table/Table";
-import prisma from "@/lib/prisma";
-import MonthSelect from "@/ui-component/MonthSelect";
-import Edit from "@mui/icons-material/Edit";
-import Launch from "@mui/icons-material/Launch";
-import Visibility from "@mui/icons-material/Visibility";
+import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
+import EnhancedTableToolbar from '@/components/Table/EnhancedTableToolbar';
+import CustomTable from '@/components/Table/Table';
+import prisma from '@/lib/prisma';
+import MonthSelect from '@/ui-component/MonthSelect';
+import Edit from '@mui/icons-material/Edit';
+import Launch from '@mui/icons-material/Launch';
+import Visibility from '@mui/icons-material/Visibility';
 import {
   Box,
   Checkbox,
@@ -17,15 +17,15 @@ import {
   TableContainer,
   TablePagination,
   TableRow,
-} from "@mui/material";
-import { bills } from "@prisma/client";
-import axios from "axios";
-import dayjs, { Dayjs } from "dayjs";
-import _ from "lodash";
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import router from "next/router";
-import { useEffect, useState } from "react";
+} from '@mui/material';
+import { bills, Contractor, HOAuditor } from '@prisma/client';
+import axios from 'axios';
+import dayjs, { Dayjs } from 'dayjs';
+import _ from 'lodash';
+import { GetServerSideProps } from 'next';
+import { getSession } from 'next-auth/react';
+import router from 'next/router';
+import { useEffect, useState } from 'react';
 
 interface HeadCells {
   id: string;
@@ -36,14 +36,14 @@ interface HeadCells {
 
 const headCells: HeadCells[] = [
   {
-    id: "contractorname",
+    id: 'contractorname',
     numeric: false,
-    label: "Contractor Name",
+    label: 'Contractor Name',
     included: true,
   },
-  { id: "month", numeric: false, label: "Month", included: true },
-  { id: "amount", numeric: true, label: "Amount", included: true },
-  { id: "document", numeric: false, label: "Contractor Bill", included: true },
+  { id: 'month', numeric: false, label: 'Month', included: true },
+  { id: 'amount', numeric: true, label: 'Amount', included: true },
+  { id: 'document', numeric: false, label: 'Contractor Bill', included: true },
 ];
 
 export default function Bill() {
@@ -54,6 +54,11 @@ export default function Bill() {
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [hoCommercial, setHoCommercial] = useState<
+    (HOAuditor & {
+      contractor: Contractor;
+    })[]
+  >([]);
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -63,6 +68,17 @@ export default function Bill() {
     }
     setSelected([]);
   };
+
+  const fetchHoCommercial = async () => {
+    const res = await axios.get(
+      '/api/hoauditor?month=' + month.format('MM/YYYY')
+    );
+    setHoCommercial(res.data);
+  };
+
+  useEffect(() => {
+    fetchHoCommercial();
+  }, [month]);
 
   const handleClick = (
     event: React.MouseEvent<unknown>,
@@ -107,7 +123,7 @@ export default function Bill() {
   const fetchBills = async () => {
     setLoading(true);
     const res = await axios.get(
-      `/api/uploadbill?month=${month.format("MM/YYYY")}`
+      `/api/uploadbill?month=${month.format('MM/YYYY')}`
     );
     setBills(res.data);
     setLoading(false);
@@ -118,21 +134,21 @@ export default function Bill() {
 
   return (
     <Box>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <Box sx={{ width: "5rem", p: 3 }}>
+      <Paper sx={{ width: '100%', mb: 2 }}>
+        <Box sx={{ width: '5rem', p: 3 }}>
           <MonthSelect value={month} onChange={(e) => setMonth(e as Dayjs)} />
         </Box>
         <TableContainer
           sx={{
-            maxHeight: "calc(100vh - 16rem)",
-            overflowY: "auto",
-            scrollBehavior: "smooth",
-            "&::-webkit-scrollbar": {
+            maxHeight: 'calc(100vh - 16rem)',
+            overflowY: 'auto',
+            scrollBehavior: 'smooth',
+            '&::-webkit-scrollbar': {
               height: 10,
               width: 10,
             },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "#bdbdbd",
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#bdbdbd',
               borderRadius: 2,
             },
           }}
@@ -140,17 +156,17 @@ export default function Bill() {
           <Table
             stickyHeader
             sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size="medium"
+            aria-labelledby='tableTitle'
+            size='medium'
           >
             <EnhancedTableHead
               numSelected={selected.length}
               onSelectAllClick={handleSelectAllClick}
-              rowCount={bills.length}
+              rowCount={hoCommercial.length}
               headCells={headCells}
             />
             <TableBody>
-              {bills
+              {hoCommercial
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(
@@ -161,34 +177,37 @@ export default function Bill() {
                   return (
                     <TableRow
                       hover
-                      role="checkbox"
+                      role='checkbox'
                       aria-checked={isItemSelected}
                       tabIndex={-1}
                       key={row.id}
                       selected={isItemSelected}
                       //   sx={{ cursor: "pointer" }}
                     >
-                      <TableCell padding="checkbox">
+                      <TableCell padding='checkbox'>
                         <Checkbox
-                          color="secondary"
+                          color='secondary'
                           checked={isItemSelected}
                           onClick={(event) =>
                             handleClick(event, row.id as string)
                           }
                           inputProps={{
-                            "aria-labelledby": labelId,
+                            'aria-labelledby': labelId,
                           }}
                         />
                       </TableCell>
-                      <TableCell align="left">{row.contractorname}</TableCell>
-                      <TableCell align="left">{row.month}</TableCell>
-                      <TableCell align="left">{row.amount}</TableCell>
-                      <TableCell
-                        onClick={() => router.push(row.document)}
-                        align="left"
-                        sx={{ cursor: "pointer" }}
-                      >
-                        View Document
+                      <TableCell align='left'>{row.contractorname}</TableCell>
+                      <TableCell align='left'>{row.monthOfInvoice}</TableCell>
+                      <TableCell align='left'>{row.netbillAmount}</TableCell>
+                      <TableCell align='left' sx={{ cursor: 'pointer' }}>
+                        {/* <a
+                          style={{ textDecoration: 'none', color: 'inherit' }}
+                          href={`/api/upload?fileName=${row.uploadDoc1}`}
+                          target='_blank'
+                        >
+                          View Document
+                        </a> */}
+                        -
                       </TableCell>
                     </TableRow>
                   );
@@ -203,14 +222,21 @@ export default function Bill() {
                   <TableCell colSpan={6} />
                 </TableRow>
               )}
+              {hoCommercial.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} align='left'>
+                    No data found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
 
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={bills.length}
+          component='div'
+          count={hoCommercial.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -227,7 +253,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session) {
     return {
       redirect: {
-        destination: "/login",
+        destination: '/login',
         permanent: false,
       },
     };
@@ -235,13 +261,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (
     !(
-      session.user?.role === "HoCommercialAuditor" ||
-      session.user?.role === "Corporate"
+      session.user?.role === 'HoCommercialAuditor' ||
+      session.user?.role === 'Corporate'
     )
   ) {
     return {
       redirect: {
-        destination: "/",
+        destination: '/',
         permanent: false,
       },
     };

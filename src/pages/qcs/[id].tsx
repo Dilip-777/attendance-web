@@ -13,11 +13,22 @@ import FormSelect from "@/components/FormikComponents/FormSelect";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
-import { BOQ, BOQItem, Contractor, Project, Qcs } from "@prisma/client";
+import {
+  BOQ,
+  BOQItem,
+  Contractor,
+  Project,
+  Qcs,
+  QcsBoq,
+  QcsBoqItem,
+} from "@prisma/client";
 import axios from "axios";
 import { CircularProgress, Stack } from "@mui/material";
 import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 import AddMeasurementItem from "@/components/Civil/MeasurementItem";
+import FormDate from "@/components/FormikComponents/FormDate";
+import { start } from "nprogress";
+import dayjs from "dayjs";
 
 const BOQItemSchema = Yup.object().shape({
   unit: Yup.string(),
@@ -50,7 +61,13 @@ export default function AddProject({
   projects,
 }: {
   contractors: Contractor[];
-  qcs: Qcs | null;
+  qcs:
+    | (Qcs & {
+        BOQ: (QcsBoq & {
+          BOQItems: QcsBoqItem[];
+        })[];
+      })
+    | null;
   projects: (Project & {
     BOQ: (BOQ & {
       BOQItems: BOQItem[];
@@ -64,7 +81,8 @@ export default function AddProject({
     contractorid: qcs?.contractorid || "",
     projectId: qcs?.projectId || "",
     description: qcs?.description || "",
-    boqs: [],
+
+    boqs: qcs?.BOQ || [],
   };
 
   return (
@@ -117,6 +135,7 @@ export default function AddProject({
             if (qcs) {
               await axios.put("/api/civil/qcs", {
                 ...values,
+                boqs: b,
                 id: qcs.id,
               });
               router.push("/qcs");
@@ -133,7 +152,7 @@ export default function AddProject({
         >
           {({ handleSubmit, values, isSubmitting, setFieldValue }) => {
             useEffect(() => {
-              if (prevProjectId.current !== values.projectId) {
+              if (prevProjectId.current !== values.projectId && !qcs) {
                 prevProjectId.current = values.projectId;
                 const contractor = contractors.find(
                   (c) => c.contractorId === values.contractorid
@@ -206,7 +225,6 @@ export default function AddProject({
                   name="boqs"
                   render={({ form, push, remove }) => {
                     const { boqs } = form.values;
-                    console.log(boqs);
 
                     return (
                       <Stack>
@@ -284,7 +302,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  if (session.user?.role !== "Corporate") {
+  if (session.user?.role !== "Civil") {
     return {
       redirect: {
         destination: "/",
@@ -296,6 +314,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const qcs = await prisma.qcs.findUnique({
     where: {
       id: id as string,
+    },
+    include: {
+      BOQ: {
+        include: {
+          BOQItems: true,
+        },
+      },
     },
   });
 

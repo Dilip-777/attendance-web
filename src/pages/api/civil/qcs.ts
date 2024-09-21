@@ -8,43 +8,53 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     const { projectId, contractorid, description, boqs } = req.body;
-    const qcs = await prisma.qcs.create({
-      data: {
+    const isExist = await prisma.qcs.findFirst({
+      where: {
         projectId,
         contractorid,
-        description,
       },
     });
+    let qcs: any;
+    if (isExist) {
+      qcs = await prisma.qcs.update({
+        where: {
+          id: isExist.id,
+        },
+        data: {
+          description,
+        },
+      });
+    } else
+      qcs = await prisma.qcs.create({
+        data: {
+          projectId,
+          contractorid,
+          description,
+        },
+      });
 
-    // await Promise.all(
-    //   boqs.map(async (boq: any) => {
-    //     await Promise.all(
-    //       boq.BOQItems.map(async (boqItem: any) => {
-    //         // await prisma.bOQItem.update({
-    //         //   where: {
-    //         //     id: boqItem.id,
-    //         //   },
-    //         //   data: {
-    //         //     ...boqItem,
-    //         //   },
-    //         // });
-    //         await prisma.qcsBoqItem.create({
-    //           data: {
-    //             qcsId: qcs.id,
-    //             boqItemId: boqItem.id,
-    //           }
-    //         })
-    //       })
-    //     );
-    //   })
-    // );
+    if (isExist) {
+      await prisma.qcsBoqItem.deleteMany({
+        where: {
+          BOQ: {
+            qcsId: qcs.id,
+          },
+        },
+      });
+      await prisma.qcsBoq.deleteMany({
+        where: {
+          qcsId: qcs.id,
+        },
+      });
+    }
 
     await Promise.all(
       boqs.map(async (boq: any) => {
         await prisma.qcsBoq.create({
           data: {
             qcsId: qcs.id,
-
+            startDate: boq.startDate,
+            endDate: boq.endDate,
             boqId: boq.id,
             description: boq.description,
             totalQuantity: boq.totalQuantity,
@@ -76,10 +86,10 @@ export default async function handler(
     });
 
     await Promise.all(
-      boqs.map(async (boq: any) => {
+      await boqs.map(async (boq: any) => {
         await Promise.all(
-          boq.BOQItems.map(async (boqItem: any) => {
-            await prisma.bOQItem.update({
+          await boq.BOQItems.map(async (boqItem: any) => {
+            await prisma.qcsBoqItem.update({
               where: {
                 id: boqItem.id,
               },

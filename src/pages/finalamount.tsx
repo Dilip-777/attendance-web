@@ -14,6 +14,8 @@ import {
   Contractor,
   Department,
   Designations,
+  FixedDesignations,
+  FixedValues,
   SeperateSalary,
   Shifts,
   TimeKeeper,
@@ -95,6 +97,16 @@ export default function PlantCommercial({
   const [timekeepers, setTimekeepers] = React.useState<TimeKeeper[]>([]);
   const [payouts, setPayouts] = React.useState<payoutTracker[]>([]);
   const [rows, setRows] = React.useState([] as Data[]);
+  const [fixedValues, setFixedValues] = React.useState<
+    (FixedValues & {
+      designations: FixedDesignations[];
+    })[]
+  >([]);
+
+  const fetchFixedValues = async () => {
+    const res = await axios.get(`/api/fixedvalues?month=${value}`);
+    setFixedValues(res.data);
+  };
 
   const fetchTimekeepers = async () => {
     setLoading(true);
@@ -128,10 +140,11 @@ export default function PlantCommercial({
         contractors.find(
           (c) => c.contractorname === contractorname
         ) as Contractor,
-        designations.filter((da) => da.departmentname === d.department)
+        designations.filter((da) => da.departmentname === d.department),
+        fixedValues.find((f) => f.contractorId === contractorId)?.designations
       );
-      total += totalnetPayable;
-      totals.push(totalnetPayable);
+      total += totalnetPayable || 0;
+      totals.push(totalnetPayable || 0);
     });
 
     totals.push(total);
@@ -141,6 +154,7 @@ export default function PlantCommercial({
   React.useEffect(() => {
     fetchTimekeepers();
     fetchPayouts();
+    fetchFixedValues();
   }, [value]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -160,9 +174,9 @@ export default function PlantCommercial({
     contractorId: number
   ) => {
     await axios.post(`/api/payouttracker`, {
-      amount,
+      amount: Math.floor(amount),
       contractorName,
-      contractorId,
+      contractorId: contractorId?.toString(),
       month: value,
       gst: 9,
       tds: 9,

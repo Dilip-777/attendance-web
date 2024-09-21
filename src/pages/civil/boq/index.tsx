@@ -52,7 +52,8 @@ const headCells = [
   createHeadCells("description", "Work Description", false, false),
   createHeadCells("contractorid", "Contractor", false, false),
   createHeadCells("totalQuantity", "Total Quantity", true, false),
-  createHeadCells("totalAmount", "Total Amount", true, false),
+  createHeadCells("startDate", "Start Date", true, false),
+  createHeadCells("endDate", "End Date", true, false),
   createHeadCells("action", "Action", false, true),
 ];
 
@@ -87,7 +88,8 @@ function Row(props: { row: BOQWithItems; handleOpen: (id: string) => void }) {
         </TableCell>
         <TableCell align="center">contractor</TableCell>
         <TableCell align="center">{row.totalQuantity}</TableCell>
-        <TableCell align="center">{row.totalAmount}</TableCell>
+        <TableCell align="center">{row.startDate || "-"}</TableCell>
+        <TableCell align="center">{row.endDate || "-"}</TableCell>
         <TableCell size="small" align="right">
           <Stack
             direction="row"

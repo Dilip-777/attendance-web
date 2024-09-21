@@ -1,5 +1,5 @@
-import prisma from "@/lib/prisma";
-import { NextApiRequest, NextApiResponse } from "next";
+import prisma from '@/lib/prisma';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function vehiclelogbook(
   req: NextApiRequest,
@@ -16,7 +16,7 @@ export default async function vehiclelogbook(
     },
   });
 
-  if (req.method === "GET") {
+  if (req.method === 'GET') {
     const automobiles = await prisma.automobile.findMany({
       where: {
         contractorId: contractor as string,
@@ -36,7 +36,7 @@ export default async function vehiclelogbook(
       },
     });
     res.status(200).json([...saveAutomobiles, ...automobiles]);
-  } else if (req.method === "POST") {
+  } else if (req.method === 'POST') {
     const { changes, month, contractorId } = req.body;
     const workorder = await prisma.workorder.findFirst({
       where: {
@@ -54,29 +54,31 @@ export default async function vehiclelogbook(
           vehicleId: change.vehicleId,
         },
       });
+
+      const { freeze, ...rest } = change;
       if (isExist) {
         await prisma.saveAutomobile.update({
           where: {
             id: isExist.id,
           },
           data: {
-            ...change,
-            status: "Pending",
+            ...rest,
+            status: 'Pending',
             workoderId: workorder?.id,
           },
         });
       } else {
         await prisma.saveAutomobile.create({
           data: {
-            ...change,
-            status: "Pending",
+            ...rest,
+            status: 'Pending',
             workorderId: workorder?.id,
           },
         });
       }
     });
-    res.status(200).json({ success: true, message: "Successfully Updated" });
-  } else if (req.method === "PUT") {
+    res.status(200).json({ success: true, message: 'Successfully Updated' });
+  } else if (req.method === 'PUT') {
     const data = req.body;
 
     const workorder = await prisma.workorder.findFirst({
@@ -108,14 +110,14 @@ export default async function vehiclelogbook(
           id: data.id,
         },
       });
-      if (data.status === "Rejected") {
+      if (data.status === 'Rejected') {
         if (automobile) {
           await prisma.automobile.update({
             where: {
               id: automobile?.id,
             },
             data: {
-              status: "Rejected",
+              status: 'Rejected',
             },
           });
         }

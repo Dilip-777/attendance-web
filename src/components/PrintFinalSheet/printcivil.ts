@@ -1,5 +1,5 @@
-import { plantname } from "@/constants";
-import { Button } from "@mui/material";
+import { plantname } from '@/constants';
+import { Button } from '@mui/material';
 import {
   Contractor,
   Deductions,
@@ -10,15 +10,16 @@ import {
   Stores,
   Workorder,
   payoutTracker,
-} from "@prisma/client";
-import _ from "lodash";
-const ExcelJS = require("exceljs");
+} from '@prisma/client';
+import dayjs from 'dayjs';
+import _ from 'lodash';
+const ExcelJS = require('exceljs');
 
 const border = {
-  top: { style: "thin", color: { argb: "black" } },
-  left: { style: "thin", color: { argb: "black" } },
-  bottom: { style: "thin", color: { argb: "black" } },
-  right: { style: "thin", color: { argb: "black" } },
+  top: { style: 'thin', color: { argb: 'black' } },
+  left: { style: 'thin', color: { argb: 'black' } },
+  bottom: { style: 'thin', color: { argb: 'black' } },
+  right: { style: 'thin', color: { argb: 'black' } },
 };
 
 const getRoundOff = (num: number) => {
@@ -61,15 +62,15 @@ export const handleCivilPrint = async ({
   hoCommercial: HOAuditor | null;
 }) => {
   const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Sheet 1");
+  const worksheet = workbook.addWorksheet('Sheet 1');
 
-  const response = await fetch("/logo.png");
+  const response = await fetch('/logo.png');
 
   const imageBuffer = await response.arrayBuffer();
 
   const imageId = workbook.addImage({
     buffer: imageBuffer,
-    extension: "jpeg",
+    extension: 'jpeg',
   });
 
   worksheet.addImage(imageId, {
@@ -78,39 +79,39 @@ export const handleCivilPrint = async ({
   });
 
   const border = {
-    top: { style: "thin", color: { argb: "black" } },
-    left: { style: "thin", color: { argb: "black" } },
-    bottom: { style: "thin", color: { argb: "black" } },
-    right: { style: "thin", color: { argb: "black" } },
+    top: { style: 'thin', color: { argb: 'black' } },
+    left: { style: 'thin', color: { argb: 'black' } },
+    bottom: { style: 'thin', color: { argb: 'black' } },
+    right: { style: 'thin', color: { argb: 'black' } },
   };
 
   const headings = [
     {
       header: [plantname],
       colSpan: 10,
-      bgcolor: "a3f2fd",
+      bgcolor: 'a3f2fd',
       font: { size: 16, bold: true },
     },
     {
       header: ["CONTRACTOR'S PAYMENT APPROVAL REQUISITION FORM"],
       colSpan: 10,
-      bgcolor: "a3f2fd",
+      bgcolor: 'a3f2fd',
       font: { size: 14, bold: true },
     },
     {
       header: [
-        "STRATEGIC BUSINESS UNIT",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
+        'STRATEGIC BUSINESS UNIT',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
         contractor.strategicbusinessunit,
       ],
       colSpan: 5,
-      bgcolor: "fafafa",
+      bgcolor: 'fafafa',
       font: { size: 13, bold: true },
     },
   ];
@@ -131,11 +132,11 @@ export const handleCivilPrint = async ({
       );
     }
     headingTextRow.eachCell((cell: any) => {
-      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
       cell.font = heading.font;
       cell.fill = {
-        type: "pattern",
-        pattern: "solid",
+        type: 'pattern',
+        pattern: 'solid',
         fgColor: { argb: heading.bgcolor }, // Replace 'FFFF0000' with the desired color code
       };
       cell.border = border;
@@ -147,14 +148,14 @@ export const handleCivilPrint = async ({
   });
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: ["Contractor Information"],
+    header: ['Contractor Information'],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 40,
   });
@@ -165,8 +166,8 @@ export const handleCivilPrint = async ({
     textrow.eachCell((cell: any) => {
       cell.alignment = {
         wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
+        vertical: 'middle',
+        horizontal: 'center',
       };
     });
     // textrow.border = border;
@@ -174,14 +175,14 @@ export const handleCivilPrint = async ({
       cell.border = border;
     });
     [
-      { s: "A", e: "B" },
-      { s: "C", e: "C" },
-      { s: "D", e: "E" },
-      { s: "F", e: "F" },
-      { s: "G", e: "H" },
-      { s: "I", e: "J" },
-      { s: "K", e: "L" },
-      { s: "M", e: "N" },
+      { s: 'A', e: 'B' },
+      { s: 'C', e: 'C' },
+      { s: 'D', e: 'E' },
+      { s: 'F', e: 'F' },
+      { s: 'G', e: 'H' },
+      { s: 'I', e: 'J' },
+      { s: 'K', e: 'L' },
+      { s: 'M', e: 'N' },
     ].forEach((cellnumber) => {
       worksheet.mergeCells(
         `${cellnumber.s}${textrow.number}:${cellnumber.e}${textrow.number}`
@@ -204,58 +205,58 @@ export const handleCivilPrint = async ({
   }
 
   createDetails([
-    "Contractor Code",
-    "",
+    'Contractor Code',
+    '',
     `${contractor.contractorId}`,
-    "",
-    "Contractor Name",
-    "",
+    '',
+    'Contractor Name',
+    '',
     `${contractor.contractorname}`,
-    "",
-    "Contact NO:",
-    "",
+    '',
+    'Contact NO:',
+    '',
     `${contractor.mobilenumber}`,
-    "Type of Contractor",
-    "",
+    'Type of Contractor',
+    '',
     `${contractor.typeofcontractor}`,
   ]);
 
   createDetails([
-    "Contractor Address",
-    "",
-    `${contractor.officeaddress || "-"}`,
-    "",
-    "GSTIN",
-    "",
-    `${contractor.gstin || "-"}`,
-    "",
-    "PAN",
-    "",
-    `${contractor.pancardno || "-"}`,
-    "Area of Work",
-    "",
-    `${contractor.areaofwork || "-"}`,
+    'Contractor Address',
+    '',
+    `${contractor.officeaddress || '-'}`,
+    '',
+    'GSTIN',
+    '',
+    `${contractor.gstin || '-'}`,
+    '',
+    'PAN',
+    '',
+    `${contractor.pancardno || '-'}`,
+    'Area of Work',
+    '',
+    `${contractor.areaofwork || '-'}`,
   ]);
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: ["Work Order Information"],
+    header: ['Work Order Information'],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 40,
   });
 
-  const textrow = worksheet.addRow([workorder?.remarks || "-"]);
+  const textrow = worksheet.addRow([workorder?.remarks || '-']);
   textrow.height = 45;
   textrow.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: "middle",
+      vertical: 'middle',
     };
   });
   textrow.eachCell((cell: any) => {
@@ -265,84 +266,84 @@ export const handleCivilPrint = async ({
   worksheet.mergeCells(`A${textrow.number}:N${textrow.number}`);
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: ["Invoice Information"],
+    header: ['Invoice Information'],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 40,
   });
 
   createDetails([
-    "Invoice No",
-    "",
-    `${hoCommercial?.invoiceNo || "-"}`,
-    "",
-    "Invoice Date",
-    "",
-    `${hoCommercial?.date || "-"}`,
-    "",
-    "Work Order No",
-    "",
-    `${workorder?.workorderno || "-"}`,
-    "",
-    "Nature of Work",
-    "",
-    `${workorder?.nature || "-"}`,
+    'Invoice No',
+    '',
+    `${hoCommercial?.invoiceNo || '-'}`,
+    '',
+    'Invoice Date',
+    '',
+    `${hoCommercial?.date || '-'}`,
+    '',
+    'Work Order No',
+    '',
+    `${workorder?.workorderno || '-'}`,
+    '',
+    'Nature of Work',
+    '',
+    `${workorder?.nature || '-'}`,
   ]);
   createDetails([
-    "Invoice Month",
-    "",
+    'Invoice Month',
+    '',
     `${hoCommercial?.monthOfInvoice}`,
-    "",
-    "Date of Invoice Received",
-    "",
+    '',
+    'Date of Invoice Received',
+    '',
     `${hoCommercial?.date}`,
-    "",
-    "Effective Date of contractor",
-    "",
+    '',
+    'Effective Date of contractor',
+    '',
     `${hoCommercial?.fromDate}`,
-    "",
-    "Ending Date of contractor",
-    "",
+    '',
+    'Ending Date of contractor',
+    '',
     `${hoCommercial?.toDate}`,
   ]);
 
   createDetails([
     "GST Compliance's Status - Month",
-    "",
+    '',
     `${month}`,
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
   ]);
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: ["Total"],
+    header: ['Total'],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 35,
   });
@@ -357,14 +358,14 @@ export const handleCivilPrint = async ({
 
   calRows.forEach((h, index) => {
     createHeading({
-      header: [""],
+      header: [''],
       height: 30,
     });
 
     createHeading({
       header: [h.description],
       colSpan: 10,
-      bgcolor: "fafafa",
+      bgcolor: 'fafafa',
       font: { size: 14, bold: true },
       height: 35,
     });
@@ -393,37 +394,37 @@ export const handleCivilPrint = async ({
   //   });
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: ["FINAL PAYOUT INFORMATION"],
+    header: ['FINAL PAYOUT INFORMATION'],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 35,
   });
 
   const finalinfo = [
-    ["NET AMOUNT PAYABLE", `${getRoundOff(total)}`],
+    ['NET AMOUNT PAYABLE', `${getRoundOff(total)}`],
     [
-      "GST Hold (if any)",
+      'GST Hold (if any)',
       getRoundOff(
         (deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0
       ),
     ],
     ["SAFETY VIOLATION 'S PENALTY", getRoundOff(safetAmount || 0) * -1],
-    ["CONSUMABLES/ CHARGABLE ITEMS", getRoundOff(storesAmount || 0) * -1],
-    ["ADJUSTMENT OF ADVANCE AMOUNT", getRoundOff(deduction?.advance || 0) * -1],
+    ['CONSUMABLES/ CHARGABLE ITEMS', getRoundOff(storesAmount || 0) * -1],
+    ['ADJUSTMENT OF ADVANCE AMOUNT', getRoundOff(deduction?.advance || 0) * -1],
     [
-      "ANY OTHER DEDUCTIONS (IF ANY)",
+      'ANY OTHER DEDUCTIONS (IF ANY)',
       getRoundOff(deduction?.anyother || 0),
       deduction?.remarks,
     ],
-    ["ANY OTHER ADDITION (IF ANY)", deduction?.addition || 0],
+    ['ANY OTHER ADDITION (IF ANY)', deduction?.addition || 0],
     [
-      "FINAL PAYABLE",
+      'FINAL PAYABLE',
       getRoundOff(
         total -
           (safetAmount || 0) -
@@ -438,26 +439,26 @@ export const handleCivilPrint = async ({
 
   finalinfo.forEach((f) => {
     const row = worksheet.addRow([
-      "",
-      "",
-      "",
-      f[2] ?? "",
-      "",
-      "",
-      "",
+      '',
+      '',
+      '',
+      f[2] ?? '',
+      '',
+      '',
+      '',
       f[0],
-      "",
-      "",
-      "",
+      '',
+      '',
+      '',
       f[1],
-      "",
-      "",
+      '',
+      '',
     ]);
     row.eachCell((cell: any) => {
       cell.alignment = {
         wrapText: true,
-        vertical: "middle",
-        horizontal: "left",
+        vertical: 'middle',
+        horizontal: 'left',
       };
       cell.border = border;
       cell.font = { size: 11, wrapText: true, bold: true };
@@ -472,138 +473,138 @@ export const handleCivilPrint = async ({
   });
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
     header: [
-      " CONTRACTOR MONTHLY COST CHARGED IN PROFIT & LOSS A/C FOR THE CURRENT FINANCIAL YEAR",
+      ' CONTRACTOR MONTHLY COST CHARGED IN PROFIT & LOSS A/C FOR THE CURRENT FINANCIAL YEAR',
     ],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 35,
   });
 
   createDetails([
-    "Cost for the Previous Month -",
-    "",
+    'Cost for the Previous Month -',
+    '',
     0,
-    "Cost for the Month ( MTD)",
-    "",
+    'Cost for the Month ( MTD)',
+    '',
     0,
-    "",
-    "Cost upto this Month (YTD)",
-    "",
+    '',
+    'Cost upto this Month (YTD)',
+    '',
     0,
-    "",
-    "Cost for the Previous year",
-    "",
+    '',
+    'Cost for the Previous year',
+    '',
     0,
   ]);
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: ["PAYEE BANK A/C INFORMATION"],
+    header: ['PAYEE BANK A/C INFORMATION'],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 35,
   });
 
   createDetails([
-    "Beneficiary  Name:",
-    "",
-    contractor.beneficialname || "-",
-    "",
-    "Account Number:",
-    "",
-    contractor.bankaccountnumber || "-",
-    "",
-    "IFSC Code:",
-    contractor.ifscno || "-",
-    "",
-    "Date of Payment :",
-    "",
-    "-",
+    'Beneficiary  Name:',
+    '',
+    contractor.beneficialname || '-',
+    '',
+    'Account Number:',
+    '',
+    contractor.bankaccountnumber || '-',
+    '',
+    'IFSC Code:',
+    contractor.ifscno || '-',
+    '',
+    'Date of Payment :',
+    '',
+    '-',
   ]);
 
   createDetails([
-    "Payment Reference No:",
-    "",
-    "-",
-    "",
-    "Paid Amount:",
-    "",
-    "-",
-    "",
+    'Payment Reference No:',
+    '',
+    '-',
+    '',
+    'Paid Amount:',
+    '',
+    '-',
+    '',
   ]);
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
     header: ["APPROVAL'S INFORMATION"],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 14, bold: true },
     height: 35,
   });
 
   const approvalheaders = [
-    "Prepared & Checked By :",
-    "",
-    "",
-    "Biomax Checked By: ",
-    "",
-    "Statutory Compliance  (GST & TDS) Checked By: ",
-    "",
-    "",
+    'Prepared & Checked By :',
+    '',
+    '',
+    'Biomax Checked By: ',
+    '',
+    'Statutory Compliance  (GST & TDS) Checked By: ',
+    '',
+    '',
     "Department Leader's Approval",
-    "",
+    '',
 
-    "",
-    "Top Management Approval",
-    "",
-    "",
+    '',
+    'Top Management Approval',
+    '',
+    '',
   ];
 
   const approvalnames1 = [
-    "Intiator",
-    "",
-    "",
-    "HR",
-    "",
-    "Accounts / Taxation",
-    "",
-    "",
-    "HOD",
-    "",
+    'Initiator',
+    '',
+    '',
+    'HR',
+    '',
+    'Accounts / Taxation',
+    '',
+    '',
+    'HOD',
+    '',
 
-    "",
-    "Director",
-    "Managing Director",
-    "",
+    '',
+    'Director',
+    'Managing Director',
+    '',
   ];
 
   const approvalheaderrow = worksheet.addRow(approvalheaders);
   approvalheaderrow.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: "middle",
-      horizontal: "center",
+      vertical: 'middle',
+      horizontal: 'center',
     };
     cell.border = border;
     cell.font = { size: 10, wrapText: true, bold: true };
@@ -629,8 +630,8 @@ export const handleCivilPrint = async ({
   approvalnamerow.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: "down",
-      horizontal: "center",
+      vertical: 'down',
+      horizontal: 'center',
     };
     cell.border = border;
     cell.font = { size: 10, wrapText: true, bold: true };
@@ -643,14 +644,14 @@ export const handleCivilPrint = async ({
   worksheet.mergeCells(`M${approvalnamerow.number}:N${approvalnamerow.number}`);
 
   createHeading({
-    header: [""],
-    height: 30,
+    header: [''],
+    height: 10,
   });
 
   createHeading({
-    header: ["Requested By  Central Processing Team"],
+    header: ['Requested By  Central Processing Team'],
     colSpan: 10,
-    bgcolor: "fafafa",
+    bgcolor: 'fafafa',
     font: { size: 9, bold: true },
     height: 27,
   });
@@ -661,12 +662,16 @@ export const handleCivilPrint = async ({
 
   workbook.xlsx.writeBuffer().then((buffer: any) => {
     const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
-    link.setAttribute("download", "finalsheet.xlsx");
+    const name = `${contractor.contractorname}_${dayjs(month, 'MM/YYYY').format(
+      'MMM-YYYY'
+    )}.xlsx`;
+    link.setAttribute('download', name);
+    // link.setAttribute('download', 'finalsheet.xlsx');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -692,19 +697,19 @@ const table = ({
   let heads: any[] = [];
   headcells.forEach((h) => {
     heads.push(h);
-    if (["description"].includes(h.id)) {
-      heads.push({ id: "", label: "" });
-      heads.push({ id: "", label: "" });
+    if (['description'].includes(h.id)) {
+      heads.push({ id: '', label: '' });
+      heads.push({ id: '', label: '' });
       if (totals) {
-        heads.push({ id: "", label: "" });
+        heads.push({ id: '', label: '' });
       }
-    } else if (["requiredManDays", "netPayable", "taxable"].includes(h.id)) {
-      heads.push({ id: "", label: "" });
+    } else if (['requiredManDays', 'netPayable', 'taxable'].includes(h.id)) {
+      heads.push({ id: '', label: '' });
     }
-    if (totals && h.id === "billamount") {
+    if (totals && h.id === 'billamount') {
       heads.push({
-        id: "",
-        label: "",
+        id: '',
+        label: '',
       });
     }
   });
@@ -713,15 +718,15 @@ const table = ({
   tableheader.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: "middle",
-      horizontal: "center",
+      vertical: 'middle',
+      horizontal: 'center',
     };
     cell.font = { bold: true, size: 11, wrapText: true };
     cell.border = border;
     cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
     };
   });
 
@@ -751,14 +756,14 @@ const table = ({
   data.forEach((s: any, i: number) => {
     const datarow = worksheet.addRow(
       heads.map((h) => {
-        return h.id === "id" ? i : s[h.id] ?? "-";
+        return h.id === 'id' ? i : s[h.id] ?? '-';
       })
     );
     datarow.eachCell((cell: any) => {
       cell.alignment = {
         wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
+        vertical: 'middle',
+        horizontal: 'center',
       };
       cell.border = border;
       cell.font = { size: 12, wrapText: true };

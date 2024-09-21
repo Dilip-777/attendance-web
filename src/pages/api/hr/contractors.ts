@@ -9,24 +9,56 @@ export default async function contractors(
 ) {
   if (req.method === "GET") {
     let where: any = {};
+    const { page } = req.query;
     const session = await getSession({ req });
-    if (session?.user?.role === "TimeKeeper" || session?.user?.role === "HR") {
-      where = {
-        servicedetail: {
-          not: "Equipment / Vehicle Hiring",
+    if (page === "home") {
+      if (
+        session?.user?.role === "TimeKeeper" ||
+        session?.user?.role === "HR"
+      ) {
+        where = {
+          servicedetail: {
+            not: "Equipment / Vehicle Hiring",
+          },
+        };
+      }
+      const contractors = await prisma.contractor.findMany({
+        include: {
+          departments: true,
+          employee: {
+            take: 1,
+          },
         },
-      };
+
+        where,
+
+        orderBy: {
+          contractorname: "asc",
+        },
+      });
+      res.status(200).json(contractors.filter((c) => c.employee.length > 0));
+    } else {
+      if (
+        session?.user?.role === "TimeKeeper" ||
+        session?.user?.role === "HR"
+      ) {
+        where = {
+          servicedetail: {
+            not: "Equipment / Vehicle Hiring",
+          },
+        };
+      }
+      const contractors = await prisma.contractor.findMany({
+        include: {
+          departments: true,
+        },
+        where,
+        orderBy: {
+          contractorname: "asc",
+        },
+      });
+      res.status(200).json(contractors);
     }
-    const contractors = await prisma.contractor.findMany({
-      include: {
-        departments: true,
-      },
-      where,
-      orderBy: {
-        contractorname: "asc",
-      },
-    });
-    res.status(200).json(contractors);
   }
 
   if (req.method === "POST") {

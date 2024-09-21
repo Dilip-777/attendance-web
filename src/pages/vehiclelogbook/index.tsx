@@ -1,18 +1,19 @@
-import Head from "next/head";
-import * as React from "react";
-import { alpha } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
+import Head from 'next/head';
+import * as React from 'react';
+import { alpha } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
+import CircularProgress from '@mui/material/CircularProgress';
+import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import {
   Autocomplete,
   Button,
@@ -25,23 +26,23 @@ import {
   Stack,
   TextField,
   styled,
-} from "@mui/material";
-import { useRouter } from "next/router";
-import { GetServerSideProps } from "next";
-import { getSession, useSession } from "next-auth/react";
-import prisma from "@/lib/prisma";
-import { Automobile, Contractor, Vehicle, Workorder } from "@prisma/client";
-import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
-import axios from "axios";
-import Close from "@mui/icons-material/Close";
-import Done from "@mui/icons-material/Done";
-import FormSelect from "@/ui-component/FormSelect";
-import dayjs, { Dayjs } from "dayjs";
-import MonthSelect from "@/ui-component/MonthSelect";
-import getAutomobile from "@/utils/getAutomobile";
-import _, { set } from "lodash";
-import TextEditor from "@/ui-component/TextEditor";
-import AutoComplete from "@/ui-component/Autocomplete";
+} from '@mui/material';
+import { useRouter } from 'next/router';
+import { GetServerSideProps } from 'next';
+import { getSession, useSession } from 'next-auth/react';
+import prisma from '@/lib/prisma';
+import { Automobile, Contractor, Vehicle, Workorder } from '@prisma/client';
+import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
+import axios from 'axios';
+import Close from '@mui/icons-material/Close';
+import Done from '@mui/icons-material/Done';
+import FormSelect from '@/ui-component/FormSelect';
+import dayjs, { Dayjs } from 'dayjs';
+import MonthSelect from '@/ui-component/MonthSelect';
+import getAutomobile from '@/utils/getAutomobile';
+import _, { set } from 'lodash';
+import TextEditor from '@/ui-component/TextEditor';
+import AutoComplete from '@/ui-component/Autocomplete';
 
 const createHeadCells = (
   id: string,
@@ -58,31 +59,31 @@ const createHeadCells = (
 };
 
 const headCells = [
-  createHeadCells("date", "Date", false, false),
-  createHeadCells("startTime", "Start Time", false, false),
-  createHeadCells("endTime", "End Time", false, false),
-  createHeadCells("totalRunningTime", "Total Running Time", false, false),
-  createHeadCells("openingMeterReading", "Opening Meter Reading", false, false),
-  createHeadCells("closingMeterReading", "Close Meter Reading", false, false),
-  createHeadCells("totalRunning", "Total Running", false, false),
+  createHeadCells('date', 'Date', false, false),
+  createHeadCells('startTime', 'Start Time', false, false),
+  createHeadCells('endTime', 'End Time', false, false),
+  createHeadCells('totalRunningTime', 'Total Running Time', false, false),
+  createHeadCells('openingMeterReading', 'Opening Meter Reading', false, false),
+  createHeadCells('closingMeterReading', 'Close Meter Reading', false, false),
+  createHeadCells('totalRunning', 'Total Running', false, false),
   createHeadCells(
-    "hsdIssuedOrConsumed",
-    "HSD Issued Or Consumed",
+    'hsdIssuedOrConsumed',
+    'HSD Issued Or Consumed',
     false,
     false
   ),
-  createHeadCells("maintenanceDays", "Maintenance Time", false, false),
-  createHeadCells("breakdownTime", "Break Down Time", false, false),
+  createHeadCells('maintenanceDays', 'Maintenance Time', false, false),
+  createHeadCells('breakdownTime', 'Break Down Time', false, false),
   createHeadCells(
-    "breakDownDaysCounted",
-    "Breakdown Days Counted",
+    'breakDownDaysCounted',
+    'Breakdown Days Counted',
     false,
     false
   ),
-  createHeadCells("idealStandingDays", "Ideal Standing Days", true, false),
-  createHeadCells("trips", "Trips", true, false),
-  createHeadCells("remarks", "Remarks", false, false),
-  createHeadCells("status", "Status", false, false),
+  createHeadCells('idealStandingDays', 'Ideal Standing Days', true, false),
+  createHeadCells('trips', 'Trips', true, false),
+  createHeadCells('remarks', 'Remarks', false, false),
+  createHeadCells('status', 'Status', false, false),
 ];
 
 export default function Vehiclelogbook({
@@ -104,7 +105,7 @@ export default function Vehiclelogbook({
   const [selectedWorkorder, setSelectedWorkorder] = React.useState<
     string | undefined
   >(undefined);
-  const [month, setMonth] = React.useState<string>(dayjs().format("MM/YYYY"));
+  const [month, setMonth] = React.useState<string>(dayjs().format('MM/YYYY'));
   const [automobiles, setAutomobiles] = React.useState<Automobile[]>([]);
   const [changes, setChanges] = React.useState<any[]>([]);
   const [rows, setRows] = React.useState<any[]>([]);
@@ -134,9 +135,9 @@ export default function Vehiclelogbook({
   );
 
   React.useEffect(() => {
-    if (session?.user?.role === "PlantCommercial") {
-      if (!headCells.find((headCell) => headCell.id === "action"))
-        headCells.push(createHeadCells("action", "Action", false, true));
+    if (session?.user?.role === 'PlantCommercial') {
+      if (!headCells.find((headCell) => headCell.id === 'action'))
+        headCells.push(createHeadCells('action', 'Action', false, true));
     }
   }, [session]);
 
@@ -157,7 +158,7 @@ export default function Vehiclelogbook({
   const handleSave = async () => {
     setLoading(true);
     try {
-      await axios.post("/api/vehiclelogbook", {
+      await axios.post('/api/vehiclelogbook', {
         changes,
         contractorId: parseInt(contractor as string),
         month: month,
@@ -166,7 +167,6 @@ export default function Vehiclelogbook({
       console.log(error);
     }
     await fetchAutomobiles();
-    await fetchAutomobiles();
     // setLoading(false);
     setChanges([]);
   };
@@ -174,9 +174,9 @@ export default function Vehiclelogbook({
   const handleApprove = async (data: any) => {
     setApprovalLoading(true);
     try {
-      await axios.put("/api/vehiclelogbook", {
+      await axios.put('/api/vehiclelogbook', {
         ...data,
-        status: "Approved",
+        status: 'Approved',
       });
     } catch (error) {
       console.log(error);
@@ -190,12 +190,12 @@ export default function Vehiclelogbook({
     setApprovalLoading(true);
 
     try {
-      await axios.put("/api/vehiclelogbook", {
+      await axios.put('/api/vehiclelogbook', {
         id: data.id,
         contractorId: data.contractorId,
 
         workorderId: data.workorderId,
-        status: "Rejected",
+        status: 'Rejected',
       });
     } catch (error) {
       console.log(error);
@@ -227,7 +227,7 @@ export default function Vehiclelogbook({
         totalrunning += change.totalRunning;
       }
       if (change.totalRunningTime) {
-        const time = change.totalRunningTime.split(":");
+        const time = change.totalRunningTime.split(':');
         totalrunningtime += parseInt(time[0]) + parseInt(time[1]) / 60;
       }
       if (change.maintenanceDays) {
@@ -274,17 +274,17 @@ export default function Vehiclelogbook({
     let v: string | number = value;
     if (
       [
-        "openingMeterReading",
-        "closingMeterReading",
-        "breakDownDaysCounted",
-        "totalRunning",
-        "hsdIssuedOrConsumed",
-        "idealStandingDays",
-        "maintenanceDays",
-        "trips",
+        'openingMeterReading',
+        'closingMeterReading',
+        'breakDownDaysCounted',
+        'totalRunning',
+        'hsdIssuedOrConsumed',
+        'idealStandingDays',
+        'maintenanceDays',
+        'trips',
       ].includes(field)
     ) {
-      v = value ? Number(value) : "";
+      v = value ? Number(value) : '';
     }
 
     let flag1 = false;
@@ -292,50 +292,50 @@ export default function Vehiclelogbook({
 
     const updatedChanges = changes.map((e) => {
       if (e.date === date) {
-        if (e.closingMeterReading && field === "openingMeterReading") {
+        if (e.closingMeterReading && field === 'openingMeterReading') {
           e.totalRunning = e.closingMeterReading - (v as number);
         }
-        if (e.openingMeterReading && field === "closingMeterReading") {
+        if (e.openingMeterReading && field === 'closingMeterReading') {
           e.totalRunning = (v as number) - e.openingMeterReading;
         }
-        if (e.startTime && field === "endTime") {
-          const start = dayjs(e.startTime, "HH:mm");
-          const end = dayjs(v, "HH:mm");
-          const diff = end.diff(start, "minute");
+        if (e.startTime && field === 'endTime') {
+          const start = dayjs(e.startTime, 'HH:mm');
+          const end = dayjs(v, 'HH:mm');
+          const diff = end.diff(start, 'minute');
           const hours = Math.floor(diff / 60);
           const minutes = diff % 60;
 
-          const formattedHours = String(hours).padStart(2, "0");
-          const formattedMinutes = String(minutes).padStart(2, "0");
+          const formattedHours = String(hours).padStart(2, '0');
+          const formattedMinutes = String(minutes).padStart(2, '0');
 
           e.totalRunningTime = `${formattedHours}:${formattedMinutes}`;
         }
-        if (e.endTime && field === "startTime") {
-          const end = dayjs(e.endTime, "HH:mm");
-          const start = dayjs(v, "HH:mm");
-          const diff = end.diff(start, "minute");
+        if (e.endTime && field === 'startTime') {
+          const end = dayjs(e.endTime, 'HH:mm');
+          const start = dayjs(v, 'HH:mm');
+          const diff = end.diff(start, 'minute');
           const hours = Math.floor(diff / 60);
           const minutes = diff % 60;
 
-          const formattedHours = String(hours).padStart(2, "0");
-          const formattedMinutes = String(minutes).padStart(2, "0");
+          const formattedHours = String(hours).padStart(2, '0');
+          const formattedMinutes = String(minutes).padStart(2, '0');
 
           e.totalRunningTime = `${formattedHours}:${formattedMinutes}`;
         }
-        if (e.openingMeterReading && field === "closingMeterReading")
+        if (e.openingMeterReading && field === 'closingMeterReading')
           e.totalRunning = parseFloat(
             ((v as number) - e.openingMeterReading).toFixed(2)
           );
         if (e[field] || v) e[field] = v;
         flag1 = true;
       }
-      if (e.date === nextdate && field === "closingMeterReading") {
+      if (e.date === nextdate && field === 'closingMeterReading') {
         if (e.openingMeterReading) {
           e.totalRunning = parseFloat(
             (e.closingMeterReading - (v as number)).toFixed(2)
           );
         }
-        if (field === "closingMeterReading") e.openingMeterReading = v;
+        if (field === 'closingMeterReading') e.openingMeterReading = v;
         flag2 = true;
       }
       return e;
@@ -344,15 +344,15 @@ export default function Vehiclelogbook({
     if (!flag1) {
       let ch = rows.find((e) => e.date === date);
       if (v || v === 0) {
-        if (ch.startTime && field === "endTime") {
-          const start = dayjs(ch.startTime, "HH:mm");
-          const end = dayjs(v, "HH:mm");
-          const diff = end.diff(start, "minute");
+        if (ch.startTime && field === 'endTime') {
+          const start = dayjs(ch.startTime, 'HH:mm');
+          const end = dayjs(v, 'HH:mm');
+          const diff = end.diff(start, 'minute');
           const hours = Math.floor(diff / 60);
           const minutes = diff % 60;
 
-          const formattedHours = String(hours).padStart(2, "0");
-          const formattedMinutes = String(minutes).padStart(2, "0");
+          const formattedHours = String(hours).padStart(2, '0');
+          const formattedMinutes = String(minutes).padStart(2, '0');
 
           ch.totalRunningTime = `${formattedHours}:${formattedMinutes}`;
         }
@@ -366,7 +366,7 @@ export default function Vehiclelogbook({
       }
     }
 
-    if (!flag2 && field === "closingMeterReading" && value) {
+    if (!flag2 && field === 'closingMeterReading' && value) {
       updatedChanges.push({
         date: nextdate,
         ...rows.find((e) => e.date === nextdate),
@@ -433,13 +433,81 @@ export default function Vehiclelogbook({
     // }
   };
 
+  const handleClickReport = () => {
+    const tableRows = [
+      [
+        'Date',
+        'Contractor Name',
+        'Month',
+        'Start Time',
+        'End Time',
+        'Total Running Time',
+        'Opening Meter Reading',
+        'Closing Meter Reading',
+        'Total Running',
+        'HSD Issued Or Consumed',
+        'Maintenance Days',
+        'Breakdown Time',
+        'Breakdown Days Counted',
+        'Ideal Standing Days',
+        'Trips',
+        'Remarks',
+        'Status',
+      ],
+    ];
+
+    const escapeCsvValue = (value: string) => {
+      if (typeof value === 'string' && value.includes(',')) {
+        return `"${value}"`; // Wrap in double quotes if value contains a comma
+      }
+      return value;
+    };
+
+    const c = contractors.find((c) => c.contractorId === contractor);
+
+    rows.forEach((item) => {
+      tableRows.push([
+        escapeCsvValue(item.date),
+        escapeCsvValue(c?.contractorname || '-'),
+        escapeCsvValue(month),
+        escapeCsvValue(item.startTime),
+        escapeCsvValue(item.endTime),
+        escapeCsvValue(item.totalRunningTime),
+        escapeCsvValue(item.openingMeterReading),
+        escapeCsvValue(item.closingMeterReading),
+        escapeCsvValue(item.totalRunning || '-'),
+        escapeCsvValue(item.hsdIssuedOrConsumed || '-'),
+        escapeCsvValue(item.maintenanceDays || '-'),
+        escapeCsvValue(item.breakdownTime || '-'),
+        escapeCsvValue(item.breakDownDaysCounted || '-'),
+        escapeCsvValue(item.idealStandingDays || '-'),
+        escapeCsvValue(item.trips || '-'),
+        escapeCsvValue(item.remarks || '-'),
+        escapeCsvValue(item.status || '-'),
+      ]);
+    });
+
+    const csvContent = `${tableRows.map((row) => row.join(',')).join('\n')}`;
+
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Vehiclelogbook.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const isSelected = (contractorName: string) =>
     selected.indexOf(contractorName) !== -1;
 
   const deleteWorkorder = async (id: string) => {
     setLoading(true);
     const res = await axios
-      .delete("/api/workorder", { data: { id: id } })
+      .delete('/api/workorder', { data: { id: id } })
       .then((res) => {
         router.replace(router.asPath);
         setOpen(false);
@@ -460,8 +528,8 @@ export default function Vehiclelogbook({
     );
     const r = getAutomobile(
       res.data.filter((auto: Automobile) => auto.vehicleId === vehicle),
-      dayjs(month, "MM/YYYY").month() + 1,
-      dayjs(month, "MM/YYYY").year()
+      dayjs(month, 'MM/YYYY').month() + 1,
+      dayjs(month, 'MM/YYYY').year()
     );
     setRows(r);
     setLoading(false);
@@ -478,7 +546,6 @@ export default function Vehiclelogbook({
     }
   }, [contractor]);
 
-  // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
@@ -486,70 +553,84 @@ export default function Vehiclelogbook({
     (vehicle) => vehicle.contractorId === contractor
   );
 
-  console.log(changes);
-
   return (
-    <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", pb: 2, overflow: "auto" }}>
+    <Box sx={{ width: '100%' }}>
+      <Paper sx={{ width: '100%', pb: 2, overflow: 'auto' }}>
         <Toolbar
           sx={{
             pl: { sm: 2 },
             pr: { xs: 1, sm: 1 },
           }}
         >
-          <Stack sx={{ width: "100%" }} spacing={2}>
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <AutoComplete
-                label="Select Contractor"
-                value={contractor as string}
-                setValue={setContractor}
-                options={contractors.map((c) => ({
-                  value: c.contractorId || "",
-                  label: c.contractorname,
-                }))}
-              />
-              <MonthSelect
-                label="Select Month"
-                value={dayjs(month, "MM/YYYY")}
-                onChange={(value: Dayjs | null) =>
-                  setMonth(value?.format("MM/YYYY") || "")
-                }
-              />
-              <AutoComplete
-                label="Vehicle"
-                value={vehicle as string}
-                setValue={setVehicle}
-                options={filteredVehicles.map((vehicle) => ({
-                  label: vehicle.vehicleNo + " " + vehicle.vehicleType,
-                  value: vehicle.id,
-                }))}
-              />
+          <Stack sx={{ width: '100%' }} justifyContent='center' spacing={2}>
+            <Stack
+              direction='row'
+              justifyContent='space-between'
+              alignItems='center'
+            >
+              <Stack direction='row' alignItems='center' spacing={2}>
+                <AutoComplete
+                  label='Select Contractor'
+                  value={contractor as string}
+                  setValue={setContractor}
+                  options={contractors.map((c) => ({
+                    value: c.contractorId || '',
+                    label: c.contractorname,
+                  }))}
+                />
+                <MonthSelect
+                  label='Select Month'
+                  value={dayjs(month, 'MM/YYYY')}
+                  onChange={(value: Dayjs | null) =>
+                    setMonth(value?.format('MM/YYYY') || '')
+                  }
+                />
+                <AutoComplete
+                  label='Vehicle'
+                  value={vehicle as string}
+                  setValue={setVehicle}
+                  options={filteredVehicles.map((vehicle) => ({
+                    label: vehicle.vehicleNo + ' ' + vehicle.vehicleType,
+                    value: vehicle.id,
+                  }))}
+                />
+              </Stack>
+              <Box>
+                <IconButton
+                  sx={{
+                    height: 'fit',
+                  }}
+                  onClick={handleClickReport}
+                >
+                  <LocalPrintshopIcon />
+                </IconButton>
+              </Box>
             </Stack>
             {changes.length > 0 && (
               <Stack
-                direction="row"
-                spacing="1rem"
-                sx={{ alignSelf: "flex-end" }}
+                direction='row'
+                spacing='1rem'
+                sx={{ alignSelf: 'flex-end' }}
               >
                 <Button
-                  variant="contained"
+                  variant='contained'
                   onClick={() => handleSave()}
                   disabled={loading}
-                  color="secondary"
+                  color='secondary'
                 >
                   Save
                   {loading && (
                     <CircularProgress
                       size={15}
-                      sx={{ ml: 1, color: "#364152" }}
+                      sx={{ ml: 1, color: '#364152' }}
                     />
                   )}
                 </Button>
                 <Button
-                  variant="outlined"
+                  variant='outlined'
                   disabled={loading}
                   onClick={handleDiscard}
-                  color="secondary"
+                  color='secondary'
                 >
                   Cancel
                 </Button>
@@ -560,22 +641,22 @@ export default function Vehiclelogbook({
         {vehicle ? (
           <TableContainer
             sx={{
-              maxHeight: "55vh",
-              scrollBehavior: "smooth",
-              "&::-webkit-scrollbar": {
+              maxHeight: '55vh',
+              scrollBehavior: 'smooth',
+              '&::-webkit-scrollbar': {
                 height: 10,
                 width: 9,
               },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "#bdbdbd",
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: '#bdbdbd',
                 borderRadius: 2,
               },
             }}
           >
             <Table
               sx={{ minWidth: 750 }}
-              aria-labelledby="tableTitle"
-              size="medium"
+              aria-labelledby='tableTitle'
+              size='medium'
               stickyHeader
             >
               <EnhancedTableHead
@@ -584,7 +665,7 @@ export default function Vehiclelogbook({
                 rowCount={rows.length}
                 headCells={headCells}
                 nocheckbox={true}
-                align="center"
+                align='center'
               />
               {(!loading || approvalLoading) && (
                 <TableBody>
@@ -601,33 +682,33 @@ export default function Vehiclelogbook({
                         key={row.id}
                         selected={isItemSelected}
                       >
-                        <TableCell padding="checkbox"></TableCell>
+                        <TableCell padding='checkbox'></TableCell>
 
                         {headCells.map(
                           (cell, index) =>
                             !cell.included && (
                               <TableCell
                                 id={labelId}
-                                scope="row"
-                                padding="none"
-                                align="center"
+                                scope='row'
+                                padding='none'
+                                align='center'
                                 sx={{ minWidth: 150 }}
                               >
                                 <TextEditor
                                   handleChange={handleChange}
                                   field={cell.id}
                                   date={row.date}
-                                  value={_.get(row, cell.id, "")}
+                                  value={_.get(row, cell.id, '')}
                                   type={
-                                    cell.id === "openingMeterReading" ||
-                                    cell.id === "closingMeterReading" ||
-                                    cell.id === "totalRunning" ||
-                                    cell.id === "breakDownDaysCounted" ||
-                                    cell.id === "maintenanceDays" ||
-                                    cell.id === "idealStandingDays" ||
-                                    cell.id === "hsdIssuedOrConsumed"
-                                      ? "number"
-                                      : "text"
+                                    cell.id === 'openingMeterReading' ||
+                                    cell.id === 'closingMeterReading' ||
+                                    cell.id === 'totalRunning' ||
+                                    cell.id === 'breakDownDaysCounted' ||
+                                    cell.id === 'maintenanceDays' ||
+                                    cell.id === 'idealStandingDays' ||
+                                    cell.id === 'hsdIssuedOrConsumed'
+                                      ? 'number'
+                                      : 'text'
                                   }
                                   discard={discard}
                                   setDiscard={setDiscard}
@@ -636,26 +717,26 @@ export default function Vehiclelogbook({
                               </TableCell>
                             )
                         )}
-                        {session?.user?.role === "PlantCommercial" &&
-                          row.status === "Pending" && (
-                            <TableCell size="small" align="center">
+                        {session?.user?.role === 'PlantCommercial' &&
+                          row.status === 'Pending' && (
+                            <TableCell size='small' align='center'>
                               <Box
-                                display="flex"
-                                alignItems="center"
-                                sx={{ color: "#673AB7" }}
+                                display='flex'
+                                alignItems='center'
+                                sx={{ color: '#673AB7' }}
                               >
                                 {approvalLoading ? (
                                   <CircularProgress
                                     size={15}
-                                    sx={{ ml: 1, color: "#364152" }}
+                                    sx={{ ml: 1, color: '#364152' }}
                                   />
                                 ) : (
                                   <>
                                     <Button onClick={() => handleApprove(row)}>
-                                      <Done sx={{ color: "#673AB7" }} />
+                                      <Done sx={{ color: '#673AB7' }} />
                                     </Button>
                                     <Button onClick={() => handleReject(row)}>
-                                      <Close sx={{ color: "#673AB7" }} />
+                                      <Close sx={{ color: '#673AB7' }} />
                                     </Button>
                                   </>
                                 )}
@@ -676,49 +757,49 @@ export default function Vehiclelogbook({
           </TableContainer>
         ) : (
           <Typography
-            sx={{ textAlign: "center", fontSize: "1.5rem", my: "3rem" }}
+            sx={{ textAlign: 'center', fontSize: '1.5rem', my: '3rem' }}
           >
             No Vehicle Found
           </Typography>
         )}
-        <Stack direction="row" spacing={5} sx={{ pt: 2, px: 2 }}>
-          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
-            Total Running:{" "}
-            <span style={{ fontWeight: "500" }}> {subTotals.totalRunning}</span>
+        <Stack direction='row' spacing={5} sx={{ pt: 2, px: 2 }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: '700' }}>
+            Total Running:{' '}
+            <span style={{ fontWeight: '500' }}> {subTotals.totalRunning}</span>
           </Typography>
-          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
-            Total Running Time:{" "}
-            <span style={{ fontWeight: "500" }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: '700' }}>
+            Total Running Time:{' '}
+            <span style={{ fontWeight: '500' }}>
               {subTotals.totalRunningTime.toFixed(2)} Hours
             </span>
           </Typography>
-          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
-            HSD Issued Or Consumed:{" "}
-            <span style={{ fontWeight: "500" }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: '700' }}>
+            HSD Issued Or Consumed:{' '}
+            <span style={{ fontWeight: '500' }}>
               {subTotals.hsdIssuedOrConsumed}
             </span>
           </Typography>
         </Stack>
-        <Stack direction="row" spacing={5} sx={{ p: 2 }}>
-          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
-            Total Maintenance Days:{" "}
-            <span style={{ fontWeight: "500" }}>
+        <Stack direction='row' spacing={5} sx={{ p: 2 }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: '700' }}>
+            Total Maintenance Days:{' '}
+            <span style={{ fontWeight: '500' }}>
               {subTotals.maintainenceDays}
             </span>
           </Typography>
-          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
-            Total Breakdown Days:{" "}
-            <span style={{ fontWeight: "500" }}>{subTotals.breakdownDays}</span>
+          <Typography sx={{ fontSize: '1rem', fontWeight: '700' }}>
+            Total Breakdown Days:{' '}
+            <span style={{ fontWeight: '500' }}>{subTotals.breakdownDays}</span>
           </Typography>
-          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
-            Total Ideal Standing Days:{" "}
-            <span style={{ fontWeight: "500" }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: '700' }}>
+            Total Ideal Standing Days:{' '}
+            <span style={{ fontWeight: '500' }}>
               {subTotals.idealStandingDays}
             </span>
           </Typography>
-          <Typography sx={{ fontSize: "1rem", fontWeight: "700" }}>
-            Total Trips:{" "}
-            <span style={{ fontWeight: "500" }}>{subTotals.trips}</span>
+          <Typography sx={{ fontSize: '1rem', fontWeight: '700' }}>
+            Total Trips:{' '}
+            <span style={{ fontWeight: '500' }}>{subTotals.trips}</span>
           </Typography>
         </Stack>
         {/* <TablePagination
@@ -731,11 +812,11 @@ export default function Vehiclelogbook({
           onRowsPerPageChange={handleChangeRowsPerPage}
         /> */}
       </Paper>
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ m: 1, fontSize: "1rem" }}>
+      <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth>
+        <DialogTitle sx={{ m: 1, fontSize: '1rem' }}>
           Confirm the action
         </DialogTitle>
-        <Box position="absolute" top={0} right={0}>
+        <Box position='absolute' top={0} right={0}>
           <IconButton onClick={handleClose}>
             <Close />
           </IconButton>
@@ -746,18 +827,18 @@ export default function Vehiclelogbook({
           </Typography>
         </DialogContent>
         <DialogActions sx={{ m: 1 }}>
-          <Button color="secondary" variant="outlined" onClick={handleClose}>
+          <Button color='secondary' variant='outlined' onClick={handleClose}>
             Cancel
           </Button>
           <Button
-            color="secondary"
+            color='secondary'
             onClick={() => deleteWorkorder(selectedWorkorder as string)}
-            variant="contained"
+            variant='contained'
             disabled={loading}
           >
             Confirm
             {loading && (
-              <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
+              <CircularProgress size={15} sx={{ ml: 1, color: '#364152' }} />
             )}
           </Button>
         </DialogActions>
@@ -772,16 +853,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session) {
     return {
       redirect: {
-        destination: "/login",
+        destination: '/login',
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === "Admin") {
+  if (session.user?.role === 'Admin') {
     return {
       redirect: {
-        destination: "/admin",
+        destination: '/admin',
         permanent: false,
       },
     };
@@ -789,7 +870,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const workorders = await prisma.workorder.findMany();
   const contractors = await prisma.contractor.findMany({
     where: {
-      servicedetail: "Equipment / Vehicle Hiring",
+      servicedetail: 'Equipment / Vehicle Hiring',
     },
   });
   const vehicles = await prisma.vehicle.findMany();

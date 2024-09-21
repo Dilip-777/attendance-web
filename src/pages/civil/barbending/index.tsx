@@ -111,7 +111,7 @@ function Row(props: {
           {row.description}
         </TableCell>
         <TableCell align="center">{row.contractor.contractorname}</TableCell>
-        <TableCell align="center">{row.date || "-"}</TableCell>
+        <TableCell align="center">{row.startDate || "-"}</TableCell>
         <TableCell align="center">{row.totalAmount}</TableCell>
         <TableCell size="small" align="right">
           <Stack

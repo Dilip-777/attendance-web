@@ -116,6 +116,9 @@ export default function EditUser({
                     { value: "Automobile", label: "Automobile" },
                     { value: "Fixed", label: "Fixed" },
                     { value: "Civil", label: "Civil" },
+                    { value: "MTR", label: "MTR" },
+                    { value: "AccountsTaxation", label: "AccountsTaxation" },
+                    { value: "PaymentEntry", label: "PaymentEntry" },
                   ]}
                 />
                 <FormSelect

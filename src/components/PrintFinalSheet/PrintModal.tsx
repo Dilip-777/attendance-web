@@ -150,7 +150,7 @@ export default function PrintModal({
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <FormLabel>GST Release</FormLabel>
+                  <FormLabel>Misc. Payment</FormLabel>
                   <TextField
                     value={gstrelease}
                     onChange={(e) => setGstrelease(Number(e.target.value))}

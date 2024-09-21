@@ -20,6 +20,8 @@ import {
   Qcs,
   QcsBoq,
   QcsBoqItem,
+  BarBending,
+  BarBendingItem,
 } from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
 import axios from "axios";
@@ -71,7 +73,14 @@ const Addworkitem = ({
   projects: (Project & {
     Qcs: (Qcs & {
       BOQ: (QcsBoq & {
-        BOQItems: QcsBoqItem[];
+        BOQItems: (QcsBoqItem & {
+          measurementItems: (MeasurementItem & {
+            measurement: Measurement;
+          })[];
+          barBendingItems: (BarBendingItem & {
+            barBending: BarBending;
+          })[];
+        })[];
       })[];
     })[];
   })[];
@@ -96,6 +105,7 @@ const Addworkitem = ({
           breadth: w.breadth,
           height: w.height,
           remarks: w.remarks || "",
+          boqItemId: w.boqItemId,
         }))
       : [],
   };
@@ -136,8 +146,16 @@ const Addworkitem = ({
               (workItem?.height || 1);
 
             measurementItems.push({
-              ...workItem,
+              nos: workItem.nos,
+              length: workItem.length,
+              breadth: workItem.breadth,
+              height: workItem.height,
+              unit: workItem.unit,
+              unitrate: workItem.unitrate,
+              remarks: workItem.remarks,
+              description: workItem.description,
               quantity: parseFloat(quantity.toFixed(3)),
+              boqItemId: workItem.boqItemId,
               // valueofcurrentBill: parseFloat(valueofcurrentBill.toFixed(3)),
               // totalQuantity: parseFloat(totalQuantity.toFixed(3)),
               // valueofTotalBill: parseFloat(valueofTotalBill.toFixed(3)),
@@ -196,16 +214,30 @@ const Addworkitem = ({
             setFieldValue("description", boq?.description);
             setFieldValue(
               "measurementItems",
-              boqItems.map((w) => ({
-                boqItemId: w.id,
-                description: w.description,
-                unit: w.unit,
-                nos: 0,
-                length: 0,
-                breadth: 0,
-                height: 0,
-                remarks: "",
-              }))
+              boqItems.map((w) => {
+                const balanceQuantity =
+                  w.totalQuantity -
+                  w.measurementItems.reduce(
+                    (acc, curr) => acc + curr.quantity,
+                    0
+                  ) -
+                  w.barBendingItems.reduce(
+                    (acc, curr) => acc + curr.totalweight,
+                    0
+                  );
+
+                return {
+                  boqItemId: w.id,
+                  description: w.description,
+                  unit: w.unit,
+                  nos: 0,
+                  length: 0,
+                  breadth: 0,
+                  height: 0,
+                  balanceQuantity,
+                  remarks: "",
+                };
+              })
             );
           }
 
@@ -360,7 +392,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         include: {
           BOQ: {
             include: {
-              BOQItems: true,
+              BOQItems: {
+                include: {
+                  measurementItems: {
+                    include: {
+                      measurement: true,
+                    },
+                  },
+                  barBendingItems: {
+                    include: {
+                      barBending: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },

@@ -170,13 +170,6 @@ export default function Employees({
     setSelectedRow(undefined);
   };
 
-  const handleUpload = async (doc: any) => {
-    await axios.put("/api/payouttracker", {
-      id: doc.id,
-      uploadreceipt: doc.data.file,
-    });
-  };
-
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       const newSelected = payouttracker
@@ -269,11 +262,12 @@ export default function Employees({
           </LocalizationProvider>
           <Button
             variant="contained"
+            color="secondary"
             size="small"
             sx={{ m: 0.5 }}
             onClick={() => router.push("/finalamount")}
           >
-            Add Payout Tracker
+            Add
           </Button>
         </Box>
         {/* <EnhancedTableToolbar
@@ -369,20 +363,15 @@ export default function Employees({
                       <TableCell align="center">{row.balance}</TableCell>
                       <TableCell align="center">
                         {row.uploadreceipt ? (
-                          <Typography
-                            onClick={() => {
-                              router.push(
-                                `/api/upload?fileName=${row.uploadreceipt}`
-                              );
-                            }}
+                          <a
+                            style={{ textDecoration: "none", color: "inherit" }}
+                            href={`/api/upload?fileName=${row.uploadreceipt}`}
+                            target="_blank"
                           >
                             View Receipt
-                          </Typography>
+                          </a>
                         ) : (
-                          <UploadButtons
-                            id={row.id}
-                            handleUpload={handleUpload}
-                          />
+                          <UploadButtons id={row.id} />
                         )}
                       </TableCell>
                       <TableCell size="small" align="center">
@@ -482,13 +471,7 @@ export default function Employees({
   );
 }
 
-function UploadButtons({
-  handleUpload,
-  id,
-}: {
-  handleUpload: (doc: any) => void;
-  id: string;
-}) {
+function UploadButtons({ id }: { id: string }) {
   const [value, setValue] = React.useState<any>();
   const [url, setUrl] = React.useState<string>("");
   const router = useRouter();
@@ -499,8 +482,15 @@ function UploadButtons({
       formData.append("myFile", file1);
       setValue(file1);
       const { data } = await axios.post("/api/upload", formData);
-      setUrl(`${data.file}`);
-      handleUpload({ id, data });
+      console.log(data);
+
+      await axios.put("/api/payouttracker", {
+        id: id,
+        uploadreceipt: data?.file?.newFilename,
+      });
+
+      setUrl(`${data?.file?.newFilename}`);
+      // handleUpload({ id, data });
     } catch (error) {
       console.log(error);
     }

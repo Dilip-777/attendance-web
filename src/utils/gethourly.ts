@@ -2,6 +2,7 @@ import {
   Contractor,
   Department,
   Designations,
+  FixedValues,
   SeperateSalary,
   Shifts,
   TimeKeeper,
@@ -58,7 +59,7 @@ const getTotalAmountAndRows = (
   shifts: Shifts[],
   contractorId: string,
   contractor: Contractor,
-  designations?: DesignationwithSalary[],
+  fixedValues: FixedValues | null,
   departments?: DepartmentDesignation[],
   wrkhrs?: number,
   role?: string,
@@ -232,14 +233,22 @@ const getTotalAmountAndRows = (
         rate[id] = s.salary;
       } else if (wrkhrs === 8) {
         if (designation.designation.toLowerCase() === "supervisor")
-          rate[id] = contractor.salarysvr8hr as number;
+          rate[id] =
+            fixedValues?.salarysvr8hr ?? (contractor.salarysvr8hr as number);
         else if (designation.gender === "Female")
-          rate[id] = contractor.salarywomen8hr as number;
-        else rate[id] = contractor.salarymen8hr as number;
+          rate[id] =
+            fixedValues?.salarywomen8hr ??
+            (contractor.salarywomen8hr as number);
+        else
+          rate[id] =
+            fixedValues?.salarymen8hr ?? (contractor.salarymen8hr as number);
       } else if (wrkhrs === 12) {
         if (designation.designation.toLowerCase() === "supervisor")
-          rate[id] = contractor.salarysvr12hr as number;
-        else rate[id] = contractor.salarymen12hr as number;
+          rate[id] =
+            fixedValues?.salarysvr12hr ?? (contractor.salarysvr12hr as number);
+        else
+          rate[id] =
+            fixedValues?.salarymen12hr ?? (contractor.salarymen12hr as number);
       } else {
         rate[id] = 0;
       }
@@ -261,11 +270,11 @@ const getTotalAmountAndRows = (
           Number(_.get(totalManDayAmount, id, 0))
       );
 
-      const o8 = [...f8, ...h8].reduce((acc, curr) => {
+      const o8 = f8.reduce((acc, curr) => {
         return acc + (curr.manualovertime ?? curr.overtime);
       }, 0);
 
-      const o12 = [...f12, ...h12].reduce(
+      const o12 = f12.reduce(
         (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
         0
       );

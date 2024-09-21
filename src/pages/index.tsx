@@ -391,7 +391,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Stack>
       )}
       {selected.length > 0 ? (
-        session?.user?.role !== "HR" && (
+        session?.user?.role === "Corporate" && (
           <Stack direction="row" spacing={2}>
             {selected.length === 1 && (
               <Tooltip title="Edit">
@@ -679,7 +679,6 @@ export default function TimeKeeperTable({}: // contractors,
   const [open1, setOpen1] = React.useState(false);
   const [selected1, setSelected1] = React.useState<Comment[] | Upload[]>();
   const [contractors, setContractors] = React.useState<Contractor[]>([]);
-  const matches = useMediaQuery("(min-width:600px)");
   const [contractorName, setContractorName] = React.useState("all");
   const [value, setValue] = React.useState<Dayjs>(dayjs());
   const [statusChange, setStatusChange] = React.useState(false);
@@ -817,7 +816,7 @@ export default function TimeKeeperTable({}: // contractors,
 
   const fetchContrators = async () => {
     await axios
-      .get("/api/hr/contractors")
+      .get("/api/hr/contractors?page=home")
       .then((res) => {
         const contractors = res.data;
         setContractors(contractors);
@@ -964,6 +963,31 @@ export default function TimeKeeperTable({}: // contractors,
   };
 
   const renderValue = (row: TimeKeeperWithComment, column: Column) => {
+    const roles = row.comment?.map((c) => c.role) || [];
+    let flag = false;
+    if (roles.includes("Corporate") || roles.includes("HoCommercialAuditor")) {
+      if (session?.user?.role === "Corporate") {
+        flag = true;
+      }
+    } else if (roles.includes("PlantCommercial")) {
+      if (
+        session?.user?.role === "PlantCommercial" ||
+        session?.user?.role === "Corporate" ||
+        session?.user?.role === "HoCommercialAuditor"
+      ) {
+        flag = true;
+      }
+    } else if (roles.includes("HR")) {
+      if (
+        session?.user?.role === "HR" ||
+        session?.user?.role === "Corporate" ||
+        session?.user?.role === "HoCommercialAuditor"
+      ) {
+        flag = true;
+      }
+    } else {
+      flag = true;
+    }
     switch (column.id) {
       case "status":
         return (
@@ -995,7 +1019,7 @@ export default function TimeKeeperTable({}: // contractors,
           <>
             {session?.user?.role === "HR" && (
               <TableCell>
-                {!row.status ? (
+                {!row.status && !row.freezed && flag ? (
                   <Box
                     display="flex"
                     alignItems="center"
@@ -1020,7 +1044,8 @@ export default function TimeKeeperTable({}: // contractors,
             )}
             {(row.status === "NoChanges" ||
               session?.user?.role !== "TimeKeeper") &&
-              editOption(row.comment as any) && (
+              editOption(row.comment as any) &&
+              flag && (
                 <TableCell size="small">
                   <IconButton
                     onClick={() => router.push(`/details/${row.id}`)}

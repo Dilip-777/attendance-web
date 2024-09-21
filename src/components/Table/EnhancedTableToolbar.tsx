@@ -108,7 +108,7 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             <Delete />
           </IconButton>
         </Tooltip>
-      ) : handleClickReport && props.upload ? (
+      ) : handleClickReport || props.upload ? (
         <Stack direction="row" spacing={2}>
           {type === "contractor" && handleOpen && (
             <Tooltip title="Personalise Columns">
@@ -118,15 +118,19 @@ export default function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             </Tooltip>
           )}
 
-          <Tooltip title="Print">
-            <IconButton onClick={handleClickReport}>
-              <LocalPrintshopIcon />
-            </IconButton>
-          </Tooltip>
+          {handleClickReport && (
+            <Tooltip title="Print">
+              <IconButton onClick={handleClickReport}>
+                <LocalPrintshopIcon />
+              </IconButton>
+            </Tooltip>
+          )}
 
-          <Tooltip title="Upload">
-            <Box>{props.upload}</Box>
-          </Tooltip>
+          {props.upload && (
+            <Tooltip title="Upload">
+              <Box>{props.upload}</Box>
+            </Tooltip>
+          )}
         </Stack>
       ) : props.upload ? (
         props.upload

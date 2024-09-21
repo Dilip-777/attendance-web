@@ -12,6 +12,8 @@ import {
   Contractor,
   Department,
   Designations,
+  FixedDesignations,
+  FixedValues,
   SeperateSalary,
   Shifts,
   TimeKeeper,
@@ -40,6 +42,7 @@ interface TableProps {
   servicecharge?: number;
   timekeepers: TimeKeeper[];
   ot: boolean;
+  fixedValues: (FixedValues & { designations: FixedDesignations[] }) | null;
 }
 
 const HourlyTable = ({
@@ -49,6 +52,7 @@ const HourlyTable = ({
   value,
   wrkhrs,
   timekeepers,
+  fixedValues,
   ot,
 }: TableProps) => {
   const [loading, setLoading] = React.useState(false);
@@ -64,9 +68,7 @@ const HourlyTable = ({
 
   const fetchTimekeepers = async () => {
     setLoading(true);
-    const designations: DesignationwithSalary[] = _.flatten(
-      departments.map((d) => d.designations)
-    );
+
     const { rows, total, allcounts, netTotal } = getTotalAmountAndRows(
       timekeepers,
       dayjs(value, "MM/YYYY").month() + 1,
@@ -74,7 +76,7 @@ const HourlyTable = ({
       shifts,
       contractor.contractorId,
       contractor,
-      designations,
+      fixedValues,
       departments,
       wrkhrs,
       session?.user?.role,

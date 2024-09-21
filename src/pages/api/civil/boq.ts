@@ -6,11 +6,7 @@ export default async function bOQ(req: NextApiRequest, res: NextApiResponse) {
     const { contractorid: id } = req.query;
     if (id) {
       const bOQ = await prisma.bOQ.findMany({
-        where: {
-          contractorid: id as string,
-        },
         include: {
-          contractor: true,
           BOQItems: true,
         },
       });
@@ -19,7 +15,6 @@ export default async function bOQ(req: NextApiRequest, res: NextApiResponse) {
     }
     const bOQ = await prisma.bOQ.findMany({
       include: {
-        contractor: true,
         BOQItems: true,
       },
     });

@@ -16,6 +16,8 @@ import {
   Department,
   Designations,
   Employee,
+  FixedDesignations,
+  FixedValues,
   SeperateSalary,
   Shifts,
   TimeKeeper,
@@ -166,6 +168,12 @@ export default function PlantCommercial({
   );
   const [inputValue, setInputValue] = React.useState("");
   const [tabvalue, setTabValue] = React.useState(0);
+  const [fixedValues, setFixedValues] = React.useState<
+    | (FixedValues & {
+        designations: FixedDesignations[];
+      })
+    | null
+  >(null);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -255,6 +263,17 @@ export default function PlantCommercial({
     }
     setLoadingBill(false);
   };
+
+  const fetchFixedValues = async () => {
+    const res = await axios.get(
+      `/api/fixedvalues?contractorId=${contractor1}&month=${value}`
+    );
+    setFixedValues(res.data);
+  };
+
+  React.useEffect(() => {
+    fetchFixedValues();
+  }, [value, contractor1]);
 
   columns.push(...extra);
 
@@ -496,6 +515,7 @@ export default function PlantCommercial({
                   }
                   timekeepers={timekeepers}
                   ot={false}
+                  fixedValues={fixedValues}
                 />
               ))}
             {employees.length > 0 && (
@@ -508,6 +528,7 @@ export default function PlantCommercial({
                 departments={selectedDepartment}
                 ot={false}
                 seperateSalarys={seperateSalarys}
+                fixedValues={fixedValues}
               />
             )}
           </Stack>
@@ -533,6 +554,7 @@ export default function PlantCommercial({
                   }
                   timekeepers={timekeepers}
                   ot={true}
+                  fixedValues={fixedValues}
                 />
               ))}
             {employees.length > 0 && (
@@ -545,6 +567,7 @@ export default function PlantCommercial({
                 departments={selectedDepartment}
                 ot={true}
                 seperateSalarys={seperateSalarys}
+                fixedValues={fixedValues}
               />
             )}
           </Stack>

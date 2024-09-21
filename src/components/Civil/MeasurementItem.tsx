@@ -20,8 +20,8 @@ interface MeasurementItemProps {
   index: number;
   qcs?: boolean;
   mainIndex?: number;
-  boqItems: QcsBoqItem[];
-  workItem: any;
+  boqItems?: QcsBoqItem[];
+  workItem?: any;
 }
 
 const AddMeasurementItem = ({
@@ -31,7 +31,7 @@ const AddMeasurementItem = ({
   workItem,
   boqItems,
 }: MeasurementItemProps) => {
-  const b = boqItems[index];
+  const b = boqItems ? boqItems[index] : undefined;
 
   const quantity =
     workItem?.length * workItem?.breadth * workItem?.height * workItem?.nos;
@@ -159,24 +159,37 @@ const AddMeasurementItem = ({
       </Grid>
 
       {/* <Grid item xs={12} sm={5} md={4} lg={3}></Grid> */}
-      <Grid item xs={12} sm={5} md={4} lg={3}>
-        <FormInput1
-          label="Quantity"
-          type="number"
-          placeholder="Quantity"
-          sx={{ width: "100%", maxWidth: "100%" }}
-          value={quantity}
-        />
-      </Grid>
-      <Grid item xs={12} sm={5} md={4} lg={3}>
-        <FormInput1
-          label="Total Quantity"
-          type="number"
-          placeholder="Total Quantity"
-          sx={{ width: "100%", maxWidth: "100%" }}
-          value={b.totalQuantity}
-        />
-      </Grid>
+      {!qcs && (
+        <>
+          <Grid item xs={12} sm={5} md={4} lg={3}>
+            <FormInput1
+              label="Quantity"
+              type="number"
+              placeholder="Quantity"
+              sx={{ width: "100%", maxWidth: "100%" }}
+              value={quantity}
+            />
+          </Grid>
+          <Grid item xs={12} sm={5} md={4} lg={3}>
+            <FormInput1
+              label="Total Quantity"
+              type="number"
+              placeholder="Total Quantity"
+              sx={{ width: "100%", maxWidth: "100%" }}
+              value={b?.totalQuantity}
+            />
+          </Grid>
+          <Grid item xs={12} sm={5} md={4} lg={3}>
+            <FormInput1
+              label="Balance Quantity"
+              type="number"
+              placeholder="Balance Quantity"
+              sx={{ width: "100%", maxWidth: "100%" }}
+              value={workItem?.balanceQuantity - quantity}
+            />
+          </Grid>
+        </>
+      )}
       <Grid item xs={12}>
         <Divider sx={{ my: 3 }} />
       </Grid>

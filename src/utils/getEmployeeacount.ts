@@ -2,6 +2,8 @@ import {
   Department,
   Designations,
   Employee,
+  FixedDesignations,
+  FixedValues,
   SeperateSalary,
   TimeKeeper,
 } from "@prisma/client";
@@ -39,7 +41,8 @@ const getEmployeesCalculation = (
   year: number,
   employees: EmployeeDepartmentDesignation[],
   ot: boolean,
-  seperateSalaries: SeperateSalary[]
+  seperateSalaries: SeperateSalary[],
+  fixedValues: (FixedValues & { designations: FixedDesignations[] }) | null
 ) => {
   const m = dayjs(`${year}-${month}`).daysInMonth();
 
@@ -110,16 +113,28 @@ const getEmployeesCalculation = (
     }
 
     totalobj["total"] = ((totalobj["total"] as number) || 0) + obj["total"];
-    const seperateSalary = seperateSalaries.find(
-      (f) =>
-        f.contractorId === employee.contractorId &&
-        f.designationId === employee.designationId
-    );
 
-    if (seperateSalary) {
-      obj["rate"] = seperateSalary.salary;
+    if (fixedValues) {
+      const fixedValue = fixedValues.designations.find(
+        (f) => f.designationId === employee.designationId
+      );
+      if (fixedValue) {
+        obj["rate"] = fixedValue.salary;
+      } else {
+        obj["rate"] = employee.designation.basicsalary;
+      }
     } else {
-      obj["rate"] = employee.designation.basicsalary;
+      const seperateSalary = seperateSalaries.find(
+        (f) =>
+          f.contractorId === employee.contractorId &&
+          f.designationId === employee.designationId
+      );
+
+      if (seperateSalary) {
+        obj["rate"] = seperateSalary.salary;
+      } else {
+        obj["rate"] = employee.designation.basicsalary;
+      }
     }
     totalobj["rate"] = "";
 

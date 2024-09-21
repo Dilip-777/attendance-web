@@ -1,4 +1,4 @@
-import { plantname } from "@/constants";
+import { plantname } from '@/constants';
 import {
   Contractor,
   Department,
@@ -7,17 +7,17 @@ import {
   Stores,
   Workorder,
   payoutTracker,
-} from "@prisma/client";
-import dayjs from "dayjs";
-import _ from "lodash";
-const ExcelJS = require("exceljs");
+} from '@prisma/client';
+import dayjs from 'dayjs';
+import _ from 'lodash';
+const ExcelJS = require('exceljs');
 
 function getMonthName(monthNumber: number) {
   const date = new Date();
   date.setMonth(monthNumber - 1);
 
-  return date.toLocaleString("en-US", {
-    month: "long",
+  return date.toLocaleString('en-US', {
+    month: 'long',
   });
 }
 
@@ -53,49 +53,49 @@ const handleprint = ({
   servicecharge: number;
 }) => {
   const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Sheet 1");
+  const worksheet = workbook.addWorksheet('Sheet 1');
 
   let count = ot ? 4 : 9;
 
   const headcells = [
-    { id: "employeeId", label: "ID" },
-    { id: "name", label: "Name" },
-    { id: "designation", label: "Designation", ceil: false },
+    { id: 'employeeId', label: 'ID' },
+    { id: 'name', label: 'Name' },
+    { id: 'designation', label: 'Designation', ceil: false },
   ];
 
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
 
   for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
-    const date = `${i.toString().padStart(2, "0")}/${month
+    const date = `${i.toString().padStart(2, '0')}/${month
       .toString()
-      .padStart(2, "0")}/${year}`;
-    headcells.push({ id: date, label: i.toString().padStart(2, "0") });
+      .padStart(2, '0')}/${year}`;
+    headcells.push({ id: date, label: i.toString().padStart(2, '0') });
     count++;
   }
 
   const extraheadcells = [
-    { id: "rate", label: "Rate" },
-    { id: "amount", label: "Amount", ceil: true },
-    { id: "othrs", label: "OT" },
-    { id: "otamount", label: "OT Amount", ceil: true },
-    { id: "totalamount", label: "Total Amount", ceil: true },
+    { id: 'rate', label: 'Rate' },
+    { id: 'amount', label: 'Amount', ceil: true },
+    { id: 'othrs', label: 'OT' },
+    { id: 'otamount', label: 'OT Amount', ceil: true },
+    { id: 'totalamount', label: 'Total Amount', ceil: true },
   ];
-  headcells.push({ id: "total", label: "Total" });
+  headcells.push({ id: 'total', label: 'Total' });
   if (!ot) headcells.push(...extraheadcells);
 
   const border = {
-    top: { style: "thin", color: { argb: "black" } },
-    left: { style: "thin", color: { argb: "black" } },
-    bottom: { style: "thin", color: { argb: "black" } },
-    right: { style: "thin", color: { argb: "black" } },
+    top: { style: 'thin', color: { argb: 'black' } },
+    left: { style: 'thin', color: { argb: 'black' } },
+    bottom: { style: 'thin', color: { argb: 'black' } },
+    right: { style: 'thin', color: { argb: 'black' } },
   };
 
   const headings = [
     {
       header: [plantname],
       colSpan: count,
-      bgcolor: "a3f2fd",
+      bgcolor: 'a3f2fd',
       font: { size: 16, bold: true },
     },
     {
@@ -132,11 +132,11 @@ const handleprint = ({
       }`
     );
     headingTextRow.eachCell((cell: any) => {
-      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
       cell.font = heading.font;
       cell.fill = {
-        type: "pattern",
-        pattern: "solid",
+        type: 'pattern',
+        pattern: 'solid',
         fgColor: { argb: heading.bgcolor }, // Replace 'FFFF0000' with the desired color code
       };
       cell.border = border;
@@ -148,7 +148,7 @@ const handleprint = ({
   });
 
   createHeading({
-    header: [""],
+    header: [''],
     height: 30,
   });
 
@@ -157,28 +157,28 @@ const handleprint = ({
   tableheader.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: "middle",
-      horizontal: "center",
+      vertical: 'middle',
+      horizontal: 'center',
     };
     cell.font = { bold: true, size: 11, wrapText: true };
     cell.border = border;
     cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
     };
   });
 
   rows.forEach((row: any) => {
     const data = headcells.map((h) => {
-      return row[h.id];
+      return typeof row[h.id] === 'number' ? getRoundOff(row[h.id]) : row[h.id];
     });
     const datarow = worksheet.addRow(data);
     datarow.eachCell((cell: any) => {
       cell.alignment = {
         wrapText: true,
-        vertical: "middle",
-        horizontal: "center",
+        vertical: 'middle',
+        horizontal: 'center',
       };
       cell.border = border;
       cell.font = { size: 9, wrapText: true };
@@ -194,25 +194,25 @@ const handleprint = ({
         label: `Add ${servicecharge || 0}%`,
         value: getRoundOff((total * (servicecharge || 0)) / 100),
       },
-      { label: "Taxable Amount", value: getRoundOff(txamount) },
-      { label: "IGST 18%", value: getRoundOff(txamount * 0.18) },
-      { label: "Total Amount", value: getRoundOff(txamount * 1.18) },
+      { label: 'Taxable Amount', value: getRoundOff(txamount) },
+      { label: 'IGST 18%', value: getRoundOff(txamount * 0.18) },
+      { label: 'Total Amount', value: getRoundOff(txamount * 1.18) },
     ];
 
     finaldata.forEach((row: any) => {
       let data = [];
       while (data.length < count - 5) {
-        data.push("");
+        data.push('');
       }
       // data.push(row.label);
-      data.push(...[row.label, "", "", "", row.value]);
+      data.push(...[row.label, '', '', '', row.value]);
       // data.push(row.value);
       const datarow = worksheet.addRow(data);
       datarow.eachCell((cell: any) => {
         cell.alignment = {
           wrapText: true,
-          vertical: "middle",
-          horizontal: "center",
+          vertical: 'middle',
+          horizontal: 'center',
         };
         cell.border = border;
         cell.font = { size: 9, wrapText: true };
@@ -226,33 +226,33 @@ const handleprint = ({
     });
   }
   createHeading({
-    header: [""],
+    header: [''],
     height: 30,
   });
 
   const row = worksheet.addRow([
-    "Checked By",
-    "",
-    "Verified By   8HR",
-    "",
-    "Verified By   COMM",
-    "",
-    "Passed By    ED",
-    "",
-    "",
+    'Checked By',
+    '',
+    'Verified By   8HR',
+    '',
+    'Verified By   COMM',
+    '',
+    'Passed By    ED',
+    '',
+    '',
   ]);
   row.eachCell((cell: any) => {
     cell.alignment = {
       wrapText: true,
-      vertical: "middle",
-      horizontal: "center",
+      vertical: 'middle',
+      horizontal: 'center',
     };
     cell.font = { bold: true, size: 11, wrapText: true };
     cell.border = border;
     cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "e0e0e0" }, // Replace 'FFFF0000' with the desired color code
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'e0e0e0' }, // Replace 'FFFF0000' with the desired color code
     };
   });
 
@@ -263,12 +263,12 @@ const handleprint = ({
 
   workbook.xlsx.writeBuffer().then((buffer: any) => {
     const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
-    link.setAttribute("download", "plantcommericalmonthly.xlsx");
+    link.setAttribute('download', 'plantcommericalmonthly.xlsx');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

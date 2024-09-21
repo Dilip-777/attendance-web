@@ -12,6 +12,9 @@ import civil from "./civil";
 import management from "./manager";
 import fixed from "./fixed";
 import workorder from "./workorder";
+import accounts from "./accounts";
+import paymententry from "./paymententry";
+import mtr from "./mtr";
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -71,6 +74,18 @@ const workorderItems = {
   items: [workorder],
 };
 
+const accountItems = {
+  items: [accounts],
+};
+
+const paymententryItems = {
+  item: [paymententry],
+};
+
+const mtrItems = {
+  items: [mtr],
+};
+
 export {
   menuItems,
   adminItems,
@@ -86,4 +101,7 @@ export {
   managerItems,
   fixedItems,
   workorderItems,
+  accountItems,
+  paymententryItems,
+  mtrItems,
 };

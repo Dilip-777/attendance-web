@@ -19,8 +19,11 @@ import {
   BarBending,
   BarBendingItem,
   Contractor,
+  Measurement,
+  MeasurementItem,
   Project,
   Qcs,
+  QcsBoqItem,
   Workorder,
 } from "@prisma/client";
 import FormSelect from "@/components/FormikComponents/FormSelect";
@@ -31,6 +34,7 @@ import prisma from "@/lib/prisma";
 import { useRouter } from "next/router";
 import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect";
 import FormDate from "@/components/FormikComponents/FormDate";
+import FormInput1 from "@/ui-component/FormInput";
 import dayjs from "dayjs";
 
 const workItemSchema = Yup.object().shape({
@@ -75,7 +79,14 @@ const AddBarBending = ({
   projects: (Project & {
     Qcs: (Qcs & {
       BOQ: (BOQ & {
-        BOQItems: BOQItem[];
+        BOQItems: (QcsBoqItem & {
+          measurementItems: (MeasurementItem & {
+            measurement: Measurement;
+          })[];
+          barBendingItems: (BarBendingItem & {
+            barBending: BarBending;
+          })[];
+        })[];
       })[];
     })[];
   })[];
@@ -106,6 +117,8 @@ const AddBarBending = ({
           g: w.g,
           h: w.h,
           remarks: w.remarks,
+          totalQuantity: 0,
+          balanceQuantity: 0,
         }))
       : [],
   };
@@ -163,8 +176,9 @@ const AddBarBending = ({
             const totalweight = parseFloat(
               (totalLength * unitweight).toFixed(3)
             );
+            const { balanceQuantity, totalQuantity, ...rest } = item;
             barbendingItems.push({
-              ...item,
+              ...rest,
               totalcost,
               cuttinglength,
               totalLength,
@@ -232,19 +246,35 @@ const AddBarBending = ({
 
           if (boq?.description !== values.description) {
             setFieldValue("description", boq?.description);
+
             setFieldValue(
               "barbendingItems",
-              boqItems.map((w) => ({
-                boqItemId: w.id,
-                description: w.description,
-                // unit: w.unit,
-                // unitrate: w.unitrate,
-                // nos: 0,
-                // length: 0,
-                // breadth: 0,
-                // height: 0,
-                // remarks: "",
-              }))
+              boqItems.map((w) => {
+                const balanceQuantity =
+                  w.quantity -
+                  w.measurementItems.reduce(
+                    (acc, curr) => acc + curr.quantity,
+                    0
+                  ) -
+                  w.barBendingItems.reduce(
+                    (acc, curr) => acc + curr.totalweight,
+                    0
+                  );
+
+                return {
+                  boqItemId: w.id,
+                  description: w.description,
+                  balanceQuantity,
+                  totalQuantity: w.totalQuantity,
+                  // unit: w.unit,
+                  // unitrate: w.unitrate,
+                  // nos: 0,
+                  // length: 0,
+                  // breadth: 0,
+                  // height: 0,
+                  // remarks: "",
+                };
+              })
             );
           }
 
@@ -327,6 +357,7 @@ const AddBarBending = ({
                             Work Items
                           </Typography>
                           <Button
+                            color="secondary"
                             variant="contained"
                             onClick={() =>
                               push({
@@ -349,158 +380,216 @@ const AddBarBending = ({
                             Add
                           </Button>
                         </Box>
-                        {barbendingItems.map((item: any, index: number) => (
-                          <Grid container columnGap={8}>
-                            <Grid item xs={12} sm={10}>
-                              <FormInput
-                                name={`barbendingItems.${index}.description`}
-                                label="Description"
-                                placeHolder="Description"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            {barbendingItems.costperequipment > 1 && (
-                              <Grid item xs={12} sm={1}>
-                                <IconButton
-                                  sx={{
-                                    mt: "2rem",
-                                    ml: "1rem",
-                                    color: "white",
-                                    bgcolor: "red",
-                                    ":hover": {
-                                      bgcolor: "#e53935",
-                                    },
-                                  }}
-                                  onClick={() => remove(index)}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
+                        {barbendingItems.map((item: any, index: number) => {
+                          const totalcost = parseFloat(
+                            (
+                              item.noofequipments * item.costperequipment
+                            ).toFixed(3)
+                          );
+                          const cuttinglength = parseFloat(
+                            (
+                              item.a +
+                              item.b +
+                              item.c +
+                              item.d +
+                              item.e +
+                              item.f +
+                              item.g +
+                              item.h
+                            ).toFixed(3)
+                          );
+                          const totalLength = parseFloat(
+                            (totalcost * cuttinglength).toFixed(3)
+                          );
+                          const unitweight = parseFloat(
+                            ((item.diamark * item.diamark) / 162.2).toFixed(3)
+                          );
+                          const totalweight = parseFloat(
+                            (totalLength * unitweight).toFixed(3)
+                          );
+                          return (
+                            <Grid container columnGap={8}>
+                              <Grid item xs={12} sm={10}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.description`}
+                                  label="Description"
+                                  placeHolder="Description"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
                               </Grid>
-                            )}
+                              {barbendingItems.costperequipment > 1 && (
+                                <Grid item xs={12} sm={1}>
+                                  <IconButton
+                                    sx={{
+                                      mt: "2rem",
+                                      ml: "1rem",
+                                      color: "white",
+                                      bgcolor: "red",
+                                      ":hover": {
+                                        bgcolor: "#e53935",
+                                      },
+                                    }}
+                                    onClick={() => remove(index)}
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Grid>
+                              )}
 
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`barbendingItems.${index}.diamark`}
-                                label="Dia Mark"
-                                placeHolder="Dia Mark"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                                type="number"
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`barbendingItems.${index}.barmark`}
-                                label="Bar Mark"
-                                placeHolder="Bar Mark"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                                // type="number"
-                              />
-                            </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.diamark`}
+                                  label="Dia Mark"
+                                  placeHolder="Dia Mark"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                  type="number"
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.barmark`}
+                                  label="Bar Mark"
+                                  placeHolder="Bar Mark"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                  // type="number"
+                                />
+                              </Grid>
 
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`barbendingItems.${index}.noofequipments`}
-                                label="No of Equipments"
-                                type="number"
-                                placeHolder="No of Equipments"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.noofequipments`}
+                                  label="No of Equipments"
+                                  type="number"
+                                  placeHolder="No of Equipments"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.costperequipment`}
+                                  label="Per Equipment"
+                                  type="number"
+                                  placeHolder="Per Equipment"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.a`}
+                                  label="A(M)"
+                                  type="number"
+                                  placeHolder="A(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.b`}
+                                  label="B(M)"
+                                  type="number"
+                                  placeHolder="B(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.c`}
+                                  label="C(M)"
+                                  type="number"
+                                  placeHolder="C(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.d`}
+                                  label="D(M)"
+                                  type="number"
+                                  placeHolder="D(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.e`}
+                                  label="E(M)"
+                                  type="number"
+                                  placeHolder="E(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.f`}
+                                  label="F(M)"
+                                  type="number"
+                                  placeHolder="F(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.g`}
+                                  label="G(M)"
+                                  type="number"
+                                  placeHolder="G(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={1.2}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.h`}
+                                  label="H(M)"
+                                  type="number"
+                                  placeHolder="H(M)"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput
+                                  name={`barbendingItems.${index}.remarks`}
+                                  label="Remarks"
+                                  type="text"
+                                  placeHolder="Enter Remarks"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput1
+                                  label="Quantity"
+                                  type="number"
+                                  placeholder="Quantity"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                  value={totalweight}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput1
+                                  label="Total Quantity"
+                                  type="number"
+                                  placeholder="Total Quantity"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                  value={item.totalQuantity}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={5} md={4} lg={3}>
+                                <FormInput1
+                                  label="Balance Quantity"
+                                  type="number"
+                                  placeholder="Balance Quantity"
+                                  sx={{ width: "100%", maxWidth: "100%" }}
+                                  value={
+                                    item?.balanceQuantity -
+                                    (Number(totalweight) || 0)
+                                  }
+                                />
+                              </Grid>
+                              <Grid item xs={12}>
+                                <Divider sx={{ my: 3 }} />
+                              </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`barbendingItems.${index}.costperequipment`}
-                                label="Per Equipment"
-                                type="number"
-                                placeHolder="Per Equipment"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.a`}
-                                label="A(M)"
-                                type="number"
-                                placeHolder="A(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.b`}
-                                label="B(M)"
-                                type="number"
-                                placeHolder="B(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.c`}
-                                label="C(M)"
-                                type="number"
-                                placeHolder="C(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.d`}
-                                label="D(M)"
-                                type="number"
-                                placeHolder="D(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.e`}
-                                label="E(M)"
-                                type="number"
-                                placeHolder="E(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.f`}
-                                label="F(M)"
-                                type="number"
-                                placeHolder="F(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.g`}
-                                label="G(M)"
-                                type="number"
-                                placeHolder="G(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={1.2}>
-                              <FormInput
-                                name={`barbendingItems.${index}.h`}
-                                label="H(M)"
-                                type="number"
-                                placeHolder="H(M)"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={5} md={4} lg={3}>
-                              <FormInput
-                                name={`barbendingItems.${index}.remarks`}
-                                label="Remarks"
-                                type="text"
-                                placeHolder="Enter Remarks"
-                                sx={{ width: "100%", maxWidth: "100%" }}
-                              />
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Divider sx={{ my: 3 }} />
-                            </Grid>
-                          </Grid>
-                        ))}
+                          );
+                        })}
                       </Stack>
                     );
                   }}
@@ -510,6 +599,7 @@ const AddBarBending = ({
                   variant="contained"
                   sx={{ mt: 3 }}
                   disabled={isSubmitting}
+                  color="secondary"
                 >
                   Submit {isSubmitting && <CircularProgress size={20} />}
                 </Button>
@@ -552,7 +642,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         include: {
           BOQ: {
             include: {
-              BOQItems: true,
+              BOQItems: {
+                include: {
+                  measurementItems: {
+                    include: {
+                      measurement: true,
+                    },
+                  },
+                  barBendingItems: {
+                    include: {
+                      barBending: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },

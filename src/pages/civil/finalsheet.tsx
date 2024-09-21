@@ -210,8 +210,8 @@ export default function FinalSheet({
     fetchDeductions();
   }, [contractor, month]);
 
-  const { tables, totalsRow, total } = useMemo(
-    () => getBoqFinalSheet({ boq: boqs, month: month as string }),
+  const { tables, totalsRow, total, totalcostupto, prevMonthTotal } = useMemo(
+    () => getBoqFinalSheet({ boq: boqs, month: month as string, contractor }),
     [boqs, month]
   );
 
@@ -411,7 +411,7 @@ export default function FinalSheet({
         rows={[
           {
             label: "Cost of Previous Month",
-            value: "0",
+            value: prevMonthTotal.toString(),
           },
           {
             label: "Cost of the Month",
@@ -419,11 +419,15 @@ export default function FinalSheet({
           },
           {
             label: "Cost Upto This Month",
-            value: "0",
+            value: totalcostupto.toString(),
           },
           {
             label: "Cost Of the Previous Year",
             value: "0",
+          },
+          {
+            label: "Cost Of the Project",
+            value: contractor.Qcs[0].description,
           },
         ]}
       />
@@ -496,7 +500,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     contractor = contractors[0];
   }
 
-  let project = contractor.Qcs.find((p) => p.id === projectId)?.project;
+  let project = contractor.Qcs.find((p) => p.projectId === projectId)?.project;
 
   if (!project) {
     project = contractor.Qcs[0].project;

@@ -3,11 +3,13 @@ import {
   Department,
   Designations,
   Employee,
+  FixedDesignations,
+  FixedValues,
   HiredFixedWork,
   SeperateSalary,
   TimeKeeper,
-} from "@prisma/client";
-import dayjs from "dayjs";
+} from '@prisma/client';
+import dayjs from 'dayjs';
 
 interface d extends Department {
   designations: DesignationwithSalary[];
@@ -73,18 +75,18 @@ export const getWorksCalculations = (
     };
   });
   rows.push({
-    id: "Total",
-    description: "",
-    rate: "",
-    quantity: "",
+    id: 'Total',
+    description: '',
+    rate: '',
+    quantity: '',
 
     totalAmount: totals.totalAmount,
     taxable: totals.taxable,
     servicechargeRate: 0,
     servicecharge: totals.servicecharge,
-    gst: totals.gst,
+    gst: parseFloat(totals.gst.toFixed(2)),
     billamount: totals.billamount,
-    tds: totals.tds,
+    tds: parseFloat(totals.tds.toFixed(2)),
     netPayable: totals.netPayable,
   });
   return { rows, totals };
@@ -93,7 +95,11 @@ export const getWorksCalculations = (
 export const getAttendanceCalculations = (
   contractor: Contractor & {
     employee: (Employee & {
-      designation: Designations | null;
+      designation:
+        | (Designations & {
+            fixedDesignations: FixedDesignations[];
+          })
+        | null;
     })[];
     departments: d[];
     hiredFixedWork: HiredFixedWork[];
@@ -101,7 +107,7 @@ export const getAttendanceCalculations = (
   timekeeper: TimeKeeper[],
   month: string
 ) => {
-  const noofdays = dayjs(month, "MM/YYYY").daysInMonth();
+  const noofdays = dayjs(month, 'MM/YYYY').daysInMonth();
   const totals = {
     servicechargeRate: 0,
     servicechargeAmount: 0,
@@ -112,26 +118,31 @@ export const getAttendanceCalculations = (
     netPayable: 0,
   };
   const data = contractor.employee.map((employee, index) => {
+    const fixedDesignation = employee.designation?.fixedDesignations[0];
     const fullTime = timekeeper.filter(
       (time) =>
-        time.employeeid === employee.employeeId && time.attendance === "1"
+        time.employeeid === employee.employeeId && time.attendance === '1'
     );
     const halfTime = timekeeper.filter(
       (time) =>
-        time.employeeid === employee.employeeId && time.attendance === "0.5"
+        time.employeeid === employee.employeeId && time.attendance === '0.5'
     );
     const count = fullTime.length + halfTime.length / 2;
 
     const totalManDayAmount =
-      (count * (employee.designation?.basicsalary ?? 0)) / 31;
+      (count *
+        (fixedDesignation?.salary ?? employee.designation?.basicsalary ?? 0)) /
+      noofdays;
 
     const overtime = fullTime.reduce(
       (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
       0
     );
     const otRate =
-      (employee.designation?.basicsalary ?? 0) /
-      (employee.designation?.allowed_wrking_hr_per_day ?? 1) /
+      (fixedDesignation?.salary ?? employee.designation?.basicsalary ?? 0) /
+      (fixedDesignation?.allowed_wrking_hr_per_day ??
+        employee.designation?.allowed_wrking_hr_per_day ??
+        1) /
       noofdays;
 
     const otamount = overtime * otRate;
@@ -157,9 +168,14 @@ export const getAttendanceCalculations = (
 
     return {
       id: (index + 1) as number | string,
-      name: employee.employeename + "-" + employee.designation?.designation,
+      name:
+        employee.employeename +
+        '-' +
+        (fixedDesignation?.designation || employee.designation?.designation),
       totalManDay: count as number | string,
-      rate: employee.designation?.basicsalary as number | string,
+      rate: (fixedDesignation?.salary || employee.designation?.basicsalary) as
+        | number
+        | string,
       totalManDayAmount: totalManDayAmount.toFixed(2),
       overtime: overtime as number | string,
       otRate: otRate.toFixed(2),
@@ -174,20 +190,24 @@ export const getAttendanceCalculations = (
     };
   });
   data.push({
-    id: "Total",
-    name: "",
-    totalManDay: "",
-    rate: "",
-    totalManDayAmount: "",
-    overtime: "",
-    otRate: "",
-    otamount: "",
-    servicechargeRate: "",
+    id: 'Total',
+    name: '',
+    totalManDay: '',
+    rate: '',
+    totalManDayAmount: '',
+    overtime: '',
+    otRate: '',
+    otamount: '',
+    servicechargeRate: '',
     servicechargeAmount: totals.servicechargeAmount.toFixed(2),
-    taxable: data.reduce((acc, curr) => acc + curr.taxable, 0),
-    gst: data.reduce((acc, curr) => acc + curr.gst, 0),
-    billAmount: data.reduce((acc, curr) => acc + curr.billAmount, 0),
-    tds: data.reduce((acc, curr) => acc + curr.tds, 0),
+    taxable: parseFloat(
+      data.reduce((acc, curr) => acc + curr.taxable, 0).toFixed(2)
+    ),
+    gst: parseFloat(data.reduce((acc, curr) => acc + curr.gst, 0).toFixed(2)),
+    billAmount: parseFloat(
+      data.reduce((acc, curr) => acc + curr.billAmount, 0).toFixed(2)
+    ),
+    tds: parseFloat(data.reduce((acc, curr) => acc + curr.tds, 0).toFixed(2)),
     netPayable: data.reduce((acc, curr) => acc + curr.netPayable, 0),
   });
 
@@ -197,27 +217,34 @@ export const getAttendanceCalculations = (
 export const getHourlyCalculation = (
   contractor: Contractor & {
     employee: (Employee & {
-      designation: Designations | null;
+      designation:
+        | (Designations & {
+            fixedDesignations: FixedDesignations[];
+          })
+        | null;
     })[];
     departments: d[];
     hiredFixedWork: HiredFixedWork[];
+    fixedValues: FixedValues[];
   },
   timekeeper: TimeKeeper[],
   month: string
 ) => {
-  const noofdays = dayjs(month, "MM/YYYY").daysInMonth();
+  const noofdays = dayjs(month, 'MM/YYYY').daysInMonth();
+
+  const fixedValue = contractor.fixedValues[0];
 
   let shifthrs = 0;
   contractor.departments.forEach((department) => {
     department.designations.forEach((designation) => {
-      if (designation.designation.toLowerCase().trim() === "fixed") {
+      if (designation.designation.toLowerCase().trim() === 'fixed') {
         shifthrs = designation.allowed_wrking_hr_per_day;
       }
     });
   });
 
-  const fullTime = timekeeper.filter((time) => time.attendance === "1");
-  const halfTime = timekeeper.filter((time) => time.attendance === "0.5");
+  const fullTime = timekeeper.filter((time) => time.attendance === '1');
+  const halfTime = timekeeper.filter((time) => time.attendance === '0.5');
   const count = fullTime.length + halfTime.length / 2;
 
   const overtime =
@@ -228,17 +255,28 @@ export const getHourlyCalculation = (
 
   const totalManDays = count + overtime || 0;
   const noofEmployees = Math.round(totalManDays / noofdays);
-  const requiredManDays = Math.round(contractor.minHeadcount * noofdays);
+  const requiredManDays = Math.round(
+    fixedValue?.minHeadcount ?? contractor.minHeadcount * noofdays
+  );
   const shortage = Math.min(0, totalManDays - requiredManDays);
   let t = contractor.hiredFixedWork[0]?.totalAmount || 0;
-  t = t + (t * (contractor.servicecharge || 0)) / 100;
-  const rate = Math.round(t / ((contractor.minHeadcount || 1) * noofdays));
+  t =
+    t +
+    (t * (fixedValue?.servicecharge ?? contractor.servicecharge ?? 0)) / 100;
+
+  const rate = Math.round(
+    t / ((fixedValue?.minHeadcount || contractor.minHeadcount || 1) * noofdays)
+  );
 
   const taxable = shortage * rate;
-  const gst = Math.round((taxable * (contractor?.gst || 0)) / 100);
+  const gst = Math.round(
+    (taxable * (fixedValue?.gst ?? contractor?.gst ?? 0)) / 100
+  );
   const billAmount = taxable + gst;
 
-  const tds = Math.round((taxable * (contractor.tds ?? 0)) / 100);
+  const tds = Math.round(
+    (taxable * (fixedValue?.tds ?? contractor.tds ?? 0)) / 100
+  );
 
   const netPayable = billAmount - tds;
 

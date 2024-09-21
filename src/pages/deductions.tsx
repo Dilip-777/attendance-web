@@ -18,11 +18,12 @@ import { Contractor, Deductions } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import axios from "axios";
 import AddDeductions from "@/components/Deductions/addDeductions";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Tooltip } from "@mui/material";
 import FormSelect from "@/ui-component/FormSelect";
 import MonthSelect from "@/ui-component/MonthSelect";
 import dayjs, { Dayjs } from "dayjs";
 import AutoComplete from "@/ui-component/Autocomplete";
+import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 
 const headCells = [
   {
@@ -38,10 +39,39 @@ const headCells = [
     included: false,
   },
   { id: "month", label: "Month", numeric: false, included: false },
+  { id: "invoiceDate", label: "Invoice Date", numeric: false, included: false },
+  { id: "invoiceNo", label: "Invoice No", numeric: false, included: false },
+  { id: "gstin", label: "GST In", numeric: true, included: false },
   { id: "gsthold", label: "GST Hold", numeric: true, included: false },
-  { id: "gstrelease", label: "GST Release", numeric: true, included: false },
+
+  {
+    id: "gstHoldDate",
+    label: "GST Hold Date",
+    numeric: false,
+    included: false,
+  },
+
+  { id: "gstrelease", label: "Misc. Payment", numeric: true, included: false },
+  {
+    id: "gstReleaseDate",
+    label: "GST Release Date",
+    numeric: false,
+    included: false,
+  },
   { id: "advance", label: "Advance", numeric: true, included: false },
-  { id: "anyother", label: "Any Other", numeric: true, included: false },
+  {
+    id: "anyother",
+    label: "Any Other Deduction",
+    numeric: true,
+    included: false,
+  },
+  {
+    id: "addition",
+    label: "Any Other Addition",
+    numeric: true,
+    included: false,
+  },
+  { id: "paidIn", label: "Paid In", numeric: false, included: false },
   { id: "remarks", label: "Remarks", numeric: false, included: false },
   { id: "action", label: "Action", numeric: false, included: true },
 ];
@@ -64,6 +94,47 @@ export default function Deduction({
   const [loading, setLoading] = useState(false);
   const [contractorId, setContractorId] = useState<string>("all");
   const [month, setMonth] = useState<string | null>(null);
+
+  const handleClickReport = () => {
+    const tableRows = [
+      [
+        "Contractor ID",
+        "Contractor Name",
+        "Month",
+        "GST Hold",
+        "Misc. Payment",
+        "Advance",
+        "Any Other Deduction",
+        "Any Other Addition",
+        "Remarks",
+      ],
+    ];
+    deductions.forEach((item) => {
+      tableRows.push([
+        item.contractorId,
+        item.contractorName || "",
+        item.month,
+        item.gsthold.toString(),
+        item.gstrelease.toString(),
+        item.advance.toString(),
+        item.anyother.toString(),
+        item.addition.toString(),
+        item.remarks || "",
+      ]);
+    });
+    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "GST-Deductions.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const fetchDeducations = async () => {
     setLoading(true);
@@ -163,14 +234,21 @@ export default function Deduction({
               }
             />
           </Stack>
-          <Button
-            variant="contained"
-            onClick={() => setOpen(true)}
-            sx={{ justifySelf: "flex-end" }}
-            color="secondary"
-          >
-            Add Deduction
-          </Button>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Tooltip title="Print">
+              <IconButton onClick={handleClickReport}>
+                <LocalPrintshopIcon />
+              </IconButton>
+            </Tooltip>
+            <Button
+              variant="contained"
+              onClick={() => setOpen(true)}
+              sx={{ justifySelf: "flex-end" }}
+              color="secondary"
+            >
+              Add Deduction
+            </Button>
+          </Stack>
         </Stack>
         <TableContainer
           sx={{

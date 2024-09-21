@@ -48,6 +48,15 @@ const LineChart = ({
       categories: xaxis,
     },
 
+    yaxis: {},
+    tooltip: {
+      y: {
+        formatter: function (val: any) {
+          return val + "%";
+        },
+      },
+    },
+
     fill: {
       opacity: 1,
     },

@@ -13,6 +13,8 @@ import {
   Department,
   Designations,
   Employee,
+  FixedDesignations,
+  FixedValues,
   SeperateSalary,
   Shifts,
   TimeKeeper,
@@ -53,6 +55,7 @@ interface TableProps {
   departments: DepartmentDesignation[];
   ot: boolean;
   seperateSalarys: SeperateSalary[];
+  fixedValues: (FixedValues & { designations: FixedDesignations[] }) | null;
 }
 
 const MonthlyPlantCommercialTable = ({
@@ -62,6 +65,7 @@ const MonthlyPlantCommercialTable = ({
   departments,
   ot,
   seperateSalarys,
+  fixedValues,
 }: TableProps) => {
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
@@ -110,7 +114,8 @@ const MonthlyPlantCommercialTable = ({
       dayjs(value, "MM/YYYY").year(),
       employees,
       ot,
-      seperateSalarys
+      seperateSalarys,
+      fixedValues
     );
     // const { rows, total1 } = getTotalAmountAndRows(
     //   timekeepers,

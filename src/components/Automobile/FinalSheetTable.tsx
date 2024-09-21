@@ -38,6 +38,7 @@ interface Props {
   deduction: Deductions | null;
   fixed?: boolean;
   safetyAmount?: number;
+  totalsdata?: any[];
 }
 
 export default function FinalSheetTable({
@@ -49,6 +50,7 @@ export default function FinalSheetTable({
   deduction,
   fixed,
   safetyAmount,
+  totalsdata,
 }: Props) {
   const data1 = [
     {
@@ -82,6 +84,8 @@ export default function FinalSheetTable({
       costupto: cost?.ytdCost,
     },
   ];
+  console.log(deduction, "deductions");
+
   return (
     <Stack spacing={3}>
       {data.map((sheet, index) => (
@@ -125,6 +129,20 @@ export default function FinalSheetTable({
                     ))}
                   </TableRow>
                 ))}
+                {totalsdata &&
+                  index === 0 &&
+                  totalsdata.map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell align="center" colSpan={6}>
+                        {row.vehicleNo}
+                      </TableCell>
+                      <TableCell align="center">{row.taxable}</TableCell>
+                      <TableCell align="center">{row.gst}</TableCell>
+                      <TableCell align="center">{row.billamount}</TableCell>
+                      <TableCell align="center">{row.tds}</TableCell>
+                      <TableCell align="center">{row.netamount}</TableCell>
+                    </TableRow>
+                  ))}
                 {index === data.length - 1 && (
                   <>
                     <TableRow>
@@ -156,7 +174,6 @@ export default function FinalSheetTable({
                         GST Hold (if any)
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
-                        -
                         {(deduction?.gstrelease || 0) -
                           (deduction?.gsthold || 0) || 0}
                       </TableCell>
@@ -182,7 +199,7 @@ export default function FinalSheetTable({
                         Consumables / Chargeable Items
                       </TableCell>
                       <TableCell sx={{ fontWeight: "600" }}>
-                        {hsdcost}
+                        {hsdcost || 0}
                       </TableCell>
                     </TableRow>
                     <TableRow>

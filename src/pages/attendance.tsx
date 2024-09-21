@@ -16,6 +16,8 @@ import {
   Department,
   Designations,
   Employee,
+  FixedDesignations,
+  FixedValues,
   SeperateSalary,
   Shifts,
   TimeKeeper,
@@ -152,6 +154,12 @@ export default function PlantCommercial({
   const [employees, setEmployees] = React.useState<
     EmployeeDepartmentDesignation[]
   >([]);
+  const [fixedValues, setFixedValues] = React.useState<
+    | (FixedValues & {
+        designations: FixedDesignations[];
+      })
+    | null
+  >(null);
 
   const [timekeepers, setTimekeepers] = React.useState<TimeKeeper[]>([]);
   const [departments, setDepartments] = React.useState<DepartmentDesignation[]>(
@@ -162,6 +170,13 @@ export default function PlantCommercial({
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  const fetchFixedValues = async () => {
+    const res = await axios.get(
+      `/api/fixedvalues?contractorId=${contractor1}&month=${value}`
+    );
+    setFixedValues(res.data);
   };
 
   const handleClose = () => {
@@ -179,6 +194,7 @@ export default function PlantCommercial({
 
   React.useEffect(() => {
     fetchTimekeepers();
+    fetchFixedValues();
   }, [value, contractor1]);
 
   const fetchEmployees = async () => {
@@ -512,6 +528,7 @@ export default function PlantCommercial({
                 }
                 timekeepers={timekeepers}
                 ot={false}
+                fixedValues={fixedValues}
               />
             ))}
           {employees.length > 0 && (
@@ -524,6 +541,7 @@ export default function PlantCommercial({
               departments={selectedDepartments}
               ot={false}
               seperateSalarys={seperateSalarys}
+              fixedValues={fixedValues}
             />
           )}
           {selectedDepartments.length === 0 && employees.length === 0 && (
@@ -562,6 +580,7 @@ export default function PlantCommercial({
                   }
                   timekeepers={timekeepers}
                   ot={true}
+                  fixedValues={fixedValues}
                 />
               ))}
             {employees.length > 0 && (
@@ -574,6 +593,7 @@ export default function PlantCommercial({
                 departments={selectedDepartments}
                 ot={true}
                 seperateSalarys={seperateSalarys}
+                fixedValues={fixedValues}
               />
             )}
           </Stack>

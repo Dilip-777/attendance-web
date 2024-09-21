@@ -3,6 +3,7 @@ import {
   Automobile,
   Contractor,
   FinalCalculations,
+  FixedVehicle,
   Hsd,
   Vehicle,
 } from "@prisma/client";
@@ -40,7 +41,7 @@ const getData = (
     // taxable = Math.round(
     //   (totalAuto.days / (m * vehicle.shiftduraion || 1)) * vehicle.charges
     // );
-    const rateperhr = vehicle.charges / (vehicle.shiftduraion * m ?? 1);
+    const rateperhr = vehicle.charges / (vehicle.shiftduraion * m || 1);
     taxable = Math.round(
       Math.min(totalAuto.hrs, vehicle.shiftduraion) * rateperhr
     );
@@ -79,7 +80,10 @@ const getAverageMileage = (automobile: Automobile[], vehicle: Vehicle) => {
 };
 
 export const getAutomobileFinalSheet = (
-  vehicles: (Vehicle & { automobile: Automobile[] })[],
+  vehicles: (Vehicle & {
+    automobile: Automobile[];
+    fixedVehicle: FixedVehicle[];
+  })[],
   hsd: Hsd | null,
   month: string,
   contractor: Contractor
@@ -96,7 +100,16 @@ export const getAutomobileFinalSheet = (
   const totals: any[] = [];
   let hsdcost = 0;
   let idealStandingDays = 0;
+  const grandtotalrow = {
+    vehicleNo: "Grand Total",
+    taxable: 0,
+    gst: 0,
+    billamount: 0,
+    tds: 0,
+    netamount: 0,
+  };
   const data = vehicles.map((vehicle) => {
+    let v = vehicle.fixedVehicle[0] || vehicle;
     let hsdConsumed = 0;
     let runningOvertime: {
       hrs: number;
@@ -135,12 +148,10 @@ export const getAutomobileFinalSheet = (
         if (start && end) {
           const hours = calculateDecimalHours(start, end);
           totalAuto.hrs += hours;
-          const overtime = vehicle.eligibleForOvertime
-            ? hours - vehicle.shiftduraion
-            : 0;
+          const overtime = v.eligibleForOvertime ? hours - v.shiftduraion : 0;
           runningOvertime.hrs += parseFloat(Math.max(overtime, 0).toFixed(2));
           runningOvertime.days += Math.floor(
-            Math.max(overtime, 0) / vehicle.shiftduraion
+            Math.max(overtime, 0) / v.shiftduraion
           );
         }
         // delete running.kms;
@@ -156,16 +167,16 @@ export const getAutomobileFinalSheet = (
         idealStandingDays += auto.idealStandingDays || 0;
       });
 
-    const overtimeCalculation = getData(runningOvertime, vehicle, m);
+    const overtimeCalculation = getData(runningOvertime, v, m);
 
-    if (vehicle.eligibleForOvertime) {
+    if (v.eligibleForOvertime) {
       overtimedata.push({
-        vehicleNo: vehicle.vehicleNo,
-        vehicleType: vehicle.vehicleType,
-        charges: vehicle.charges,
-        paymentMode: vehicle.paymentMode,
-        paymentStructure: vehicle.paymentStructure,
-        rate: vehicle.rate,
+        vehicleNo: v.vehicleNo,
+        vehicleType: v.vehicleType,
+        charges: v.charges,
+        paymentMode: v.paymentMode,
+        paymentStructure: v.paymentStructure,
+        rate: v.rate,
         running: runningOvertime,
         taxable: overtimeCalculation.taxable,
         gst: overtimeCalculation.gst,
@@ -194,8 +205,8 @@ export const getAutomobileFinalSheet = (
 
     const hsdOverAbove = parseFloat(
       (
-        ((totalAuto.kms || 0) - hsdConsumed * vehicle.mileage) /
-        (vehicle.mileage || 1)
+        ((totalAuto.kms || 0) - hsdConsumed * v.mileage) /
+        (v.mileage || 1)
       ).toFixed(2)
     );
 
@@ -208,7 +219,7 @@ export const getAutomobileFinalSheet = (
 
     if (totalAuto.kms <= totalAuto.hrs) {
       totalAuto.days += parseFloat(
-        (totalAuto.hrs / (vehicle.shiftduraion || 1)).toFixed(2)
+        (totalAuto.hrs / (v.shiftduraion || 1)).toFixed(2)
       );
     } else {
       totalAuto.days += totalAuto.kmdays;
@@ -217,7 +228,7 @@ export const getAutomobileFinalSheet = (
     totalAuto.days =
       m -
       breakDownDaysCounted -
-      Math.max(maintenanceDays - vehicle.maintenanceDaysAllowed, 0);
+      Math.max(maintenanceDays - v.maintenanceDaysAllowed, 0);
 
     if (
       vehicle.automobile.filter((auto) => {
@@ -227,16 +238,16 @@ export const getAutomobileFinalSheet = (
       totalAuto.days = 0;
     }
 
-    const avgMileage = getAverageMileage(vehicle.automobile, vehicle);
+    const avgMileage = getAverageMileage(vehicle.automobile, v);
 
     hsdrate += hsdRate;
-    if (vehicle.hsdDeduction) {
+    if (v.hsdDeduction) {
       hsdcost += parseFloat(hsdCost.toFixed(2));
       kpidata.push({
-        vehicleNo: vehicle.vehicleNo,
+        vehicleNo: v.vehicleNo,
         hsdIssuedOrConsumed: hsdConsumed,
         mileagefortheMonth,
-        mileage: vehicle.mileage,
+        mileage: v.mileage,
         hsdOverAbove,
         hsdrate: hsdRate,
         hsdCost,
@@ -247,10 +258,10 @@ export const getAutomobileFinalSheet = (
       });
     } else {
       kpidata.push({
-        vehicleNo: vehicle.vehicleNo,
+        vehicleNo: v.vehicleNo,
         hsdIssuedOrConsumed: hsdConsumed,
         mileagefortheMonth,
-        mileage: vehicle.mileage,
+        mileage: v.mileage,
         hsdOverAbove,
         hsdrate: hsdRate,
         hsdCost: 0,
@@ -263,68 +274,55 @@ export const getAutomobileFinalSheet = (
 
     let taxable = 0;
 
-    if (vehicle.paymentStructure === "hourly") {
-      if (vehicle.paymentMode === "hourly") {
-        taxable = Math.round(totalAuto.hrs * vehicle.charges);
-      } else if (vehicle.paymentMode === "daily") {
-        taxable = Math.round(
-          (totalAuto.hrs / vehicle.shiftduraion) * vehicle.charges
-        );
-      } else if (vehicle.paymentMode === "monthly") {
+    if (v.paymentStructure === "hourly") {
+      if (v.paymentMode === "hourly") {
+        taxable = Math.round(totalAuto.hrs * v.charges);
+      } else if (v.paymentMode === "daily") {
+        taxable = Math.round((totalAuto.hrs / v.shiftduraion) * v.charges);
+      } else if (v.paymentMode === "monthly") {
         // taxable = Math.round(
-        //   (totalAuto.days / (m * vehicle.shiftduraion || 1)) * vehicle.charges
+        //   (totalAuto.days / (m * v.shiftduraion || 1)) * v.charges
         // );
-        const rateperhr = vehicle.charges / (vehicle.shiftduraion * m || 1);
+        const rateperhr = v.charges / (v.shiftduraion * m || 1);
         taxable = Math.round(
-          Math.min(totalAuto.hrs, vehicle.shiftduraion) * rateperhr
+          Math.min(totalAuto.hrs, v.shiftduraion) * rateperhr
         );
       }
     } else if (
-      vehicle.paymentStructure === "monthly" &&
-      vehicle.paymentMode === "monthly"
+      v.paymentStructure === "monthly" &&
+      v.paymentMode === "monthly"
     ) {
-      taxable = Math.round((totalAuto.days / m) * vehicle.charges);
-    } else if (
-      vehicle.paymentStructure === "daily" &&
-      vehicle.paymentMode === "daily"
-    ) {
-      taxable = Math.round(totalAuto.days * vehicle.charges);
-    } else if (
-      vehicle.paymentStructure === "trip" &&
-      vehicle.paymentMode === "trip"
-    ) {
-      taxable = Math.round(totalAuto.trips * vehicle.charges);
-    } else if (
-      vehicle.paymentStructure === "km" &&
-      vehicle.paymentMode === "km"
-    ) {
-      taxable = Math.round(totalAuto.kms * vehicle.charges);
+      taxable = Math.round((totalAuto.days / m) * v.charges);
+    } else if (v.paymentStructure === "daily" && v.paymentMode === "daily") {
+      taxable = Math.round(totalAuto.days * v.charges);
+    } else if (v.paymentStructure === "trip" && v.paymentMode === "trip") {
+      taxable = Math.round(totalAuto.trips * v.charges);
+    } else if (v.paymentStructure === "km" && v.paymentMode === "km") {
+      taxable = Math.round(totalAuto.kms * v.charges);
     }
 
     totalhiringcharges += taxable;
 
-    // const taxable = Math.round((totalAuto.days / m) * vehicle.charges);
+    // const taxable = Math.round((totalAuto.days / m) * v.charges);
     const tds = Math.round(taxable * ((contractor.tds ?? 0) / 100));
 
     const billamount = Math.round(
       taxable +
         overtimeCalculation.taxable +
-        (taxable + overtimeCalculation.taxable) * (vehicle.gst / 100)
+        (taxable + overtimeCalculation.taxable) * (v.gst / 100)
     );
 
     totals.push({
-      vehicleNo: vehicle.vehicleNo,
-      vehicleType: vehicle.vehicleType,
+      vehicleNo: v.vehicleNo,
+      vehicleType: v.vehicleType,
 
-      charges: vehicle.charges,
+      charges: v.charges,
       workingDays: totalAuto.days,
-      overtime: runningOvertime.days,
+      overtime: runningOvertime.days || 0,
       workingAmount: taxable,
       overtimeAmount: overtimeCalculation.taxable,
       totalAmount: taxable + overtimeCalculation.taxable,
-      gst: Math.round(
-        (taxable + overtimeCalculation.taxable) * (vehicle.gst / 100)
-      ),
+      gst: Math.round((taxable + overtimeCalculation.taxable) * (v.gst / 100)),
       billamount,
       tds: Math.round(
         (taxable + overtimeCalculation.taxable) * ((contractor?.tds ?? 0) / 100)
@@ -340,7 +338,8 @@ export const getAutomobileFinalSheet = (
     totalsobj.workingDays = parseFloat(
       ((totalsobj.workingDays || 0) + totalAuto.days).toFixed(2)
     );
-    totalsobj.overtime = (totalsobj.overtime || 0) + runningOvertime.days;
+    totalsobj.overtime =
+      (totalsobj.overtime || 0) + (runningOvertime.days || 0);
     totalsobj.workingAmount = (totalsobj.workingAmount || 0) + taxable;
     totalsobj.overtimeAmount =
       (totalsobj.overtimeAmount || 0) + overtimeCalculation.taxable;
@@ -348,7 +347,7 @@ export const getAutomobileFinalSheet = (
       (totalsobj.totalAmount || 0) + taxable + overtimeCalculation.taxable;
     totalsobj.gst =
       (totalsobj.gst || 0) +
-      Math.round((taxable + overtimeCalculation.taxable) * (vehicle.gst / 100));
+      Math.round((taxable + overtimeCalculation.taxable) * (v.gst / 100));
     totalsobj.billamount = (totalsobj.billamount || 0) + billamount;
     totalsobj.tds =
       (totalsobj.tds || 0) +
@@ -369,13 +368,21 @@ export const getAutomobileFinalSheet = (
     );
     hsdconsumed += hsdConsumed;
 
+    grandtotalrow.taxable += taxable;
+    grandtotalrow.gst += Math.round(taxable * (v.gst / 100));
+    grandtotalrow.billamount += Math.round(taxable + taxable * (v.gst / 100));
+    grandtotalrow.tds += tds;
+    grandtotalrow.netamount += Math.round(
+      taxable + taxable * (v.gst / 100) - tds
+    );
+
     return {
-      vehicleNo: vehicle.vehicleNo,
-      vehicleType: vehicle.vehicleType,
-      charges: vehicle.charges,
-      paymentMode: vehicle.paymentMode,
-      paymentStructure: vehicle.paymentStructure,
-      rate: vehicle.rate,
+      vehicleNo: v.vehicleNo,
+      vehicleType: v.vehicleType,
+      charges: v.charges,
+      paymentMode: v.paymentMode,
+      paymentStructure: v.paymentStructure,
+      rate: v.rate,
       running: {
         hrs: parseFloat(totalAuto.hrs.toFixed(2)),
         days: parseFloat(totalAuto.days.toFixed(2)),
@@ -383,13 +390,66 @@ export const getAutomobileFinalSheet = (
         trips: parseFloat(totalAuto.trips.toFixed(2)),
       },
       taxable,
-      gst: Math.round(taxable * (vehicle.gst / 100)),
-      billamount: Math.round(taxable + taxable * (vehicle.gst / 100)),
+      gst: Math.round(taxable * (v.gst / 100)),
+      billamount: Math.round(taxable + taxable * (v.gst / 100)),
       tds: tds,
-      netamount: Math.round(taxable + taxable * (vehicle.gst / 100) - tds),
+      netamount: Math.round(taxable + taxable * (v.gst / 100) - tds),
     };
   });
 
+  let totalsdata: any[] = [];
+
+  const gst =
+    hsdcost > 0 ? Math.round(hsdcost * ((contractor.gst || 0) / 100)) : 0;
+  const billamount =
+    hsdcost > 0
+      ? Math.round(hsdcost + hsdcost * ((contractor.gst || 0) / 100))
+      : hsdcost;
+  const tds =
+    hsdcost > 0 ? Math.round(hsdcost * ((contractor.tds || 0) / 100)) : 0;
+  const netamount =
+    hsdcost > 0
+      ? Math.round(billamount - hsdcost * ((contractor.tds || 0) / 100))
+      : hsdcost;
+
+  grandtotalrow.taxable += hsdcost;
+  grandtotalrow.gst += gst;
+  grandtotalrow.billamount += billamount;
+  grandtotalrow.tds += tds;
+  grandtotalrow.netamount += netamount;
+
+  totalsdata.push({
+    vehicleNo: "HSD Payable / Recoverable",
+
+    taxable: hsdcost,
+    gst: gst,
+    billamount: billamount,
+    tds: tds,
+    netamount: netamount,
+  });
+
+  totalsdata.push(grandtotalrow);
+
+  // totals.push({
+  //   vehicleNo: "Total HSD",
+  //   vehicleType: "",
+  //   charges: totalsobj.charges,
+  //   workingDays: totalsobj.workingDays,
+  //   overtime: totalsobj.overtime,
+  //   workingAmount: totalsobj.workingAmount,
+  //   overtimeAmount: totalsobj.overtimeAmount,
+  //   totalAmount: hsdcost,
+  //   gst: hsdcost > 0 ? Math.round(hsdcost * ((contractor?.gst || 0) / 100)) : 0,
+  //   billamount:
+  //     hsdcost > 0
+  //       ? Math.round(hsdcost + hsdcost * ((contractor?.gst || 0) / 100))
+  //       : hsdcost,
+  //   tds: hsdcost > 0 ? Math.round(hsdcost * ((contractor?.tds || 0) / 100)) : 0,
+  //   netamount:
+  //     hsdcost > 0
+  //       ? Math.round(hsdcost - hsdcost * ((contractor?.tds || 0) / 100))
+  //       : hsdcost,
+  // });
   totals.push({
     vehicleNo: "Grand Total",
     vehicleType: "",
@@ -410,8 +470,9 @@ export const getAutomobileFinalSheet = (
     overtimedata,
     kpidata,
     totals,
-    total,
+    total: grandtotalrow.netamount,
     hsdcost: parseFloat(hsdcost.toFixed(2)),
+    totalsdata,
     cost: {
       totalhiringcharges,
       hsdconsumed,

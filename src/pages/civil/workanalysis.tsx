@@ -5,41 +5,22 @@ const LineChart = dynamic(() => import("../../components/Civil/LineChart"), {
 });
 
 import prisma from "@/lib/prisma";
-import MonthSelect from "@/ui-component/MonthSelect";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import {
-  Automobile,
-  BOQ,
-  BOQItem,
   BarBending,
   BarBendingItem,
   Contractor,
-  Deductions,
-  Department,
-  Designations,
-  Employee,
-  HOAuditor,
-  HiredFixedWork,
-  Hsd,
   Measurement,
   MeasurementItem,
   Project,
   Qcs,
   QcsBoq,
   QcsBoqItem,
-  Safety,
-  SeperateSalary,
-  Stores,
-  Workorder,
 } from "@prisma/client";
 import axios from "axios";
-import dayjs, { Dayjs } from "dayjs";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
@@ -58,37 +39,23 @@ interface Boq extends QcsBoq {
 
 export default function FinalSheet({
   contractors,
-  workorder,
   contractor,
-  // boqs,
-  safety,
   project,
-  hoCommercial,
 }: {
   contractors: Contractor[];
-  workorder: Workorder | null;
   contractor: Contractor & {
     Qcs: (Qcs & { project: Project })[];
   };
-  safety: Safety | null;
 
   project: Project;
-  hoCommercial: HOAuditor | null;
 }) {
   const [loading, setLoading] = useState<boolean>(false);
-  const [details, setDetails] = useState<any>(null);
-  // const [total, setTotal] = useState(0);
+
   const [boqs, setBoqs] = useState<Boq[]>([]);
 
-  const [store, setStore] = useState<Stores | null>(null);
-  const [deduction, setDeduction] = useState<Deductions | null>(null);
   const [boq, setBoq] = useState<Boq | null>(null);
 
   const router = useRouter();
-  const [month, setMonth] = useState<string | null>(dayjs().format("MM/YYYY"));
-  const [endMonth, setEndMonth] = useState<string | null>(
-    dayjs().format("MM/YYYY")
-  );
 
   const fetchBoqs = async () => {
     const res = await axios.get(
@@ -104,43 +71,13 @@ export default function FinalSheet({
     fetchBoqs();
   }, [contractor, project]);
 
-  const fetchDeductions = async () => {
-    const res = await axios.get(
-      `/api/deductions?contractorId=${contractor.contractorId}&date=${
-        month || dayjs().format("MM/YYYY")
-      }`
-    );
-    setDeduction(res.data);
-  };
-
-  useEffect(() => {
-    fetchDeductions();
-  }, [contractor, month]);
-
   const { series, xaxis } = useMemo(
     () =>
       getAnalysisSeries({
         boq,
-        month: month as string,
       }),
-    [boq, month]
+    [boq]
   );
-
-  const fetchStoreAndSafety = async () => {
-    setLoading(true);
-    const res = await axios.get(
-      `/api/stores?contractorid=${contractor.contractorId}&month=${
-        month || dayjs().format("MM/YYYY")
-      }`
-    );
-    setStore(res.data);
-
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchStoreAndSafety();
-  }, []);
 
   return loading ? (
     <Box
@@ -199,14 +136,6 @@ export default function FinalSheet({
             value: c.projectId || "",
             label: c.project.name,
           }))}
-        />
-        <MonthSelect
-          label="Select Month"
-          value={dayjs(month as string, "MM/YYYY")}
-          onChange={(value: Dayjs | null) => {
-            if (value) setMonth(value?.format("MM/YYYY"));
-            if (value) setMonth(value?.format("MM/YYYY"));
-          }}
         />
 
         <AutoComplete
@@ -270,38 +199,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     contractor = contractors[0];
   }
 
-  let project = contractor.Qcs.find((p) => p.id === projectId)?.project;
+  let project = contractor.Qcs.find((p) => p.projectId === projectId)?.project;
 
   if (!project) {
     project = contractor.Qcs[0].project;
   }
 
-  const safety = await prisma.safety.findFirst({
-    where: {
-      contractorid: contractor?.contractorId,
-    },
-  });
-
-  const workorder = await prisma.workorder.findFirst({
-    where: {
-      contractorId: contractor?.contractorId,
-    },
-  });
-
-  const hoCommercial = await prisma.hOAuditor.findFirst({
-    where: {
-      contractorId: contractor?.id,
-    },
-  });
-
   return {
     props: {
       contractors,
-      workorder,
       contractor: contractor,
-      safety,
       project,
-      hoCommercial,
     },
   };
 };

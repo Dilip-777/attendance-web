@@ -28,7 +28,7 @@ import AutoCompleteSelect from "@/components/FormikComponents/AutoCompleteSelect
 
 const numberType = Yup.number().required("Required");
 
-const StoreItem = Yup.object().shape({
+const StoreItem1 = Yup.object().shape({
   division: Yup.string().required("Required"),
   chargeableItemIssued: Yup.string().required("Required"),
   quantity: numberType,
@@ -50,7 +50,7 @@ const StoreItem = Yup.object().shape({
 const validationSchema = Yup.object().shape({
   contractorid: Yup.string().required("Required"),
   month: Yup.string().required("Required"),
-  storeItems: Yup.array().of(StoreItem),
+  storeItems: Yup.array().of(StoreItem1),
   totalamount: numberType.test(
     "sumOfChargeableAmounts",
     "Total amount should be equal to sum of chargeable amounts",
