@@ -11,6 +11,7 @@ export default function SaveButton({
   month,
   cost,
   fixedValues,
+  total,
 }: {
   contractorId: string;
   month: string;
@@ -22,6 +23,7 @@ export default function SaveButton({
     monthCost: number;
   };
   fixedValues: any;
+  total: number;
 }) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
@@ -53,6 +55,7 @@ export default function SaveButton({
         hsdConsumed: parseFloat(cost.monthHsdConsumed.toFixed(2)),
         hsdRateCharged: parseFloat(cost.monthHsdRate.toFixed(2)),
         totalCost: parseFloat(cost.monthCost.toFixed(2)),
+        finalPayable: parseFloat(total.toFixed(2)),
       });
       router.replace(router.asPath);
       setOpen(true);

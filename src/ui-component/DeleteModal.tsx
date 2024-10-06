@@ -9,10 +9,11 @@ import {
   Typography,
   Snackbar,
   Alert,
-} from "@mui/material";
-import Close from "@mui/icons-material/Close";
-import React, { useState } from "react";
-import axios from "axios";
+  CircularProgress,
+} from '@mui/material';
+import Close from '@mui/icons-material/Close';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 export default function DeleteModal({
   openModal,
@@ -39,6 +40,7 @@ export default function DeleteModal({
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleClick = () => {
     setOpen(true);
@@ -48,7 +50,7 @@ export default function DeleteModal({
     event: React.SyntheticEvent | Event,
     reason?: string
   ) => {
-    if (reason === "clickaway") {
+    if (reason === 'clickaway') {
       return;
     }
 
@@ -57,9 +59,9 @@ export default function DeleteModal({
 
   return (
     <>
-      <Dialog open={openModal} maxWidth="sm" fullWidth>
+      <Dialog open={openModal} maxWidth='sm' fullWidth>
         <DialogTitle>{title}</DialogTitle>
-        <Box position="absolute" top={0} right={0}>
+        <Box position='absolute' top={0} right={0}>
           <IconButton onClick={onClose}>
             <Close />
           </IconButton>
@@ -68,14 +70,16 @@ export default function DeleteModal({
           <Typography>{message}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button color="error" variant="outlined" onClick={onClose}>
+          <Button color='error' variant='outlined' onClick={onClose}>
             {cancelText}
           </Button>
           <Button
-            color="error"
-            variant="contained"
+            color='error'
+            variant='contained'
+            disabled={loading}
             onClick={async () => {
               if (deleteApi) {
+                setLoading(true);
                 try {
                   await axios.delete(deleteApi);
                   handleClick();
@@ -93,8 +97,12 @@ export default function DeleteModal({
                 setError(false);
                 handleClick();
               }
+              setLoading(false);
             }}
           >
+            {loading && (
+              <CircularProgress size={15} sx={{ mr: 1, color: '#364152' }} />
+            )}
             {confirmText}
           </Button>
         </DialogActions>
@@ -107,11 +115,11 @@ export default function DeleteModal({
       >
         <Alert
           onClose={handleClose}
-          severity={error ? "error" : "success"}
-          variant="filled"
-          sx={{ width: "100%" }}
+          severity={error ? 'error' : 'success'}
+          variant='filled'
+          sx={{ width: '100%' }}
         >
-          {error ? "Something Went Wrong" : snackbarMessage}
+          {error ? 'Something Went Wrong' : snackbarMessage}
         </Alert>
       </Snackbar>
     </>

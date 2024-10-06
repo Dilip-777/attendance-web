@@ -1,16 +1,16 @@
-import * as React from "react";
-import Paper from "@mui/material/Paper";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Box from "@mui/material/Box";
-import FormControl from "@mui/material/FormControl";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import prisma from "@/lib/prisma";
+import * as React from 'react';
+import Paper from '@mui/material/Paper';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { GetServerSideProps } from 'next';
+import { getSession } from 'next-auth/react';
+import prisma from '@/lib/prisma';
 import {
   Contractor,
   Department,
@@ -21,12 +21,12 @@ import {
   SeperateSalary,
   Shifts,
   TimeKeeper,
-} from "@prisma/client";
-import MonthSelect from "@/ui-component/MonthSelect";
-import dayjs, { Dayjs } from "dayjs";
-import axios from "axios";
-import _ from "lodash";
-import { useRouter } from "next/router";
+} from '@prisma/client';
+import MonthSelect from '@/ui-component/MonthSelect';
+import dayjs, { Dayjs } from 'dayjs';
+import axios from 'axios';
+import _ from 'lodash';
+import { useRouter } from 'next/router';
 import {
   Alert,
   Autocomplete,
@@ -37,10 +37,11 @@ import {
   Snackbar,
   TextField,
   Tooltip,
-} from "@mui/material";
-import Close from "@mui/icons-material/Close";
-import MonthlyPlantCommercialTable from "@/components/PlantCommercial/MonthlyTable";
-import HourlyTable from "@/components/PlantCommercial/HourlyTable";
+} from '@mui/material';
+import Close from '@mui/icons-material/Close';
+import MonthlyPlantCommercialTable from '@/components/PlantCommercial/MonthlyTable';
+import HourlyTable from '@/components/PlantCommercial/HourlyTable';
+import AutoComplete from '@/ui-component/Autocomplete';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -53,7 +54,7 @@ function CustomTabPanel(props: TabPanelProps) {
 
   return (
     <div
-      role="tabpanel"
+      role='tabpanel'
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
@@ -71,7 +72,7 @@ function CustomTabPanel(props: TabPanelProps) {
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
   };
 }
 
@@ -88,12 +89,12 @@ export const FormSelect = ({
     <FormControl
       fullWidth
       sx={{ maxWidth: 250, minWidth: 200 }}
-      variant="outlined"
+      variant='outlined'
     >
       <Select
         value={value}
         onChange={(e) => setValue(e.target.value as number)}
-        placeholder="Select"
+        placeholder='Select'
 
         // defaultValue={value}
       >
@@ -141,7 +142,7 @@ export default function PlantCommercial({
   shifts: Shifts[];
   seperateSalarys: SeperateSalary[];
 }) {
-  const [value, setValue] = React.useState<string>(dayjs().format("MM/YYYY"));
+  const [value, setValue] = React.useState<string>(dayjs().format('MM/YYYY'));
   const [loading, setLoading] = React.useState(false);
   const [rows, setRows] = React.useState<Record<string, string | number>[]>([]);
   const [total, setTotal] = React.useState(0);
@@ -150,7 +151,7 @@ export default function PlantCommercial({
   const [loadingbill, setLoadingBill] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [contractor1, setContractor] = React.useState(contractor.contractorId);
-  const [department, setDepartment] = React.useState("");
+  const [department, setDepartment] = React.useState('');
   const [wrkhrs, setWrkhrs] = React.useState(8);
   const [selectedDepartments, setSelectedDepartments] = React.useState<
     DepartmentDesignation[]
@@ -166,7 +167,7 @@ export default function PlantCommercial({
   const [departments, setDepartments] = React.useState<DepartmentDesignation[]>(
     []
   );
-  const [inputValue, setInputValue] = React.useState("");
+  const [inputValue, setInputValue] = React.useState('');
   const [tabvalue, setTabValue] = React.useState(0);
   const [fixedValues, setFixedValues] = React.useState<
     | (FixedValues & {
@@ -199,9 +200,9 @@ export default function PlantCommercial({
   const fetchEmployees = async () => {
     const res = await axios.get(
       `/api/hr/employee?contractor=${contractor1}&departments=${selectedDepartments
-        .filter((d) => d.basicsalary_in_duration !== "Hourly")
+        .filter((d) => d.basicsalary_in_duration !== 'Hourly')
         .map((d) => d.id)
-        .join(",")}`
+        .join(',')}`
     );
     setEmployees(res.data);
   };
@@ -212,12 +213,12 @@ export default function PlantCommercial({
 
   const sgst = Math.ceil(total * 0.09);
 
-  const columns = [{ id: "date", label: "Date", minWidth: 80 }];
+  const columns = [{ id: 'date', label: 'Date', minWidth: 80 }];
 
   const extra = designations
     .filter((d) => d.departmentname === department)
     .map((designation) => {
-      const label = designation.gender === "Male" ? "M" : "F";
+      const label = designation.gender === 'Male' ? 'M' : 'F';
       return {
         id: designation.designationid,
         label,
@@ -228,12 +229,12 @@ export default function PlantCommercial({
   const action = (
     <React.Fragment>
       <IconButton
-        size="small"
-        aria-label="close"
-        color="inherit"
+        size='small'
+        aria-label='close'
+        color='inherit'
         onClick={handleClose}
       >
-        <Close fontSize="small" />
+        <Close fontSize='small' />
       </IconButton>
     </React.Fragment>
   );
@@ -244,8 +245,8 @@ export default function PlantCommercial({
     const formData = new FormData();
 
     try {
-      formData.append("myFile", file);
-      const { data } = await axios.post("/api/upload", formData);
+      formData.append('myFile', file);
+      const { data } = await axios.post('/api/upload', formData);
 
       const c = contractors.find((c) => c.contractorId === contractor1);
 
@@ -256,7 +257,7 @@ export default function PlantCommercial({
         amount: total + sgst + sgst - (c?.servicecharge || 0),
         document: data.file.newFilename,
       };
-      const res = await axios.post("/api/uploadbill", body);
+      const res = await axios.post('/api/uploadbill', body);
       setOpen(true);
     } catch (error) {
       console.log(error);
@@ -277,7 +278,7 @@ export default function PlantCommercial({
 
   columns.push(...extra);
 
-  columns.push({ id: "total", label: "Total", minWidth: 60 });
+  columns.push({ id: 'total', label: 'Total', minWidth: 60 });
 
   React.useEffect(() => {
     // fetchTimekeepers();
@@ -293,7 +294,7 @@ export default function PlantCommercial({
   }, [contractor1]);
 
   const onChange = (value: Dayjs | null) =>
-    setValue(value?.format("MM/YYYY") || "");
+    setValue(value?.format('MM/YYYY') || '');
 
   const filteredDesignations = designations.filter(
     (d) => d.departmentname === department
@@ -305,27 +306,27 @@ export default function PlantCommercial({
   return (
     <Paper
       sx={{
-        maxHeight: "calc(100vh - 100px)",
-        width: "100%",
-        scrollBehavior: "smooth",
-        "&::-webkit-scrollbar": {
+        maxHeight: 'calc(100vh - 100px)',
+        width: '100%',
+        scrollBehavior: 'smooth',
+        '&::-webkit-scrollbar': {
           width: 9,
           height: 10,
         },
-        "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "#bdbdbd",
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#bdbdbd',
           borderRadius: 2,
         },
-        overflowY: "auto",
+        overflowY: 'auto',
       }}
     >
       <Box
         sx={{
           // height: "5rem",
-          display: "flex",
+          display: 'flex',
           p: 2,
           pb: 1,
-          justifyContent: "flex-start",
+          justifyContent: 'flex-start',
           mb: 0,
         }}
       >
@@ -337,40 +338,40 @@ export default function PlantCommercial({
         >
           <Alert
             onClose={handleClose}
-            severity={"success"}
-            sx={{ width: "100%" }}
+            severity={'success'}
+            sx={{ width: '100%' }}
           >
-            {"Bill Uploaded Successfully"}
+            {'Bill Uploaded Successfully'}
           </Alert>
         </Snackbar>
 
         <Stack
-          direction="row"
+          direction='row'
           spacing={2}
-          alignItems="center"
-          justifyContent="space-between"
-          width="100%"
+          alignItems='center'
+          justifyContent='space-between'
+          width='100%'
           sx={{
-            overflowX: "auto",
-            scrollBehavior: "smooth",
-            "&::-webkit-scrollbar": {
+            overflowX: 'auto',
+            scrollBehavior: 'smooth',
+            '&::-webkit-scrollbar': {
               width: 9,
               height: 7,
             },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "#bdbdbd",
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#bdbdbd',
               borderRadius: 2,
             },
             py: 1,
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction='row' spacing={2} alignItems='center'>
             <MonthSelect
               // label="Select Date"
-              value={dayjs(value, "MM/YYYY")}
+              value={dayjs(value, 'MM/YYYY')}
               onChange={onChange}
             />
-            <FormSelect
+            <AutoComplete
               value={contractor1}
               setValue={setContractor}
               options={contractors.map((contractor1) => {
@@ -403,17 +404,17 @@ export default function PlantCommercial({
                     setSelectedDepartments([...selectedDepartments, d]);
                   }
                 }
-                setInputValue("");
+                setInputValue('');
               }}
               value={inputValue}
               inputValue={inputValue}
               onInputChange={(event, newInputValue) => {
                 setInputValue(newInputValue);
               }}
-              id="controllable-states-demo"
+              id='controllable-states-demo'
               options={[...departments.map((d) => d.department)]}
               renderInput={(params) => (
-                <TextField {...params} placeholder="Select a Department" />
+                <TextField {...params} placeholder='Select a Department' />
               )}
               clearIcon={null}
             />
@@ -423,27 +424,27 @@ export default function PlantCommercial({
               value={wrkhrs}
               setValue={setWrkhrs}
               options={[
-                { value: 8, label: "8 Hrs" },
-                { value: 12, label: "12 Hrs" },
-                { value: 0, label: "8 Hrs and 12 Hrs" },
+                { value: 8, label: '8 Hrs' },
+                { value: 12, label: '12 Hrs' },
+                { value: 0, label: '8 Hrs and 12 Hrs' },
               ]}
             />
             {/* )} */}
           </Stack>
-          <Tooltip title="Upload Bills">
+          <Tooltip title='Upload Bills'>
             <Button
               // onClick={() => uploadBill()}
-              variant="contained"
-              component="label"
+              variant='contained'
+              component='label'
               disabled={loadingbill}
-              sx={{ bgcolor: "#5e35b1" }}
+              sx={{ bgcolor: '#5e35b1' }}
             >
               Upload
               {loadingbill && (
-                <CircularProgress size={15} sx={{ ml: 1, color: "#364152" }} />
+                <CircularProgress size={15} sx={{ ml: 1, color: '#364152' }} />
               )}
               <input
-                type="file"
+                type='file'
                 hidden
                 onChange={(e) => {
                   if (e.target.files) {
@@ -456,7 +457,7 @@ export default function PlantCommercial({
         </Stack>
       </Box>
 
-      <Stack direction="row" flexWrap="wrap" px={2} pb={2}>
+      <Stack direction='row' flexWrap='wrap' px={2} pb={2}>
         {selectedDepartments.map((d) => (
           <Chip
             sx={{ m: 1 }}
@@ -473,23 +474,23 @@ export default function PlantCommercial({
         ))}
       </Stack>
 
-      <Box sx={{ width: "100%" }}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+      <Box sx={{ width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleTabChange}>
             <Tab
-              label="Attendance Calculation"
+              label='Attendance Calculation'
               {...a11yProps(0)}
               sx={{
-                borderBottom: tabvalue === 0 ? "3px solid #5e35b1" : "0",
-                color: tabvalue === 0 ? "#5e35b1" : "",
+                borderBottom: tabvalue === 0 ? '3px solid #5e35b1' : '0',
+                color: tabvalue === 0 ? '#5e35b1' : '',
               }}
             />
             <Tab
-              label="OT hrs Calculation"
+              label='OT hrs Calculation'
               {...a11yProps(1)}
               sx={{
-                borderBottom: tabvalue === 1 ? "3px solid #5e35b1" : "0",
-                color: tabvalue === 1 ? "#5e35b1" : "",
+                borderBottom: tabvalue === 1 ? '3px solid #5e35b1' : '0',
+                color: tabvalue === 1 ? '#5e35b1' : '',
               }}
             />
           </Tabs>
@@ -497,13 +498,13 @@ export default function PlantCommercial({
         <CustomTabPanel value={tabvalue} index={0}>
           <Stack spacing={3}>
             {selectedDepartments.find(
-              (d) => d.basicsalary_in_duration === "Hourly"
+              (d) => d.basicsalary_in_duration === 'Hourly'
             ) &&
               // {wrkhrs === 0 ? }
               hrs.map((hr) => (
                 <HourlyTable
                   departments={selectedDepartments.filter(
-                    (d) => d.basicsalary_in_duration === "Hourly"
+                    (d) => d.basicsalary_in_duration === 'Hourly'
                   )}
                   contractor={contractor}
                   shifts={shifts}
@@ -531,18 +532,29 @@ export default function PlantCommercial({
                 fixedValues={fixedValues}
               />
             )}
+            {employees.length === 0 && selectedDepartments.length === 0 && (
+              <Typography
+                sx={{
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  m: '24px',
+                }}
+              >
+                No Data Found
+              </Typography>
+            )}
           </Stack>
         </CustomTabPanel>
         <CustomTabPanel value={tabvalue} index={1}>
           <Stack spacing={3}>
             {selectedDepartments.find(
-              (d) => d.basicsalary_in_duration === "Hourly"
+              (d) => d.basicsalary_in_duration === 'Hourly'
             ) &&
               // {wrkhrs === 0 ? }
               hrs.map((hr) => (
                 <HourlyTable
                   departments={selectedDepartments.filter(
-                    (d) => d.basicsalary_in_duration === "Hourly"
+                    (d) => d.basicsalary_in_duration === 'Hourly'
                   )}
                   contractor={contractor}
                   shifts={shifts}
@@ -569,6 +581,17 @@ export default function PlantCommercial({
                 seperateSalarys={seperateSalarys}
                 fixedValues={fixedValues}
               />
+            )}
+            {employees.length === 0 && selectedDepartments.length === 0 && (
+              <Typography
+                sx={{
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  m: '24px',
+                }}
+              >
+                No Data Found
+              </Typography>
             )}
           </Stack>
         </CustomTabPanel>
@@ -625,7 +648,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session) {
     return {
       redirect: {
-        destination: "/login",
+        destination: '/login',
         permanent: false,
       },
     };
@@ -637,10 +660,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  if (user?.role === "Admin") {
+  if (user?.role === 'Admin') {
     return {
       redirect: {
-        destination: "/admin",
+        destination: '/admin',
         permanent: false,
       },
     };
@@ -670,7 +693,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const selectedDepartment = await prisma.department.findMany({
     where: {
       department: {
-        in: (department as string).split(","),
+        in: (department as string).split(','),
       },
     },
     include: {
@@ -685,7 +708,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!contractor || !selectedDepartment) {
     return {
       redirect: {
-        destination: "/",
+        destination: '/',
         permanent: false,
       },
     };

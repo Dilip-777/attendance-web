@@ -33,9 +33,11 @@ import {
 } from '@mui/material';
 import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
 import Edit from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AutoComplete from '@/ui-component/Autocomplete';
 import MonthSelect from '@/ui-component/MonthSelect';
 import { useRouter } from 'next/router';
+import DeleteModal from '@/ui-component/DeleteModal';
 
 const createHeadCells = (
   id: string,
@@ -77,6 +79,7 @@ export default function Payments1({
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [payment, setPayment] = React.useState<Payments | null>(null);
   // const [selectedContractor, setSelectedContractor] =
   //   React.useState<string>('all');
 
@@ -137,6 +140,7 @@ export default function Payments1({
         'Contractor ID',
         'Contractor Name',
         'Month',
+        'Net Payable',
         'Payment Date',
         'Payment Ref No',
         'Paid Amount',
@@ -147,6 +151,7 @@ export default function Payments1({
         p.contractorId,
         p.contractorName,
         p.month,
+        p.netpayable.toString(),
         p.paymentdate,
         p.paymentrefno,
         p.paidamount.toString(),
@@ -280,14 +285,24 @@ export default function Payments1({
                           </TableCell>
                         ))}
                       <TableCell size='small' align='center'>
-                        <IconButton
-                          onClick={() => {
-                            router.push(`/payments/${row.id}`);
-                          }}
-                          sx={{ m: 0 }}
-                        >
-                          <Edit fontSize='small' />
-                        </IconButton>
+                        <Stack direction='row' alignItems='center' spacing={2}>
+                          <IconButton
+                            onClick={() => {
+                              router.push(`/payments/${row.id}`);
+                            }}
+                            sx={{ m: 0 }}
+                          >
+                            <Edit fontSize='small' />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => {
+                              setPayment(row);
+                            }}
+                            sx={{ m: 0 }}
+                          >
+                            <DeleteIcon fontSize='small' />
+                          </IconButton>
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   );
@@ -316,11 +331,22 @@ export default function Payments1({
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <DeleteModal
+        openModal={payment !== null}
+        title='Delete Payment'
+        message={`Are you sure you want to delete this Payment ?`}
+        cancelText='Cancel'
+        confirmText='Delete'
+        deleteApi={`/api/payments?id=${payment?.id}`}
+        snackbarMessage='Payment Deleted Successfully'
+        onClose={() => setPayment(null)}
+        fetchData={() => router.replace(router.asPath)}
+      />
     </Box>
     // <CustomTable
     //   headcells={headCells1}
     //   rows={payments.filter((employee) =>
-    //     _.get(employee, orderby, 'contractorName')
+    //     _.get(employee, orderby, 'paymentName')
     //       .toString()
     //       .toLowerCase()
     //       .includes(filterName.toLowerCase())

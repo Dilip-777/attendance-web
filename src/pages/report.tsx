@@ -1,18 +1,19 @@
-import DepartmentReport from "@/components/Report/departmentreport";
-import DesignationReport from "@/components/Report/designationreport";
-import ManPowerReport from "@/components/Report/manpowerreport";
-import SalaryReport from "@/components/Report/salaryreport";
-import WorkerReport from "@/components/Report/workerreport";
-import prisma from "@/lib/prisma";
-import { Paper, Typography, Divider, Tabs, Tab, Box } from "@mui/material";
+import ContractorwiseReport from '@/components/Report/contractorwiseReport';
+import DepartmentReport from '@/components/Report/departmentreport';
+import DesignationReport from '@/components/Report/designationreport';
+import ManPowerReport from '@/components/Report/manpowerreport';
+import SalaryReport from '@/components/Report/salaryreport';
+import WorkerReport from '@/components/Report/workerreport';
+import prisma from '@/lib/prisma';
+import { Paper, Typography, Divider, Tabs, Tab, Box } from '@mui/material';
 import {
   Contractor,
   Department,
   Designations,
   Workorder,
-} from "@prisma/client";
-import { GetServerSideProps } from "next";
-import { useState } from "react";
+} from '@prisma/client';
+import { GetServerSideProps } from 'next';
+import { useState } from 'react';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -25,7 +26,7 @@ function TabPanel(props: TabPanelProps) {
 
   return (
     <div
-      role="tabpanel"
+      role='tabpanel'
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
@@ -43,7 +44,7 @@ function TabPanel(props: TabPanelProps) {
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
   };
 }
 
@@ -64,24 +65,26 @@ export default function Reports({
     setValue(newValue);
   };
   return (
-    <Paper sx={{ width: "100%", mb: 2, p: 2 }}>
-      <Typography variant="h3" sx={{ p: 2, m: 0, fontWeight: "500" }}>
+    <Paper sx={{ width: '100%', mb: 2, p: 2 }}>
+      <Typography variant='h3' sx={{ p: 2, m: 0, fontWeight: '500' }}>
         Reports
       </Typography>
-      <Divider sx={{ my: 1, width: "100%" }} />
+      <Divider sx={{ my: 1, width: '100%' }} />
 
-      <Box sx={{ width: "100%" }}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+      <Box sx={{ width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs
             value={value}
             onChange={handleChange}
-            aria-label="basic tabs example"
+            aria-label='basic tabs example'
+            variant='scrollable'
           >
-            <Tab label="contractor Worker Report" {...a11yProps(0)} />
-            <Tab label="contractor Salary Report" {...a11yProps(1)} />
-            <Tab label="Department wise Contractors" {...a11yProps(2)} />
-            <Tab label="Total Man Power Report" {...a11yProps(3)} />
-            <Tab label="Designation wise Report" {...a11yProps(4)} />
+            <Tab label='contractor Worker Report' {...a11yProps(0)} />
+            <Tab label='contractor Salary Report' {...a11yProps(1)} />
+            <Tab label='Department wise Contractors' {...a11yProps(2)} />
+            <Tab label='Total Man Power Report' {...a11yProps(3)} />
+            <Tab label='Designation wise Report' {...a11yProps(4)} />
+            <Tab label='Contractor wise Report' {...a11yProps(5)} />
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
@@ -100,6 +103,9 @@ export default function Reports({
           <DesignationReport
             designations={designations.map((d) => d.designation)}
           />
+        </TabPanel>
+        <TabPanel value={value} index={5}>
+          <ContractorwiseReport />
         </TabPanel>
       </Box>
     </Paper>

@@ -172,7 +172,10 @@ export default function AddWordOrder({
                       options={
                         contractors?.map((contractor) => ({
                           value: contractor.contractorId,
-                          label: contractor.contractorname,
+                          label:
+                            contractor.contractorname +
+                            ' - ' +
+                            contractor.contractorId,
                         })) || []
                       }
                     />

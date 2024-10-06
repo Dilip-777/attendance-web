@@ -10,7 +10,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import _ from 'lodash';
+import _, { get } from 'lodash';
 import React, { useState } from 'react';
 import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
 import { useSession } from 'next-auth/react';
@@ -31,49 +31,116 @@ const headCells = [
     label: 'Contractor ID',
     numeric: false,
     included: false,
+    getCell: (row: GstRelease) => row.contractorId,
   },
   {
     id: 'contractorName',
     label: 'Contractor Name',
     numeric: false,
     included: false,
+    getCell: (row: GstRelease) => row.contractorName,
   },
-  { id: 'month', label: 'Month', numeric: false, included: false },
-  { id: 'invoiceDate', label: 'Invoice Date', numeric: false, included: false },
-  { id: 'invoiceNo', label: 'Invoice No', numeric: false, included: false },
-  { id: 'gstin', label: 'GST In', numeric: true, included: false },
-  { id: 'gsthold', label: 'GST Hold', numeric: true, included: false },
+  {
+    id: 'month',
+    label: 'Month',
+    numeric: false,
+    included: false,
+    getCell: (row: GstRelease) => row.month,
+  },
+  {
+    id: 'invoiceDate',
+    label: 'Invoice Date',
+    numeric: false,
+    included: false,
+    getCell: (row: GstRelease) => row.invoiceDate,
+  },
+  {
+    id: 'invoiceNo',
+    label: 'Invoice No',
+    numeric: false,
+    included: false,
+    getCell: (row: GstRelease) => row.invoiceNo,
+  },
+  {
+    id: 'gstin',
+    label: 'GST In',
+    numeric: true,
+    included: false,
+    getCell: (row: GstRelease & { contractor: Contractor }) =>
+      row.contractor.gstin,
+  },
+  {
+    id: 'gsthold',
+    label: 'GST Hold',
+    numeric: true,
+    included: false,
+    getCell: (row: GstRelease) => row.gsthold,
+  },
 
   {
     id: 'gstHoldDate',
     label: 'GST Hold Date',
     numeric: false,
     included: false,
+    getCell: (row: GstRelease) => row.gstHoldDate,
   },
 
-  { id: 'gstrelease', label: 'Misc. Payment', numeric: true, included: false },
+  {
+    id: 'gstrelease',
+    label: 'Misc. Payment',
+    numeric: true,
+    included: false,
+    getCell: (row: GstRelease) => row.gstrelease,
+  },
   {
     id: 'gstReleaseDate',
     label: 'GST Release Date',
     numeric: false,
     included: false,
+    getCell: (row: GstRelease) => row.gstReleaseDate,
   },
-  { id: 'advance', label: 'Advance', numeric: true, included: false },
+  {
+    id: 'advance',
+    label: 'Advance',
+    numeric: true,
+    included: false,
+    getCell: (row: GstRelease) => row.advance,
+  },
   {
     id: 'anyother',
     label: 'Any Other Deduction',
     numeric: true,
     included: false,
+    getCell: (row: GstRelease) => row.anyother,
   },
   {
     id: 'addition',
     label: 'Any Other Addition',
     numeric: true,
     included: false,
+    getCell: (row: GstRelease) => row.addition,
   },
-  { id: 'paidIn', label: 'Paid In', numeric: false, included: false },
-  { id: 'remarks', label: 'Remarks', numeric: false, included: false },
-  { id: 'action', label: 'Action', numeric: false, included: true },
+  {
+    id: 'paidIn',
+    label: 'Paid In',
+    numeric: false,
+    included: false,
+    getCell: (row: GstRelease) => row.paidIn,
+  },
+  {
+    id: 'remarks',
+    label: 'Remarks',
+    numeric: false,
+    included: false,
+    getCell: (row: GstRelease) => row.remarks,
+  },
+  {
+    id: 'action',
+    label: 'Action',
+    numeric: false,
+    included: true,
+    getCell: (row: GstRelease) => row.id,
+  },
 ];
 
 export default function Deduction({
@@ -90,7 +157,9 @@ export default function Deduction({
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const { data: session } = useSession();
   const [filterName, setFilterName] = useState('');
-  const [deductions, setDeductions] = useState<GstRelease[]>([]);
+  const [deductions, setDeductions] = useState<
+    (GstRelease & { contractor: Contractor })[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [contractorId, setContractorId] = useState<string>('all');
   const [month, setMonth] = useState<string | null>(null);
@@ -329,7 +398,7 @@ export default function Deduction({
                         .filter((h) => !h.included)
                         .map((headCell) => (
                           <TableCell sx={{ minWidth: '10rem' }}>
-                            {_.get(row, headCell.id)}
+                            {headCell.getCell(row)}
                           </TableCell>
                         ))}
                       <TableCell size='small' align='center'>

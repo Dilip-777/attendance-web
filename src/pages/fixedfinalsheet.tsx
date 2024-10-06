@@ -307,6 +307,10 @@ export default function FinalSheet({
   const router = useRouter();
   const { month } = router.query;
 
+  const fixedvalues = contractor.fixedValues?.find(
+    (f) => f.month === (month || dayjs().format('MM/YYYY'))
+  );
+
   const fetchDeductions = async () => {
     const res = await axios.get(
       `/api/deductions?contractorId=${contractor.contractorId}&date=${
@@ -337,7 +341,7 @@ export default function FinalSheet({
   };
 
   const handleFreeze = async () => {
-    if (contractor.fixedValues?.length) {
+    if (fixedvalues) {
       await axios.delete(
         `/api/freezeFixed?contractorId=${contractor.contractorId}&month=${
           month as string
@@ -483,8 +487,10 @@ export default function FinalSheet({
           taxable: calobj.taxable + totals.totalAmount,
           gst: calobj.gst + totals.gst,
           billAmount: calobj.billAmount + totals.billamount,
-          tds: calobj.tds + totals.tds,
-          netPayable: calobj.netPayable + totals.netPayable,
+          tds: parseFloat((calobj.tds + totals.tds).toFixed(2)),
+          netPayable: parseFloat(
+            (calobj.netPayable + totals.netPayable).toFixed(2)
+          ),
         },
       ];
 
@@ -519,7 +525,7 @@ export default function FinalSheet({
           data,
         },
       ]);
-      setTotal(calobj.netPayable + totals.netPayable);
+      setTotal(parseFloat((calobj.netPayable + totals.netPayable).toFixed(2)));
       setColSpans([7]);
     } else {
       setCalRows([
@@ -569,6 +575,8 @@ export default function FinalSheet({
   useEffect(() => {
     fetchStoreAndSafety();
   }, []);
+
+  console.log(contractor.fixedValues, fixedvalues);
 
   return loading ? (
     <Box
@@ -643,7 +651,7 @@ export default function FinalSheet({
               onClick={handleFreeze}
               color='secondary'
             >
-              {contractor.fixedValues?.length ? 'Unfreeze' : 'Freeze'}
+              {fixedvalues ? 'Unfreeze' : 'Freeze'}
             </Button>
             <Button
               variant='contained'

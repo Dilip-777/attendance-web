@@ -14,6 +14,7 @@ export default async function handler(
       hsdConsumed,
       hsdRateCharged,
       totalCost,
+      finalPayable,
     } = req.body;
     const finalCalculation = await prisma.finalCalculations.findUnique({
       where: {
@@ -37,6 +38,7 @@ export default async function handler(
           hsdConsumed,
           hsdRateCharged,
           totalCost,
+          finalPayable,
         },
       });
     } else {
@@ -49,6 +51,7 @@ export default async function handler(
           hsdConsumed,
           hsdRateCharged,
           totalCost,
+          finalPayable,
         },
       });
     }

@@ -94,6 +94,9 @@ export default function FinalSheet({
     departments?.length > 0 ? departments[0].department : ''
   );
   const [selectedDepartments, setSelectedDepartments] = useState<d[]>([]);
+  const [fixedDesignationsTrack, setFixedDesignationsTrack] = useState<any[]>(
+    []
+  );
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [store, setStore] = useState<Stores | null>(null);
@@ -137,7 +140,7 @@ export default function FinalSheet({
 
   const fetchHourlyRows = () => {
     let totalOtDays = 0;
-    const { rows, total, otdays, otHrs } = gethourlycount(
+    const { rows, total, otdays, otHrs, fixedDesignations } = gethourlycount(
       timekeepers,
       f as Contractor,
       departments.filter((d) => d.basicsalary_in_duration === 'Hourly'),
@@ -145,8 +148,6 @@ export default function FinalSheet({
       daysInMonth,
       shifts
     );
-
-    console.log(otHrs);
 
     totalOtDays += otdays;
     setHourlyRows(rows);
@@ -167,10 +168,18 @@ export default function FinalSheet({
       mandaysamount: number;
     }[] = [];
 
+    const monthlyDesignations: any[] = [];
+
     selectedDepartments
       .filter((d) => d.basicsalary_in_duration !== 'Hourly')
       .forEach((d) => {
-        const { rows1, totalnetPayable, otdays, otHrs } = getTotalAmountAndRows(
+        const {
+          rows1,
+          totalnetPayable,
+          otdays,
+          otHrs,
+          monthlyFixedDesignations,
+        } = getTotalAmountAndRows(
           timekeepers.filter((t: TimeKeeper) => t.department === d.department),
           dayjs(value, 'MM/YYYY').month() + 1,
           dayjs(value, 'MM/YYYY').year(),
@@ -184,7 +193,8 @@ export default function FinalSheet({
               d.designations.find((des) => des.id === de.id) &&
               de.employees.length > 0
           ),
-          fixedValues?.designations || null
+          fixedValues?.designations || null,
+          d
         );
 
         console.log(rows1);
@@ -223,6 +233,7 @@ export default function FinalSheet({
 
         // setRows({ ...rows, [d.department]: rows1 });
         setTotalPayable((prev) => prev + totalnetPayable);
+        monthlyDesignations.push(...monthlyFixedDesignations);
       });
 
     const totalOfTotal: any = { date: 'Total', total: 0 };
@@ -265,6 +276,7 @@ export default function FinalSheet({
         (total.servicechargeamount || 0) +
         (totals['Service Charge Amount']?.total || 0),
     });
+    setFixedDesignationsTrack([...fixedDesignations, ...monthlyDesignations]);
   };
 
   const fetchHoCommercial = async () => {
@@ -304,30 +316,27 @@ export default function FinalSheet({
   };
 
   const handleFixedValues = async () => {
-    let fixedDesignations: any[] = [];
+    // let fixedDesignations: any[] = [];
 
-    console.log(f?.departments);
+    // f?.departments.forEach((d) => {
+    //   d.designations.forEach((de) => {
 
-    f?.departments.forEach((d) => {
-      d.designations.forEach((de) => {
-        console.log(de, 'designation', de.designation);
-
-        const designation = designations.find((des) => des.id === de.id);
-        if (designation?.employees.length !== 0)
-          fixedDesignations.push({
-            designationId: de.id,
-            designation: de.designation,
-            gender: de.gender,
-            allowed_wrking_hr_per_day: de.allowed_wrking_hr_per_day,
-            servicecharge: de.servicecharge,
-            basicsalary_in_duration: de.basicsalary_in_duration,
-            salary:
-              designation?.seperateSalary.find(
-                (a) => a.contractorId === selectedContractor
-              )?.salary || de.basicsalary,
-          });
-      });
-    });
+    //     const designation = designations.find((des) => des.id === de.id);
+    //     if (designation?.employees.length !== 0)
+    //       fixedDesignations.push({
+    //         designationId: de.id,
+    //         designation: de.designation,
+    //         gender: de.gender,
+    //         allowed_wrking_hr_per_day: de.allowed_wrking_hr_per_day,
+    //         servicecharge: de.servicecharge,
+    //         basicsalary_in_duration: de.basicsalary_in_duration,
+    //         salary:
+    //           designation?.seperateSalary.find(
+    //             (a) => a.contractorId === selectedContractor
+    //           )?.salary || de.basicsalary,
+    //       });
+    //   });
+    // });
 
     const body = {
       contractorId: selectedContractor,
@@ -338,7 +347,7 @@ export default function FinalSheet({
       salarysvr12hr: f?.salarysvr12hr,
       salarywomen8hr: f?.salarywomen8hr,
 
-      designations: fixedDesignations,
+      designations: fixedDesignationsTrack,
       fixedvaluesTrack,
       noofmanpower: f?._count.employee,
       billno: hoCommercial?.invoiceNo,
@@ -505,7 +514,7 @@ export default function FinalSheet({
               <Autocomplete
                 options={contractors.map((c) => ({
                   value: c.contractorId || '',
-                  label: c.contractorname,
+                  label: c.contractorname + ' - ' + c.contractorId,
                 }))}
                 value={contractors
                   .map((c) => ({

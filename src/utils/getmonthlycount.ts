@@ -1,3 +1,4 @@
+import salary from '@/pages/api/salary';
 import {
   Contractor,
   Department,
@@ -58,7 +59,8 @@ const getTotalAmountAndRows = (
   contractorId: string,
   contractor: Contractor,
   designations?: DesignationwithSalary[],
-  fixedDesignations?: FixedDesignations[] | null
+  fixedDesignations?: FixedDesignations[] | null,
+  department?: Department
 ) => {
   const m = dayjs(`${year}-${month}`).daysInMonth();
 
@@ -166,7 +168,7 @@ const getTotalAmountAndRows = (
   let otdays = 0;
   let otHrs = 0;
 
-  console.log(fixedDesignations?.length, designations?.length, 'length');
+  const monthlyFixedDesignations: any[] = [];
 
   if (fixedDesignations) {
     fixedDesignations.forEach((designation) => {
@@ -305,12 +307,11 @@ const getTotalAmountAndRows = (
       );
 
       const otDays =
-        totalovertime[id] / ((designation.allowed_wrking_hr_per_day || 1) * m);
+        (totalovertime[id] as number) /
+        ((designation.allowed_wrking_hr_per_day || 1) * m);
       otdays += otDays;
 
-      otHrs += totalovertime[id];
-
-      console.log('OT Days', otDays, 'OT Hrs', totalovertime[id]);
+      otHrs += totalovertime[id] as number;
 
       totalovertime['total'] = getRoundOff(
         (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
@@ -359,6 +360,19 @@ const getTotalAmountAndRows = (
       );
       netPayable1[id] =
         Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0));
+      monthlyFixedDesignations.push({
+        salary: rate[id],
+        designation: designation.designation,
+        department: department?.department,
+        designationId: designation.id,
+        mandays: attendancecount[id],
+        mandaysamount: totalManDayAmount[id],
+        othrs: totalovertime[id],
+        otamount: otamount[id],
+        gender: designation.gender,
+        allowed_wrking_hr_per_day: designation.allowed_wrking_hr_per_day,
+        basicsalary_in_duration: designation.basicsalary_in_duration,
+      });
     });
   }
 
@@ -421,6 +435,7 @@ const getTotalAmountAndRows = (
     totalnetPayable: netPayable1.total,
     otdays,
     otHrs,
+    monthlyFixedDesignations,
   };
 };
 

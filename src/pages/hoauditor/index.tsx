@@ -19,18 +19,20 @@ import { Stack, styled } from '@mui/material/';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
 import Edit from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import Search from '@mui/icons-material/Search';
 
 import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
 import prisma from '@/lib/prisma';
 import { HOAuditor } from '@prisma/client';
 import dayjs, { Dayjs } from 'dayjs';
 import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
 import MonthSelect from '@/ui-component/MonthSelect';
 import _ from 'lodash';
+import DeleteModal from '@/ui-component/DeleteModal';
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
@@ -205,8 +207,11 @@ export default function HOAuditorPage({
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterName, setFilterName] = React.useState('');
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [deleteId, setDeleteId] = React.useState('');
   const router = useRouter();
   const { month } = router.query;
+  const { data: session } = useSession();
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -482,19 +487,35 @@ export default function HOAuditorPage({
                         {row.manchineOrRegisterMode}
                       </TableCell>
                       <TableCell align='center'>
-                        <IconButton
-                          onClick={() => {
-                            router.push(
-                              `/hoauditor/${row.contractorId}?hoId=${row.id}`
-                            );
-                          }}
-                        >
-                          <Edit
-                            sx={{
-                              fontSize: '16px',
+                        <Stack direction='row' spacing={1}>
+                          <IconButton
+                            onClick={() => {
+                              router.push(
+                                `/hoauditor/${row.contractorId}?hoId=${row.id}`
+                              );
                             }}
-                          />
-                        </IconButton>
+                          >
+                            <Edit
+                              sx={{
+                                fontSize: '16px',
+                              }}
+                            />
+                          </IconButton>
+                          {session?.user?.role === 'Corporate' && (
+                            <IconButton
+                              onClick={() => {
+                                setDeleteId(row.id);
+                                setDeleteOpen(true);
+                              }}
+                            >
+                              <DeleteIcon
+                                sx={{
+                                  fontSize: '16px',
+                                }}
+                              />
+                            </IconButton>
+                          )}
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   );
@@ -521,6 +542,17 @@ export default function HOAuditorPage({
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <DeleteModal
+        openModal={deleteId !== ''}
+        title='Delete Ho Auditor'
+        message={`Are you sure you want to delete this data ?`}
+        cancelText='Cancel'
+        confirmText='Delete'
+        deleteApi={`/api/hoauditor?id=${deleteId}`}
+        snackbarMessage='Ho Auditor Deleted Successfully'
+        onClose={() => setDeleteId('')}
+        fetchData={() => router.replace(router.asPath)}
+      />
     </Box>
   );
 }

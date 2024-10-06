@@ -91,6 +91,13 @@ const handleprint = ({
     right: { style: 'thin', color: { argb: 'black' } },
   };
 
+  worksheet.getColumn(1).width = 6;
+  worksheet.getColumn(2).width = 22;
+  worksheet.getColumn(3).width = 17.67;
+  for (let i = 4; i <= headcells.length - 6; i++) {
+    worksheet.getColumn(i).width = 3;
+  }
+
   const headings = [
     {
       header: [plantname],
@@ -173,6 +180,8 @@ const handleprint = ({
     const data = headcells.map((h) => {
       return typeof row[h.id] === 'number' ? getRoundOff(row[h.id]) : row[h.id];
     });
+    console.log(data);
+
     const datarow = worksheet.addRow(data);
     datarow.eachCell((cell: any) => {
       cell.alignment = {
@@ -230,16 +239,43 @@ const handleprint = ({
     height: 30,
   });
 
+  const c = ot ? count - 4 : count - 9;
+
+  const getEmptyRows = (length: number) => {
+    let data = [];
+    while (data.length < length) {
+      data.push('');
+    }
+    return data;
+  };
+
+  let c1 = 0;
+  let c2 = 0;
+
+  if (c === 28) {
+    c1 = 13;
+    c2 = 14;
+  } else if (c === 31) {
+    c1 = 15;
+    c2 = 15;
+  } else if (c === 29) {
+    c1 = 14;
+    c2 = 14;
+  } else {
+    c1 = 14;
+    c2 = 15;
+  }
+
   const row = worksheet.addRow([
     'Checked By',
     '',
+    '',
     'Verified By   8HR',
-    '',
+    ...getEmptyRows(c1),
     'Verified By   COMM',
-    '',
+    ...getEmptyRows(c2),
     'Passed By    ED',
-    '',
-    '',
+    ...getEmptyRows(4),
   ]);
   row.eachCell((cell: any) => {
     cell.alignment = {
@@ -256,10 +292,46 @@ const handleprint = ({
     };
   });
 
-  worksheet.mergeCells(`A${row.number}:B${row.number}`);
-  worksheet.mergeCells(`C${row.number}:D${row.number}`);
-  worksheet.mergeCells(`E${row.number}:F${row.number}`);
-  worksheet.mergeCells(`G${row.number}:H${row.number}`);
+  worksheet.mergeCells(`A${row.number}:C${row.number}`);
+  // worksheet.mergeCells(`D${row.number}:P${row.number}`);
+  // worksheet.mergeCells(`Q${row.number}:Z${row.number}`);
+  if (c === 28) {
+    worksheet.mergeCells(`D${row.number}:Q${row.number}`);
+    worksheet.mergeCells(`R${row.number}:AF${row.number}`);
+    worksheet.mergeCells(`AG${row.number}:AK${row.number}`);
+  } else if (c === 31) {
+    worksheet.mergeCells(`D${row.number}:S${row.number}`);
+    worksheet.mergeCells(`T${row.number}:AI${row.number}`);
+    worksheet.mergeCells(`AJ${row.number}:AN${row.number}`);
+  } else if (c === 29) {
+    worksheet.mergeCells(`D${row.number}:R${row.number}`);
+    worksheet.mergeCells(`S${row.number}:AG${row.number}`);
+    worksheet.mergeCells(`AH${row.number}:AL${row.number}`);
+  } else {
+    worksheet.mergeCells(`D${row.number}:R${row.number}`);
+    worksheet.mergeCells(`S${row.number}:AH${row.number}`);
+    worksheet.mergeCells(`AI${row.number}:AM${row.number}`);
+  }
+
+  worksheet.pageSetup = {
+    paperSize: 1, // Letter size (8.5 in. x 11 in.)
+    orientation: 'landscape', // Landscape orientation
+    margins: {
+      left: 0.0,
+      right: 0.0,
+      top: 0.0,
+      bottom: 0.0,
+      header: 0.0,
+      footer: 0.0,
+    },
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 0,
+  };
+
+  console.log('worksheet', worksheet);
+
+  worksheet.pageSetup.printArea = 'A1:Z100';
 
   workbook.xlsx.writeBuffer().then((buffer: any) => {
     const blob = new Blob([buffer], {

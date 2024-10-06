@@ -1,11 +1,11 @@
-import prisma from "@/lib/prisma";
-import { NextApiRequest, NextApiResponse } from "next";
+import prisma from '@/lib/prisma';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
+  if (req.method === 'POST') {
     const { contractorId, month, fixedValues, designations } = req.body;
 
     await prisma.timeKeeper.updateMany({
@@ -39,14 +39,14 @@ export default async function handler(
         deployment: fixedValues.deployment,
         basicamount: Math.round(fixedValues.basicamount),
         gstValue: Math.round(fixedValues.gstValue),
-        tdsValue: Math.round(fixedValues.gstValue),
+        tdsValue: Math.round(fixedValues.tdsValue),
         billamount: Math.round(fixedValues.billamount),
         cost: Math.round(fixedValues.cost),
       },
     });
 
     res.status(200).json({ success: true });
-  } else if (req.method === "DELETE") {
+  } else if (req.method === 'DELETE') {
     const { contractorId, month } = req.query;
 
     await prisma.timeKeeper.updateMany({

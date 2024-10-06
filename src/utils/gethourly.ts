@@ -6,9 +6,9 @@ import {
   SeperateSalary,
   Shifts,
   TimeKeeper,
-} from "@prisma/client";
-import dayjs from "dayjs";
-import _ from "lodash";
+} from '@prisma/client';
+import dayjs from 'dayjs';
+import _ from 'lodash';
 
 interface DesignationwithSalary extends Designations {
   seperateSalary: SeperateSalary[];
@@ -27,14 +27,14 @@ const filter = (
 
   if (wrkhrs && s?.totalhours !== wrkhrs) return false;
   if (item.attendance === attendance) return false;
-  if (designation.gender === "Male" || designation.gender === "M") {
+  if (designation.gender === 'Male' || designation.gender === 'M') {
     return (
       item.designation.toLowerCase() ===
         designation.designation.toLowerCase() &&
       item.gender &&
       item.gender[0] === designation.gender[0]
     );
-  } else if (designation.gender === "Female" || designation.gender === "F") {
+  } else if (designation.gender === 'Female' || designation.gender === 'F') {
     return (
       item.designation.toLowerCase() ===
         designation.designation.toLowerCase() &&
@@ -71,7 +71,6 @@ const getTotalAmountAndRows = (
     const shift = shifts.find(
       (s) => s.shift === (item.manualshift || item.machineshift)
     );
-    if (shift) console.log(shift.totalhours, workinghrs, "shift");
     if (shift?.totalhours === workinghrs) return true;
     else if (!shift) return workinghrs === 8;
     else return false;
@@ -80,15 +79,15 @@ const getTotalAmountAndRows = (
   let filtered: TimeKeeper[] = [];
 
   const malecount: Record<string, string | number> = {
-    date: "Total Male",
+    date: 'Total Male',
   };
 
   const femalecount: Record<string, string | number> = {
-    date: "Total Female",
+    date: 'Total Female',
   };
 
   const svrcount: Record<string, string | number> = {
-    date: "Total SVR",
+    date: 'Total SVR',
   };
 
   const assignCounts = (
@@ -96,52 +95,52 @@ const getTotalAmountAndRows = (
     designation: DesignationwithSalary,
     value: number
   ) => {
-    if (designation.designation.toLowerCase() === "supervisor") {
+    if (designation.designation.toLowerCase() === 'supervisor') {
       svrcount[id] = ((svrcount[id] as number) || 0) + value;
-    } else if (designation.gender.toLowerCase() === "male") {
+    } else if (designation.gender.toLowerCase() === 'male') {
       malecount[id] = ((malecount[id] as number) || 0) + value;
-    } else if (designation.gender.toLowerCase() === "female") {
+    } else if (designation.gender.toLowerCase() === 'female') {
       femalecount[id] = ((femalecount[id] as number) || 0) + value;
     }
     totalall[id] = ((totalall[id] as number) || 0) + value;
   };
 
   const totalall: Record<string, string | number> = {
-    date: "Total",
+    date: 'Total',
   };
 
   const rate: Record<string, string | number> = {
-    date: "Rate",
+    date: 'Rate',
   };
 
   const totalovertime: Record<string, string | number> = {
-    date: "Overtime Hrs.",
+    date: 'Overtime Hrs.',
     total: 0,
   };
   const attendancecount: Record<string, string | number> = {
-    date: "Total Man days",
+    date: 'Total Man days',
     total: 0,
   };
   const totalManDayAmount: Record<string, string | number> = {
-    date: "Man Days Amount",
+    date: 'Man Days Amount',
     total: 0,
   };
 
   const otamount: Record<string, string | number> = {
-    date: "OT Amount",
+    date: 'OT Amount',
     total: 0,
   };
 
   const totalnetamount: Record<string, string | number> = {
-    date: "Total Amount",
+    date: 'Total Amount',
   };
 
   const total: Record<string, string | number> = {
-    date: "Taxable",
+    date: 'Taxable',
   };
 
   const netPayable1: Record<string, string | number> = {
-    date: "Net Payable",
+    date: 'Net Payable',
   };
 
   const getDataOfDate = (date: string) => {
@@ -159,7 +158,7 @@ const getTotalAmountAndRows = (
 
       department.designations?.forEach((designation) => {
         const id = designation.id;
-        const f = f1.filter((item) => filter(item, designation, "0.5"));
+        const f = f1.filter((item) => filter(item, designation, '0.5'));
 
         filtered.push(...f);
         if (calot) {
@@ -168,13 +167,13 @@ const getTotalAmountAndRows = (
             0
           );
           obj[id] = othrs;
-          obj["total"] = (obj.total as number) + othrs;
+          obj['total'] = (obj.total as number) + othrs;
         } else {
-          const hf = f1.filter((item) => filter(item, designation, "1"));
+          const hf = f1.filter((item) => filter(item, designation, '1'));
 
           const count = f.length + hf.length / 2;
           obj[id] = count;
-          obj["total"] = (obj.total as number) + count;
+          obj['total'] = (obj.total as number) + count;
         }
       });
     });
@@ -191,9 +190,9 @@ const getTotalAmountAndRows = (
   const endDate = new Date(year, month, 0);
 
   for (let i = startDate.getDate(); i <= endDate.getDate(); i++) {
-    const date = `${i.toString().padStart(2, "0")}/${month
+    const date = `${i.toString().padStart(2, '0')}/${month
       .toString()
-      .padStart(2, "0")}/${year}`;
+      .padStart(2, '0')}/${year}`;
     rows.push(getDataOfDate(date));
   }
 
@@ -205,8 +204,8 @@ const getTotalAmountAndRows = (
 
     department.designations.forEach((designation) => {
       const id = designation.id;
-      const fulltime = f1.filter((item) => filter(item, designation, "0.5"));
-      const halftime = f1.filter((item) => filter(item, designation, "1"));
+      const fulltime = f1.filter((item) => filter(item, designation, '0.5'));
+      const halftime = f1.filter((item) => filter(item, designation, '1'));
 
       const f8 = fulltime.filter((item) => filterByShift(item, 8));
       const f12 = fulltime.filter((item) => filterByShift(item, 12));
@@ -217,12 +216,12 @@ const getTotalAmountAndRows = (
 
       attendancecount[id] = count;
       assignCounts(
-        "attendancecount",
+        'attendancecount',
         designation,
         fulltime.length + halftime.length / 2
       );
 
-      attendancecount["total"] =
+      attendancecount['total'] =
         (attendancecount.total as number) +
         (Number(_.get(attendancecount, id, 0)) || 0);
 
@@ -232,10 +231,10 @@ const getTotalAmountAndRows = (
       if (s) {
         rate[id] = s.salary;
       } else if (wrkhrs === 8) {
-        if (designation.designation.toLowerCase() === "supervisor")
+        if (designation.designation.toLowerCase() === 'supervisor')
           rate[id] =
             fixedValues?.salarysvr8hr ?? (contractor.salarysvr8hr as number);
-        else if (designation.gender === "Female")
+        else if (designation.gender === 'Female')
           rate[id] =
             fixedValues?.salarywomen8hr ??
             (contractor.salarywomen8hr as number);
@@ -243,7 +242,7 @@ const getTotalAmountAndRows = (
           rate[id] =
             fixedValues?.salarymen8hr ?? (contractor.salarymen8hr as number);
       } else if (wrkhrs === 12) {
-        if (designation.designation.toLowerCase() === "supervisor")
+        if (designation.designation.toLowerCase() === 'supervisor')
           rate[id] =
             fixedValues?.salarysvr12hr ?? (contractor.salarysvr12hr as number);
         else
@@ -260,12 +259,12 @@ const getTotalAmountAndRows = (
       );
 
       assignCounts(
-        "mandaysamount",
+        'mandaysamount',
         designation,
         Number(_.get(totalManDayAmount, id, 0))
       );
 
-      totalManDayAmount["total"] = getRoundOff(
+      totalManDayAmount['total'] = getRoundOff(
         (totalManDayAmount.total as number) +
           Number(_.get(totalManDayAmount, id, 0))
       );
@@ -280,41 +279,41 @@ const getTotalAmountAndRows = (
       );
       if (calot) {
         attendancecount[id] = getRoundOff(o8 + o12);
-        attendancecount["date"] = "Total OverTime Hrs.";
+        attendancecount['date'] = 'Total OverTime Hrs.';
       }
 
       totalovertime[id] = getRoundOff(o8 + o12);
-      assignCounts("othrs", designation, Number(_.get(totalovertime, id, 0)));
-      totalovertime["total"] = getRoundOff(
+      assignCounts('othrs', designation, Number(_.get(totalovertime, id, 0)));
+      totalovertime['total'] = getRoundOff(
         (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
       );
       const amount8 = getRoundOff((o8 * (rate[id] as number)) / 8);
       const amount12 = getRoundOff((o12 * (rate[id] as number)) / 12);
       otamount[id] = getRoundOff(amount8 + amount12);
-      assignCounts("otamount", designation, Number(_.get(otamount, id, 0)));
-      otamount["total"] = getRoundOff(
+      assignCounts('otamount', designation, Number(_.get(otamount, id, 0)));
+      otamount['total'] = getRoundOff(
         (otamount.total as number) + Number(_.get(otamount, id, 0))
       );
       totalnetamount[id] = getRoundOff(
         Number(_.get(totalManDayAmount, id, 0)) + Number(_.get(otamount, id, 0))
       );
       assignCounts(
-        "totalnetamount",
+        'totalnetamount',
         designation,
         Number(_.get(totalnetamount, id, 0))
       );
     });
   });
 
-  rate["total"] = 0;
-  totalnetamount["total"] =
+  rate['total'] = 0;
+  totalnetamount['total'] =
     parseFloat(totalManDayAmount.total as string) +
     parseFloat(otamount.total as string);
 
   rows.push(attendancecount);
 
   const allcounts = [malecount, femalecount, svrcount, totalall];
-  if (role !== "HR") {
+  if (role !== 'HR') {
     const r = [
       rate,
       totalManDayAmount,
@@ -326,18 +325,18 @@ const getTotalAmountAndRows = (
   }
 
   const t =
-    totalnetamount["total"] +
-    ((totalManDayAmount["total"] as number) * (contractor.servicecharge || 0)) /
+    totalnetamount['total'] +
+    ((totalManDayAmount['total'] as number) * (contractor.servicecharge || 0)) /
       100;
 
-  malecount["label"] = "Total";
-  malecount["value"] = t;
-  femalecount["label"] = "SGST @ 9%";
-  femalecount["value"] = t * 0.09;
-  svrcount["label"] = "CGST @ 9%";
-  svrcount["value"] = t * 0.09;
-  totalall["label"] = "Total";
-  totalall["value"] = t + t * 0.18;
+  malecount['label'] = 'Total';
+  malecount['value'] = t;
+  femalecount['label'] = 'SGST @ 9%';
+  femalecount['value'] = t * 0.09;
+  svrcount['label'] = 'CGST @ 9%';
+  svrcount['value'] = t * 0.09;
+  totalall['label'] = 'Total';
+  totalall['value'] = t + t * 0.18;
 
   return {
     rows,

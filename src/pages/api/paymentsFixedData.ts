@@ -27,7 +27,16 @@ export default async function handler(
         },
       });
 
-      return res.status(200).json({ safety, deductions, fixedvalues });
+      const finalCalculations = await prisma.finalCalculations.findFirst({
+        where: {
+          contractorId: contractorId as string,
+          month: month as string,
+        },
+      });
+
+      return res
+        .status(200)
+        .json({ safety, deductions, fixedvalues, finalCalculations });
     }
 
     const payments = await prisma.payments.findMany();

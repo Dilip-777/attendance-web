@@ -317,10 +317,18 @@ model FixedDepartments {
 }
 
 model FixedDesignations {
-  id                        String @id @default(cuid())
-  salary                    Int    @default(0)
+  id                        String  @id @default(cuid())
+  salary                    Float   @default(0)
   fixedValuesId             String
   designationId             String
+  department                String?
+  noofmanpower              Int     @default(0)
+  totaldays                 Float   @default(0)
+  mandays                   Float   @default(0)
+  mandaysamount             Float   @default(0)
+  rate                      Float   @default(0)
+  othrs                     Float   @default(0)
+  otamount                  Float   @default(0)
   gender                    String
   designation               String
   allowed_wrking_hr_per_day Int
@@ -720,6 +728,7 @@ model FinalCalculations {
   hsdRateCharged Float
   hsdCost        Float
   totalCost      Float
+  finalPayable   Float      @default(0)
   contractor     Contractor @relation(fields: [contractorId], references: [contractorId], onDelete: Cascade)
 
   @@unique([month, contractorId])

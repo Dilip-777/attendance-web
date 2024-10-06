@@ -111,5 +111,18 @@ export default async function hoauditor(
       },
     });
     res.status(200).json(ho);
+  } else if (req.method === 'DELETE') {
+    const { id } = req.query;
+    const ho = await prisma.hOAuditor.delete({
+      where: {
+        id: id as string,
+      },
+    });
+    if (!ho) {
+      return res.status(404).json({ message: 'Not found' });
+    }
+    res.status(200).json({ message: 'Success' });
+  } else {
+    res.status(405).json({ message: 'Method not allowed' });
   }
 }

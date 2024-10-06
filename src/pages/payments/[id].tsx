@@ -19,6 +19,7 @@ import {
   Department,
   Designations,
   Employee,
+  FinalCalculations,
   FixedValues,
   Payments,
   Safety,
@@ -89,7 +90,7 @@ export default function Edit({
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values, { setErrors, setSubmitting }) => {
+          onSubmit={async (values, { setErrors, setSubmitting }) => {
             const contractor = contractors.find(
               (contractor) => contractor.contractorId === values.contractorId
             );
@@ -102,7 +103,7 @@ export default function Edit({
             setSubmitting(true);
 
             if (payment) {
-              axios
+              await axios
                 .put(`/api/payments`, {
                   ...values,
                   contractorName: contractor?.contractorname,
@@ -116,7 +117,7 @@ export default function Edit({
                 });
               setSubmitting(false);
             } else
-              axios
+              await axios
                 .post('/api/payments', {
                   ...values,
                   contractorName: contractor?.contractorname,
@@ -149,7 +150,10 @@ export default function Edit({
                       options={
                         contractors?.map((contractor) => ({
                           value: contractor.contractorId,
-                          label: contractor.contractorname,
+                          label:
+                            contractor.contractorname +
+                            ' - ' +
+                            contractor.contractorId,
                         })) || []
                       }
                     />
@@ -197,16 +201,17 @@ export default function Edit({
                 <Button
                   type='submit'
                   variant='contained'
+                  color='secondary'
                   sx={{ float: 'right', mr: 10 }}
                   disabled={isSubmitting}
                 >
-                  Submit
                   {isSubmitting && (
                     <CircularProgress
                       size={15}
-                      sx={{ ml: 1, color: '#364152' }}
+                      sx={{ mr: 1, color: '#364152' }}
                     />
                   )}
+                  Submit
                 </Button>
               </form>
             );
@@ -234,6 +239,7 @@ const NetPayableInput = ({
     safety: Safety | null;
     deductions: Deductions | null;
     fixedvalues: FixedValues | null;
+    finalCalculations: FinalCalculations | null;
   } | null>(null);
 
   const fetchFixedData = async () => {
@@ -248,8 +254,6 @@ const NetPayableInput = ({
   }, [contractor, values.month]);
 
   useEffect(() => {
-    console.log(fixedData);
-
     const safetyAmount = fixedData?.safety?.totalAmount || 0;
     const total =
       (fixedData?.fixedvalues?.billamount || 0) -
@@ -258,15 +262,16 @@ const NetPayableInput = ({
     console.log(total, deduction);
 
     const netpayable =
+      fixedData?.finalCalculations?.finalPayable ||
       total -
-      // storededuction -
-      safetyAmount +
-      ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0) -
-      (deduction?.advance || 0) -
-      (deduction?.anyother || 0) +
-      (deduction?.addition || 0);
+        safetyAmount +
+        ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0) -
+        (deduction?.advance || 0) -
+        (deduction?.anyother || 0) +
+        (deduction?.addition || 0);
 
     setFieldValue('netpayable', netpayable);
+    console.log(total, deduction, netpayable, safetyAmount);
   }, [fixedData]);
 
   return (

@@ -277,7 +277,7 @@ export default function WorkOrder({
             spacing={2}
             sx={{ width: '100%' }}
           >
-            <Box sx={{ minWidth: 240 }}>
+            <Box sx={{ minWidth: 300 }}>
               <FormLabel sx={{ fontWeight: '700' }}>
                 Select Contractor
               </FormLabel>
@@ -285,12 +285,12 @@ export default function WorkOrder({
                 placeholder='Select Contractor'
                 options={contractors.map((c) => ({
                   value: c.contractorId || '',
-                  label: c.contractorname,
+                  label: c.contractorname + ' - ' + c.contractorId,
                 }))}
                 value={contractors
                   .map((c) => ({
                     value: c.contractorId || '',
-                    label: c.contractorname,
+                    label: c.contractorname + ' - ' + c.contractorId,
                   }))
                   .find((c) => c.value === contractorId)}
                 onChange={(e, value) => {

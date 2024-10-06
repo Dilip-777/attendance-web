@@ -1,41 +1,41 @@
-import Head from "next/head";
-import * as React from "react";
-import { alpha } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import CircularProgress from "@mui/material/CircularProgress";
-import Stack from "@mui/material/Stack";
+import Head from 'next/head';
+import * as React from 'react';
+import { alpha } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
 // import { Button } from "@mui/material/";
-import Button from "@mui/material/Button";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Edit from "@mui/icons-material/Edit";
-import Close from "@mui/icons-material/Close";
-import Done from "@mui/icons-material/Done";
-import Search from "@mui/icons-material/Search";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import Button from '@mui/material/Button';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Edit';
+import Close from '@mui/icons-material/Close';
+import Done from '@mui/icons-material/Done';
+import Search from '@mui/icons-material/Search';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-import { useRouter } from "next/router";
-import { Comment, Contractor, TimeKeeper, Upload } from "@prisma/client";
-import axios from "axios";
-import { getSession, useSession } from "next-auth/react";
-import { GetServerSideProps } from "next";
-import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
-import dynamic from "next/dynamic";
+import { useRouter } from 'next/router';
+import { Comment, Contractor, TimeKeeper, Upload } from '@prisma/client';
+import axios from 'axios';
+import { getSession, useSession } from 'next-auth/react';
+import { GetServerSideProps } from 'next';
+import EnhancedTableHead from '@/components/Table/EnhancedTableHead';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs, { Dayjs } from 'dayjs';
+import dynamic from 'next/dynamic';
 import {
   Autocomplete,
   FormLabel,
@@ -46,89 +46,89 @@ import {
   Snackbar,
   TextField,
   styled,
-} from "@mui/material";
-import _, { set } from "lodash";
-import PersonaliseColumns from "@/components/Timekeeper/PersonaliseColumn";
-const ImportData = dynamic(() => import("@/components/import"));
+} from '@mui/material';
+import _, { set } from 'lodash';
+import PersonaliseColumns from '@/components/Timekeeper/PersonaliseColumn';
+const ImportData = dynamic(() => import('@/components/import'));
 const CustomModal = dynamic(
-  () => import("@/components/Timekeeper/ViewCommentsDocuments")
+  () => import('@/components/Timekeeper/ViewCommentsDocuments')
 );
-import FilterList from "@mui/icons-material/FilterList";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import { getComparator, stableSort } from "@/utils/comparatorfuncitons";
-import FormSelect from "@/ui-component/FormSelect";
+import FilterList from '@mui/icons-material/FilterList';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { getComparator, stableSort } from '@/utils/comparatorfuncitons';
+import FormSelect from '@/ui-component/FormSelect';
 
 const handleClickReport = async (data: TimeKeeper[]) => {
   const tableRows = [
     [
-      "Contractor ID",
-      "Contractor Name",
-      "Employee ID",
-      "Employee Name",
-      "Machine In Time",
-      "Machine Out Time",
-      "Machine Total Duration",
-      "Machine Shift",
-      "Attendance",
-      "Attendance Date",
-      "Machine Over Time",
-      "Machine Leave",
-      "Manual In Time",
-      "Manual Out Time",
-      "Manual Total Duration",
-      "Manual Shift",
-      "Manual Over Time",
-      "Manual Leave",
-      "Deployee Of Department",
-      "Designation",
-      "Gender",
-      "Status",
-      "Final OT Hours",
+      'Contractor ID',
+      'Contractor Name',
+      'Employee ID',
+      'Employee Name',
+      'Machine In Time',
+      'Machine Out Time',
+      'Machine Total Duration',
+      'Machine Shift',
+      'Attendance',
+      'Attendance Date',
+      'Machine Over Time',
+      'Machine Leave',
+      'Manual In Time',
+      'Manual Out Time',
+      'Manual Total Duration',
+      'Manual Shift',
+      'Manual Over Time',
+      'Manual Leave',
+      'Deployee Of Department',
+      'Designation',
+      'Gender',
+      'Status',
+      'Final OT Hours',
     ],
   ];
 
   try {
     data.forEach((item: TimeKeeper) => {
       tableRows.push([
-        item.contractorid || "-",
-        item.contractorname || "-",
+        item.contractorid || '-',
+        item.contractorname || '-',
         item.employeeid.toString(),
-        item.employeename || "-",
+        item.employeename || '-',
         item.machineInTime,
-        item.machineOutTime || "-",
-        item.machineduration || "-",
-        item.machineshift || "-",
+        item.machineOutTime || '-',
+        item.machineduration || '-',
+        item.machineshift || '-',
         item?.attendance,
-        item.attendancedate || "-",
-        item.overtime?.toString() || "-",
-        item.mleave || "-",
-        item.manualintime?.toString() || "-",
-        item.manualouttime?.toString() || "-",
-        item.manualduration || "-",
-        item.manualshift || "-",
-        item.manualovertime?.toString() ?? "-",
-        item.mleave || "-",
-        item.department?.toString() || "-",
-        item.designation?.toString() || "-",
-        item?.gender || "-",
-        item.status || "-",
-        item.manualovertime?.toString() ?? item.overtime.toString() ?? "-",
+        item.attendancedate || '-',
+        item.overtime?.toString() || '-',
+        item.mleave || '-',
+        item.manualintime?.toString() || '-',
+        item.manualouttime?.toString() || '-',
+        item.manualduration || '-',
+        item.manualshift || '-',
+        item.manualovertime?.toString() ?? '-',
+        item.mleave || '-',
+        item.department?.toString() || '-',
+        item.designation?.toString() || '-',
+        item?.gender || '-',
+        item.status || '-',
+        item.manualovertime?.toString() ?? item.overtime.toString() ?? '-',
       ]);
     });
 
-    const csvContent = `${tableRows.map((row) => row.join(",")).join("\n")}`;
+    const csvContent = `${tableRows.map((row) => row.join(',')).join('\n')}`;
 
     // Download CSV file
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "TimeKeeper.csv");
-    link.style.visibility = "hidden";
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'TimeKeeper.csv');
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -149,7 +149,7 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
   // height: 40,
   marginRight: 30,
 
-  "& fieldset": {
+  '& fieldset': {
     borderWidth: `1px !important`,
     borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
   },
@@ -182,51 +182,51 @@ const createHeadCells = (
 };
 
 const headCells = [
-  createHeadCells("employeeid", "Employee ID", false, false, false, 0),
-  createHeadCells("employeename", "Employee Name", false, false, false, 1),
-  createHeadCells("machineInTime", "Machine In Time", false, false, false, 2),
-  createHeadCells("machineOutTime", "Machine Out Time", false, false, false, 3),
+  createHeadCells('employeeid', 'Employee ID', false, false, false, 0),
+  createHeadCells('employeename', 'Employee Name', false, false, false, 1),
+  createHeadCells('machineInTime', 'Machine In Time', false, false, false, 2),
+  createHeadCells('machineOutTime', 'Machine Out Time', false, false, false, 3),
   createHeadCells(
-    "machineduration",
-    "Machine Total Duration",
+    'machineduration',
+    'Machine Total Duration',
     false,
     false,
     false,
     4
   ),
-  createHeadCells("machineshift", "Machine Shift", false, false, false, 5),
-  createHeadCells("attendance", "Attendance", true, false, false, 6),
-  createHeadCells("attendancedate", "Attendance Date", true, false, false, 7),
-  createHeadCells("overtime", "Machine Over Time", true, false, false, 8),
-  createHeadCells("machineleave", "Machine Leave", true, false, false, 9),
-  createHeadCells("manualintime", "Manual In Time", false, false, false, 10),
-  createHeadCells("manualouttime", "Manual Out Time", false, false, false, 11),
+  createHeadCells('machineshift', 'Machine Shift', false, false, false, 5),
+  createHeadCells('attendance', 'Attendance', true, false, false, 6),
+  createHeadCells('attendancedate', 'Attendance Date', true, false, false, 7),
+  createHeadCells('overtime', 'Machine Over Time', true, false, false, 8),
+  createHeadCells('machineleave', 'Machine Leave', true, false, false, 9),
+  createHeadCells('manualintime', 'Manual In Time', false, false, false, 10),
+  createHeadCells('manualouttime', 'Manual Out Time', false, false, false, 11),
   createHeadCells(
-    "manualduration",
-    "Manual Total Duration",
+    'manualduration',
+    'Manual Total Duration',
     false,
     false,
     false,
     12
   ),
-  createHeadCells("manualshift", "Manual Shift", false, false, false, 13),
-  createHeadCells("manualovertime", "Manual Over Time", true, false, false, 14),
-  createHeadCells("mleave", "Manual Leave", true, false, false, 15),
+  createHeadCells('manualshift', 'Manual Shift', false, false, false, 13),
+  createHeadCells('manualovertime', 'Manual Over Time', true, false, false, 14),
+  createHeadCells('mleave', 'Manual Leave', true, false, false, 15),
   createHeadCells(
-    "department",
-    "Deployee Of Department",
+    'department',
+    'Deployee Of Department',
     false,
     false,
     false,
     16
   ),
-  createHeadCells("designation", "Designation", false, false, false, 17),
-  createHeadCells("gender", "Gender", false, false, false, 18),
+  createHeadCells('designation', 'Designation', false, false, false, 17),
+  createHeadCells('gender', 'Gender', false, false, false, 18),
 
-  createHeadCells("status", "Status", false, false, false, 19),
-  createHeadCells("comment", "Comment", false, false, false, 20),
-  createHeadCells("uploaddocument", "Upload Document", false, false, false, 21),
-  createHeadCells("action", "Action", false, true, false, 22),
+  createHeadCells('status', 'Status', false, false, false, 19),
+  createHeadCells('comment', 'Comment', false, false, false, 20),
+  createHeadCells('uploaddocument', 'Upload Document', false, false, false, 21),
+  createHeadCells('action', 'Action', false, true, false, 22),
 ];
 
 interface EnhancedTableToolbarProps {
@@ -288,7 +288,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const [startDate, setStartDate] = React.useState<Dayjs>(defaultStartDate);
   const [endDate, setEndDate] = React.useState<Dayjs>(defaultEndDate);
   const [startDate1, setStartDate1] = React.useState<Dayjs>(
-    dayjs().startOf("month")
+    dayjs().startOf('month')
   );
   const [endDate1, setEndDate1] = React.useState<Dayjs>(dayjs());
   const [attendance, setAttendance] = React.useState(att);
@@ -303,8 +303,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     let dateArray = [];
     let currentDate = startDate1;
     while (currentDate?.isBefore(endDate1) || currentDate?.isSame(endDate1)) {
-      dateArray.push(currentDate.format("DD/MM/YYYY"));
-      currentDate = currentDate.add(1, "day");
+      dateArray.push(currentDate.format('DD/MM/YYYY'));
+      currentDate = currentDate.add(1, 'day');
     }
     const queryString = `/api/timekeeper/gettimekeepers?role=${session?.user?.role}&dateArray=${dateArray}`;
     const res = await axios.get(queryString);
@@ -318,10 +318,10 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     setDefaultStartDate(startDate);
     setDefaultEndDate(endDate);
     setAtt(attendance);
-    localStorage.setItem("contractorName", tempcontractorName);
-    localStorage.setItem("startDate", startDate.toString());
-    localStorage.setItem("endDate", endDate.toString());
-    localStorage.setItem("attendance", attendance);
+    localStorage.setItem('contractorName', tempcontractorName);
+    localStorage.setItem('startDate', startDate.toString());
+    localStorage.setItem('endDate', endDate.toString());
+    localStorage.setItem('attendance', attendance);
   };
 
   const handleCancel = () => {
@@ -356,8 +356,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       sx={{
         pl: { sm: 2 },
         pr: { xs: 1, sm: 1 },
-        display: "flex",
-        justifyContent: "space-between",
+        display: 'flex',
+        justifyContent: 'space-between',
         ...(selected.length > 0 && {
           bgcolor: (theme) =>
             alpha(
@@ -369,21 +369,21 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     >
       {selected.length > 0 ? (
         <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
+          sx={{ flex: '1 1 100%' }}
+          color='inherit'
+          variant='subtitle1'
+          component='div'
         >
           {selected.length} selected
         </Typography>
       ) : (
-        <Stack spacing={2} direction="row" alignItems="center">
+        <Stack spacing={2} direction='row' alignItems='center'>
           <StyledSearch
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Search ..."
+            placeholder='Search ...'
             startAdornment={
-              <InputAdornment position="start">
+              <InputAdornment position='start'>
                 <Search />
               </InputAdornment>
             }
@@ -391,10 +391,10 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Stack>
       )}
       {selected.length > 0 ? (
-        session?.user?.role === "Corporate" && (
-          <Stack direction="row" spacing={2}>
+        session?.user?.role === 'Corporate' && (
+          <Stack direction='row' spacing={2}>
             {selected.length === 1 && (
-              <Tooltip title="Edit">
+              <Tooltip title='Edit'>
                 <IconButton
                   onClick={() => router.push(`/details/${selected[0]}`)}
                 >
@@ -402,7 +402,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 </IconButton>
               </Tooltip>
             )}
-            <Tooltip title="Delete">
+            <Tooltip title='Delete'>
               <IconButton
                 onClick={() => {
                   deleteTimeKeeper(selected);
@@ -414,8 +414,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </Stack>
         )
       ) : (
-        <Stack direction="row" spacing={2}>
-          <Tooltip title="Filter">
+        <Stack direction='row' spacing={2}>
+          <Tooltip title='Filter'>
             <IconButton onClick={() => setOpen1(true)}>
               <FilterList />
             </IconButton>
@@ -426,19 +426,19 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               <MoreVertIcon />
             </IconButton>
             <Menu
-              id="basic-menu"
+              id='basic-menu'
               anchorEl={anchorEl}
               open={open}
               onClose={handleClose}
               MenuListProps={{
-                "aria-labelledby": "basic-button",
+                'aria-labelledby': 'basic-button',
               }}
             >
-              <MenuItem sx={{ cursor: "pointer" }}>
+              <MenuItem sx={{ cursor: 'pointer' }}>
                 <ImportData contractors={contractorlist} />
               </MenuItem>
-              <MenuItem sx={{ cursor: "pointer" }}>
-                <ImportData contractors={contractorlist} type="update" />
+              <MenuItem sx={{ cursor: 'pointer' }}>
+                <ImportData contractors={contractorlist} type='update' />
               </MenuItem>
               <MenuItem
                 onClick={() => {
@@ -457,7 +457,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
               >
                 Download All
               </MenuItem>
-              {session?.user?.role === "TimeKeeper" && (
+              {session?.user?.role === 'TimeKeeper' && (
                 <MenuItem
                   sx={{ mr: 3 }}
                   onClick={() => {
@@ -486,18 +486,18 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           setOpen1(false);
           setOpen2(false);
         }}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+        aria-labelledby='alert-dialog-title'
+        aria-describedby='alert-dialog-description'
       >
-        <DialogTitle sx={{ fontSize: "1.2rem" }} id="alert-dialog-title">
-          {open1 ? "Filter" : "Download All"}
+        <DialogTitle sx={{ fontSize: '1.2rem' }} id='alert-dialog-title'>
+          {open1 ? 'Filter' : 'Download All'}
         </DialogTitle>
         <DialogContent>
           {open1 && (
             <Stack spacing={4}>
-              <Stack spacing={4} direction="row" alignItems="center">
-                <Box sx={{ width: "100%" }}>
-                  <FormLabel sx={{ fontWeight: "700" }}>
+              <Stack spacing={4} direction='row' alignItems='center'>
+                <Box sx={{ width: '100%' }}>
+                  <FormLabel sx={{ fontWeight: '700' }}>
                     Select the Contractor
                   </FormLabel>
                   <Autocomplete
@@ -510,59 +510,59 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                       setTempContractorName(value?.label as string);
                     }}
                     renderInput={(params) => (
-                      <TextField {...params} placeholder="All Contractors" />
+                      <TextField {...params} placeholder='All Contractors' />
                     )}
                   />
                 </Box>
                 <FormSelect
                   options={[
-                    { label: "All", value: "all" },
-                    { label: "All Present", value: "1.5" },
-                    { label: "Present", value: "1" },
-                    { label: "Half Present", value: "0.5" },
-                    { label: "Absent", value: "0" },
+                    { label: 'All', value: 'all' },
+                    { label: 'All Present', value: '1.5' },
+                    { label: 'Present', value: '1' },
+                    { label: 'Half Present', value: '0.5' },
+                    { label: 'Absent', value: '0' },
                   ]}
-                  label="Attendance"
+                  label='Attendance'
                   value={attendance}
                   handleChange={(e) => {
                     setAttendance(e as string);
                   }}
                 />
               </Stack>
-              <Stack direction="row" spacing={4}>
+              <Stack direction='row' spacing={4}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <Box
                     sx={{
                       minWidth: 240,
-                      display: "flex",
-                      flexDirection: "column",
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                   >
-                    <FormLabel sx={{ fontWeight: "700" }}>Start Date</FormLabel>
+                    <FormLabel sx={{ fontWeight: '700' }}>Start Date</FormLabel>
                     <DatePicker
                       value={startDate}
                       onChange={(newValue) => {
                         setStartDate(newValue as Dayjs);
                       }}
                       maxDate={endDate}
-                      format="DD/MM/YYYY"
+                      format='DD/MM/YYYY'
                     />
                   </Box>
                   <Box
                     sx={{
                       minWidth: 240,
-                      display: "flex",
-                      flexDirection: "column",
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                   >
-                    <FormLabel sx={{ fontWeight: "700" }}>End Date</FormLabel>
+                    <FormLabel sx={{ fontWeight: '700' }}>End Date</FormLabel>
                     <DatePicker
                       value={endDate}
                       onChange={(newValue) => {
                         setEndDate(newValue as Dayjs);
                       }}
                       minDate={startDate}
-                      format="DD/MM/YYYY"
+                      format='DD/MM/YYYY'
                     />
                   </Box>
                 </LocalizationProvider>
@@ -570,37 +570,37 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             </Stack>
           )}
           {open2 && (
-            <Stack spacing={4} direction="row" alignItems="center">
-              <Stack direction="row" spacing={4}>
+            <Stack spacing={4} direction='row' alignItems='center'>
+              <Stack direction='row' spacing={4}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <Box
                     sx={{
                       minWidth: 240,
-                      display: "flex",
-                      flexDirection: "column",
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                   >
-                    <FormLabel sx={{ fontWeight: "700" }}>Start Date</FormLabel>
+                    <FormLabel sx={{ fontWeight: '700' }}>Start Date</FormLabel>
                     <DatePicker
                       value={startDate1}
                       onChange={(newValue) => setStartDate1(newValue as Dayjs)}
                       maxDate={endDate1}
-                      format="DD/MM/YYYY"
+                      format='DD/MM/YYYY'
                     />
                   </Box>
                   <Box
                     sx={{
                       minWidth: 240,
-                      display: "flex",
-                      flexDirection: "column",
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                   >
-                    <FormLabel sx={{ fontWeight: "700" }}>End Date</FormLabel>
+                    <FormLabel sx={{ fontWeight: '700' }}>End Date</FormLabel>
                     <DatePicker
                       value={endDate1}
                       onChange={(newValue) => setEndDate1(newValue as Dayjs)}
                       minDate={startDate1}
-                      format="DD/MM/YYYY"
+                      format='DD/MM/YYYY'
                     />
                   </Box>
                 </LocalizationProvider>
@@ -608,21 +608,21 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             </Stack>
           )}
         </DialogContent>
-        <DialogActions sx={{ padding: "2rem" }}>
+        <DialogActions sx={{ padding: '2rem' }}>
           {open1 && (
             <>
               <Button
                 onClick={() => handleCancel()}
-                color="secondary"
-                variant="outlined"
+                color='secondary'
+                variant='outlined'
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleSave}
                 autoFocus
-                color="secondary"
-                variant="contained"
+                color='secondary'
+                variant='contained'
               >
                 Save
               </Button>
@@ -635,8 +635,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 setOpen2(false);
               }}
               autoFocus
-              color="secondary"
-              variant="contained"
+              color='secondary'
+              variant='contained'
             >
               Download
             </Button>
@@ -654,8 +654,8 @@ export default function TimeKeeperTable({}: // contractors,
   const getLocalData = (key: string) => {
     return JSON.parse(localStorage.getItem(key) as string);
   };
-  const [orderBy, setOrderBy] = React.useState<string>("employeeid");
-  const [filter, setFilter] = React.useState("");
+  const [orderBy, setOrderBy] = React.useState<string>('employeeid');
+  const [filter, setFilter] = React.useState('');
   const [selected, setSelected] = React.useState<string[]>([]);
   const [selectedColumn, setSelectedColumn] = React.useState(
     headCells.filter((h) => h.order >= 0)
@@ -675,21 +675,21 @@ export default function TimeKeeperTable({}: // contractors,
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [rejectModal, setRejectModal] = React.useState(false);
-  const [rejectId, setRejectId] = React.useState<string>("");
+  const [rejectId, setRejectId] = React.useState<string>('');
   const [open1, setOpen1] = React.useState(false);
   const [selected1, setSelected1] = React.useState<Comment[] | Upload[]>();
   const [contractors, setContractors] = React.useState<Contractor[]>([]);
-  const [contractorName, setContractorName] = React.useState("all");
+  const [contractorName, setContractorName] = React.useState('all');
   const [value, setValue] = React.useState<Dayjs>(dayjs());
   const [statusChange, setStatusChange] = React.useState(false);
-  const [debouncedFilter, setDebouncedFilter] = React.useState("");
+  const [debouncedFilter, setDebouncedFilter] = React.useState('');
   const [startDate, setStartDate] = React.useState<Dayjs>(
-    dayjs().startOf("month")
+    dayjs().startOf('month')
   );
   const [endDate, setEndDate] = React.useState<Dayjs>(dayjs());
-  const [att, setAtt] = React.useState("1.5");
+  const [att, setAtt] = React.useState('1.5');
   const [count, setCount] = React.useState(0);
-  const [type, setType] = React.useState<"success" | "error">("success");
+  const [type, setType] = React.useState<'success' | 'error'>('success');
   const [snopen, setSnopen] = React.useState(false);
   const { data: session } = useSession();
 
@@ -702,35 +702,35 @@ export default function TimeKeeperTable({}: // contractors,
   }) => {
     setSelectedColumn(selectedC);
     setAvailable(available);
-    localStorage.setItem("selectedColumn", JSON.stringify(selectedC));
-    localStorage.setItem("availableColumn", JSON.stringify(available));
+    localStorage.setItem('selectedColumn', JSON.stringify(selectedC));
+    localStorage.setItem('availableColumn', JSON.stringify(available));
   };
 
   const handleReset = () => {
     setSelectedColumn(headCells.filter((h) => h.order >= 0));
     setAvailable(headCells.filter((h) => h.order === -1));
     localStorage.setItem(
-      "selectedColumn",
+      'selectedColumn',
       JSON.stringify(headCells.filter((h) => h.order >= 0))
     );
     localStorage.setItem(
-      "availableColumn",
+      'availableColumn',
       JSON.stringify(headCells.filter((h) => h.order === -1))
     );
     setOpenColumn(false);
   };
 
   React.useEffect(() => {
-    const startDate = localStorage.getItem("startDate") as string;
-    const endDate = localStorage.getItem("endDate") as string;
-    const attendance = localStorage.getItem("attendance") as string;
-    const contractorName = localStorage.getItem("contractorName") as string;
-    setStartDate(startDate ? dayjs(startDate) : dayjs().startOf("month"));
+    const startDate = localStorage.getItem('startDate') as string;
+    const endDate = localStorage.getItem('endDate') as string;
+    const attendance = localStorage.getItem('attendance') as string;
+    const contractorName = localStorage.getItem('contractorName') as string;
+    setStartDate(startDate ? dayjs(startDate) : dayjs().startOf('month'));
     setEndDate(endDate ? dayjs(endDate) : dayjs());
-    setAtt(attendance ? attendance : "1.5");
-    setContractorName(contractorName ? contractorName : "all");
-    const selected = localStorage.getItem("selectedColumn");
-    const available = localStorage.getItem("availableColumn");
+    setAtt(attendance ? attendance : '1.5');
+    setContractorName(contractorName ? contractorName : 'all');
+    const selected = localStorage.getItem('selectedColumn');
+    const available = localStorage.getItem('availableColumn');
     if (selected && available) {
       setSelectedColumn(JSON.parse(selected));
       setAvailable(JSON.parse(available));
@@ -742,7 +742,7 @@ export default function TimeKeeperTable({}: // contractors,
     setOpen1(false);
     setSelected1(undefined);
     setRejectModal(false);
-    setRejectId("");
+    setRejectId('');
     setStatusChange(false);
   };
 
@@ -766,7 +766,7 @@ export default function TimeKeeperTable({}: // contractors,
     setLoading(true);
     await axios
       .put(`/api/timekeeper/${id}`, {
-        status: "Approved",
+        status: 'Approved',
       })
       .then((res) => {
         fetchTimeKeeper();
@@ -782,7 +782,7 @@ export default function TimeKeeperTable({}: // contractors,
     setLoading(true);
     await axios
       .put(`/api/timekeeper/${id}`, {
-        status: "Rejected",
+        status: 'Rejected',
         comment: comment,
         userId: session?.user?.id,
         userName: session?.user?.name,
@@ -816,7 +816,7 @@ export default function TimeKeeperTable({}: // contractors,
 
   const fetchContrators = async () => {
     await axios
-      .get("/api/hr/contractors?page=home")
+      .get('/api/hr/contractors?page=home')
       .then((res) => {
         const contractors = res.data;
         setContractors(contractors);
@@ -835,21 +835,21 @@ export default function TimeKeeperTable({}: // contractors,
   }, [filter]);
 
   const fetchTimeKeeper = async () => {
-    const startDate = localStorage.getItem("startDate") as string;
-    let endDate: any = localStorage.getItem("endDate") as string;
+    const startDate = localStorage.getItem('startDate') as string;
+    let endDate: any = localStorage.getItem('endDate') as string;
     endDate = endDate ? dayjs(endDate) : dayjs();
-    const attendance = (localStorage.getItem("attendance") as string) ?? "1.5";
-    const contractorName = localStorage.getItem("contractorName") as string;
+    const attendance = (localStorage.getItem('attendance') as string) ?? '1.5';
+    const contractorName = localStorage.getItem('contractorName') as string;
     let dateArray = [];
-    let currentDate = startDate ? dayjs(startDate) : dayjs().startOf("month");
+    let currentDate = startDate ? dayjs(startDate) : dayjs().startOf('month');
     while (currentDate?.isBefore(endDate) || currentDate?.isSame(endDate)) {
-      dateArray.push(currentDate.format("DD/MM/YYYY"));
-      currentDate = currentDate.add(1, "day");
+      dateArray.push(currentDate.format('DD/MM/YYYY'));
+      currentDate = currentDate.add(1, 'day');
     }
     const role = session?.user?.role;
     const contractorId =
       contractors.find((c) => c.contractorname === contractorName)
-        ?.contractorId || "all";
+        ?.contractorId || 'all';
 
     const queryString = `/api/timekeeper/gettimekeepers?role=${role}&page=${page}&rowsPerPage=${rowsPerPage}&contractorname=${contractorId}&orderBy=${orderBy}&filter=${debouncedFilter}&attendance=${attendance}&dateArray=${dateArray}`;
     if (!debouncedFilter) setLoading(true);
@@ -922,11 +922,11 @@ export default function TimeKeeperTable({}: // contractors,
 
   const showApprove = () => {
     const timekeeper1 = timekeeper.filter(
-      (t) => t.contractorname === contractorName || contractorName === "all"
+      (t) => t.contractorname === contractorName || contractorName === 'all'
     );
-    if (session?.user?.role === "TimeKeeper") {
+    if (session?.user?.role === 'TimeKeeper') {
       if (timekeeper1.find((t) => !t.approvedByTimekeeper)) {
-        return timekeeper1.find((t) => t.status === "Pending") ? false : true;
+        return timekeeper1.find((t) => t.status === 'Pending') ? false : true;
       } else return false;
     } else return false;
   };
@@ -936,15 +936,15 @@ export default function TimeKeeperTable({}: // contractors,
       let dateArray = [];
       let currentDate = startDate;
       while (currentDate?.isBefore(endDate) || currentDate?.isSame(endDate)) {
-        dateArray.push(currentDate.format("DD/MM/YYYY"));
-        currentDate = currentDate.add(1, "day");
+        dateArray.push(currentDate.format('DD/MM/YYYY'));
+        currentDate = currentDate.add(1, 'day');
       }
 
       const role = session?.user?.role;
       20;
       const contractorId =
         contractors.find((c) => c.contractorname === contractorName)
-          ?.contractorId || "all";
+          ?.contractorId || 'all';
 
       const queryString = `/api/timekeeper/gettimekeepers?role=${role}&contractorname=${contractorId}&filter=${debouncedFilter}&attendance=${att}&dateArray=${dateArray}&orderBy=${orderBy}`;
       const res = await axios.get(queryString);
@@ -956,32 +956,33 @@ export default function TimeKeeperTable({}: // contractors,
 
   const editOption = (comments: any[]) => {
     const comment = comments?.find(
-      (c) => c.role === "Corporate" || c.role === "HoCommercialAuditor"
+      (c) => c.role === 'Corporate' || c.role === 'HoCommercialAuditor'
     );
-    if (comment && session?.user?.role === "PlantCommercial") return false;
+    if (comment && session?.user?.role === 'PlantCommercial') return false;
     return true;
   };
 
   const renderValue = (row: TimeKeeperWithComment, column: Column) => {
     const roles = row.comment?.map((c) => c.role) || [];
     let flag = false;
-    if (roles.includes("Corporate") || roles.includes("HoCommercialAuditor")) {
-      if (session?.user?.role === "Corporate") {
+    if (roles.includes('Corporate') || roles.includes('HoCommercialAuditor')) {
+      if (session?.user?.role === 'Corporate') {
         flag = true;
       }
-    } else if (roles.includes("PlantCommercial")) {
+    } else if (roles.includes('PlantCommercial')) {
       if (
-        session?.user?.role === "PlantCommercial" ||
-        session?.user?.role === "Corporate" ||
-        session?.user?.role === "HoCommercialAuditor"
+        session?.user?.role === 'PlantCommercial' ||
+        session?.user?.role === 'Corporate' ||
+        session?.user?.role === 'HoCommercialAuditor'
       ) {
         flag = true;
       }
-    } else if (roles.includes("HR")) {
+    } else if (roles.includes('HR')) {
       if (
-        session?.user?.role === "HR" ||
-        session?.user?.role === "Corporate" ||
-        session?.user?.role === "HoCommercialAuditor"
+        session?.user?.role === 'HR' ||
+        session?.user?.role === 'Corporate' ||
+        session?.user?.role === 'HoCommercialAuditor' ||
+        session?.user?.role === 'PlantCommercial'
       ) {
         flag = true;
       }
@@ -989,44 +990,44 @@ export default function TimeKeeperTable({}: // contractors,
       flag = true;
     }
     switch (column.id) {
-      case "status":
+      case 'status':
         return (
           <TableCell
             onClick={() => {
-              if (session?.user?.role === "PlantCommercial") {
+              if (session?.user?.role === 'PlantCommercial') {
                 setStatusChange(true);
                 setRejectId(row.id as string);
               }
             }}
           >
-            {row.status || "-"}
+            {row.status || '-'}
           </TableCell>
         );
-      case "comment":
+      case 'comment':
         return (
           <TableCell onClick={() => handleOpen1(row.id as string)}>
             View
           </TableCell>
         );
-      case "uploaddocument":
+      case 'uploaddocument':
         return (
           <TableCell onClick={() => handleOpen(row.id as string)}>
             View
           </TableCell>
         );
-      case "action":
+      case 'action':
         return (
           <>
-            {session?.user?.role === "HR" && (
+            {session?.user?.role === 'HR' && (
               <TableCell>
                 {!row.status && !row.freezed && flag ? (
                   <Box
-                    display="flex"
-                    alignItems="center"
-                    sx={{ color: "#673AB7" }}
+                    display='flex'
+                    alignItems='center'
+                    sx={{ color: '#673AB7' }}
                   >
                     <Button onClick={() => handleApprove(row.id as string)}>
-                      <Done sx={{ color: "#673AB7" }} />
+                      <Done sx={{ color: '#673AB7' }} />
                     </Button>
                     <Button
                       onClick={() => {
@@ -1034,48 +1035,48 @@ export default function TimeKeeperTable({}: // contractors,
                         setRejectModal(true);
                       }}
                     >
-                      <Close sx={{ color: "#673AB7" }} />
+                      <Close sx={{ color: '#673AB7' }} />
                     </Button>
                   </Box>
                 ) : (
-                  "-"
+                  '-'
                 )}
               </TableCell>
             )}
-            {(row.status === "NoChanges" ||
-              session?.user?.role !== "TimeKeeper") &&
+            {(row.status === 'NoChanges' ||
+              session?.user?.role !== 'TimeKeeper') &&
               editOption(row.comment as any) &&
               flag && (
-                <TableCell size="small">
+                <TableCell size='small'>
                   <IconButton
                     onClick={() => router.push(`/details/${row.id}`)}
                     sx={{ m: 0 }}
                   >
-                    <Edit fontSize="small" />
+                    <Edit fontSize='small' />
                   </IconButton>
                 </TableCell>
               )}
           </>
         );
       default:
-        return <TableCell>{_.get(row, column.id, "-") ?? "-"}</TableCell>;
+        return <TableCell>{_.get(row, column.id, '-') ?? '-'}</TableCell>;
     }
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: '100%' }}>
       {loading ? (
         <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          width="100%"
-          height="90vh"
+          display='flex'
+          alignItems='center'
+          justifyContent='center'
+          width='100%'
+          height='90vh'
         >
-          <CircularProgress sx={{ color: "#673ab7" }} />
+          <CircularProgress sx={{ color: '#673ab7' }} />
         </Box>
       ) : (
-        <Paper sx={{ width: "100%", mb: 2 }}>
+        <Paper sx={{ width: '100%', mb: 2 }}>
           <EnhancedTableToolbar
             contractorlist={contractors}
             selected={selected}
@@ -1101,8 +1102,8 @@ export default function TimeKeeperTable({}: // contractors,
                 currentDate?.isBefore(endDate) ||
                 currentDate?.isSame(endDate)
               ) {
-                dateArray.push(currentDate.format("DD/MM/YYYY"));
-                currentDate = currentDate.add(1, "day");
+                dateArray.push(currentDate.format('DD/MM/YYYY'));
+                currentDate = currentDate.add(1, 'day');
               }
               await axios
                 .put(`/api/timekeeper/approve`, {
@@ -1110,9 +1111,9 @@ export default function TimeKeeperTable({}: // contractors,
                   contractorname: c?.contractorId,
                 })
                 .then((res) => {
-                  setType("success");
+                  setType('success');
                 })
-                .catch((err) => setType("error"));
+                .catch((err) => setType('error'));
               setSnopen(true);
               fetchTimeKeeper();
             }}
@@ -1131,15 +1132,15 @@ export default function TimeKeeperTable({}: // contractors,
 
           <TableContainer
             sx={{
-              maxHeight: "calc(100vh - 16rem)",
-              overflowY: "auto",
-              scrollBehavior: "smooth",
-              "&::-webkit-scrollbar": {
+              maxHeight: 'calc(100vh - 16rem)',
+              overflowY: 'auto',
+              scrollBehavior: 'smooth',
+              '&::-webkit-scrollbar': {
                 height: 10,
                 width: 10,
               },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "#bdbdbd",
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: '#bdbdbd',
                 borderRadius: 2,
               },
             }}
@@ -1147,8 +1148,8 @@ export default function TimeKeeperTable({}: // contractors,
             <Table
               stickyHeader
               sx={{ minWidth: 750 }}
-              aria-labelledby="tableTitle"
-              size="medium"
+              aria-labelledby='tableTitle'
+              size='medium'
             >
               <EnhancedTableHead
                 numSelected={0}
@@ -1156,7 +1157,7 @@ export default function TimeKeeperTable({}: // contractors,
                   timekeeper.filter(
                     (t) =>
                       t.contractorname === contractorName ||
-                      contractorName === "all"
+                      contractorName === 'all'
                   ).length
                 }
                 headCells={selectedColumn}
@@ -1166,7 +1167,7 @@ export default function TimeKeeperTable({}: // contractors,
 
               <TableBody>
                 {timekeeper
-                  .filter((t) => t.status !== "Pending")
+                  .filter((t) => t.status !== 'Pending')
                   .map((row, index) => {
                     const isItemSelected = !!isSelected(row.id as string);
 
@@ -1175,15 +1176,15 @@ export default function TimeKeeperTable({}: // contractors,
                     return (
                       <TableRow
                         hover
-                        role="checkbox"
+                        role='checkbox'
                         aria-checked={isItemSelected}
                         tabIndex={-1}
                         key={row.id}
                         selected={isItemSelected}
-                        color="secondary"
+                        color='secondary'
                         sx={{
-                          cursor: "pointer",
-                          position: "relative",
+                          cursor: 'pointer',
+                          position: 'relative',
                           bgcolor:
                             row.comment?.length > 0
                               ? (theme) =>
@@ -1191,9 +1192,9 @@ export default function TimeKeeperTable({}: // contractors,
                                     theme.palette.secondary.main,
                                     theme.palette.action.activatedOpacity
                                   )
-                              : "transparent",
-                          ":hover": {
-                            "& .MuiTableCell-root": {
+                              : 'transparent',
+                          ':hover': {
+                            '& .MuiTableCell-root': {
                               backgroundColor:
                                 row.comment?.length > 0
                                   ? (theme) =>
@@ -1201,7 +1202,7 @@ export default function TimeKeeperTable({}: // contractors,
                                         theme.palette.secondary.main,
                                         theme.palette.action.activatedOpacity
                                       )
-                                  : "rgba(0, 0, 0, 0.04)",
+                                  : 'rgba(0, 0, 0, 0.04)',
                               // backgroundColor:
                               //   row.comment?.length > 0
                               //     ? "#ede7f6"
@@ -1210,15 +1211,15 @@ export default function TimeKeeperTable({}: // contractors,
                           },
                         }}
                       >
-                        <TableCell padding="checkbox">
+                        <TableCell padding='checkbox'>
                           <Checkbox
-                            color="secondary"
+                            color='secondary'
                             onClick={(event) =>
                               handleClick(event, row.id as string)
                             }
                             checked={!!isSelected(row.id as string)}
                             inputProps={{
-                              "aria-labelledby": labelId,
+                              'aria-labelledby': labelId,
                             }}
                           />
                         </TableCell>
@@ -1233,10 +1234,10 @@ export default function TimeKeeperTable({}: // contractors,
                   timekeeper.filter(
                     (t) =>
                       t.contractorname === contractorName ||
-                      contractorName === "all"
+                      contractorName === 'all'
                   ) as any,
-                  getComparator("asc", orderBy)
-                ).filter((t) => t.status !== "Pending").length === 0 && (
+                  getComparator('asc', orderBy)
+                ).filter((t) => t.status !== 'Pending').length === 0 && (
                   <TableRow
                     style={{
                       height: 50,
@@ -1250,34 +1251,34 @@ export default function TimeKeeperTable({}: // contractors,
           </TableContainer>
           <Box
             sx={{
-              display: "flex",
-              flexWrap: "wrap",
+              display: 'flex',
+              flexWrap: 'wrap',
             }}
           >
             <Stack
-              sx={{ width: "50%", alignItems: "center", paddingLeft: "2rem" }}
-              direction="row"
+              sx={{ width: '50%', alignItems: 'center', paddingLeft: '2rem' }}
+              direction='row'
               spacing={5}
             >
-              <Typography variant="h4" component="div">
-                Total Attendance:{" "}
-                <span style={{ fontWeight: "500" }}>{attendance}</span>
+              <Typography variant='h4' component='div'>
+                Total Attendance:{' '}
+                <span style={{ fontWeight: '500' }}>{attendance}</span>
               </Typography>
-              <Typography variant="h4" component="div">
-                Total Overtime:{" "}
-                <span style={{ fontWeight: "500" }}>{overtime}</span>
+              <Typography variant='h4' component='div'>
+                Total Overtime:{' '}
+                <span style={{ fontWeight: '500' }}>{overtime}</span>
               </Typography>
             </Stack>
             <TablePagination
               rowsPerPageOptions={[50, 100, 250, 500, 1000, 1500]}
-              component="div"
+              component='div'
               count={count}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               sx={{
-                width: "50%",
+                width: '50%',
               }}
             />
           </Box>
@@ -1307,23 +1308,23 @@ export default function TimeKeeperTable({}: // contractors,
       <Snackbar
         open={snopen}
         autoHideDuration={5000}
-        color="success"
+        color='success'
         sx={{
-          "& .MuiSnackbarContent-root": {
-            backgroundColor: type === "success" ? "success.main" : "error.main",
+          '& .MuiSnackbarContent-root': {
+            backgroundColor: type === 'success' ? 'success.main' : 'error.main',
           },
         }}
         onClose={() => setSnopen(false)}
         message={
-          type === "success"
-            ? "Data Approved Successfully"
-            : "Error while Approving Data"
+          type === 'success'
+            ? 'Data Approved Successfully'
+            : 'Error while Approving Data'
         }
         action={
           <React.Fragment>
             <IconButton
-              aria-label="close"
-              color="inherit"
+              aria-label='close'
+              color='inherit'
               sx={{ p: 0.5 }}
               onClick={() => setSnopen(false)}
             >
@@ -1341,61 +1342,61 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session) {
     return {
       redirect: {
-        destination: "/login",
+        destination: '/login',
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === "Admin") {
+  if (session.user?.role === 'Admin') {
     return {
       redirect: {
-        destination: "/admin",
+        destination: '/admin',
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === "Stores") {
+  if (session.user?.role === 'Stores') {
     return {
       redirect: {
-        destination: "/store",
+        destination: '/store',
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === "Safety") {
+  if (session.user?.role === 'Safety') {
     return {
       redirect: {
-        destination: "/safety",
+        destination: '/safety',
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === "Automobile") {
+  if (session.user?.role === 'Automobile') {
     return {
       redirect: {
-        destination: "/vehiclelogbook",
+        destination: '/vehiclelogbook',
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === "Manager") {
+  if (session.user?.role === 'Manager') {
     return {
       redirect: {
-        destination: "/att-management",
+        destination: '/att-management',
         permanent: false,
       },
     };
   }
 
-  if (session.user?.role === "Civil") {
+  if (session.user?.role === 'Civil') {
     return {
       redirect: {
-        destination: "/civil/project",
+        destination: '/civil/project',
         permanent: false,
       },
     };

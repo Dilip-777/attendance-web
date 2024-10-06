@@ -203,6 +203,8 @@ export const gethourlycount = (
   let otdays = 0;
   let otHrs = 0;
 
+  const fixedDesignations: any[] = [];
+
   [8, 12].map((wrkhrs) => {
     departments.forEach((d) => {
       const data = timekeeper.filter((t) => t.department === d.department);
@@ -321,6 +323,19 @@ export const gethourlycount = (
           obj['tds'] = obj['taxable'] * (contractor.tds ?? 0) * 0.01;
           obj['netpayable'] = obj['billamount'] - obj['tds'];
           rows3.push(obj);
+          fixedDesignations.push({
+            designationId: des.id,
+            salary: obj['rate'],
+            designation: des.designation,
+            department: d.department,
+            mandays: obj['mandays'],
+            mandaysamount: obj['mandaysamount'],
+            othrs: othrs,
+            otamount: obj['otamount'],
+            gender: des.gender,
+            allowed_wrking_hr_per_day: wrkhrs,
+            basicsalary_in_duration: des.basicsalary_in_duration,
+          });
         }
       });
     });
@@ -363,5 +378,11 @@ export const gethourlycount = (
     0
   );
   rows3.push(obj);
-  return { rows: [rows1, rows2, rows3], total: obj, otdays, otHrs };
+  return {
+    rows: [rows1, rows2, rows3],
+    total: obj,
+    otdays,
+    otHrs,
+    fixedDesignations,
+  };
 };

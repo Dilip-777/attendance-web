@@ -1,7 +1,10 @@
 import prisma from '@/lib/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function report(req: NextApiRequest, res: NextApiResponse) {
+export default async function report(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const { type, contractor, department, designation } = req.query;
 
   if (type === 'worker') {
@@ -66,5 +69,23 @@ export default async function report(req: NextApiRequest, res: NextApiResponse) 
       },
     });
     res.status(200).json(payouttrackers);
+  } else if (type === 'contractorwise') {
+    const { month } = req.query;
+    const contractors = await prisma.contractor.findMany({
+      include: {
+        fixedValues: {
+          include: {
+            designations: true,
+          },
+          where: {
+            month: month as string,
+          },
+        },
+        employee: true,
+      },
+    });
+    res.status(200).json(contractors);
+  } else {
+    res.status(400).json({ error: 'Invalid type' });
   }
 }

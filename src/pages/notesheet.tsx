@@ -100,9 +100,9 @@ export default function NoteSheet({
 
     doc.text('GST', 5, 80);
 
-    doc.text('GSTSTR 1', 5, 90);
+    doc.text('GSTR-1', 5, 90);
 
-    doc.text('GSTSTR - 3B', 5, 100);
+    doc.text('GSTR-3B', 5, 100);
 
     doc.text('WO', 5, 110);
 

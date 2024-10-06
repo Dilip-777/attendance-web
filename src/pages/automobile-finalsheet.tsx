@@ -463,6 +463,8 @@ export default function FinalSheet({
       }`
     );
 
+  console.log(contractor.finalCalculations);
+
   // const w = workorders.find(
   //   (c) =>
   //     c.contractorId === contractor?.contractorId && c.startDate.includes(value)
@@ -473,11 +475,17 @@ export default function FinalSheet({
   }, []);
 
   console.log(
-    contractor.finalCalculations,
-    contractor.finalCalculations.find((d) => {
-      console.log(d.month, month);
-      return d.month === month;
-    })
+    total,
+    Math.round(
+      total -
+        (store?.totalAmount || 0) +
+        ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0) -
+        (deduction?.advance || 0) -
+        (deduction?.anyother || 0) +
+        (deduction?.addition || 0)
+    ),
+    deduction,
+    hsdcost
   );
 
   return loading ? (
@@ -576,6 +584,15 @@ export default function FinalSheet({
                 cost={cost}
                 fixedValues={contractor.finalCalculations.find(
                   (d) => d.month === month
+                )}
+                total={Math.round(
+                  total -
+                    (store?.totalAmount || 0) +
+                    ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) ||
+                      0) -
+                    (deduction?.advance || 0) -
+                    (deduction?.anyother || 0) +
+                    (deduction?.addition || 0)
                 )}
               />
 

@@ -393,6 +393,25 @@ const handleprint = ({
   //     worksheet.mergeCells(`N${row.number}:P${row.number}`);
   //     row.height = 30;
   //   });
+  worksheet.pageSetup = {
+    paperSize: 1, // Letter size (8.5 in. x 11 in.)
+    orientation: 'landscape', // Landscape orientation
+    margins: {
+      left: 0.0,
+      right: 0.0,
+      top: 0.0,
+      bottom: 0.0,
+      header: 0.0,
+      footer: 0.0,
+    },
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 0,
+  };
+
+  console.log('worksheet', worksheet);
+
+  worksheet.pageSetup.printArea = 'A1:Z100';
 
   workbook.xlsx.writeBuffer().then((buffer: any) => {
     const blob = new Blob([buffer], {

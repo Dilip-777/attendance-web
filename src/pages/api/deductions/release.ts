@@ -1,14 +1,18 @@
-import prisma from "@/lib/prisma";
-import type { NextApiRequest, NextApiResponse } from "next";
+import prisma from '@/lib/prisma';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "GET") {
+  if (req.method === 'GET') {
     const { contractorId, date } = req.query;
     if (!contractorId && !date) {
-      const deductions = await prisma.gstRelease.findMany();
+      const deductions = await prisma.gstRelease.findMany({
+        include: {
+          contractor: true,
+        },
+      });
       res.status(200).json(deductions);
       return;
     }
@@ -19,7 +23,7 @@ export default async function handler(
       },
     });
     res.status(200).json(deduction);
-  } else if (req.method === "POST") {
+  } else if (req.method === 'POST') {
     const { contractorId, month, ...rest } = req.body;
     const isExist = await prisma.gstRelease.findFirst({
       where: {

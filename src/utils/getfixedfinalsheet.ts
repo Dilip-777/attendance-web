@@ -39,7 +39,7 @@ export const getWorksCalculations = (
     const servicechargeRate = contractor.servicecharge ?? 0;
 
     const servicecharge = (totalAmount * servicechargeRate) / 100;
-    const taxable = totalAmount + servicecharge;
+    const taxable = parseFloat((totalAmount + servicecharge).toFixed(2));
 
     const gst = parseFloat(
       ((taxable * (contractor?.gst || 0)) / 100).toFixed(2)
@@ -64,7 +64,7 @@ export const getWorksCalculations = (
       description,
       rate: rate as number | string,
       quantity: quantity as number | string,
-      totalAmount,
+      totalAmount: parseFloat(totalAmount.toFixed(2)),
       taxable,
       servicechargeRate,
       servicecharge,
@@ -87,7 +87,7 @@ export const getWorksCalculations = (
     gst: parseFloat(totals.gst.toFixed(2)),
     billamount: totals.billamount,
     tds: parseFloat(totals.tds.toFixed(2)),
-    netPayable: totals.netPayable,
+    netPayable: parseFloat(totals.netPayable.toFixed(2)),
   });
   return { rows, totals };
 };
@@ -208,7 +208,9 @@ export const getAttendanceCalculations = (
       data.reduce((acc, curr) => acc + curr.billAmount, 0).toFixed(2)
     ),
     tds: parseFloat(data.reduce((acc, curr) => acc + curr.tds, 0).toFixed(2)),
-    netPayable: data.reduce((acc, curr) => acc + curr.netPayable, 0),
+    netPayable: parseFloat(
+      data.reduce((acc, curr) => acc + curr.netPayable, 0).toFixed(2)
+    ),
   });
 
   return data;
