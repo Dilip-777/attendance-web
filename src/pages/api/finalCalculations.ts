@@ -15,7 +15,26 @@ export default async function handler(
       hsdRateCharged,
       totalCost,
       finalPayable,
+      fixed,
     } = req.body;
+
+    await prisma.fixedValues.create({
+      data: {
+        contractorId: contractorId as string,
+        month,
+        areaOfWork: fixed.areaofwork,
+        serviceDetail: fixed.servicedetail,
+        basicamount: fixed.basicamount,
+        billamount: fixed.billamount,
+        billno: fixed.billno,
+        billdate: fixed.billdate,
+        gst: fixed.gst,
+        tds: fixed.tds,
+        gstValue: fixed.gstValue,
+        tdsValue: fixed.tdsValue,
+      },
+    });
+
     const finalCalculation = await prisma.finalCalculations.findUnique({
       where: {
         month_contractorId: {
@@ -120,6 +139,7 @@ export default async function handler(
     res.status(200).json({ message: 'Success' });
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
+
     const f = await prisma.finalCalculations.delete({
       where: {
         id: id as string,
@@ -128,6 +148,15 @@ export default async function handler(
     if (!f) {
       return res.status(404).json({ message: 'Not found' });
     }
+    await prisma.fixedValues.delete({
+      where: {
+        month_contractorId: {
+          contractorId: f.contractorId,
+          month: f.month,
+        },
+      },
+    });
+
     const { contractorId, month } = f;
     await prisma.fixedVehicle.deleteMany({
       where: {

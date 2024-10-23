@@ -21,7 +21,8 @@ export const getMonthlyData = ({ contractors, months }: Props) => {
   let rows: any[] = [];
   let totals: any = {};
 
-  contractors.forEach((contractor) => {
+  let sno = 1;
+  contractors.forEach((contractor, i) => {
     months.forEach((month, index) => {
       const store = contractor.stores.find((store) => store.month === month);
       const safety = contractor.safety.find((safety) => safety.month === month);
@@ -32,8 +33,11 @@ export const getMonthlyData = ({ contractors, months }: Props) => {
       const deduction = contractor.deductions.find(
         (deduction) => deduction.month === month
       );
+      if (contractor.contractorname === 'Ankita Enterprises')
+        console.log(fixedValue, 'fixedValue');
+
       rows.push({
-        sno: index + 1,
+        sno: sno++,
         contractor: contractor.contractorname,
         month: m.format("MMM'YYYY"),
         billno: fixedValue?.billno || '-',
@@ -52,7 +56,9 @@ export const getMonthlyData = ({ contractors, months }: Props) => {
         ),
         mandaysamt: fixedValue?.mandaysamount || 0,
         othramt:
-          (fixedValue?.basicamount || 0) - (fixedValue?.mandaysamount || 0),
+          (fixedValue?.othrs || 0) + (fixedValue?.mandays || 0) === 0
+            ? 0
+            : (fixedValue?.basicamount || 0) - (fixedValue?.mandaysamount || 0),
         basicamount: fixedValue?.basicamount || 0,
 
         servicecharges: fixedValue?.servicecharges || 0,

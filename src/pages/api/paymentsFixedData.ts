@@ -34,9 +34,16 @@ export default async function handler(
         },
       });
 
+      const store = await prisma.stores.findFirst({
+        where: {
+          contractorid: contractorId as string,
+          month: month as string,
+        },
+      });
+
       return res
         .status(200)
-        .json({ safety, deductions, fixedvalues, finalCalculations });
+        .json({ safety, deductions, fixedvalues, finalCalculations, store });
     }
 
     const payments = await prisma.payments.findMany();

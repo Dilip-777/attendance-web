@@ -1,12 +1,13 @@
-import prisma from "@/lib/prisma";
-import { NextApiRequest, NextApiResponse } from "next";
+import prisma from '@/lib/prisma';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function Stores(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "GET") {
+  if (req.method === 'GET') {
     const { contractorid, month } = req.query;
+    console.log('contractorid', contractorid, month, 'month');
     if (contractorid && month) {
       const store = await prisma.stores.findFirst({
         where: {
@@ -14,13 +15,14 @@ export default async function Stores(
           month: month as string,
         },
       });
+
       res.status(200).json(store);
       return;
     }
     const stores = await prisma.stores.findMany();
     res.status(200).json(stores);
   }
-  if (req.method === "POST") {
+  if (req.method === 'POST') {
     const { storeItems, ...rest } = req.body;
     const isExist = await prisma.stores.findUnique({
       where: {
@@ -28,7 +30,6 @@ export default async function Stores(
       },
     });
     if (isExist) {
-      const { id, data } = rest;
       await prisma.storeItem.deleteMany({
         where: {
           storeId: isExist.id,
@@ -45,11 +46,11 @@ export default async function Stores(
               skipDuplicates: true,
             },
           },
-          ...data,
+          ...rest,
         },
       });
     } else {
-      console.log("rest", rest);
+      console.log('rest', rest);
 
       await prisma.stores.create({
         data: {
@@ -64,7 +65,7 @@ export default async function Stores(
       });
     }
     res.status(200).json({ success: true });
-  } else if (req.method === "DELETE") {
+  } else if (req.method === 'DELETE') {
     const { id } = req.body;
     const store = await prisma.stores.delete({
       where: {

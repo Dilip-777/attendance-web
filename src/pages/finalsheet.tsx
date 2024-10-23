@@ -118,6 +118,7 @@ export default function FinalSheet({
     {
       departmentId: string;
       mandays: number;
+      otdays: number;
       amount: number;
       servicecharges: number;
       mandaysamount: number;
@@ -140,7 +141,14 @@ export default function FinalSheet({
 
   const fetchHourlyRows = () => {
     let totalOtDays = 0;
-    const { rows, total, otdays, otHrs, fixedDesignations } = gethourlycount(
+    const {
+      rows,
+      total,
+      otdays,
+      otHrs,
+      fixedDesignations,
+      departmentWiseOtDays,
+    } = gethourlycount(
       timekeepers,
       f as Contractor,
       departments.filter((d) => d.basicsalary_in_duration === 'Hourly'),
@@ -163,6 +171,7 @@ export default function FinalSheet({
     let d1: {
       departmentId: string;
       mandays: number;
+      otdays: number;
       amount: number;
       servicecharges: number;
       mandaysamount: number;
@@ -197,8 +206,6 @@ export default function FinalSheet({
           d
         );
 
-        console.log(rows1);
-
         totalOtDays += otdays;
         rows1.forEach((item) => {
           const { date, ...values } = item;
@@ -223,6 +230,7 @@ export default function FinalSheet({
 
         d1.push({
           departmentId: d.id,
+          otdays: otdays,
           mandays: mandays.total,
           mandaysamount: mandaysamount.total,
           servicecharges: servicecharges.total,
@@ -254,6 +262,7 @@ export default function FinalSheet({
       fixedValues: fixedValues,
       month: value,
       shifts: shifts,
+      departmentWiseOtDays,
     });
 
     setFixedValuesTrack([...departwise, ...d1]);
@@ -281,13 +290,17 @@ export default function FinalSheet({
 
   const fetchHoCommercial = async () => {
     const c = contractors.find((c) => c.contractorId === selectedContractor);
-    const res = await axios.get(`/api/hoauditor?contractorId=${c?.id}`);
+    const res = await axios.get(
+      `/api/hoauditor?contractorId=${c?.id}&month=${value}`
+    );
     setHoCommercial(res.data);
   };
 
+  console.log(fixedvaluesTrack, 'fixedvaluesTrack');
+
   useEffect(() => {
     fetchHoCommercial();
-  }, [selectedContractor]);
+  }, [selectedContractor, value]);
 
   const fetchDeductions = async () => {
     const res = await axios.get(

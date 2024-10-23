@@ -184,7 +184,8 @@ export default function Payments1({
               options={[
                 { label: 'All', value: 'all' },
                 ...contractors.map((contractor) => ({
-                  label: contractor.contractorname,
+                  label:
+                    contractor.contractorname + ' - ' + contractor.contractorId,
                   value: contractor.contractorId,
                 })),
               ]}

@@ -23,6 +23,7 @@ import {
   FixedValues,
   Payments,
   Safety,
+  Stores,
 } from '@prisma/client';
 import axios from 'axios';
 import { CircularProgress } from '@mui/material';
@@ -136,8 +137,6 @@ export default function Edit({
               (contractor) => contractor.contractorId === values.contractorId
             );
 
-            console.log(values.netpayable);
-
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid ml={3} mt={2} container>
@@ -237,6 +236,7 @@ const NetPayableInput = ({
 }) => {
   const [fixedData, setFixedData] = useState<{
     safety: Safety | null;
+    store: Stores | null;
     deductions: Deductions | null;
     fixedvalues: FixedValues | null;
     finalCalculations: FinalCalculations | null;
@@ -255,17 +255,19 @@ const NetPayableInput = ({
 
   useEffect(() => {
     const safetyAmount = fixedData?.safety?.totalAmount || 0;
+    const storeAmount = fixedData?.store?.totalAmount || 0;
     const total =
       (fixedData?.fixedvalues?.billamount || 0) -
       (fixedData?.fixedvalues?.tds || 0);
+
     const deduction = fixedData?.deductions;
-    console.log(total, deduction);
 
     const netpayable =
       fixedData?.finalCalculations?.finalPayable ||
       total -
         safetyAmount +
         ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0) -
+        storeAmount -
         (deduction?.advance || 0) -
         (deduction?.anyother || 0) +
         (deduction?.addition || 0);

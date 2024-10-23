@@ -6,8 +6,8 @@ import {
   SeperateSalary,
   Shifts,
   TimeKeeper,
-} from "@prisma/client";
-import _ from "lodash";
+} from '@prisma/client';
+import _ from 'lodash';
 
 interface DesignationwithSalary extends Designations {
   seperateSalary: SeperateSalary[];
@@ -26,14 +26,14 @@ const filter = (
 
   if (wrkhrs && s?.totalhours !== wrkhrs) return false;
   if (item.attendance === attendance) return false;
-  if (designation.gender === "Male" || designation.gender === "M") {
+  if (designation.gender === 'Male' || designation.gender === 'M') {
     return (
       item.designation.toLowerCase() ===
         designation.designation.toLowerCase() &&
       item.gender &&
       item.gender[0] === designation.gender[0]
     );
-  } else if (designation.gender === "Female" || designation.gender === "F") {
+  } else if (designation.gender === 'Female' || designation.gender === 'F') {
     return (
       item.designation.toLowerCase() ===
         designation.designation.toLowerCase() &&
@@ -58,6 +58,7 @@ interface Props {
   contractor: Contractor;
   fixedValues: FixedValues | null;
   departments: DepartmentDesignation[];
+  departmentWiseOtDays: any;
 }
 
 export const getDepartmentwiseCount = ({
@@ -67,6 +68,7 @@ export const getDepartmentwiseCount = ({
   contractor,
   fixedValues,
   departments,
+  departmentWiseOtDays,
 }: Props) => {
   const getRoundOff = (num: number) => {
     return num;
@@ -84,66 +86,67 @@ export const getDepartmentwiseCount = ({
   };
 
   const rate: Record<string, string | number> = {
-    date: "Rate",
+    date: 'Rate',
   };
 
   const totalovertime: Record<string, string | number> = {
-    date: "Overtime Hrs.",
+    date: 'Overtime Hrs.',
     total: 0,
   };
   const attendancecount: Record<string, string | number> = {
-    date: "Total Man days",
+    date: 'Total Man days',
     total: 0,
   };
   const totalManDayAmount: Record<string, string | number> = {
-    date: "Man Days Amount",
+    date: 'Man Days Amount',
     total: 0,
   };
 
   const otamount: Record<string, string | number> = {
-    date: "OT Amount",
+    date: 'OT Amount',
     total: 0,
   };
 
   const totalnetamount: Record<string, string | number> = {
-    date: "Total Amount",
+    date: 'Total Amount',
   };
 
   const cprate: Record<string, string | number> = {
-    date: "Service Charge Rate",
+    date: 'Service Charge Rate',
     total: 0,
   };
 
   const cpamount: Record<string, string | number> = {
-    date: "Service Charge Amount",
+    date: 'Service Charge Amount',
     total: 0,
   };
 
   const total: Record<string, string | number> = {
-    date: "Taxable",
+    date: 'Taxable',
   };
 
   const gst1: Record<string, string | number> = {
-    date: "GST",
+    date: 'GST',
   };
 
   const billAmount1: Record<string, string | number> = {
-    date: "Bill Amount",
+    date: 'Bill Amount',
   };
 
   const tds1: Record<string, string | number> = {
-    date: "TDS",
+    date: 'TDS',
   };
 
   const netPayable1: Record<string, string | number> = {
-    date: "Net Payable",
+    date: 'Net Payable',
   };
 
-  console.log(departments, "departments");
+  console.log(departments, 'departments');
 
   let departmentwise: {
     departmentId: string;
     mandays: number;
+    otdays: number;
     amount: number;
     servicecharges: number;
     mandaysamount: number;
@@ -161,8 +164,8 @@ export const getDepartmentwiseCount = ({
 
     department.designations.forEach((designation) => {
       const id = designation.id;
-      const fulltime = f1.filter((item) => filter(item, designation, "0.5"));
-      const halftime = f1.filter((item) => filter(item, designation, "1"));
+      const fulltime = f1.filter((item) => filter(item, designation, '0.5'));
+      const halftime = f1.filter((item) => filter(item, designation, '1'));
 
       const f8 = fulltime.filter((item) => filterByShift(item, 8));
       const f12 = fulltime.filter((item) => filterByShift(item, 12));
@@ -180,7 +183,7 @@ export const getDepartmentwiseCount = ({
 
       mandays += count;
 
-      attendancecount["total"] =
+      attendancecount['total'] =
         (attendancecount.total as number) +
         (Number(_.get(attendancecount, id, 0)) || 0);
 
@@ -195,10 +198,10 @@ export const getDepartmentwiseCount = ({
         rate8 = s.salary;
         rate12 = s.salary;
       } else {
-        if (designation.designation.toLowerCase() === "supervisor") {
+        if (designation.designation.toLowerCase() === 'supervisor') {
           rate8 = contractor.salarysvr8hr;
           rate12 = contractor.salarysvr12hr;
-        } else if (designation.gender === "Female") {
+        } else if (designation.gender === 'Female') {
           rate8 = contractor.salarywomen8hr;
         } else {
           rate8 = contractor.salarymen8hr;
@@ -244,7 +247,7 @@ export const getDepartmentwiseCount = ({
       //   Number(_.get(totalManDayAmount, id, 0))
       // );
 
-      totalManDayAmount["total"] = getRoundOff(
+      totalManDayAmount['total'] = getRoundOff(
         (totalManDayAmount.total as number) +
           Number(_.get(totalManDayAmount, id, 0))
       );
@@ -259,18 +262,18 @@ export const getDepartmentwiseCount = ({
       );
       mandays += o8 / 8 + o12 / 12;
       attendancecount[id] = getRoundOff(o8 + o12);
-      attendancecount["date"] = "Total OverTime Hrs.";
+      attendancecount['date'] = 'Total OverTime Hrs.';
 
       totalovertime[id] = getRoundOff(o8 + o12);
       // assignCounts("othrs", designation, Number(_.get(totalovertime, id, 0)));
-      totalovertime["total"] = getRoundOff(
+      totalovertime['total'] = getRoundOff(
         (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
       );
       const amount8 = getRoundOff((o8 * (rate8 as number)) / 8);
       const amount12 = getRoundOff((o12 * (rate12 as number)) / 12);
       otamount[id] = getRoundOff(amount8 + amount12);
       // assignCounts("otamount", designation, Number(_.get(otamount, id, 0)));
-      otamount["total"] = getRoundOff(
+      otamount['total'] = getRoundOff(
         (otamount.total as number) + Number(_.get(otamount, id, 0))
       );
       mandaysamount +=
@@ -286,7 +289,7 @@ export const getDepartmentwiseCount = ({
           100
       );
 
-      cpamount["total"] = getRoundOff(
+      cpamount['total'] = getRoundOff(
         (cpamount.total as number) + Number(_.get(cpamount, id, 0))
       );
       total[id] = getRoundOff(
@@ -311,6 +314,7 @@ export const getDepartmentwiseCount = ({
     });
     departmentwise.push({
       departmentId: department.id,
+      otdays: departmentWiseOtDays[department.department] || 0,
       mandays: Math.round(mandays),
       amount: Math.round(amount),
       mandaysamount: Math.round(amount),

@@ -52,15 +52,20 @@ export const getFunctionRows = (
 
         row[m] = {
           mandays: getRoundOff(
-            data.reduce((acc, curr) => acc + curr.mandays, 0)
+            data.reduce((acc, curr) => acc + curr.mandays, 0) +
+              data.reduce((acc, curr) => acc + curr.otdays, 0)
           ),
           avgs: getRoundOff(
-            data.reduce((acc, curr) => acc + curr.mandays / daysInMonth, 0)
+            data.reduce(
+              (acc, curr) => acc + (curr.mandays + curr.otdays) / daysInMonth,
+              0
+            )
           ),
           amount: getRoundOff(data.reduce((acc, curr) => acc + curr.amount, 0)),
         };
 
         subtotals[m].mandays += row[m].mandays;
+
         subtotals[m].avgs += row[m].avgs;
         subtotals[m].amount += row[m].amount;
 

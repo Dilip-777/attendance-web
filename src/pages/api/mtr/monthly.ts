@@ -9,6 +9,13 @@ export default async function handler(
     const { months } = req.query;
 
     const contractors = await prisma.contractor.findMany({
+      where: {
+        contractorname: {
+          not: {
+            contains: 'test',
+          },
+        },
+      },
       include: {
         fixedValues: {
           where: {

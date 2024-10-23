@@ -307,6 +307,7 @@ model FixedDepartments {
   id             String @id @default(cuid())
   departmentId   String
   amount         Float  @default(0)
+  otdays         Float  @default(0)
   mandays        Float  @default(0)
   servicecharges Float  @default(0)
   mandaysamount  Float  @default(0)

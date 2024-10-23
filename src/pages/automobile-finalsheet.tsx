@@ -330,6 +330,7 @@ export default function FinalSheet({
   >([]);
   const router = useRouter();
   const [totalsdata, setTotalsData] = useState<any[]>([]);
+  const [fixed, setFixed] = useState<any>(null);
 
   const { data: session } = useSession();
 
@@ -390,6 +391,26 @@ export default function FinalSheet({
       ]);
       setTotalsData(totalsdata);
 
+      console.log(totalsdata, 'totalsdata');
+      setFixed({
+        gstValue: contractor.gst || 0,
+        tdsValue: contractor.tds || 0,
+        areaofwork: contractor.areaofwork || '',
+        billno: hoCommercial?.invoiceNo || '',
+        billdate: hoCommercial?.date || '',
+        servicedetail: contractor.servicedetail || '',
+
+        mandays: 0,
+        gst: totalsdata[1]?.gst || 0,
+        tds: totalsdata[1]?.tds || 0,
+        othrs: 0,
+        otdays: 0,
+        mandaysamount: 0,
+        basicamount: Math.round(totalsdata[1]?.taxable || 0),
+        billamount: Math.round(totalsdata[1]?.billamount || 0),
+        servicecharges: 0,
+      });
+
       const { cost: prevcost } = getAutomobileFinalSheet(
         selectedVehicles,
         contractor?.hsd[0],
@@ -426,6 +447,8 @@ export default function FinalSheet({
   const handleClose = () => {
     setOpen(false);
   };
+
+  console.log(fixed, 'fixed');
 
   const fetchDeductions = async () => {
     const res = await axios.get(
@@ -473,20 +496,6 @@ export default function FinalSheet({
   useEffect(() => {
     fetchStoreAndSafety();
   }, []);
-
-  console.log(
-    total,
-    Math.round(
-      total -
-        (store?.totalAmount || 0) +
-        ((deduction?.gstrelease || 0) - (deduction?.gsthold || 0) || 0) -
-        (deduction?.advance || 0) -
-        (deduction?.anyother || 0) +
-        (deduction?.addition || 0)
-    ),
-    deduction,
-    hsdcost
-  );
 
   return loading ? (
     <Box
@@ -594,6 +603,7 @@ export default function FinalSheet({
                     (deduction?.anyother || 0) +
                     (deduction?.addition || 0)
                 )}
+                fixed={fixed}
               />
 
               <Button
@@ -848,7 +858,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   });
   const hoCommercial = await prisma.hOAuditor.findFirst({
     where: {
-      contractorId: contractor?.contractorId,
+      contractorId: contractor?.id,
+      monthOfInvoice: {
+        contains: month as string,
+      },
     },
   });
 

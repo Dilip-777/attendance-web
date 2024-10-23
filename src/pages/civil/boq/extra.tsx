@@ -128,7 +128,7 @@ const Addworkitem = ({
           });
 
           setSubmitting(false);
-          //   router.push("/civil/boq");
+          router.push('/civil/boq');
         }}
       >
         {({ errors, isSubmitting, handleSubmit, values, setFieldError }) => {

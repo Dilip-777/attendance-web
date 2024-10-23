@@ -439,17 +439,19 @@ export default function FinalSheet({
       });
 
       setFixedValues({
-        serviceDetail: contractor.servicedetail,
-        areaOfWork: contractor.areaofwork,
-        gst: contractor.gst,
-        tds: contractor.tds,
+        servicedetail: contractor.servicedetail,
+        areaofwork: contractor.areaofwork,
+        gstValue: contractor.gst,
+        tdsValue: contractor.tds,
+        billno: hoCommercial?.invoiceNo,
+        billdate: hoCommercial?.date,
         servicechargeRate: contractor.servicecharge,
         minManpower: contractor.minManpower,
         minHeadcount: contractor.minHeadcount,
         deployment: contractor.deployment,
         basicamount: data[0].taxable + totals.totalAmount,
-        gstValue: data[0].gst + totals.gst,
-        tdsValue: data[0].tds + totals.tds,
+        gst: data[0].gst + totals.gst,
+        tds: data[0].tds + totals.tds,
         billamount: data[0].billAmount + totals.billamount,
         cost: data[0].netPayable + totals.netPayable,
       });
@@ -495,10 +497,10 @@ export default function FinalSheet({
       ];
 
       setFixedValues({
-        serviceDetail: contractor.servicedetail,
-        areaOfWork: contractor.areaofwork,
-        gst: contractor.gst,
-        tds: contractor.tds,
+        servicedetail: contractor.servicedetail,
+        areaofwork: contractor.areaofwork,
+        gstValue: contractor.gst,
+        tdsValue: contractor.tds,
         billno: hoCommercial?.invoiceNo,
         billdate: hoCommercial?.date,
         noofmanpower: contractor.employee.length,
@@ -507,8 +509,8 @@ export default function FinalSheet({
         minHeadcount: contractor.minHeadcount,
         deployment: contractor.deployment,
         basicamount: calobj.taxable + totals.totalAmount,
-        gstValue: calobj.gst + totals.gst,
-        tdsValue: calobj.tds + totals.tds,
+        gst: Math.round(calobj.gst + totals.gst),
+        tds: Math.round(calobj.tds + totals.tds),
         billamount: calobj.billAmount + totals.billamount,
         cost: calobj.netPayable + totals.netPayable,
       });
@@ -536,17 +538,19 @@ export default function FinalSheet({
         },
       ]);
       setFixedValues({
-        serviceDetail: contractor.servicedetail,
-        areaOfWork: contractor.areaofwork,
-        gst: contractor.gst,
-        tds: contractor.tds,
+        servicedetail: contractor.servicedetail,
+        areaofwork: contractor.areaofwork,
+        gstValue: contractor.gst,
+        tdsValue: contractor.tds,
+        billno: hoCommercial?.invoiceNo,
+        billdate: hoCommercial?.date,
         servicechargeRate: contractor.servicecharge,
         minManpower: contractor.minManpower,
         minHeadcount: contractor.minHeadcount,
         deployment: contractor.deployment,
         basicamount: totals.totalAmount,
-        gstValue: totals.gst,
-        tdsValue: totals.tds,
+        gst: Math.round(totals.gst),
+        tds: Math.round(totals.tds),
         billamount: totals.billamount,
         cost: totals.netPayable,
       });
@@ -575,8 +579,6 @@ export default function FinalSheet({
   useEffect(() => {
     fetchStoreAndSafety();
   }, []);
-
-  console.log(contractor.fixedValues, fixedvalues);
 
   return loading ? (
     <Box
@@ -970,6 +972,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const hoCommercial = await prisma.hOAuditor.findFirst({
     where: {
       contractorId: contractor?.id,
+      monthOfInvoice: {
+        contains: month as string,
+      },
     },
   });
 

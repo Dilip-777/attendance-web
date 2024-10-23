@@ -15,7 +15,7 @@ export const getDivisionRows = (
     amount: {},
   };
 
-  divisions.forEach((d) => {
+  divisions.forEach((d, index) => {
     rows.push({ heading: d.department, fontWeight: '700' });
     let mandays: any = {};
     let avgs: any = {};
@@ -26,9 +26,17 @@ export const getDivisionRows = (
 
       const daysInMonth = dayjs(m, 'MM/YYYY').daysInMonth() || 1;
 
-      mandays[m] = data.reduce((acc, curr) => acc + curr.mandays, 0);
+      const a = data.filter((f) => f.fixedValues.contractorId === 'MRB001');
+      if (a) console.log(a);
+
+      mandays[m] =
+        data.reduce((acc, curr) => acc + curr.mandays, 0) +
+        data.reduce((acc, curr) => acc + curr.otdays, 0);
       avgs[m] = Math.round(
-        data.reduce((acc, curr) => acc + curr.mandays / daysInMonth, 0)
+        data.reduce(
+          (acc, curr) => acc + (curr.mandays + curr.otdays) / daysInMonth,
+          0
+        )
       );
       amount[m] = parseFloat(
         data.reduce((acc, curr) => acc + curr.amount, 0).toFixed(2)

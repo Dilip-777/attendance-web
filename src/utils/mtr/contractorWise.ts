@@ -32,7 +32,9 @@ export const getContractorWiseFixedValues = ({
           fixedValue.contractorId === contractor.contractorId &&
           fixedValue.month === month
       );
-      mandays[contractor.contractorId] = isExist?.mandays || 0;
+
+      mandays[contractor.contractorId] =
+        (isExist?.mandays || 0) + (isExist?.otdays || 0);
       cost[contractor.contractorId] = isExist?.basicamount || 0;
       servicecharges[contractor.contractorId] = isExist?.servicecharges || 0;
       total[contractor.contractorId] =

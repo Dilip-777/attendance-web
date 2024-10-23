@@ -42,6 +42,8 @@ export default async function handler(
         tdsValue: Math.round(fixedValues.tdsValue),
         billamount: Math.round(fixedValues.billamount),
         cost: Math.round(fixedValues.cost),
+        billno: fixedValues.billno,
+        billdate: fixedValues.billdate,
       },
     });
 

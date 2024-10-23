@@ -583,9 +583,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const hocommercial = await prisma.hOAuditor.findMany({
     where: {
       monthOfInvoice: {
-        // // contains: month as string,
-        // startsWith: m[0],
-        // endsWith: m[1],
         endsWith: month as string,
       },
     },

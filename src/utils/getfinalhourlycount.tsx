@@ -203,10 +203,12 @@ export const gethourlycount = (
   let otdays = 0;
   let otHrs = 0;
 
+  const departmentWiseOtDays: any = {};
   const fixedDesignations: any[] = [];
 
   [8, 12].map((wrkhrs) => {
     departments.forEach((d) => {
+      let departOTDays = 0;
       const data = timekeeper.filter((t) => t.department === d.department);
       d.designations.forEach((des) => {
         const fulltime = data.filter(
@@ -298,7 +300,8 @@ export const gethourlycount = (
             0
           );
 
-          const otDays = othrs / (wrkhrs * daysInMonth);
+          const otDays = othrs / wrkhrs;
+          departOTDays += otDays;
           otdays += otDays;
           otHrs += othrs;
 
@@ -338,6 +341,8 @@ export const gethourlycount = (
           });
         }
       });
+      departmentWiseOtDays[d.department] =
+        departOTDays + (departmentWiseOtDays[d.department] || 0);
     });
   });
   const obj: Record<string, string | number> = {
@@ -384,5 +389,6 @@ export const gethourlycount = (
     otdays,
     otHrs,
     fixedDesignations,
+    departmentWiseOtDays,
   };
 };

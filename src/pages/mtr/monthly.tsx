@@ -20,8 +20,6 @@ import {
 import {
   Contractor,
   Deductions,
-  Department,
-  FixedDepartments,
   FixedValues,
   Safety,
   Stores,

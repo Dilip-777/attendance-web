@@ -84,7 +84,6 @@ export default function FinalSheetTable({
       costupto: cost?.ytdCost,
     },
   ];
-  console.log(deduction, 'deductions');
 
   return (
     <Stack spacing={3}>

@@ -108,7 +108,7 @@ export const printMonthWise = async ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'finalsheet.xlsx');
+    link.setAttribute('download', 'MonthyReport.xlsx');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

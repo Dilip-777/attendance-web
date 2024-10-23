@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Divider,
   Grid,
   IconButton,
@@ -69,7 +70,7 @@ const validationSchema = Yup.object().shape({
   toDate: Yup.string().required('Required'),
   dateOfReceiving: Yup.string(),
   basicbillamount: Yup.number().required('Required'),
-  firstbillormonthly: Yup.string().required('Required'),
+  firstbillormonthly: Yup.string(),
   taxableAmount: Yup.number().required('Required'),
   tds: Yup.number().required('Required'),
   serviceCharges: Yup.number().required('Required'),
@@ -216,7 +217,9 @@ export default function HoAuditorForm({
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={async (values) => {
+          onSubmit={async (values, { setSubmitting }) => {
+            setSubmitting(true);
+
             if (hoAuditor) {
               await axios
                 .put('/api/hoauditor', {
@@ -243,12 +246,10 @@ export default function HoAuditorForm({
                   console.log(err);
                 });
             }
-            console.log(values, 'values');
+            setSubmitting(false);
           }}
         >
-          {({ handleSubmit, errors, values, setFieldValue }) => {
-            console.log(values, 'values');
-
+          {({ handleSubmit, setFieldValue, isSubmitting, values }) => {
             return (
               <form noValidate onSubmit={handleSubmit}>
                 <Stack spacing={0}>
@@ -648,8 +649,16 @@ export default function HoAuditorForm({
                   type='submit'
                   variant='contained'
                   sx={{ float: 'right', mr: 10 }}
+                  color='secondary'
+                  disabled={isSubmitting}
                 >
                   Submit
+                  {isSubmitting && (
+                    <CircularProgress
+                      size={15}
+                      sx={{ ml: 1, color: '#364152' }}
+                    />
+                  )}
                 </Button>
               </form>
             );

@@ -171,94 +171,100 @@ const getTotalAmountAndRows = (
   const monthlyFixedDesignations: any[] = [];
 
   if (fixedDesignations) {
-    fixedDesignations.forEach((designation) => {
-      const id = designation.designationId;
-      const fulltime = timekeeper.filter((item) =>
-        filter(item, designation, '0.5')
-      );
-      const halftime = timekeeper.filter((item) =>
-        filter(item, designation, '1')
-      );
-
-      attendancecount[id] = fulltime.length + halftime.length / 2;
-
-      attendancecount['total'] =
-        (attendancecount.total as number) +
-        (Number(_.get(attendancecount, id, 0)) || 0);
-
-      console.log(attendancecount['total'], attendancecount[id]);
-
-      rate[id] = designation.salary;
-
-      if (designation.basicsalary_in_duration === 'Monthly') {
-        totalManDayAmount[id] = getRoundOff(
-          ((_.get(attendancecount, id, 0) as number) *
-            Number(_.get(rate, id, 0))) /
-            m
+    fixedDesignations
+      .filter((v) => v.department === department?.department)
+      .forEach((designation) => {
+        const id = designation.designationId;
+        const fulltime = timekeeper.filter((item) =>
+          filter(item, designation, '0.5')
         );
-      } else {
-        totalManDayAmount[id] = getRoundOff(
-          (_.get(attendancecount, id, 0) as number) * Number(_.get(rate, id, 0))
+        const halftime = timekeeper.filter((item) =>
+          filter(item, designation, '1')
         );
-      }
 
-      totalManDayAmount['total'] = getRoundOff(
-        (totalManDayAmount.total as number) +
-          Number(_.get(totalManDayAmount, id, 0))
-      );
+        attendancecount[id] = fulltime.length + halftime.length / 2;
 
-      totalovertime[id] = fulltime.reduce(
-        (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
-        0
-      );
-      totalovertime['total'] = getRoundOff(
-        (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
-      );
-      let otRate = 0;
-      if (designation.basicsalary_in_duration === 'Monthly') {
-        otRate = getRoundOff(
-          Number(_.get(rate, id, 0)) /
-            (designation.allowed_wrking_hr_per_day || 1) /
-            m
+        attendancecount['total'] =
+          (attendancecount.total as number) +
+          (Number(_.get(attendancecount, id, 0)) || 0);
+
+        console.log(attendancecount['total'], attendancecount[id]);
+
+        rate[id] = designation.salary;
+
+        if (designation.basicsalary_in_duration === 'Monthly') {
+          totalManDayAmount[id] = getRoundOff(
+            ((_.get(attendancecount, id, 0) as number) *
+              Number(_.get(rate, id, 0))) /
+              m
+          );
+        } else {
+          totalManDayAmount[id] = getRoundOff(
+            (_.get(attendancecount, id, 0) as number) *
+              Number(_.get(rate, id, 0))
+          );
+        }
+
+        totalManDayAmount['total'] = getRoundOff(
+          (totalManDayAmount.total as number) +
+            Number(_.get(totalManDayAmount, id, 0))
         );
-      } else {
-        otRate = getRoundOff(
-          Number(_.get(rate, id, 0)) / designation.allowed_wrking_hr_per_day
+
+        totalovertime[id] = fulltime.reduce(
+          (acc, curr) => acc + (curr.manualovertime ?? curr.overtime),
+          0
         );
-      }
-      otamount[id] = getRoundOff(
-        Number(_.get(totalovertime, id, 0) || 0) * otRate
-      );
-      otamount['total'] = getRoundOff(
-        (otamount.total as number) + Number(_.get(otamount, id, 0))
-      );
-      totalnetamount[id] = getRoundOff(
-        Number(_.get(totalManDayAmount, id, 0)) + Number(_.get(otamount, id, 0))
-      );
-      cprate[id] = contractor.servicecharge as number;
+        totalovertime['total'] = getRoundOff(
+          (totalovertime.total as number) + Number(_.get(totalovertime, id, 0))
+        );
+        let otRate = 0;
+        if (designation.basicsalary_in_duration === 'Monthly') {
+          otRate = getRoundOff(
+            Number(_.get(rate, id, 0)) /
+              (designation.allowed_wrking_hr_per_day || 1) /
+              m
+          );
+        } else {
+          otRate = getRoundOff(
+            Number(_.get(rate, id, 0)) / designation.allowed_wrking_hr_per_day
+          );
+        }
+        otamount[id] = getRoundOff(
+          Number(_.get(totalovertime, id, 0) || 0) * otRate
+        );
+        otamount['total'] = getRoundOff(
+          (otamount.total as number) + Number(_.get(otamount, id, 0))
+        );
+        totalnetamount[id] = getRoundOff(
+          Number(_.get(totalManDayAmount, id, 0)) +
+            Number(_.get(otamount, id, 0))
+        );
+        cprate[id] = contractor.servicecharge as number;
 
-      cpamount[id] = getRoundOff(
-        (Number(_.get(totalManDayAmount, id, 0)) *
-          Number(_.get(cprate, id, 0))) /
-          100
-      );
+        cpamount[id] = getRoundOff(
+          (Number(_.get(totalManDayAmount, id, 0)) *
+            Number(_.get(cprate, id, 0))) /
+            100
+        );
 
-      cpamount['total'] = getRoundOff(
-        (cpamount.total as number) + Number(_.get(cpamount, id, 0))
-      );
-      total[id] = getRoundOff(
-        Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
-      );
-      gst1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.18));
-      billAmount1[id] = getRoundOff(
-        Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
-      );
-      tds1[id] = getRoundOff(
-        Number(((_.get(total, id, 0) as number) * (contractor.tds ?? 0)) / 100)
-      );
-      netPayable1[id] =
-        Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0));
-    });
+        cpamount['total'] = getRoundOff(
+          (cpamount.total as number) + Number(_.get(cpamount, id, 0))
+        );
+        total[id] = getRoundOff(
+          Number(_.get(totalnetamount, id, 0)) + Number(_.get(cpamount, id, 0))
+        );
+        gst1[id] = getRoundOff(Number((_.get(total, id, 0) as number) * 0.18));
+        billAmount1[id] = getRoundOff(
+          Number(_.get(total, id, 0)) + Number(_.get(gst1, id, 0))
+        );
+        tds1[id] = getRoundOff(
+          Number(
+            ((_.get(total, id, 0) as number) * (contractor.tds ?? 0)) / 100
+          )
+        );
+        netPayable1[id] =
+          Number(_.get(billAmount1, id, 0)) - Number(_.get(tds1, id, 0));
+      });
   } else if (designations) {
     designations.forEach((designation) => {
       const id = designation.id;
@@ -308,7 +314,7 @@ const getTotalAmountAndRows = (
 
       const otDays =
         (totalovertime[id] as number) /
-        ((designation.allowed_wrking_hr_per_day || 1) * m);
+        (designation.allowed_wrking_hr_per_day || 1);
       otdays += otDays;
 
       otHrs += totalovertime[id] as number;

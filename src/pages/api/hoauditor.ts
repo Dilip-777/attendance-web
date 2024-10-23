@@ -8,16 +8,30 @@ export default async function hoauditor(
   if (req.method === 'GET') {
     const { contractorId, month } = req.query;
     if (contractorId) {
-      const ho = await prisma.hOAuditor.findFirst({
-        where: {
-          contractorId: contractorId as string,
-        },
-      });
-      res.json(ho);
+      if (month) {
+        const ho = await prisma.hOAuditor.findFirst({
+          where: {
+            contractorId: contractorId as string,
+            monthOfInvoice: {
+              contains: month as string,
+            },
+          },
+        });
+        res.json(ho);
+      } else {
+        const ho = await prisma.hOAuditor.findFirst({
+          where: {
+            contractorId: contractorId as string,
+          },
+        });
+        res.json(ho);
+      }
     } else if (month) {
       const ho = await prisma.hOAuditor.findMany({
         where: {
-          monthOfInvoice: month as string,
+          monthOfInvoice: {
+            contains: month as string,
+          },
         },
       });
       res.json(ho);
