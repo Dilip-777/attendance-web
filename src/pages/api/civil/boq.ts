@@ -9,6 +9,9 @@ export default async function bOQ(req: NextApiRequest, res: NextApiResponse) {
         include: {
           BOQItems: true,
         },
+        where: {
+          status: "Approved",
+        }
       });
       res.status(200).json(bOQ);
       return;
@@ -17,6 +20,9 @@ export default async function bOQ(req: NextApiRequest, res: NextApiResponse) {
       include: {
         BOQItems: true,
       },
+      where: {
+        status: "Approved",
+      }
     });
     res.status(200).json(bOQ);
   }

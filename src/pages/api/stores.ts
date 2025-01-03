@@ -50,8 +50,6 @@ export default async function Stores(
         },
       });
     } else {
-      console.log('rest', rest);
-
       await prisma.stores.create({
         data: {
           storeItems: {

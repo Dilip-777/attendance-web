@@ -572,7 +572,7 @@ export const handleCivilPrint = async ({
     'Statutory Compliance  (GST & TDS) Checked By: ',
     '',
     '',
-    "Department Leader's Approval",
+    "HOD Recommendation",
     '',
 
     '',

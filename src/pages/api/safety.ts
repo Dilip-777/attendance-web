@@ -1,14 +1,14 @@
-import prisma from "@/lib/prisma";
-import { NextApiRequest, NextApiResponse } from "next";
+import prisma from '@/lib/prisma';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function Stores(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "GET") {
+  if (req.method === 'GET') {
     const { contractorid, month } = req.query;
     let where: any = {};
-    if (contractorid && contractorid !== "undefined") {
+    if (contractorid && contractorid !== 'undefined') {
       where.contractorid = contractorid as string;
     }
     if (month) {
@@ -23,7 +23,7 @@ export default async function Stores(
     });
     res.status(200).json(safety);
   }
-  if (req.method === "POST") {
+  if (req.method === 'POST') {
     const { id, safetyItems, unsafeActs, ...data } = req.body;
     const isExist = await prisma.safety.findUnique({
       where: {
@@ -80,7 +80,7 @@ export default async function Stores(
 
       res.status(200).json(safety);
     }
-  } else if (req.method === "DELETE") {
+  } else if (req.method === 'DELETE') {
     const { id } = req.body;
     const safety = await prisma.safety.delete({
       where: {

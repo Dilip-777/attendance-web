@@ -302,7 +302,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  if (session.user?.role !== "Civil") {
+  if (!session?.user?.role.includes("Civil")) {
     return {
       redirect: {
         destination: "/",
@@ -336,6 +336,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         include: {
           BOQItems: true,
         },
+        where: {
+          status: "Approved",
+        }
       },
     },
   });

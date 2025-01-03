@@ -66,6 +66,9 @@ const HourlyTable = ({
   const [netTotal, setNetTotal] = React.useState(0);
   const { data: session } = useSession();
 
+  console.log('hourly');
+  
+
   const fetchTimekeepers = async () => {
     setLoading(true);
 
@@ -367,7 +370,7 @@ const HourlyTable = ({
           </span>
         </Typography>
         <Typography variant='h4' sx={{ fontWeight: '700' }}>
-          Passed By <br></br>{' '}
+          Verified By <br></br>{' '}
           <span
             style={{
               fontWeight: '500',

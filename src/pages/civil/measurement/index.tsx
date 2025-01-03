@@ -366,10 +366,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
   let { contractorId, projectId } = context.query;
 
-  if (session?.user?.role !== "Civil") {
+  if (!session?.user?.role.includes('Civil')) {
     return {
       redirect: {
-        destination: "/",
+        destination: '/',
         permanent: false,
       },
     };

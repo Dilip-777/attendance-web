@@ -335,7 +335,7 @@ const handleprint = ({
     '',
     'Verified By   COMM',
     '',
-    'Passed By    ED',
+    'Verified By    ED',
     '',
     '',
   ]);

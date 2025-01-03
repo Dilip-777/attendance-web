@@ -46,14 +46,18 @@ const MenuList = () => {
     else if (session?.user?.role === "Corporate") items = corporatorItems.items;
     else if (session?.user?.role === "Automobile")
       items = automobileItems.items;
-    else if (session?.user?.role === "Civil") items = civilItems.items;
-    else if (session?.user?.role === "Manager") items = managerItems.items;
-    else if (session?.user?.role === "Fixed") items = fixedItems.items;
-    else if (session?.user?.role === "AccountsTaxation")
+    else if (
+      session?.user?.role === 'Civil' ||
+      session?.user?.role === 'CivilApprove'
+    )
+      items = civilItems.items;
+    else if (session?.user?.role === 'Manager') items = managerItems.items;
+    else if (session?.user?.role === 'Fixed') items = fixedItems.items;
+    else if (session?.user?.role === 'AccountsTaxation')
       items = accountItems.items;
-    else if (session?.user?.role === "PaymentEntry")
+    else if (session?.user?.role === 'PaymentEntry')
       items = paymententryItems.item;
-    else if (session?.user?.role === "MTR") items = mtrItems.items;
+    else if (session?.user?.role === 'MTR') items = mtrItems.items;
     else items = timekeeperItems.items;
 
     const navItems1 = items?.map((item) => {

@@ -58,6 +58,9 @@ const getEmployeesCalculation = (
     designation: '',
   };
 
+  console.log(employees, 'employees');
+  
+
   employees.forEach((employee) => {
     const id = employee.employeeId;
     const f = timekeeper.filter((f) =>

@@ -244,6 +244,7 @@ const ProfileSection = () => {
                       { value: "Safety", label: "Safety" },
                       { value: "Automobile", label: "Automobile" },
                       { value: "Civil", label: "Civil" },
+                      { value: "CivilApprove", label: "CivilApprove" },
                       { value: "Manager", label: "Manager" },
                       { value: "Fixed", label: "Fixed" },
                       { value: "MTR", label: "MTR" },

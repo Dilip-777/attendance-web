@@ -33,7 +33,6 @@ const boqItemSchema = Yup.object().shape({
   length: Yup.number().required("Required"),
   breadth: Yup.number().required("Required"),
   height: Yup.number().required("Required"),
-
   remarks: Yup.string().optional(),
 });
 

@@ -249,6 +249,7 @@ export default function Edit({
                       disabled={false}
                       options={[
                         { value: "Hourly", label: "Hourly" },
+                        { value: 'Daily', label: 'Daily' },
                         { value: "Monthly", label: "Monthly" },
                       ]}
                     />

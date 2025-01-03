@@ -211,7 +211,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  if (session.user?.role !== "Civil") {
+  if (!session.user?.role?.includes("Civil")) {
     return {
       redirect: {
         destination: "/",

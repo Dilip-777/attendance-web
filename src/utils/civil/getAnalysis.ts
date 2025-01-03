@@ -8,9 +8,9 @@ import {
   QcsBoq,
   QcsBoqItem,
   Workorder,
-} from "@prisma/client";
-import dayjs from "dayjs";
-var customParseFormat = require("dayjs/plugin/customParseFormat");
+} from '@prisma/client';
+import dayjs from 'dayjs';
+var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 interface Props {
@@ -44,11 +44,11 @@ export const getAnalysisSeries = ({ boq }: Props) => {
   }
 
   const rows: Rows = {
-    name: "Completed work",
+    name: 'Completed work',
     data: [],
   };
   const rows1: Rows = {
-    name: "Expected work",
+    name: 'Expected work',
     data: [],
   };
 
@@ -59,20 +59,20 @@ export const getAnalysisSeries = ({ boq }: Props) => {
 
   if (!startDate || !endDate) return { series: [], xaxis };
 
-  let start = dayjs(startDate, "DD/MM/YYYY");
-  let end = dayjs(endDate, "DD/MM/YYYY");
+  let start = dayjs(startDate, 'DD/MM/YYYY');
+  let end = dayjs(endDate, 'DD/MM/YYYY');
 
-  const startMonth = start.format("MM/YYYY");
-  const endMonth = end.format("MM/YYYY");
+  const startMonth = start.format('MM/YYYY');
+  const endMonth = end.format('MM/YYYY');
 
-  const days = end.diff(start, "day");
+  const days = end.diff(start, 'day');
   const quantityPerDay = boq.totalQuantity / days;
 
   while (start.isBefore(end)) {
-    const month = start.format("MMM");
+    const month = start.format('MMM');
     const daysInmonth = start.daysInMonth();
 
-    const m = start.format("MM/YYYY");
+    const m = start.format('MM/YYYY');
 
     let expected = Math.floor(quantityPerDay * daysInmonth);
 
@@ -82,7 +82,12 @@ export const getAnalysisSeries = ({ boq }: Props) => {
       expected = Math.floor(quantityPerDay * end.date());
     }
     let quantity = 0;
+
+    console.log(m, 'm');
+
     boq?.BOQItems.forEach((bi, index) => {
+      console.log(bi, 'bi');
+
       bi.measurementItems
         .filter(
           (mi) =>
@@ -110,12 +115,17 @@ export const getAnalysisSeries = ({ boq }: Props) => {
         ((quantity / boq.totalQuantity) * 100).toFixed(2)
       );
 
+      console.log(expectedPercentage, 'expectedPercentage');
+
       rows.data.push(completedPercentage);
       rows1.data.push(expectedPercentage);
 
-      xaxis.push(month);
+      xaxis.push(start.format('MMM'));
+      console.log(start, m);
 
-      start = start.add(1, "month");
+      start = start.add(1, 'month');
+
+      console.log(start);
 
       // rows.data.push(quantity);
       // rows1.data.push(bi.totalQuantity);
@@ -134,6 +144,8 @@ export const getAnalysisSeries = ({ boq }: Props) => {
   //   tds: getDecimal(tds),
   //   netPayable: getDecimal(billamount - tds),
   // });
+
+  console.log(rows, 'rows', rows1, 'rows1');
 
   return { series: [rows, rows1], xaxis };
 };

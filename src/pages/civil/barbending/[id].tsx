@@ -617,10 +617,10 @@ export default AddBarBending;
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession(context);
 
-  if (session?.user?.role !== "Civil") {
+  if (!session?.user?.role.includes('Civil')) {
     return {
       redirect: {
-        destination: "/",
+        destination: '/',
         permanent: false,
       },
     };

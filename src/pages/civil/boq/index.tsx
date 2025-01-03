@@ -21,17 +21,15 @@ import axios from "axios";
 import _ from "lodash";
 import EnhancedTableHead from "@/components/Table/EnhancedTableHead";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import { useRouter } from "next/router";
 import AutoComplete from "@/ui-component/Autocomplete";
+import Close from '@mui/icons-material/Close';
+import Done from '@mui/icons-material/Done';
 
 interface BOQWithItems extends BOQ {
   BOQItems: BOQItem[];
-}
-
-interface contractor extends Contractor {
-  Qcs: (Qcs & { project: Project })[];
 }
 
 const createHeadCells = (
@@ -50,10 +48,12 @@ const createHeadCells = (
 
 const headCells = [
   createHeadCells("description", "Work Description", false, false),
-  createHeadCells("contractorid", "Contractor", false, false),
+  // createHeadCells("contractorid", "Contractor", false, false),
   createHeadCells("totalQuantity", "Total Quantity", true, false),
   createHeadCells("startDate", "Start Date", true, false),
   createHeadCells("endDate", "End Date", true, false),
+  createHeadCells("status", "Status", false, false),
+  createHeadCells("approve", "Approve/Reject", false, true),
   createHeadCells("action", "Action", false, true),
 ];
 
@@ -61,54 +61,101 @@ const headcells1 = [
   createHeadCells("description", "Work Description", false, false),
   createHeadCells("unit", "Unit", false, false),
   createHeadCells("unitrate", "Rate", true, false),
-
   createHeadCells("quantity", "Quantity", true, false),
   createHeadCells("remarks", "Remarks", false, false),
 ];
 
-function Row(props: { row: BOQWithItems; handleOpen: (id: string) => void }) {
+function Row(props: { row: BOQWithItems; handleOpen: (id: string) => void,  }) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
+  const {data: session} = useSession()
+
+  const handleUpdate = async (boqId: string, status: string) => {
+    try {
+      await axios.post('/api/civil/boqApprove', {
+        boqId,
+        status,
+      });
+      router.reload()
+    } catch (error) {
+      console.log(error);
+    }
+
+  }
 
   return (
     <React.Fragment>
-      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell>
           <IconButton
-            aria-label="expand row"
-            size="small"
+            aria-label='expand row'
+            size='small'
             onClick={() => setOpen(!open)}
           >
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
-        <TableCell component="th" scope="row" align="center">
+        <TableCell component='th' scope='row' align='center'>
           {row.description}
         </TableCell>
-        <TableCell align="center">contractor</TableCell>
-        <TableCell align="center">{row.totalQuantity}</TableCell>
-        <TableCell align="center">{row.startDate || "-"}</TableCell>
-        <TableCell align="center">{row.endDate || "-"}</TableCell>
-        <TableCell size="small" align="right">
+        {/* <TableCell align="center">contractor</TableCell> */}
+        <TableCell align='center'>{row.totalQuantity}</TableCell>
+        <TableCell align='center'>{row.startDate || '-'}</TableCell>
+        <TableCell align='center'>{row.endDate || '-'}</TableCell>
+        <TableCell align='center'>{row.status}</TableCell>
+        {session?.user?.role === 'CivilApprove' && (
+          <TableCell size='small' align='right'>
+            <Stack
+              direction='row'
+              spacing={1}
+              alignItems='center'
+              justifyContent='center'
+            >
+              {row.status === 'Pending' && (
+                <>
+                  <Tooltip title='Approve'>
+                    <IconButton
+                      color='success'
+                      onClick={() => handleUpdate(row.id, 'Approved')}
+                      sx={{ m: 0 }}
+                    >
+                      <Done fontSize='small' color='success' />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Reject'>
+                    <IconButton
+                      onClick={() => handleUpdate(row.id, 'Rejected')}
+                      sx={{ m: 0 }}
+                      color='error'
+                    >
+                      <Close fontSize='small' color='error' />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+            </Stack>
+          </TableCell>
+        )}
+        <TableCell size='small' align='right'>
           <Stack
-            direction="row"
+            direction='row'
             spacing={1}
-            alignItems="center"
-            justifyContent="center"
+            alignItems='center'
+            justifyContent='center'
           >
             <IconButton
-              onClick={() => router.push("/civil/boq/" + row.id)}
+              onClick={() => router.push('/civil/boq/' + row.id)}
               sx={{ m: 0 }}
             >
-              <Edit fontSize="small" />
+              <Edit fontSize='small' />
             </IconButton>
-            <Tooltip title="Add Measurement Item">
+            <Tooltip title='Add Measurement Item'>
               <IconButton
                 onClick={() => props.handleOpen(row.id)}
                 sx={{ m: 0 }}
               >
-                <Add fontSize="small" />
+                <Add fontSize='small' />
               </IconButton>
             </Tooltip>
           </Stack>
@@ -116,19 +163,19 @@ function Row(props: { row: BOQWithItems; handleOpen: (id: string) => void }) {
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
+          <Collapse in={open} timeout='auto' unmountOnExit>
             <Box sx={{ margin: 1 }}>
-              <Table size="small" aria-label="purchases">
+              <Table size='small' aria-label='purchases'>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: "#eeeeee" }}>
+                  <TableRow sx={{ bgcolor: '#eeeeee' }}>
                     {headcells1.map((headCell) => (
                       <TableCell
                         key={headCell.id}
-                        align={"center"}
+                        align={'center'}
                         sx={{
-                          fontWeight: "600",
-                          bgcolor: "#eeeeee",
-                          height: "4rem",
+                          fontWeight: '600',
+                          bgcolor: '#eeeeee',
+                          height: '4rem',
                         }}
                       >
                         {headCell.label}
@@ -140,8 +187,8 @@ function Row(props: { row: BOQWithItems; handleOpen: (id: string) => void }) {
                   {row.BOQItems.map((w) => (
                     <TableRow key={w.id}>
                       {headcells1.map((headCell) => (
-                        <TableCell sx={{ py: "15px" }} align="center">
-                          {_.get(w, headCell.id, "-")}
+                        <TableCell sx={{ py: '15px' }} align='center'>
+                          {_.get(w, headCell.id, '-')}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -298,10 +345,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
   let { projectId } = context.query;
 
-  if (session?.user?.role !== "Civil") {
+  if (!session?.user?.role.includes("Civil")) {
     return {
       redirect: {
-        destination: "/",
+        destination: '/',
         permanent: false,
       },
     };

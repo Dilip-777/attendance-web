@@ -55,6 +55,10 @@ const handleprint = ({
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Sheet 1');
 
+   const isRoundoff = (id: string) => {
+    return ['amount', 'otamount', 'totalamount'].includes(id);
+   }
+
   let count = ot ? 4 : 9;
 
   const headcells = [
@@ -177,8 +181,10 @@ const handleprint = ({
   });
 
   rows.forEach((row: any) => {
+
+
     const data = headcells.map((h) => {
-      return typeof row[h.id] === 'number' ? getRoundOff(row[h.id]) : row[h.id];
+      return  isRoundoff(h.id) ? getRoundOff(row[h.id]) : row[h.id];
     });
     console.log(data);
 
@@ -274,7 +280,7 @@ const handleprint = ({
     ...getEmptyRows(c1),
     'Verified By   COMM',
     ...getEmptyRows(c2),
-    'Passed By    ED',
+    'Verified By    ED',
     ...getEmptyRows(4),
   ]);
   row.eachCell((cell: any) => {

@@ -1,12 +1,12 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 import {
   Contractor,
@@ -21,17 +21,17 @@ import {
   QcsBoqItem,
   BarBendingItem,
   BarBending,
-} from "@prisma/client";
-import { Stack, Typography } from "@mui/material";
+} from '@prisma/client';
+import { Stack, Typography } from '@mui/material';
 
-import _ from "lodash";
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import prisma from "@/lib/prisma";
-import { useRouter } from "next/router";
-import { getBoq } from "@/utils/getBoq";
-import AutoComplete from "@/ui-component/Autocomplete";
-import axios from "axios";
+import _ from 'lodash';
+import { GetServerSideProps } from 'next';
+import { getSession } from 'next-auth/react';
+import prisma from '@/lib/prisma';
+import { useRouter } from 'next/router';
+import { getBoq } from '@/utils/getBoq';
+import AutoComplete from '@/ui-component/Autocomplete';
+import axios from 'axios';
 
 interface BOQWithItems extends BOQ {
   BOQItems: (BOQItem & {
@@ -70,9 +70,9 @@ export default function Measurements({
 
   const fetchBoqs = async () => {
     const res = await axios.get(
-      "/api/civil/abstract?contractorId=" +
+      '/api/civil/abstract?contractorId=' +
         contractorId +
-        "&projectId=" +
+        '&projectId=' +
         projectId
     );
     setBoqs(res.data?.BOQ ?? []);
@@ -95,38 +95,41 @@ export default function Measurements({
       ? contractor1?.Qcs.find((v) => v.projectId === projectId)
       : undefined;
   const info = [
-    { value: contractor1?.contractorname, label: "Name of Contractor" },
-    { value: qcs?.project?.name, label: "Nature of Work" },
-    { value: qcs?.project?.place, label: "Location" },
+    { value: contractor1?.contractorname, label: 'Name of Contractor' },
+    { value: qcs?.project?.name, label: 'Nature of Work' },
+    { value: qcs?.project?.place, label: 'Location' },
   ];
+
+  console.log(rows, 'rows');
+
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: '100%' }}>
       <Paper
         sx={{
-          width: "100%",
+          width: '100%',
           mb: 2,
-          maxHeight: "calc(100vh - 6rem)",
-          overflowY: "auto",
-          scrollBehavior: "smooth",
-          "&::-webkit-scrollbar": {
+          maxHeight: 'calc(100vh - 6rem)',
+          overflowY: 'auto',
+          scrollBehavior: 'smooth',
+          '&::-webkit-scrollbar': {
             height: 10,
             width: 9,
           },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#bdbdbd",
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#bdbdbd',
             borderRadius: 2,
           },
           p: 2,
         }}
       >
         <Stack
-          direction="column"
+          direction='column'
           spacing={3}
           sx={{
-            p: "1rem",
+            p: '1rem',
           }}
         >
-          <Stack direction="row" spacing={3}>
+          <Stack direction='row' spacing={3}>
             <AutoComplete
               setValue={(v) => {
                 const c = contractors.find((c) => c.contractorId === v);
@@ -138,7 +141,7 @@ export default function Measurements({
                 label: v.contractorname,
                 value: v.contractorId,
               }))}
-              label="Contractor"
+              label='Contractor'
               value={contractorId}
             />
             <AutoComplete
@@ -153,42 +156,42 @@ export default function Measurements({
                   value: v.projectId,
                 })) ?? []
               }
-              label="Project"
+              label='Project'
               value={projectId}
             />
           </Stack>
           {contractor1 && contractor1?.Qcs.length > 0 && (
-            <Stack direction="column" spacing={2}>
+            <Stack direction='column' spacing={2}>
               {info.map((v) => (
-                <Stack direction="row" spacing={2}>
+                <Stack direction='row' spacing={2}>
                   <Typography
                     sx={{
-                      fontWeight: "700",
-                      fontSize: "1rem",
-                      minWidth: "12rem",
+                      fontWeight: '700',
+                      fontSize: '1rem',
+                      minWidth: '12rem',
                     }}
                   >
                     {v.label}:
                   </Typography>
-                  <Typography sx={{ fontSize: "1rem" }}>{v.value}</Typography>
+                  <Typography sx={{ fontSize: '1rem' }}>{v.value}</Typography>
                 </Stack>
               ))}
             </Stack>
           )}
         </Stack>
         <TableContainer component={Paper} sx={{}}>
-          <Table aria-label="collapsible table">
-            <TableHead sx={{ bgcolor: "#eeeeee" }}>
-              <TableRow sx={{ bgcolor: "#eeeeee" }}>
+          <Table aria-label='collapsible table'>
+            <TableHead sx={{ bgcolor: '#eeeeee' }}>
+              <TableRow sx={{ bgcolor: '#eeeeee' }}>
                 {headcells.map((headCell) => (
                   <TableCell
                     key={headCell.id}
                     colSpan={headCell.colspan || 1}
-                    align={"center"}
+                    align={'center'}
                     sx={{
-                      fontWeight: "600",
-                      bgcolor: "#eeeeee",
-                      whiteSpace: "nowrap",
+                      fontWeight: '600',
+                      bgcolor: '#eeeeee',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {headCell.label}
@@ -199,11 +202,11 @@ export default function Measurements({
                 {headcells2.map((headCell) => (
                   <TableCell
                     key={headCell.id}
-                    align={"center"}
+                    align={'center'}
                     sx={{
-                      fontWeight: "600",
-                      bgcolor: "#eeeeee",
-                      whiteSpace: "nowrap",
+                      fontWeight: '600',
+                      bgcolor: '#eeeeee',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {headCell.label}
@@ -215,12 +218,12 @@ export default function Measurements({
             <TableBody>
               {rows.length > 0 ? (
                 rows.map((row, index) => (
-                  <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                  <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                     {headcells2.map((headCell) => (
                       <TableCell
                         key={headCell.id}
-                        align={"center"}
-                        sx={{ px: "0px" }}
+                        align={'center'}
+                        sx={{ px: '0px' }}
                       >
                         {headCell.cell(row, index)}
                       </TableCell>
@@ -229,7 +232,7 @@ export default function Measurements({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell align="left" colSpan={6}>
+                  <TableCell align='left' colSpan={6}>
                     Nothing found
                   </TableCell>
                 </TableRow>
@@ -246,10 +249,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession({ req: context.req });
   let { contractorId, projectId } = context.query;
 
-  if (session?.user?.role !== "Civil") {
+  if (session?.user?.role !== 'Civil') {
     return {
       redirect: {
-        destination: "/",
+        destination: '/',
         permanent: false,
       },
     };
@@ -280,7 +283,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!projectId) {
     return {
       redirect: {
-        destination: "/civil/project",
+        destination: '/civil/project',
         permanent: false,
       },
     };

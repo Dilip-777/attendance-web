@@ -34,7 +34,7 @@ export default function ApprovalInformation() {
     { id: "id", label: "Prepared & Checked By" },
     { id: "nature", label: "C-DARC V/s Biomax Checked By:" },
     { id: "location", label: "Statutory Compliance" },
-    { id: "startDate", label: "Department Leader's Approval" },
+    { id: "startDate", label: "HOD Recommendation" },
     { id: "endDate", label: "Top Management Approval" },
   ];
   const table = new Table({

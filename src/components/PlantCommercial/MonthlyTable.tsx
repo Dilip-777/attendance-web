@@ -73,6 +73,9 @@ const MonthlyPlantCommercialTable = ({
   const [nettotal, setNettotal] = React.useState(0);
   const { data: session } = useSession();
 
+  console.log('Monthly');
+  
+
   const headcells: HeadCell[] = [
     { id: "employeeId", label: "ID" },
     { id: "name", label: "Name" },
@@ -295,7 +298,7 @@ const MonthlyPlantCommercialTable = ({
           </span>
         </Typography>
         <Typography variant="h4" sx={{ fontWeight: "700" }}>
-          Passed By <br></br>{" "}
+          Verified By <br></br>{" "}
           <span
             style={{
               fontWeight: "500",

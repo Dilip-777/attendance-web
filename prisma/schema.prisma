@@ -819,7 +819,7 @@ model BOQ {
   totalAmount   Float   @default(0)
   totalQuantity Float   @default(0)
   project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
+  status        Status  @default(Pending)
   BOQItems BOQItem[]
 }
 
@@ -1021,4 +1021,5 @@ enum Role {
   GM
   AccountsTaxation
   MTR
+  CivilApprove
 }

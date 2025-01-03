@@ -8,9 +8,9 @@ import {
   QcsBoq,
   QcsBoqItem,
   Workorder,
-} from "@prisma/client";
-import dayjs from "dayjs";
-var customParseFormat = require("dayjs/plugin/customParseFormat");
+} from '@prisma/client';
+import dayjs from 'dayjs';
+var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 interface Props {
@@ -26,37 +26,37 @@ interface Props {
 export const getBoq = ({ boq, workorder }: Props) => {
   const headcells = [
     {
-      id: "slno",
-      label: "Sl No",
+      id: 'slno',
+      label: 'Sl No',
       cell: (row: any, index: number) => index + 1,
       colspan: 1,
     },
-    { id: "type", label: "Type", cell: (row: any) => row.type, colspan: 1 },
-    { id: "code", label: "Code", cell: (row: any) => row.code, colspan: 1 },
+    { id: 'type', label: 'Type', cell: (row: any) => row.type, colspan: 1 },
+    { id: 'code', label: 'Code', cell: (row: any) => row.code, colspan: 1 },
     {
-      id: "description",
-      label: "Description",
+      id: 'description',
+      label: 'Description',
       cell: (row: any) => row.description,
       colspan: 1,
     },
-    { id: "rate", label: "Rate", cell: (row: any) => row.quantity, colspan: 1 },
+    { id: 'rate', label: 'Rate', cell: (row: any) => row.quantity, colspan: 1 },
     {
-      id: "worktobedone",
-      label: "Work to be done",
+      id: 'worktobedone',
+      label: 'Work to be done',
       cell: (row: any) => row.rate,
       colspan: 3,
     },
-    { id: "unit", label: "Unit", cell: (row: any) => row.unit, colspan: 1 },
+    { id: 'unit', label: 'Unit', cell: (row: any) => row.unit, colspan: 1 },
     {
-      id: "workdone",
-      label: "Work Done",
+      id: 'workdone',
+      label: 'Work Done',
       cell: (row: any) => row.amount,
       colspan: 0,
     },
-    { id: "total", label: "Total", cell: (row: any) => row.amount, colspan: 1 },
+    { id: 'total', label: 'Total', cell: (row: any) => row.amount, colspan: 1 },
     {
-      id: "balance",
-      label: "Balance",
+      id: 'balance',
+      label: 'Balance',
       cell: (row: any) => row.amount,
       colspan: 1,
     },
@@ -64,67 +64,67 @@ export const getBoq = ({ boq, workorder }: Props) => {
 
   const headcells2 = [
     {
-      id: "slno",
-      label: "",
+      id: 'slno',
+      label: '',
       cell: (row: any, index: number) => index + 1,
       colspan: 1,
     },
-    { id: "type", label: "", cell: (row: any) => row.type, colspan: 1 },
-    { id: "code", label: "", cell: (row: any) => row.code, colspan: 1 },
+    { id: 'type', label: '', cell: (row: any) => row.type, colspan: 1 },
+    { id: 'code', label: '', cell: (row: any) => row.code, colspan: 1 },
     {
-      id: "description",
-      label: "",
+      id: 'description',
+      label: '',
       cell: (row: any) => row.description,
       colspan: 1,
     },
-    { id: "rate", label: "", cell: (row: any) => row.rate, colspan: 1 },
+    { id: 'rate', label: '', cell: (row: any) => row.rate, colspan: 1 },
     {
-      id: "asperdrawing",
-      label: "As per drawing",
+      id: 'asperdrawing',
+      label: 'As per drawing',
       cell: (row: any) => row.worktobedone.asperdrawing,
       colspan: 1,
     },
     {
-      id: "extrawork",
-      label: "Extra Work",
+      id: 'extrawork',
+      label: 'Extra Work',
       cell: (row: any) => row.worktobedone.extrawork,
       colspan: 1,
     },
     {
-      id: "total",
-      label: "Total",
+      id: 'total',
+      label: 'Total',
       cell: (row: any) => row.worktobedone.totalQuantity,
       colspan: 1,
     },
-    { id: "unit", label: "", cell: (row: any) => row.unit, colspan: 1 },
+    { id: 'unit', label: '', cell: (row: any) => row.unit, colspan: 1 },
   ];
 
-  const startDate = dayjs(workorder?.startDate || "02/01/2024", "DD/MM/YYYY");
-  const endDate = dayjs(workorder?.endDate || "05/03/2024", "DD/MM/YYYY");
+  const startDate = dayjs(workorder?.startDate || '02/08/2024', 'DD/MM/YYYY');
+  const endDate = dayjs(workorder?.endDate || '05/10/2024', 'DD/MM/YYYY');
 
   let currentDate = startDate;
 
   while (
     currentDate.isBefore(endDate) ||
-    currentDate.isSame(endDate, "month")
+    currentDate.isSame(endDate, 'month')
   ) {
     const id = `${currentDate.month() + 1}/${currentDate.year()}`;
 
     headcells[7] = {
-      id: "workdone",
-      label: "Work Done",
+      id: 'workdone',
+      label: 'Work Done',
       cell: (row: any) => row.amount,
       colspan: headcells[7].colspan + 1,
     };
 
     headcells2.push({
       id: id,
-      label: currentDate.format("MMMM").slice(0, 3),
+      label: currentDate.format('MMMM').slice(0, 3),
       cell: (row: any) => row.workdone[id],
       colspan: 1,
     });
 
-    currentDate = currentDate.add(1, "month").startOf("month");
+    currentDate = currentDate.add(1, 'month').startOf('month');
   }
 
   const getRow = (
@@ -132,8 +132,8 @@ export const getBoq = ({ boq, workorder }: Props) => {
       measurementItems: (MeasurementItem & { measurement: Measurement })[];
     }
   ) => {
-    const startDate = dayjs(workorder?.startDate || "02/01/2024", "DD/MM/YYYY");
-    const endDate = dayjs(workorder?.endDate || "05/03/2024", "DD/MM/YYYY");
+    const startDate = dayjs(workorder?.startDate || '02/08/2024', 'DD/MM/YYYY');
+    const endDate = dayjs(workorder?.endDate || '05/10/2024', 'DD/MM/YYYY');
 
     let currentDate = startDate;
 
@@ -143,7 +143,7 @@ export const getBoq = ({ boq, workorder }: Props) => {
 
     while (
       currentDate.isBefore(endDate) ||
-      currentDate.isSame(endDate, "month")
+      currentDate.isSame(endDate, 'month')
     ) {
       const id = `${currentDate.month() + 1}/${currentDate.year()}`;
       const filtered = item.measurementItems.filter(
@@ -163,7 +163,7 @@ export const getBoq = ({ boq, workorder }: Props) => {
       };
 
       total += quantity || 0;
-      currentDate = currentDate.add(1, "month").startOf("month");
+      currentDate = currentDate.add(1, 'month').startOf('month');
     }
 
     return { obj: row, total };
@@ -200,15 +200,15 @@ export const getBoq = ({ boq, workorder }: Props) => {
   });
 
   headcells2.push({
-    id: "total",
-    label: "",
+    id: 'total',
+    label: '',
     cell: (row: any) => row.total,
     colspan: 1,
   });
 
   headcells2.push({
-    id: "balance",
-    label: "",
+    id: 'balance',
+    label: '',
     cell: (row: any) => row.balance,
     colspan: 1,
   });

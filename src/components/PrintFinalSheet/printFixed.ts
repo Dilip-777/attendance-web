@@ -581,7 +581,7 @@ export const handleFixedPrint = async ({
     'Statutory Compliance  (GST & TDS) Checked By: ',
     '',
     '',
-    "Department Leader's Approval",
+    "HOD Recommendation",
     '',
 
     '',
