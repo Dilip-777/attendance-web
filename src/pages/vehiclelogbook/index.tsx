@@ -134,6 +134,9 @@ export default function Vehiclelogbook({
       | undefined
   );
 
+  console.log("Rows:", rows);
+  
+
   React.useEffect(() => {
     if (session?.user?.role === 'PlantCommercial') {
       if (!headCells.find((headCell) => headCell.id === 'action'))
@@ -518,20 +521,65 @@ export default function Vehiclelogbook({
     setLoading(false);
   };
 
+  const generateDatesForMonth = (year: number, month: number): { date: string }[] => {
+    const today = dayjs(); // Get today's date
+  const isCurrentMonth = today.month() + 1 === month && today.year() === year; // Check if it's the current month
+
+  // Determine the last day for the month
+  const lastDay = isCurrentMonth
+    ? today.date() // If it's the current month, limit to today's date
+    : dayjs(`${year}-${month}-01`, 'YYYY-MM').daysInMonth(); // Otherwise, get the full month days
+
+  // Generate dates from the 1st to the last calculated day
+  const dates: { date: string }[] = [];
+  for (let day = 1; day <= lastDay; day++) {
+    dates.push({
+      date: dayjs(new Date(year, month - 1, day)).format('DD/MM/YYYY'),
+    });
+  }
+    return dates;
+  };
+
+
   const fetchAutomobiles = async () => {
     setLoading(true);
     const res = await axios.get(
       `/api/vehiclelogbook?month=${month}&contractor=${contractor}`
     );
-    setAutomobiles(
-      res.data.filter((auto: Automobile) => auto.vehicleId === vehicle)
-    );
-    const r = getAutomobile(
-      res.data.filter((auto: Automobile) => auto.vehicleId === vehicle),
-      dayjs(month, 'MM/YYYY').month() + 1,
-      dayjs(month, 'MM/YYYY').year()
-    );
+    // setAutomobiles(
+    //   res.data.filter((auto: Automobile) => auto.vehicleId === vehicle)
+    // );
+    // const r = getAutomobile(
+    //   res.data.filter((auto: Automobile) => auto.vehicleId === vehicle),
+    //   dayjs(month, 'MM/YYYY').month() + 1,
+    //   dayjs(month, 'MM/YYYY').year()
+    // );
+
+    const r = (() => {
+      const allDatesForMonth = generateDatesForMonth(
+        dayjs(month, 'MM/YYYY').year(),
+        dayjs(month, 'MM/YYYY').month() + 1
+      );
+    
+      const filteredData = res.data.filter(
+        (auto: Automobile) => auto.vehicleId === vehicle
+      );
+    
+      // Merge filtered data with all dates for the month
+      return allDatesForMonth.map((dateObj) => {
+        const matchingRecord = filteredData.find(
+          (record: Automobile) => record.date === dateObj.date
+        );
+        return {
+          ...dateObj,
+          ...matchingRecord, // Merge the data from filteredData if it exists
+        };
+      });
+    })();
+
     setRows(r);
+    console.log("r:", r);
+    
     setLoading(false);
   };
 
